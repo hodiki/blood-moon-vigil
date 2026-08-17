@@ -166,6 +166,38 @@ export const BOSS = {
   HP_BAR_WIDTH_MOBILE: 0.5,
 } as const;
 
+/**
+ * 画面特效（TASK-28 美术表现力专项升级 · Phase 6 穿插）。
+ * 所有特效常量收敛于此（ARCH §2 唯一配置来源）；色值一律取 PALETTE/BOSS/GEM token（token 统一来源纪律）。
+ * 粒子池上限由 runtime-config.maxParticles 驱动（桌面 200 / 移动 100）；拖尾类（fxTrails=false）移动端关闭后池负载大幅下降。
+ * 纯时长/数量为视觉参数，不触碰任何 GDD 数值（GDD 数值表在 §敌面板/武器/生成器/升级池）。
+ */
+export const FX = {
+  /** 粒子池双端预算硬上限（桌面 200 / 移动 100 由 runtime-config 覆盖；此为口径值，用于单测/审计断言） */
+  PARTICLE_BUDGET: 200,
+  /** 通用粒子寿命 s */
+  PARTICLE_LIFE: 0.45,
+  /** 飞弹拖尾：发射间隔 ms / 粒子寿命 s / 每枚每拍粒子数 */
+  TRAIL_INTERVAL_MS: 90,
+  TRAIL_LIFE: 0.3,
+  TRAIL_COUNT_PER_MISSILE: 1,
+  /** 环绕球轨道残影（环）：透明度 / 转速 deg/s */
+  ORBIT_RING_ALPHA: 0.22,
+  ORBIT_RING_SPIN_DEG: 20,
+  /** 宝石磁吸拖尾：发射间隔 ms / 粒子寿命 s */
+  GEM_TRAIL_INTERVAL_MS: 150,
+  GEM_TRAIL_LIFE: 0.2,
+  /** 冲击波涟漪：环上粒子数 */
+  RIPPLE_COUNT: 18,
+  /** Boss 出场：冲击环粒子数 / 半径 px */
+  BOSS_RING_COUNT: 22,
+  BOSS_RING_RADIUS: 90,
+  /** 升级粒子：数量（金 + 冷青双色） */
+  LEVELUP_COUNT: 16,
+  /** 宝石拾取爆点：数量 */
+  GEM_PICKUP_COUNT: 6,
+} as const;
+
 /** 纠结时刻埋点（upgrade-pool §⑧.3 / design-review-e3 交接项 2）：停留 >3s 记为纠结 */
 export const HESITATION = {
   DWELL_SECONDS: 3,

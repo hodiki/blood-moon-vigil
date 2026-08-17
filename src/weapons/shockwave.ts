@@ -74,6 +74,11 @@ export class ShockwaveWeapon {
     return this.ring.active;
   }
 
+  /** TASK-28：当前扩散半径（升级范围 +50% 后 280→420→560；冲击波涟漪粒子用） */
+  get radiusPx(): number {
+    return this.radius;
+  }
+
   /** 每帧：冷却递减 → 就绪且半径内有目标才释放（E3 空放决策） */
   update(dt: number, player: Player, enemies: readonly DamageTargetLike[], damageMultiplier: number): void {
     if (!this.enabled) return; // E3 门控：未解锁不冷却不释放

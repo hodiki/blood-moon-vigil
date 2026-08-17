@@ -103,7 +103,8 @@ export class XpManager {
       const result = stepGem(gem, this.player, dt, this.magnetRadius, GEM.MAGNET_SPEED, GEM.PICKUP_RADIUS);
       if (result === 'collected') {
         this.addXp(gem.xpValue);
-        GameEvents.emit(GameEvent.GemCollected, { amount: gem.xpValue });
+        // TASK-28：负载补 x/y（拾取爆点定位）；既有消费方（HUD/音频）只读 amount，加字段不破坏
+        GameEvents.emit(GameEvent.GemCollected, { amount: gem.xpValue, x: gem.x, y: gem.y });
         gem.deactivate();
       }
     });

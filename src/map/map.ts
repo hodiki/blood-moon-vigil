@@ -28,6 +28,11 @@ export const GRASS_ZONE_SIZE = 1200;
 /** 玩家出生安全区半径（中心无障碍，防出生即卡） */
 export const SPAWN_SAFE_RADIUS = 120;
 
+/** TASK-28 地面贴花：确定性散布 seed 与数量（桌面 28 / 移动 14；静态精灵，随 effects 组批次） */
+export const DECAL_SEED = 20260828;
+export const DECAL_COUNT_DESKTOP = 28;
+export const DECAL_COUNT_MOBILE = 14;
+
 /**
  * 确定性障碍布局（纯函数，可单测）：
  * - 全部矩形位于世界内（含 2 tile 边距）
@@ -72,16 +77,37 @@ export class MapSystem {
   readonly ground: Phaser.GameObjects.TileSprite;
   /** 中心草地区（TASK-22：石板/草地双材质，depth -99 铺在石板之上） */
   readonly grass: Phaser.GameObjects.TileSprite;
+  /** TASK-28 地面贴花：碎石/草叶/血迹（静态精灵，depth -98，随 effects 组批次） */
+  readonly decals: Phaser.GameObjects.Image[];
   readonly blockers: Phaser.Physics.Arcade.StaticGroup;
   readonly bounds: Phaser.GameObjects.Graphics;
 
-  constructor(scene: Phaser.Scene, layout: ObstacleRect[] = buildObstacleLayout()) {
+  constructor(
+    scene: Phaser.Scene,
+    layout: ObstacleRect[] = buildObstacleLayout(),
+    decalCount: number = DECAL_COUNT_DESKTOP,
+  ) {
     this.ground = scene.add
       .tileSprite(WORLD.WIDTH / 2, WORLD.HEIGHT / 2, WORLD.WIDTH, WORLD.HEIGHT, 'tile-ground')
       .setDepth(-100);
     this.grass = scene.add
       .tileSprite(WORLD.WIDTH / 2, WORLD.HEIGHT / 2, GRASS_ZONE_SIZE, GRASS_ZONE_SIZE, 'tile-grass')
       .setDepth(-99);
+
+    // TASK-28 地面贴花：确定性散布，避开出生安全区；贴花不参与碰撞（纯视觉）
+    const decalFrames = ['decal-rock', 'decal-grass', 'decal-blood'] as const;
+    const decalRng = mulberry32(DECAL_SEED);
+    this.decals = [];
+    for (let i = 0; i < decalCount; i += 1) {
+      const x = 2 * TILE.SIZE + decalRng() * (WORLD.WIDTH - 4 * TILE.SIZE);
+      const y = 2 * TILE.SIZE + decalRng() * (WORLD.HEIGHT - 4 * TILE.SIZE);
+      if (overlapsSpawnSafe({ x, y, w: 1, h: 1 }, WORLD.WIDTH / 2, WORLD.HEIGHT / 2)) continue;
+      const frame = decalFrames[Math.floor(decalRng() * decalFrames.length)] ?? 'decal-rock';
+      const img = scene.add.image(x, y, 'effects', frame).setDepth(-98);
+      img.setAlpha(frame === 'decal-blood' ? 0.35 + decalRng() * 0.2 : 0.6 + decalRng() * 0.35);
+      img.setAngle(decalRng() * 360);
+      this.decals.push(img);
+    }
 
     // 障碍 StaticGroup（AABB，S9）
     this.blockers = scene.physics.add.staticGroup();

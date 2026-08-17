@@ -48,3 +48,17 @@ export function hexToRgbInt(hex: string): number {
   const h = hex.replace('#', '');
   return parseInt(h, 16);
 }
+
+/**
+ * '#RRGGBB' + alpha → 'rgba(r,g,b,a)' Canvas 颜色字符串。
+ * 纯函数（不依赖 Phaser 运行时）；供纹理烘焙等场景从 token（PALETTE/BOSS/GEM）派生 rgba，
+ * 落实「唯一配置来源」纪律（code-review-task28 P1-2 / review-task28 §5.4 S-1）。
+ * alpha 传 0~1 浮点，输出原样（如 0.1 保留为 0.1，Canvas 与 '0.10' 等价）。
+ */
+export function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}

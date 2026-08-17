@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { WORLD, PLAYER, BOSS } from '@/config/balance';
+import { WORLD, PLAYER, BOSS, type EnemyKindId } from '@/config/balance';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
 import { collectSmokeResult, writeSmokeResult, SMOKE_FRAMES_COUNT } from '@/utils/smoke';
@@ -28,7 +28,7 @@ import type { InputSource } from '@/input/input-source';
 import { KeyboardInput } from '@/input/keyboard-input';
 import { TouchInput } from '@/input/touch-input';
 import { Player } from '@/player/player';
-import { MapSystem } from '@/map/map';
+import { MapSystem, DECAL_COUNT_DESKTOP, DECAL_COUNT_MOBILE } from '@/map/map';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { Enemy } from '@/enemies/enemy';
 import { Boss } from '@/enemies/boss';
@@ -46,6 +46,8 @@ import { getOverlayHost } from '@/ui/overlay-host';
 import { RunStats } from '@/stats/run-stats';
 import { readRestartCount } from '@/stats/session-stats';
 import { createProceduralTextures } from '@/fx/procedural-textures';
+import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim } from '@/fx/anim';
+import { FxManager } from '@/fx/fx-manager';
 import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
 
@@ -91,6 +93,10 @@ export class PlayScene extends Phaser.Scene {
   private boss: Boss | null = null;
   /** 最近一次三选一选项（纠结埋点判定用，E4-S1） */
   private lastOptions: UpgradeOption[] = [];
+  /** TASK-28 特效管理器（粒子池 ≤ cfg.maxParticles + 血月/渐晕常驻） */
+  private fx!: FxManager;
+  /** TASK-28 冲击波涟漪上升沿检测（active 从 false→true 时触发一次涟漪） */
+  private shockwaveWasActive = false;
 
   // 冒烟自检状态
   private smokeStartedAt = 0;
@@ -117,12 +123,19 @@ export class PlayScene extends Phaser.Scene {
   create(): void {
     this.cfg = getRuntimeConfig(detectIsMobile());
     createProceduralTextures(this, this.cfg);
+    // TASK-28：角色 2 帧循环动画 + 特效管理器（粒子池/血月/渐晕），纹理就绪后装配
+    createCharacterAnims(this);
+    this.fx = new FxManager(this, this.cfg);
 
     this.state = new GameState();
     // 副作用唯一入口（ADR-003）：物理/Tween/输入冻结集中在 applyPhase
     this.state.onChange((phase) => this.applyPhase(phase));
 
-    this.mapSystem = new MapSystem(this);
+    this.mapSystem = new MapSystem(
+      this,
+      undefined,
+      this.cfg.isMobile ? DECAL_COUNT_MOBILE : DECAL_COUNT_DESKTOP,
+    );
     this.player = new Player(this, PLAYER.SPAWN_X, PLAYER.SPAWN_Y);
 
     // 对象池：maxSize 读 RuntimeConfig（ARCH §3.3 / 性能预算 #1）；classType=Boss（含普通敌）
@@ -205,6 +218,8 @@ export class PlayScene extends Phaser.Scene {
     GameEvents.on(GameEvent.BossDefeated, this.onBossDefeated, this);
     GameEvents.on(GameEvent.RestartRequested, this.onRestartRequested, this);
     GameEvents.on(GameEvent.ToMenuRequested, this.onToMenuRequested, this);
+    // TASK-28：宝石拾取爆点（负载含 x/y，TASK-28 增补）
+    GameEvents.on(GameEvent.GemCollected, this.onGemCollected, this);
 
     // 相机跟随 + 世界边界（S9）
     this.cameras.main.setBounds(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
@@ -259,21 +274,38 @@ export class PlayScene extends Phaser.Scene {
 
     let dt = clampDelta(delta); // 秒制、防跳怪（ARCH §3.5 / 预算表 #10）
     if (this.isBench) dt *= BENCH_TIME_SCALE; // 基准：20× 时缩放模拟 20 分钟峰值
+    const realDt = clampDelta(delta); // TASK-28：特效寿命用真实 dt（基准 20× 不加速视觉节奏）
     const now = this.time.now / 1000; // 秒时间戳（无敌帧/环绕球 CD/Boss 霸体）
 
-    // 1) 玩家移动（velocity 驱动，fixedStep 60Hz）
+    // 1) 玩家移动（velocity 驱动，fixedStep 60Hz）+ TASK-28 idle/移动动画
     const move = this.inputSource.getMove();
     this.player.update(move);
+    tickPlayerAnim(this.player);
     // 2) 敌潮生成（budget(t) 秒制累加；20:00 自动触发 onBossTime）
     this.spawner.update(dt);
-    // 3) 敌人 AI（朝玩家移动 + 攻击计时）
-    this.enemyPool.eachActive((e) => e.updateMovement(dt, this.player));
+    // 3) 敌人 AI（朝玩家移动 + 攻击计时）+ TASK-28 敌型动画（普通 3 敌 idle/move，Boss 恒 idle）
+    this.enemyPool.eachActive((e) => {
+      e.updateMovement(dt, this.player);
+      tickEnemyAnim(e);
+    });
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now);
     // 5) 经验宝石磁吸/拾取（E3-S1）
     this.xp.update(dt);
     // 6) 升级挂起消费：跨阈值 → emit level:up → onLevelUp（LEVEL_UP 流程）
     this.xp.consumePendingLevelUp();
+
+    // —— TASK-28 特效层（全部带降级开关；粒子/拖尾均真实 dt）——
+    this.fx.update(realDt);
+    this.fx.tickMissileTrails(this.weaponSystem.missilePool, realDt);
+    this.fx.tickOrbitRing(this.player, this.weaponSystem.orbit.unlocked, realDt);
+    this.fx.tickGemTrails(this.gemPool, this.player, this.xp.magnetRadius, realDt);
+    const shockwaveActive = this.weaponSystem.shockwave.active;
+    if (shockwaveActive && !this.shockwaveWasActive) {
+      // 冲击波涟漪：释放瞬间沿当前半径（含升级 +50%）扩散一圈粒子
+      this.fx.shockwaveRipple(this.player.x, this.player.y, this.weaponSystem.shockwave.radiusPx);
+    }
+    this.shockwaveWasActive = shockwaveActive;
 
     // E4-S2：Boss 顶部 UI 血条（每帧刷新；DOM HUD 只读事件流）
     if (this.boss?.active) {
@@ -317,6 +349,7 @@ export class PlayScene extends Phaser.Scene {
   private finishGame(victory: boolean): void {
     this.spawner.stop(); // S8 §⑥.2：立即停止生成
     this.weaponSystem.clearAll(); // W8 §⑥.5：清空子弹/环绕球 + 冲击波冷却重置
+    this.fx.clearAll(); // TASK-28：清空粒子（结算页背景干净）
     this.overlay.hide(); // 防止结算时残留选卡覆盖层
     const result = this.stats.finish(victory, this.spawner.elapsedSeconds);
     // TASK-26 P0：本局 RunResult 挂全局，供导出脚本自动捕获（production/playtests/export-script.js）
@@ -351,6 +384,9 @@ export class PlayScene extends Phaser.Scene {
         if (boss.active) boss.setAlpha(1);
       },
     });
+    // TASK-28：Boss 出场特效 —— 猩红金冲击环 + 金点爆发 + 屏幕震动（移动端震动关闭）
+    this.fx.bossEntrance(bx, by);
+    if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
     GameEvents.emit(GameEvent.BossSpawned, { bossHp: boss.hp });
     this.stats.recordBossSpawn(this.spawner.elapsedSeconds, boss.hp);
   }
@@ -364,11 +400,21 @@ export class PlayScene extends Phaser.Scene {
   private onEnemyKilled(args: unknown): void {
     const payload = args as EnemyKilledPayload;
     this.stats.recordKill();
+    // TASK-28：击杀溅射（颜色/形状按敌人类型分化）
+    this.fx.deathBurst(payload.x, payload.y, payload.enemyType as EnemyKindId);
     if (payload.enemyType !== 'boss') {
       this.xp.dropGem(payload.xp, payload.x, payload.y);
     }
     if (this.player.stats.applyLifesteal()) {
       GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+    }
+  }
+
+  /** TASK-28：宝石拾取爆点（payload 由 xp-manager 补 x/y） */
+  private onGemCollected(args: unknown): void {
+    const p = args as { x?: number; y?: number };
+    if (typeof p.x === 'number' && typeof p.y === 'number') {
+      this.fx.gemPickup(p.x, p.y);
     }
   }
 
@@ -383,6 +429,8 @@ export class PlayScene extends Phaser.Scene {
     // E4-S1 升级时间戳埋点（后期升级间隔 / Lv47 预警数据源，供文策渊评审）
     this.stats.recordLevelUp(payload.level, this.spawner.elapsedSeconds);
     GameEvents.emit(GameEvent.UpgradeOffered, { options });
+    // TASK-28：升级三选一出现 —— 玩家位置金+冷青爆发（进入 LEVEL_UP 前）
+    this.fx.levelUpBurst(this.player.x, this.player.y);
     if (this.isBench) {
       // 基准模式：自动选第 1 张，跳过 LEVEL_UP 暂停（保持 20× 时缩放连续）
       this.onUpgradeChosen({ optionId: options[0]?.id ?? 10, index: 0, dwellSeconds: 0 });
@@ -426,18 +474,20 @@ export class PlayScene extends Phaser.Scene {
     this.scene.start('Boot'); // ux-spec §1：返回启动（重载 BootScene → Play）
   }
 
-  /** 状态副作用集中处理（ADR-003 / CM §5） */
+  /** 状态副作用集中处理（ADR-003 / CM §5）；TASK-28：LEVEL_UP/PAUSED 同时暂停角色动画 */
   private applyPhase(phase: GamePhase): void {
     switch (phase) {
       case GamePhase.LEVEL_UP:
       case GamePhase.PAUSED:
         this.physics.pause();
         this.tweens.pauseAll();
+        this.anims.pauseAll(); // TASK-28：动画随世界冻结
         this.inputSource.setEnabled(false); // 冻结移动输入 + 摇杆隐藏（CM M10）
         break;
       case GamePhase.RUNNING:
         this.physics.resume();
         this.tweens.resumeAll();
+        this.anims.resumeAll(); // TASK-28：恢复动画
         this.inputSource.setEnabled(true); // 恢复；移动向量归零由适配器处理（ux-spec §3 ②④）
         break;
       case GamePhase.GAMEOVER:
@@ -503,7 +553,7 @@ export class PlayScene extends Phaser.Scene {
     if (bullets > this.benchPeakBullets) this.benchPeakBullets = bullets;
   }
 
-  /** 60s 峰值压力结束：聚合断言数据 → window.__BENCH_RESULT__ */
+  /** 60s 峰值压力结束：聚合断言数据 → window.__BENCH_RESULT__（TASK-28：draw call 模型含 ambient/粒子组） */
   private finishBench(): void {
     const charactersActive =
       this.benchPeakEnemies +
@@ -511,9 +561,12 @@ export class PlayScene extends Phaser.Scene {
       (this.player.active ? 1 : 0) +
       this.weaponSystem.orbit.orbCount;
     const effectsActive = this.weaponSystem.shockwave.active ? 1 : 0;
+    // TASK-28：ambient 组（血月/渐晕/贴花）常驻 1；粒子发射器计 extra pass（活跃时 1）
+    const ambientActive = 1;
+    const particlePasses = this.fx.activeCount > 0 ? 1 : 0;
     const drawCallEstimate = estimateDrawCalls(
-      { characters: charactersActive, effects: effectsActive },
-      0, // 无粒子发射器（Demo 未接入 fx-manager，art-bible §7 粒子池为 P1）
+      { characters: charactersActive, effects: effectsActive, ambient: ambientActive },
+      particlePasses,
     );
     writeBenchResult({
       platform: this.cfg.isMobile ? 'mobile' : 'desktop',

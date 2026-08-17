@@ -81,10 +81,10 @@ export function runHeadlessBench(opts: { maxEnemies: number; platform: 'desktop'
   const simSeconds = SPAWNER.BOSS_TIME;
   const pileUp = simulateSpawnPileUp(opts.maxEnemies, simSeconds);
   const peakBullets = simulateMissiles();
-  // draw call 估算：程序图集 characters/effects + 背景；任意 n>0 即 1 批（estimateDrawCalls 按组计数）
+  // draw call 估算（TASK-28 口径）：背景 1 + characters 1 + effects 1 + ambient 1 + 粒子 extra 1 = 5
   const drawCallEstimate = estimateDrawCalls(
-    { characters: pileUp.peak + peakBullets + 7, effects: 1 },
-    0,
+    { characters: pileUp.peak + peakBullets + 7, effects: 1, ambient: 1 },
+    1,
   );
   return {
     platform: opts.platform,

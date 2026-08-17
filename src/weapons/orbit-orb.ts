@@ -54,6 +54,11 @@ export class OrbitWeapon {
     this.syncOrbVisibility();
   }
 
+  /** TASK-28：是否已解锁（环绕球轨道残影环显隐判定；未解锁 count=3 但不可见） */
+  get unlocked(): boolean {
+    return this.enabled;
+  }
+
   /** E3 升级接口：+1 颗（最多 6 颗，W8-3 / upgrade-pool 第 4 项） */
   addOrb(): void {
     this.count = Math.min(this.count + 1, WEAPONS.ORBIT.MAX_COUNT);

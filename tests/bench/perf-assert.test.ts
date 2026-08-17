@@ -88,10 +88,10 @@ describe('无头逻辑基准（20 分钟峰值模拟）', () => {
     expect(r.peakActiveEnemies).toBe(250);
   });
 
-  it('draw call 估算 ≤8（程序图集收敛：背景 1 + characters 1 + effects 1）', () => {
+  it('draw call 估算 ≤8（TASK-28 口径：背景 1 + characters 1 + effects 1 + ambient 1 + 粒子 1 = 5）', () => {
     const r = runHeadlessBench({ maxEnemies: DESKTOP_THRESHOLDS.maxEnemies, platform: 'desktop' });
     expect(r.drawCallEstimate).toBeLessThanOrEqual(8);
-    expect(r.drawCallEstimate).toBe(3);
+    expect(r.drawCallEstimate).toBe(5);
   });
 
   it('桌面/移动无头结果全部通过 assertBenchMetrics 预算断言', () => {

@@ -22,6 +22,12 @@ export interface RuntimeConfig {
   readonly particlePerDeath: number; // 死亡粒子：桌面 8–16 / 移动 8
   readonly designWidth: number; // 桌面 1920 / 移动 720
   readonly designHeight: number; // 桌面 1080 / 移动 1280
+  /** TASK-28 画面升级降级开关：拖尾/残影类（飞弹拖尾、环绕球残影、宝石磁吸拖尾）——移动端关闭 */
+  readonly fxTrails: boolean;
+  /** TASK-28 画面升级降级开关：环境氛围类（血月天幕、暗角渐晕、地面贴花）——静态精灵，双端保留 */
+  readonly fxAmbient: boolean;
+  /** TASK-28 画面升级降级开关：爆发粒子类（击杀溅射、宝石拾取、升级、Boss 出场）——稀有触发，池内软上限 */
+  readonly fxBursts: boolean;
 }
 
 export const DESKTOP_CONFIG: RuntimeConfig = Object.freeze({
@@ -36,6 +42,9 @@ export const DESKTOP_CONFIG: RuntimeConfig = Object.freeze({
   particlePerDeath: 12,
   designWidth: 1920,
   designHeight: 1080,
+  fxTrails: true,
+  fxAmbient: true,
+  fxBursts: true,
 });
 
 export const MOBILE_CONFIG: RuntimeConfig = Object.freeze({
@@ -50,6 +59,9 @@ export const MOBILE_CONFIG: RuntimeConfig = Object.freeze({
   particlePerDeath: 8,
   designWidth: 720,
   designHeight: 1280,
+  fxTrails: false,
+  fxAmbient: true,
+  fxBursts: true,
 });
 
 export function getRuntimeConfig(isMobile: boolean): RuntimeConfig {

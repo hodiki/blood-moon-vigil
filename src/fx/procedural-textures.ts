@@ -1,33 +1,38 @@
 /**
- * fx/procedural-textures.ts —— 程序生成贴图 v2（资产审计升级版）
+ * fx/procedural-textures.ts —— 程序生成贴图 v3（资产审计升级 + TASK-28 美术表现力专项）
  *
- * 版本：v2（TASK-22 资产审计 + 替换 · Phase 6 并行线 B）
- * 升级要点（保持「帧名 = 契约」：全部 frame key 与 v1 一致，实体代码零感知切换）：
- * - 玩家：圆 → 圆帽披风剪影（月银白 + 冷青 2px 烘焙描边）
- * - 敌人：3 圆 → 骷髅头 / 尖牙鼠形 / 双角精英头饰 剪影（art-bible §3 剪影区分）
- * - Boss：圆 + 双角 → 猩红金王冠披风剪影（猩红主体 + 金饰 + 瞳孔危险编码）
- * - 地形：单色石板 → 石板/草地双材质（art-bible §5：tile 64×64，明度 12–18%）
- * - 弹体/宝石/冲击波：短条/单菱/单环 → 箭头弹体 / 白描边蓝菱 / 双层扩散环
+ * 版本：v3（TASK-22 剪影 v2 基础上的画面表现力升级 · Phase 6 穿插）
+ * 保持「帧名 = 契约」：全部 v1/v2 帧 key 不变，实体代码零感知切换；v3 只做「加法」：
+ * - 角色动画：5 实体（玩家/3 敌/Boss）各 +1 变体帧（`*-v`，pose=1），idle 慢速 / 移动快速两帧循环共用；
+ *   characters 图集 256×256 → 512×256（变体帧放入同一图集 → 动画换帧不产生额外贴图批次）。
+ * - 环境氛围：新增 'fx-ambient' 图集（512×256，LINEAR 过滤保证渐晕/光晕平滑）：
+ *   血月天幕 moon + 粒子形状（白底可 tint：circle/square/streak/diamond/ring）+ 暗角渐晕 vignette。
+ *   全部收敛为 1 个图集 = 1 组批次（设计口径计入 ambient 组）。
+ * - 宝石光晕：effects 图集 gem 帧 12×12 → 20×20（烘焙多层冷青光晕，0 额外 draw call；GEM.BODY_SIZE 逻辑值不变）。
+ * - 地面贴花：effects 图集新增 decal-rock / decal-grass / decal-blood 三帧（16×16），
+ *   随 effects 组批次（不新增贴图），由 MapSystem 确定性散布。
  *
- * E4-S5 draw call 治理口径不变：收敛为「两组程序图集」+ 背景 2 张：
- * - 'characters' 图集：玩家 / 3 普通敌 / Boss / 飞弹 / 环绕球（1 批）
- * - 'effects' 图集：冲击波环 / 经验宝石 / 摇杆底座 / 摇杆拇指（1 批）
- * - 'tile-ground' / 'tile-grass'：地图背景（2 批，背景合批无压力）
- * Boss 描边纪律（RV-C1）：普通敌纯剪影无描边；Boss 允许描边（猩红 4px），且仅
+ * E4-S5 draw call 治理口径（TASK-28 更新）：
+ * - 'characters' 图集：玩家 / 3 普通敌 / Boss / 飞弹 / 环绕球 / 动画变体帧（1 批）
+ * - 'effects' 图集：冲击波环 / 经验宝石 / 摇杆底座 / 摇杆拇指 / 贴花 ×3（1 批）
+ * - 'tile-ground' / 'tile-grass' / 'blocker'：地图背景（设计口径并入 background 1）
+ * - 'fx-ambient'：血月 + 粒子 + 渐晕（1 批；设计口径 ambient 1，粒子计 extra pass 1）
+ * 设计口径合计 ≤ 8（背景 1 + characters 1 + effects 1 + ambient 1 + 粒子 1 = 5），硬预算保持。
+ * Boss 描边纪律（RV-C1）不变：普通敌纯剪影无描边；Boss 允许描边（猩红 4px），且仅
  * `cfg.outlineEnabled`（桌面 true）时烘焙进贴图 —— 移动端 outlineEnabled=false 不描边。
- * 烘焙描边不产生 FX pass（0 额外 draw call），与既有玩家贴图烘焙冷青描边同约定。
- * 图集 ≤2048²（实约 256²/256²），`premultipliedAlpha=false`（createCanvas 默认），保持程序图集优势。
+ * 图集 ≤2048²（实约 512²/256²），`premultipliedAlpha=false`（createCanvas 默认），保持程序图集优势。
  */
 
 import Phaser from 'phaser';
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { TILE, PALETTE, GEM, BOSS, JOYSTICK } from '@/config/balance';
-import { mulberry32 } from '@/utils/math';
+import { mulberry32, hexToRgba } from '@/utils/math';
 
 type Ctx = CanvasRenderingContext2D;
 
 const INK = '#0B0E14'; // 剪影内部镂空/瞳孔深色（= art-bible 基底色，镂空不引入新色板）
 const PAPER = '#F2F5F9'; // 纸白（牙齿/高光细节）
+const WHITE = '#FFFFFF'; // 粒子形状基色（运行时 tint 染色，白色 × tint = 任意色）
 
 function fillCircle(ctx: Ctx, cx: number, cy: number, r: number, color: string, alpha = 1): void {
   ctx.globalAlpha = alpha;
@@ -82,18 +87,34 @@ function drawSilhouette(
 
 /**
  * 玩家·守夜人：圆帽 + 披风剪影（art-bible §3 玩家 = 圆帽披风；§4 月银白 + 冷青 2px 常亮描边）。
+ * pose=0 基准（与 v2 逐像素一致）；pose=1 变体：帽冠上移 1px + 披风外扩下摆（呼吸/移动摆动帧）。
  * 中心 (0,0)，范围约 x[-12,12] y[-14,13]（放大 1.12 后仍在 32×32 帧内）。
  */
-function playerShape(ctx: Ctx): void {
+function playerShape(ctx: Ctx, pose = 0): void {
   ctx.fillStyle = PALETTE.player;
-  // 帽冠（上半圆）
+  // 帽冠（上半圆；变体上移 1px = 呼吸上浮）
   ctx.beginPath();
-  ctx.arc(0, -6, 8, Math.PI, 0);
+  ctx.arc(0, pose === 1 ? -7 : -6, 8, Math.PI, 0);
   ctx.closePath();
   ctx.fill();
   // 帽檐
   ctx.fillRect(-11, -8, 22, 3);
-  // 披风：钟形 + 底部开衩（剪影感，便于 3 秒内读型）
+  // 披风：钟形 + 底部开衩（变体外扩 + 下摆下移 = 摆动/奔跑）
+  if (pose === 1) {
+    ctx.beginPath();
+    ctx.moveTo(-9, -6);
+    ctx.lineTo(9, -6);
+    ctx.lineTo(13, 14);
+    ctx.lineTo(8, 14);
+    ctx.lineTo(5, 7);
+    ctx.lineTo(0, 14);
+    ctx.lineTo(-5, 7);
+    ctx.lineTo(-8, 14);
+    ctx.lineTo(-13, 14);
+    ctx.closePath();
+    ctx.fill();
+    return;
+  }
   ctx.beginPath();
   ctx.moveTo(-8, -5);
   ctx.lineTo(8, -5);
@@ -108,12 +129,13 @@ function playerShape(ctx: Ctx): void {
   ctx.fill();
 }
 
-/** 敌人·行尸（zombie）：骷髅头剪影（art-bible §3 普通敌 = 骷髅头），暗血红纯剪影 */
-function zombieShape(ctx: Ctx): void {
+/** 敌人·行尸（zombie）：骷髅头剪影（art-bible §3 普通敌 = 骷髅头），暗血红纯剪影。
+ *  pose=1 变体：颅骨收窄 + 下颚张开（饥饿啃咬帧）。 */
+function zombieShape(ctx: Ctx, pose = 0): void {
   ctx.fillStyle = PALETTE.enemyZombie;
-  // 颅骨（椭圆略宽）
+  // 颅骨（椭圆略宽；变体收窄）
   ctx.beginPath();
-  ctx.ellipse(0, -1, 10, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -1, pose === 1 ? 9.2 : 10, 12, 0, 0, Math.PI * 2);
   ctx.fill();
   // 眼窝（深色镂空）
   fillCircle(ctx, -4.5, -4, 2.8, INK);
@@ -126,19 +148,20 @@ function zombieShape(ctx: Ctx): void {
   ctx.lineTo(1.6, 3);
   ctx.closePath();
   ctx.fill();
-  // 牙口：深色横条 + 纸白牙齿（危险编码下仍可辨）
+  // 牙口：深色横条 + 纸白牙齿（变体下颚张开 = 牙口加深、牙齿下移）
   ctx.fillStyle = INK;
-  ctx.fillRect(-7, 6, 14, 4);
+  ctx.fillRect(-7, pose === 1 ? 6 : 6, 14, pose === 1 ? 5 : 4);
   ctx.fillStyle = PAPER;
-  for (let i = -2; i <= 2; i += 1) ctx.fillRect(i * 2.6 - 1.2, 6.4, 2.4, 3.4);
+  for (let i = -2; i <= 2; i += 1) ctx.fillRect(i * 2.6 - 1.2, pose === 1 ? 7 : 6.4, 2.4, pose === 1 ? 3.8 : 3.4);
 }
 
-/** 敌人·血犬（wolf）：尖牙鼠形剪影（art-bible §3 普通敌 = 尖牙鼠形；更小更快，横向流线奔跑感） */
-function wolfShape(ctx: Ctx): void {
-  // 身体（横长流线）
+/** 敌人·血犬（wolf）：尖牙鼠形剪影（art-bible §3 普通敌 = 尖牙鼠形；更小更快，横向流线奔跑感）。
+ *  pose=1 变体：躯干拉长 + 四足收拢（奔跑帧）。 */
+function wolfShape(ctx: Ctx, pose = 0): void {
+  // 身体（横长流线；变体拉长）
   ctx.fillStyle = PALETTE.enemyWolf;
   ctx.beginPath();
-  ctx.ellipse(1, -1, 6.5, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(pose === 1 ? 2 : 1, -1, pose === 1 ? 7.5 : 6.5, 4, 0, 0, Math.PI * 2);
   ctx.fill();
   // 头部圆 + 吻部尖出（朝右）
   ctx.beginPath();
@@ -170,6 +193,12 @@ function wolfShape(ctx: Ctx): void {
   ctx.lineTo(-5.5, 1.2);
   ctx.closePath();
   ctx.fill();
+  // 四足（变体奔跑帧：前后腿收拢成奔跑剪影）
+  if (pose === 1) {
+    ctx.fillRect(-5, 2.4, 2, 3);
+    ctx.fillRect(1, 2.6, 2, 2.8);
+    ctx.fillRect(4.5, 2.2, 2, 3);
+  }
   // 吻下尖牙（纸白）
   ctx.fillStyle = PAPER;
   ctx.beginPath();
@@ -182,27 +211,28 @@ function wolfShape(ctx: Ctx): void {
   fillCircle(ctx, 8, -2.6, 1.1, INK);
 }
 
-/** 敌人·屠夫（tank）：双角精英头饰剪影（art-bible §4 精英 = 更高更宽 + 双角头饰），幽紫纯剪影 */
-function tankShape(ctx: Ctx): void {
+/** 敌人·屠夫（tank）：双角精英头饰剪影（art-bible §4 精英 = 更高更宽 + 双角头饰），幽紫纯剪影。
+ *  pose=1 变体：肩部外扩 + 双角外倾（蓄力帧）。 */
+function tankShape(ctx: Ctx, pose = 0): void {
   ctx.fillStyle = PALETTE.enemyTank;
-  // 宽大体型（倒梯形，肩宽 → 底更宽）
+  // 宽大体型（倒梯形，肩宽 → 底更宽；变体肩更宽）
   ctx.beginPath();
-  ctx.moveTo(-14, -10);
-  ctx.lineTo(14, -10);
-  ctx.lineTo(18, 12);
-  ctx.lineTo(-18, 12);
+  ctx.moveTo(pose === 1 ? -15 : -14, -10);
+  ctx.lineTo(pose === 1 ? 15 : 14, -10);
+  ctx.lineTo(pose === 1 ? 19 : 18, 12);
+  ctx.lineTo(pose === 1 ? -19 : -18, 12);
   ctx.closePath();
   ctx.fill();
-  // 双角头饰（形状编码，色盲可辨）
+  // 双角头饰（形状编码，色盲可辨；变体外倾）
   ctx.beginPath();
   ctx.moveTo(-12, -10);
-  ctx.lineTo(-7, -22);
+  ctx.lineTo(pose === 1 ? -9 : -7, pose === 1 ? -24 : -22);
   ctx.lineTo(-2, -10);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
   ctx.moveTo(2, -10);
-  ctx.lineTo(7, -22);
+  ctx.lineTo(pose === 1 ? 9 : 7, pose === 1 ? -24 : -22);
   ctx.lineTo(12, -10);
   ctx.closePath();
   ctx.fill();
@@ -213,29 +243,33 @@ function tankShape(ctx: Ctx): void {
 
 /**
  * Boss·血月尊者：猩红金剪影（art-bible §4：猩红主体 + 金饰，独有剪影）。
- * 中心 (0,0)，范围约 x[-58,58] y[-62,44]（放大 1.05 后仍在 120×120 帧内）。
+ * pose=1 变体：披风外扩 + 侧翼张开（披风摆动帧）。
+ * 中心 (0,0)，范围约 x[-56,56] y[-60,44]（C-1：侧翼/披风收至 56，放大 1.05 后最外点 ≈58.8，
+ * 即 60+58.8=118.8 < 120px 帧界 ✔）。
  */
-function bossShape(ctx: Ctx): void {
-  // 披风主体（倒梯形）
+function bossShape(ctx: Ctx, pose = 0): void {
+  // 披风主体（倒梯形；变体外扩）
+  const w = pose === 1 ? 48 : 42;
+  const f = pose === 1 ? 56 : 52;
   ctx.fillStyle = BOSS.COLOR_MAIN;
   ctx.beginPath();
-  ctx.moveTo(-42, -22);
-  ctx.lineTo(42, -22);
-  ctx.lineTo(52, 44);
-  ctx.lineTo(-52, 44);
+  ctx.moveTo(-w, -22);
+  ctx.lineTo(w, -22);
+  ctx.lineTo(f, 44);
+  ctx.lineTo(-f, 44);
   ctx.closePath();
   ctx.fill();
-  // 侧翼披风（两侧三角）
+  // 侧翼披风（两侧三角；变体更张开）
   ctx.beginPath();
-  ctx.moveTo(-42, -14);
-  ctx.lineTo(-58, 34);
-  ctx.lineTo(-30, 26);
+  ctx.moveTo(-w, -14);
+  ctx.lineTo(pose === 1 ? -56 : -52, 34);
+  ctx.lineTo(pose === 1 ? -36 : -30, 26);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(42, -14);
-  ctx.lineTo(58, 34);
-  ctx.lineTo(30, 26);
+  ctx.moveTo(w, -14);
+  ctx.lineTo(pose === 1 ? 56 : 52, 34);
+  ctx.lineTo(pose === 1 ? 36 : 30, 26);
   ctx.closePath();
   ctx.fill();
   // 兜帽/头（中央大圆）
@@ -253,7 +287,7 @@ function bossShape(ctx: Ctx): void {
   ctx.moveTo(-18, -42);
   ctx.lineTo(-12, -60);
   ctx.lineTo(-2, -46);
-  ctx.lineTo(0, -62);
+  ctx.lineTo(0, -54);
   ctx.lineTo(2, -46);
   ctx.lineTo(12, -60);
   ctx.lineTo(18, -42);
@@ -283,6 +317,7 @@ export function createProceduralTextures(scene: Phaser.Scene, cfg: RuntimeConfig
   createBlockerTile(scene);
   createCharactersAtlas(scene, cfg);
   createEffectsAtlas(scene);
+  createAmbientAtlas(scene);
 }
 
 /** 背景地砖·石板：暗紫灰 + 3×3 石缝 + 确定性石斑（art-bible §5 石板材质） */
@@ -381,10 +416,10 @@ function createBlockerTile(scene: Phaser.Scene): void {
   canvas.refresh();
 }
 
-/** characters 图集 v2：玩家 / 僵尸 / 疾行 / 厚血 / Boss / 飞弹 / 环绕球（1 批） */
+/** characters 图集 v3：玩家 / 僵尸 / 疾行 / 厚血 / Boss / 飞弹 / 环绕球 + 5 变体帧（1 批，512×256） */
 function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   if (scene.textures.exists('characters')) return;
-  const W = 256;
+  const W = 512;
   const H = 256;
   const canvas = scene.textures.createCanvas('characters', W, H);
   if (!canvas) return;
@@ -393,27 +428,27 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   // 玩家：圆帽披风，冷青 2px 烘焙描边（art-bible §4，帧 32×32 @ (0,0)）
   ctx.save();
   ctx.translate(16, 16);
-  drawSilhouette(ctx, playerShape, PALETTE.playerAccent, 1.12);
+  drawSilhouette(ctx, (g) => playerShape(g, 0), PALETTE.playerAccent, 1.12);
   ctx.restore();
 
   // 普通 3 敌：纯剪影无描边（RV-C1 / art-bible §4 普通敌靠剪影）
   ctx.save();
   ctx.translate(40 + 14, 14); // 帧 28×28 @ (40,0)
-  zombieShape(ctx);
+  zombieShape(ctx, 0);
   ctx.restore();
   ctx.save();
   ctx.translate(72 + 12, 12); // 帧 24×24 @ (72,0)
-  wolfShape(ctx);
+  wolfShape(ctx, 0);
   ctx.restore();
   ctx.save();
   ctx.translate(100 + 24, 24); // 帧 48×48 @ (100,0)
-  tankShape(ctx);
+  tankShape(ctx, 0);
   ctx.restore();
 
   // Boss：猩红金剪影 @ (0,56)，120×120；桌面烘焙猩红 4px 描边（outlineEnabled=true）
   ctx.save();
   ctx.translate(60, 56 + 60);
-  drawSilhouette(ctx, bossShape, cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
+  drawSilhouette(ctx, (g) => bossShape(g, 0), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
   ctx.restore();
 
   // 飞弹：月银白箭头弹体 + 冷青尾焰（帧 16×12 @ (156,0)，朝向 0rad 右）
@@ -444,9 +479,36 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   fillCircle(ctx, -3, -3, 2.5, PAPER, 0.7);
   ctx.restore();
 
+  // —— TASK-28 动画变体帧（pose=1，与基准帧同图集 → 换帧不产生新批次）——
+  // 玩家变体 @ (120,56) 32×32
+  ctx.save();
+  ctx.translate(120 + 16, 56 + 16);
+  drawSilhouette(ctx, (g) => playerShape(g, 1), PALETTE.playerAccent, 1.12);
+  ctx.restore();
+  // 僵尸变体 @ (120,88) 28×28
+  ctx.save();
+  ctx.translate(120 + 14, 88 + 14);
+  zombieShape(ctx, 1);
+  ctx.restore();
+  // 疾行变体 @ (120,116) 24×24
+  ctx.save();
+  ctx.translate(120 + 12, 116 + 12);
+  wolfShape(ctx, 1);
+  ctx.restore();
+  // 厚血变体 @ (120,188) 48×48
+  ctx.save();
+  ctx.translate(120 + 24, 188 + 24);
+  tankShape(ctx, 1);
+  ctx.restore();
+  // Boss 变体 @ (160,56) 120×120（与玩家/僵尸/疾行变体无重叠，见注释布局）
+  ctx.save();
+  ctx.translate(160 + 60, 56 + 60);
+  drawSilhouette(ctx, (g) => bossShape(g, 1), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
+  ctx.restore();
+
   canvas.refresh();
 
-  // 注册帧（frame 名与既有 texture key 一一对应，实体代码零感知切换）
+  // 注册帧（frame 名与既有 texture key 一一对应，实体代码零感知切换；新增 `*-v` 变体帧）
   const tex = scene.textures.get('characters');
   tex.add('player', 0, 0, 0, 32, 32);
   tex.add('enemy-zombie', 0, 40, 0, 28, 28);
@@ -455,9 +517,14 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   tex.add('enemy-boss', 0, 0, 56, BOSS.TEXTURE_SIZE, BOSS.TEXTURE_SIZE);
   tex.add('missile', 0, 156, 0, 16, 12);
   tex.add('orb', 0, 176, 0, 20, 20);
+  tex.add('player-v', 0, 120, 56, 32, 32);
+  tex.add('enemy-zombie-v', 0, 120, 88, 28, 28);
+  tex.add('enemy-wolf-v', 0, 120, 116, 24, 24);
+  tex.add('enemy-tank-v', 0, 120, 188, 48, 48);
+  tex.add('enemy-boss-v', 0, 160, 56, BOSS.TEXTURE_SIZE, BOSS.TEXTURE_SIZE);
 }
 
-/** effects 图集：冲击波环 / 经验宝石 / 摇杆底座 / 摇杆拇指（1 批） */
+/** effects 图集 v3：冲击波环 / 经验宝石（烘焙光晕）/ 摇杆 / 贴花 ×3（1 批） */
 function createEffectsAtlas(scene: Phaser.Scene): void {
   if (scene.textures.exists('effects')) return;
   const W = 256;
@@ -471,15 +538,21 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
   strokeCircle(ctx, 16, 16, 10, PALETTE.shockwave, 2, 0.45);
   fillCircle(ctx, 16, 16, 3, PALETTE.shockwave, 0.5);
 
-  // 经验宝石：蓝菱 + 纸白 1px 描边（art-bible §5 拾取物统一白描边）
-  fillDiamond(ctx, 40 + 6, 6, 5.5, GEM.COLOR);
+  // 经验宝石：蓝菱 + 纸白 1px 描边 + 烘焙多层冷青光晕（TASK-28 v3：帧 20×20，0 额外 draw call；
+  // GEM.BODY_SIZE=12 为逻辑体尺寸不变，帧扩大仅为光晕留空间）
+  const gx = 40 + 10;
+  const gy = 10;
+  for (let i = 5; i >= 1; i -= 1) {
+    fillCircle(ctx, gx, gy, 8 + i * 1.6, GEM.COLOR, 0.07);
+  }
+  fillDiamond(ctx, gx, gy, 5.5, GEM.COLOR);
   ctx.strokeStyle = PAPER;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(46, 0.5);
-  ctx.lineTo(51.5, 6);
-  ctx.lineTo(46, 11.5);
-  ctx.lineTo(40.5, 6);
+  ctx.moveTo(gx, gy - 5.5);
+  ctx.lineTo(gx + 5.5, gy);
+  ctx.lineTo(gx, gy + 5.5);
+  ctx.lineTo(gx - 5.5, gy);
   ctx.closePath();
   ctx.stroke();
 
@@ -490,11 +563,129 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
   // 摇杆拇指：冷青实心圆 44px
   fillCircle(ctx, 164 + 22, 22, 22, PALETTE.playerAccent, 0.9);
 
+  // —— TASK-28 地面贴花帧（16×16 @ y=96，随 effects 组批次）——
+  // 碎石：灰蓝小石块 + 高光点
+  ctx.fillStyle = hexToRgba(PALETTE.blocker, 0.85);
+  ctx.beginPath();
+  ctx.ellipse(5, 10, 3.4, 2.6, 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(11, 9, 2.4, 1.8, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = hexToRgba(WHITE, 0.18);
+  ctx.fillRect(4, 8.4, 2, 1);
+  // 草叶簇：三根暗绿短叶
+  ctx.strokeStyle = PALETTE.grassBlade;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(7, 14); ctx.lineTo(5, 8);
+  ctx.moveTo(8, 14); ctx.lineTo(9, 7);
+  ctx.moveTo(10, 14); ctx.lineTo(12, 9);
+  ctx.stroke();
+  // 血迹：暗红不规则斑（低透明）
+  ctx.fillStyle = hexToRgba(PALETTE.enemyZombie, 0.5);
+  ctx.beginPath();
+  ctx.ellipse(8, 8, 5.5, 4, 0.6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(6, 11, 3, 1.6, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+
   canvas.refresh();
 
   const tex = scene.textures.get('effects');
   tex.add('shockwave', 0, 0, 0, 32, 32);
-  tex.add('gem', 0, 40, 0, GEM.BODY_SIZE, GEM.BODY_SIZE);
+  tex.add('gem', 0, 40, 0, 20, 20); // v3：12×12 → 20×20（光晕留白）
   tex.add('joystick-base', 0, 60, 0, JOYSTICK.RADIUS * 2, JOYSTICK.RADIUS * 2);
   tex.add('joystick-thumb', 0, 164, 0, 44, 44);
+  tex.add('decal-rock', 0, 0, 96, 16, 16);
+  tex.add('decal-grass', 0, 16, 96, 16, 16);
+  tex.add('decal-blood', 0, 32, 96, 16, 16);
+}
+
+/**
+ * 环境氛围图集 v3（TASK-28）：血月天幕 / 粒子形状 / 暗角渐晕 —— 收敛为 1 个图集 = 1 组批次。
+ * 512×256 布局：
+ * - moon 128×128 @ (0,0)：暗红血月盘 + 冷青光晕
+ * - 粒子形状 @ (128,0)：p-circle 8 / p-square 8 / p-streak 12×4 / p-diamond 8 / p-ring 48（白底，运行时 tint）
+ * - vignette 256×256 @ (256,0)：径向暗角渐变（透明中心 → 基底色 55% 边缘）
+ * 整图集 LINEAR 过滤（渐晕/光晕放大平滑；粒子轻微柔化无碍剪影风格）。
+ */
+function createAmbientAtlas(scene: Phaser.Scene): void {
+  if (scene.textures.exists('fx-ambient')) return;
+  const W = 512;
+  const H = 256;
+  const canvas = scene.textures.createCanvas('fx-ambient', W, H);
+  if (!canvas) return;
+  const ctx = canvas.getContext();
+
+  drawBloodMoon(ctx, 64, 64);
+  drawParticleShapes(ctx, 128, 0);
+  drawVignette(ctx, 256, 0);
+
+  canvas.refresh();
+  scene.textures.get('fx-ambient').setFilter(Phaser.Textures.FilterMode.LINEAR);
+
+  const tex = scene.textures.get('fx-ambient');
+  tex.add('moon', 0, 0, 0, 128, 128);
+  tex.add('p-circle', 0, 128, 0, 8, 8);
+  tex.add('p-square', 0, 136, 0, 8, 8);
+  tex.add('p-streak', 0, 144, 0, 12, 4);
+  tex.add('p-diamond', 0, 156, 0, 8, 8);
+  tex.add('p-ring', 0, 164, 0, 48, 48);
+  tex.add('vignette', 0, 256, 0, 256, 256);
+}
+
+/** 血月天幕：冷青光晕 + 暗红月盘 + 环形高光 + 陨坑（色值全部取 PALETTE/BOSS token） */
+function drawBloodMoon(ctx: Ctx, cx: number, cy: number): void {
+  // 冷青光晕（多层径向渐变，柔和扩散）
+  for (let i = 4; i >= 1; i -= 1) {
+    const g = ctx.createRadialGradient(cx, cy, 4, cx, cy, 14 + i * 12);
+    g.addColorStop(0, hexToRgba(PALETTE.playerAccent, 0.1));
+    g.addColorStop(1, hexToRgba(PALETTE.playerAccent, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - 62, cy - 62, 124, 124);
+  }
+  // 月盘：暗红基底（enemyZombie 暗血红 = art-bible「暗红血月」）
+  fillCircle(ctx, cx, cy, 26, PALETTE.enemyZombie);
+  // 盘面血色高光（危险红渐变，右上偏亮）
+  const face = ctx.createRadialGradient(cx - 6, cy - 8, 2, cx, cy, 26);
+  face.addColorStop(0, hexToRgba(PALETTE.danger, 0.75));
+  face.addColorStop(0.6, hexToRgba(PALETTE.danger, 0.25));
+  face.addColorStop(1, hexToRgba(PALETTE.danger, 0));
+  ctx.fillStyle = face;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+  ctx.fill();
+  // 环形血月边缘（危险红）
+  strokeCircle(ctx, cx, cy, 25, PALETTE.danger, 2, 0.45);
+  // 陨坑（基底色镂空）
+  const rng = mulberry32(20260829);
+  for (let i = 0; i < 6; i += 1) {
+    const a = rng() * Math.PI * 2;
+    const r = 6 + rng() * 15;
+    fillCircle(ctx, cx + Math.cos(a) * r, cy + Math.sin(a) * r, 1.6 + rng() * 1.8, PALETTE.base, 0.5);
+  }
+}
+
+/** 粒子形状（白底，运行时 setTint 染色；p-ring 为轨道残影环，运行时 tint 冷青） */
+function drawParticleShapes(ctx: Ctx, ox: number, oy: number): void {
+  fillCircle(ctx, ox + 4, oy + 4, 4, WHITE); // p-circle
+  ctx.fillStyle = WHITE; // p-square
+  ctx.fillRect(ox + 8, oy, 8, 8);
+  ctx.fillStyle = WHITE; // p-streak（横长，运动方向用 setAngle 对齐）
+  ctx.fillRect(ox + 16, oy, 12, 4);
+  fillDiamond(ctx, ox + 20, oy + 4, 4, WHITE); // p-diamond
+  strokeCircle(ctx, ox + 40, oy + 24, 22, WHITE, 3, 1); // p-ring（48×48，环半径 22）
+}
+
+/** 暗角渐晕：径向渐变（透明中心 → 基底色 55% 边缘，art-bible §5「压暗 20%」） */
+function drawVignette(ctx: Ctx, ox: number, oy: number): void {
+  const size = 256;
+  const g = ctx.createRadialGradient(ox + size / 2, oy + size / 2, size * 0.22, ox + size / 2, oy + size / 2, size * 0.72);
+  g.addColorStop(0, hexToRgba(PALETTE.base, 0));
+  g.addColorStop(0.65, hexToRgba(PALETTE.base, 0.22));
+  g.addColorStop(1, hexToRgba(PALETTE.base, 0.55));
+  ctx.fillStyle = g;
+  ctx.fillRect(ox, oy, size, size);
 }
