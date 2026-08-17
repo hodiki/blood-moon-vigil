@@ -1,0 +1,28 @@
+{
+  "name": "blood-moon-vigil",
+  "private": true,
+  "version": "0.1.0",
+  "description": "《血月守夜》vampire-survivors-like · Phaser 3 + TypeScript · 桌面+移动双端",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "bench": "vite-node tests/bench/bench-run.ts",
+    "bench:browser": "vite-node tests/bench/bench-run.ts --browser --strict-fps"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^22.10.5",
+    "playwright": "^1.62.1",
+    "typescript": "~5.9.3",
+    "vite": "^6.4.3",
+    "vitest": "^3.2.7"
+  }
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 移动端 viewport：禁用缩放 + 刘海屏安全区（ARCH §1.1 / art-bible §8） -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0B0E14" />
+    <title>血月守夜 · Blood Moon Vigil</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #0b0e14; /* 墨夜蓝黑，禁纯黑（art-bible §2） */
+        overflow: hidden;
+        touch-action: none; /* 防移动端手势误触（升级/摇杆，upgrade-pool §7） */
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #game-root {
+        position: relative;
+        width: 100vw;
+        width: 100dvw; /* 动态视口宽（移动端 URL 栏显隐 / 横竖屏切换时跟随，TASK-21 Bug2） */
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      /* ADR-004：DOM 覆盖层（HUD/升级卡/结算），RUNNING 态 pointer-events:none 放行给 canvas */
+      #ui-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-root">
+      <div id="ui-overlay"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
