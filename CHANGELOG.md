@@ -31,6 +31,11 @@
   - **token 统一来源纪律**：模板内颜色一律 `{{token}}` 占位符，`ICON_COLORS` 全量派生自 balance.ts PALETTE / BOSS / GEM token（含新增 `PALETTE.uiPaper` 纸白），零散落字面量；同页多图标共存时 clipPath id 按 key 唯一化防 url 串扰。
   - DOM 覆盖层（levelup-overlay / hud）消费 `renderIconSvg()` 替换原 CSS 圆点占位；武器槽未解锁态降饱和变暗（区分解锁/锁定）；DOM 布局沿用 ux-spec §2/§3（升级桌面 128/移动 72、武器桌面 48/移动 44）。
   - 新增 9 项单测（tests/unit/ui/icons.test.ts：15 项 key 覆盖、类型分型、SVG 合法、token 解析、clipPath 唯一化、底色分型）；全量 303 单测（37 文件）。
+- **TASK-36 剪影 v3 + 武器特效 P0 + 池契约修复**（src/fx/procedural-textures.ts + src/fx/fx-manager.ts + src/config/balance.ts 等 11 文件）：
+  - **剪影 v3 P0**（按 silhouette-v2-spec）：玩家冷青提灯 + 帽带 + 三边开衩长袍；行尸颅骨裂纹 + 眉骨高光；血犬背脊棘刺 + 血口涎滴；屠夫屠刀（刃光纸白）+ 围裙带；Boss 冠上血月宝石 + 仪式权杖（杖首红宝石）。全部逐项过帧边界校验（Boss 放大 1.05 层 ≤120、屠刀刃光 x=22.5 ≤24、玩家开衩 ×1.12 ≤16）；帧名契约不变、色值全 token 来源、描边纪律不变。
+  - **武器特效 P0**（按 weapon-fx-v2-spec，参数全收敛 `FX` 常量）：飞弹拖尾点→p-streak 彗尾（TRAIL_INTERVAL 90→70ms）+ 发射喷涌 + 命中冷青冲击环；环绕球自留尾迹 + 双层轨道环（外环 alpha 0.26/24°/s + 内环 0.12 反向 -12°/s）+ 命中火花节流 200ms；冲击波涟漪 18→36 加密提速（speed 90/size 4，移动端 24 降档）+ 最大半径白闪环 + 蓄力 2s 脉冲提示。+0 新增贴图批次（复用 fx-ambient p-ring/p-streak/p-circle），预算不变。
+  - **池契约修复**（TASK-34 遗留建议）：`Enemy` 构造器 + `enemy-spawner` 的 `acquire` 显式传 `'characters'` + 帧名，与 XpGem/Boss/Missile 契约对齐，消除每次 spawn 的 `__MISSING enemy-zombie` 警告。
+  - 新增 6 项单测（tests/unit/fx/fx-spec.test.ts：paper token 别名、拖尾帧、命中≤10、涟漪 36/24、白闪/蓄力、双层环常量）；全量 309 单测（37 文件）。
 
 ### Changed
 

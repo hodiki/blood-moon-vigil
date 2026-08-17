@@ -30,6 +30,11 @@ export interface FxPosLike {
   y: number;
 }
 
+/** 环绕球尾迹源（OrbitWeapon 结构性满足：遍历可见球体位置） */
+export interface OrbitTrailSource {
+  eachOrbPosition(fn: (x: number, y: number) => void): void;
+}
+
 /** 粒子实体（Image + 运动字段；字段挂在对象上避免每帧 Map 查找） */
 interface Particle extends Phaser.GameObjects.Image {
   vx: number;
@@ -46,12 +51,22 @@ export class FxManager {
   private readonly cfg: RuntimeConfig;
   private readonly particles: Particle[] = [];
   private readonly orbitRing: Phaser.GameObjects.Image;
+  /** TASK-36 双层轨道环：内环（细暗反向慢旋，同 fx-ambient 批次 +0 draw call） */
+  private readonly orbitRingSecondary: Phaser.GameObjects.Image;
+  /** TASK-36 蓄力脉冲提示环（冲击波最后 2s 呼吸；随 fxTrails 开关） */
+  private readonly chargePulse: Phaser.GameObjects.Image;
   private readonly moon: Phaser.GameObjects.Image;
   private readonly vignette: Phaser.GameObjects.Image;
   /** 飞弹拖尾节流累计（ms） */
   private trailAccum = 0;
   /** 宝石磁吸拖尾节流累计（ms） */
   private gemTrailAccum = 0;
+  /** TASK-36 环绕球尾迹节流累计（ms） */
+  private orbitTrailAccum = 0;
+  /** TASK-36 环绕球命中火花全局节流截止（秒时间戳） */
+  private orbitHitThrottleUntil = 0;
+  /** TASK-36 蓄力脉冲呼吸相位（rad） */
+  private chargePulsePhase = 0;
 
   constructor(scene: Phaser.Scene, cfg: RuntimeConfig) {
     this.cfg = cfg;
@@ -74,6 +89,25 @@ export class FxManager {
       .setAlpha(FX.ORBIT_RING_ALPHA)
       .setDisplaySize(WEAPONS.ORBIT.RADIUS * 2, WEAPONS.ORBIT.RADIUS * 2)
       .setTint(hexToRgbInt(FX_COLORS.trail))
+      .setVisible(false);
+    // TASK-36 双层轨道环内环：半径 RADIUS-12、alpha 0.12、反向 -12°/s（同批次 +0 draw call）
+    this.orbitRingSecondary = scene.add
+      .image(0, 0, 'fx-ambient', 'p-ring')
+      .setDepth(88)
+      .setAlpha(FX.ORBIT_RING_SECONDARY_ALPHA)
+      .setDisplaySize(
+        (WEAPONS.ORBIT.RADIUS - FX.ORBIT_RING_SECONDARY_OFFSET) * 2,
+        (WEAPONS.ORBIT.RADIUS - FX.ORBIT_RING_SECONDARY_OFFSET) * 2,
+      )
+      .setTint(hexToRgbInt(FX_COLORS.trail))
+      .setVisible(false);
+    // TASK-36 蓄力脉冲提示环：冲击波最后 2s 呼吸（低透明，非持续闪烁源）
+    this.chargePulse = scene.add
+      .image(0, 0, 'fx-ambient', 'p-ring')
+      .setDepth(88)
+      .setAlpha(FX.SHOCKWAVE_CHARGE_PULSE_ALPHA)
+      .setDisplaySize(FX.SHOCKWAVE_CHARGE_PULSE_RADIUS * 2, FX.SHOCKWAVE_CHARGE_PULSE_RADIUS * 2)
+      .setTint(hexToRgbInt(FX_COLORS.shockwave))
       .setVisible(false);
 
     // 血月天幕（屏幕空间常驻；桌面 190 / 移动 120）
@@ -112,7 +146,8 @@ export class FxManager {
   }
 
   /**
-   * 飞弹拖尾：节流发射（每 TRAIL_INTERVAL_MS 对全部活跃飞弹各发 1 颗冷青尾迹）。
+   * 飞弹拖尾：节流发射（每 TRAIL_INTERVAL_MS 对全部活跃飞弹各发 1 颗冷青彗尾）。
+   * TASK-36：p-circle 点 → p-streak 彗尾（spawnParticle 已按速度方向 setAngle，沿飞行方向拉长）。
    * 移动端（fxTrails=false）关闭。
    */
   tickMissileTrails(pool: FxPoolLike<FxPosLike>, dt: number): void {
@@ -121,18 +156,54 @@ export class FxManager {
     if (this.trailAccum < FX.TRAIL_INTERVAL_MS) return;
     this.trailAccum = 0;
     pool.eachActive((m) => {
-      this.emitBurst('p-circle', m.x, m.y, [FX_COLORS.trail], FX.TRAIL_COUNT_PER_MISSILE, 26, 2.2, FX.TRAIL_LIFE);
+      this.emitBurst(FX.TRAIL_FRAME, m.x, m.y, [FX_COLORS.trail], FX.TRAIL_COUNT_PER_MISSILE, 26, 2.0, FX.TRAIL_LIFE);
     });
+  }
+
+  /** TASK-36 飞弹发射喷涌：玩家位置开火小 puff（冷青，短命）；随 fxBursts */
+  missileLaunch(x: number, y: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitBurst('p-circle', x, y, [FX_COLORS.trail], FX.MISSILE_LAUNCH_PUFF_COUNT, 40, 1.8, 0.25);
+  }
+
+  /** TASK-36 飞弹命中反馈：冷青小冲击环 + 火花（命中即消失，事件驱动） */
+  missileImpact(x: number, y: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitRing('p-ring', x, y, [FX_COLORS.trail], FX.MISSILE_IMPACT_RING_COUNT, FX.MISSILE_IMPACT_RING_RADIUS, 30, 2.5, 0.18);
+    this.emitBurst('p-circle', x, y, [FX_COLORS.trail], FX.MISSILE_IMPACT_SPARK_COUNT, 120, 2, 0.3);
   }
 
   /** 环绕球轨道残影：残影环随玩家平移 + 缓慢旋转；解锁护体球后可见（移动端关闭） */
   tickOrbitRing(player: FxPosLike, visible: boolean, dt: number): void {
     if (!this.cfg.fxTrails) {
       this.orbitRing.setVisible(false);
+      this.orbitRingSecondary.setVisible(false);
       return;
     }
     this.orbitRing.setPosition(player.x, player.y).setVisible(visible);
     if (visible) this.orbitRing.angle += FX.ORBIT_RING_SPIN_DEG * dt;
+    // TASK-36 双层轨道环内环：细暗反向慢旋
+    this.orbitRingSecondary.setPosition(player.x, player.y).setVisible(visible);
+    if (visible) this.orbitRingSecondary.angle += FX.ORBIT_RING_SECONDARY_SPIN_DEG * dt;
+  }
+
+  /** TASK-36 环绕球尾迹：每球每节流拍发 1 颗原地淡出冷青光点（速度 0），球体绕行留下光之环 */
+  tickOrbitTrails(source: OrbitTrailSource, dt: number): void {
+    if (!this.cfg.fxTrails) return;
+    this.orbitTrailAccum += dt * 1000;
+    if (this.orbitTrailAccum < FX.ORBIT_TRAIL_INTERVAL_MS) return;
+    this.orbitTrailAccum = 0;
+    source.eachOrbPosition((x, y) => {
+      this.emitBurst('p-circle', x, y, [FX_COLORS.trail], 1, 0, FX.ORBIT_TRAIL_SIZE, FX.ORBIT_TRAIL_LIFE);
+    });
+  }
+
+  /** TASK-36 环绕球命中火花：全局节流（每 ORBIT_HIT_THROTTLE_MS ≤1 次，防 6 球高频刷屏） */
+  orbitHit(x: number, y: number, now: number): void {
+    if (!this.cfg.fxBursts) return;
+    if (now < this.orbitHitThrottleUntil) return;
+    this.orbitHitThrottleUntil = now + FX.ORBIT_HIT_THROTTLE_MS / 1000;
+    this.emitBurst('p-circle', x, y, [FX_COLORS.trail], FX.ORBIT_HIT_SPARK_COUNT, 90, 1.8, 0.28);
   }
 
   /** 宝石磁吸拖尾：仅对磁吸半径内宝石节流发射冷青微光（移动端关闭） */
@@ -177,10 +248,33 @@ export class FxManager {
     this.emitBurst('p-circle', x, y, [FX_COLORS.bossGold], 8, 100, 3, 0.6);
   }
 
-  /** 冲击波涟漪：沿当前半径均匀分布、径向外扩的血橙红粒子（8s CD 稀有触发） */
+  /** 冲击波涟漪：沿当前半径均匀分布、径向外扩的血橙红粒子（8s CD 稀有触发；TASK-36 加密提速 36/24 + speed 90 + size 4） */
   shockwaveRipple(x: number, y: number, radius: number): void {
     if (!this.cfg.fxBursts) return;
-    this.emitRing('p-circle', x, y, [FX_COLORS.shockwave], FX.RIPPLE_COUNT, radius, 60, 3, 0.5);
+    const count = this.cfg.isMobile ? FX.RIPPLE_COUNT_MOBILE : FX.RIPPLE_COUNT;
+    this.emitRing('p-circle', x, y, [FX_COLORS.shockwave], count, radius, FX.RIPPLE_SPEED, FX.RIPPLE_SIZE, 0.5);
+  }
+
+  /** TASK-36 冲击波最大半径白闪环：扩散到位的月蚀亮边（纸白短命） */
+  shockwaveEdgeFlash(x: number, y: number, radius: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitRing('p-circle', x, y, [FX_COLORS.paper], FX.SHOCKWAVE_EDGE_FLASH_COUNT, radius, 20, 3, FX.SHOCKWAVE_EDGE_FLASH_LIFE);
+  }
+
+  /** TASK-36 蓄力脉冲提示：冲击波冷却最后 2s 玩家周围 60px 脉冲环（正弦呼吸，低透明；随 fxTrails） */
+  tickShockwaveCharge(player: FxPosLike, secondsUntilReady: number, dt: number): void {
+    if (!this.cfg.fxTrails) {
+      this.chargePulse.setVisible(false);
+      return;
+    }
+    const inLead =
+      secondsUntilReady > 0 && secondsUntilReady <= FX.SHOCKWAVE_CHARGE_PULSE_LEAD_SECONDS;
+    this.chargePulse.setPosition(player.x, player.y).setVisible(inLead);
+    if (inLead) {
+      this.chargePulsePhase += dt * Math.PI * 2; // 1Hz 呼吸
+      const breath = FX.SHOCKWAVE_CHARGE_PULSE_ALPHA + Math.sin(this.chargePulsePhase) * 0.05;
+      this.chargePulse.setAlpha(Math.max(0.08, Math.min(0.22, breath)));
+    }
   }
 
   /** 当前活跃粒子数（bench draw call / 审计用） */

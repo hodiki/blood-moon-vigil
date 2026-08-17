@@ -31,8 +31,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** 霸体截止（秒时间戳）：期内不承伤（E4-S2 Boss 出场 0.5s 霸体；普通敌恒 0） */
   graceUntil = 0;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, texture?: string) {
-    super(scene, x, y, texture ?? 'characters', 'enemy-zombie');
+  /**
+   * 构造器：池契约 acquire(x,y,texture?,frame?) —— 由调用方显式传 'characters' + 帧名
+   * （TASK-36：与 XpGem/Boss/Missile 对齐，杜绝 'enemy-zombie' 误入 texture 槽产生 __MISSING 警告；
+   * 具体 kind 帧在 spawn() 内 setTexture 纠正，构造器帧仅占位）。
+   */
+  constructor(scene: Phaser.Scene, x: number, y: number, texture?: string, frame?: string | number) {
+    super(scene, x, y, texture ?? 'characters', frame ?? 'enemy-zombie');
     scene.add.existing(this);
     scene.physics.add.existing(this);
     const body = this.body as Phaser.Physics.Arcade.Body;

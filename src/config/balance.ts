@@ -178,18 +178,45 @@ export const FX = {
   PARTICLE_BUDGET: 200,
   /** 通用粒子寿命 s */
   PARTICLE_LIFE: 0.45,
-  /** 飞弹拖尾：发射间隔 ms / 粒子寿命 s / 每枚每拍粒子数 */
-  TRAIL_INTERVAL_MS: 90,
-  TRAIL_LIFE: 0.3,
+  /** 飞弹拖尾（TASK-36：点→彗尾 p-streak）：发射间隔 ms / 粒子寿命 s / 每枚每拍粒子数 / 帧 */
+  TRAIL_INTERVAL_MS: 70,
+  TRAIL_LIFE: 0.32,
   TRAIL_COUNT_PER_MISSILE: 1,
-  /** 环绕球轨道残影（环）：透明度 / 转速 deg/s */
-  ORBIT_RING_ALPHA: 0.22,
-  ORBIT_RING_SPIN_DEG: 20,
+  TRAIL_FRAME: 'p-streak',
+  /** TASK-36 飞弹发射喷涌：喷点数（开火小 puff，呼应提灯冷青） */
+  MISSILE_LAUNCH_PUFF_COUNT: 3,
+  /** TASK-36 飞弹命中反馈：冷青冲击环（粒子数/半径）+ 火花（粒子数） */
+  MISSILE_IMPACT_RING_COUNT: 6,
+  MISSILE_IMPACT_RING_RADIUS: 12,
+  MISSILE_IMPACT_SPARK_COUNT: 4,
+  /** 环绕球轨道残影（环）：外环透明度 / 转速 deg/s；TASK-36 双层环（内环反向慢旋） */
+  ORBIT_RING_ALPHA: 0.26,
+  ORBIT_RING_SPIN_DEG: 24,
+  ORBIT_RING_SECONDARY_ALPHA: 0.12,
+  ORBIT_RING_SECONDARY_OFFSET: 12,
+  ORBIT_RING_SECONDARY_SPIN_DEG: -12,
+  /** TASK-36 环绕球尾迹：节流 ms / 寿命 s / 粒子尺寸（原地淡出渐隐光点） */
+  ORBIT_TRAIL_INTERVAL_MS: 140,
+  ORBIT_TRAIL_LIFE: 0.25,
+  ORBIT_TRAIL_SIZE: 2.2,
+  /** TASK-36 环绕球命中火花：粒子数 / 全局节流 ms（防高频刷屏） */
+  ORBIT_HIT_SPARK_COUNT: 3,
+  ORBIT_HIT_THROTTLE_MS: 200,
   /** 宝石磁吸拖尾：发射间隔 ms / 粒子寿命 s */
   GEM_TRAIL_INTERVAL_MS: 150,
   GEM_TRAIL_LIFE: 0.2,
-  /** 冲击波涟漪：环上粒子数 */
-  RIPPLE_COUNT: 18,
+  /** 冲击波涟漪（TASK-36 加密提速）：环上粒子数（桌面 36 / 移动 24 降档）/ 外扩速度 / 粒子尺寸 */
+  RIPPLE_COUNT: 36,
+  RIPPLE_COUNT_MOBILE: 24,
+  RIPPLE_SPEED: 90,
+  RIPPLE_SIZE: 4,
+  /** TASK-36 冲击波最大半径白闪环：粒子数 / 寿命 s（月蚀亮边） */
+  SHOCKWAVE_EDGE_FLASH_COUNT: 12,
+  SHOCKWAVE_EDGE_FLASH_LIFE: 0.18,
+  /** TASK-36 蓄力脉冲提示（随 fxTrails 开关）：alpha / 半径 px / 提前提示秒 */
+  SHOCKWAVE_CHARGE_PULSE_ALPHA: 0.15,
+  SHOCKWAVE_CHARGE_PULSE_RADIUS: 60,
+  SHOCKWAVE_CHARGE_PULSE_LEAD_SECONDS: 2,
   /** Boss 出场：冲击环粒子数 / 半径 px */
   BOSS_RING_COUNT: 22,
   BOSS_RING_RADIUS: 90,

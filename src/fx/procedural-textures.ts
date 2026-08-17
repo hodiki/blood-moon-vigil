@@ -87,7 +87,8 @@ function drawSilhouette(
 
 /**
  * 玩家·守夜人：圆帽 + 披风剪影（art-bible §3 玩家 = 圆帽披风；§4 月银白 + 冷青 2px 常亮描边）。
- * pose=0 基准（与 v2 逐像素一致）；pose=1 变体：帽冠上移 1px + 披风外扩下摆（呼吸/移动摆动帧）。
+ * pose=0 基准；pose=1 变体：帽冠上移 1px + 披风外扩下摆（呼吸/移动摆动帧）。
+ * TASK-36 P0-1b/P0-1c：帽带（帽檐下缘冷青横条）+ 三边开衩制式长袍（x=-8/0/+8，帧内等比）。
  * 中心 (0,0)，范围约 x[-12,12] y[-14,13]（放大 1.12 后仍在 32×32 帧内）。
  */
 function playerShape(ctx: Ctx, pose = 0): void {
@@ -99,34 +100,54 @@ function playerShape(ctx: Ctx, pose = 0): void {
   ctx.fill();
   // 帽檐
   ctx.fillRect(-11, -8, 22, 3);
-  // 披风：钟形 + 底部开衩（变体外扩 + 下摆下移 = 摆动/奔跑）
+  // TASK-36 P0-1b 帽带：帽檐下缘 1px 冷青横条（制式夜巡帽；x±10 → ×1.12=11.2 ≤16 ✔）
+  ctx.fillStyle = hexToRgba(PALETTE.playerAccent, 0.75);
+  ctx.fillRect(-10, -5, 20, 1);
+  ctx.fillStyle = PALETTE.player;
+  // TASK-36 P0-1c 披风：制式长袍梯形 + 三边开衩（INK 镂空；变体外扩 + 下摆下移 = 摆动/奔跑）
   if (pose === 1) {
     ctx.beginPath();
     ctx.moveTo(-9, -6);
     ctx.lineTo(9, -6);
-    ctx.lineTo(13, 14);
-    ctx.lineTo(8, 14);
-    ctx.lineTo(5, 7);
-    ctx.lineTo(0, 14);
-    ctx.lineTo(-5, 7);
-    ctx.lineTo(-8, 14);
-    ctx.lineTo(-13, 14);
+    ctx.lineTo(14, 14);
+    ctx.lineTo(-14, 14);
     ctx.closePath();
     ctx.fill();
+    // 三边开衩（INK 镂空，宽 1.5，从下摆上切；最外点 x=±14 → ×1.12=15.68 ≤16 ✔）
+    ctx.fillStyle = INK;
+    ctx.fillRect(-8.75, 5, 1.5, 9);
+    ctx.fillRect(-0.75, 5, 1.5, 9);
+    ctx.fillRect(7.25, 5, 1.5, 9);
     return;
   }
   ctx.beginPath();
-  ctx.moveTo(-8, -5);
-  ctx.lineTo(8, -5);
-  ctx.lineTo(11, 13);
-  ctx.lineTo(7, 13);
-  ctx.lineTo(4, 6);
-  ctx.lineTo(0, 13);
-  ctx.lineTo(-4, 6);
-  ctx.lineTo(-7, 13);
-  ctx.lineTo(-11, 13);
+  ctx.moveTo(-9, -5);
+  ctx.lineTo(9, -5);
+  ctx.lineTo(12, 13);
+  ctx.lineTo(-12, 13);
   ctx.closePath();
   ctx.fill();
+  // 三边开衩（INK 镂空，宽 1.5，从下摆上切；最外点 x=±12 → ×1.12=13.44 ≤16 ✔）
+  ctx.fillStyle = INK;
+  ctx.fillRect(-8.75, 6, 1.5, 7);
+  ctx.fillRect(-0.75, 6, 1.5, 7);
+  ctx.fillRect(7.25, 6, 1.5, 7);
+}
+
+/**
+ * TASK-36 P0-1a 守夜人冷青提灯：身份光源（描边后正常比例绘制，同帧 32×32 内）。
+ * 灯杆/灯体/灯芯光 + 柔光外圈；最右点 x=14.8 ≤16 ✔，y∈[-6,2] ✔。
+ */
+function drawPlayerLantern(ctx: Ctx): void {
+  // 灯杆：从披风右肩伸出的细杆
+  ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.55);
+  ctx.fillRect(8, -6, 1.5, 5);
+  // 灯体：3×4px 方形灯（冷青）
+  ctx.fillStyle = hexToRgba(PALETTE.playerAccent, 0.95);
+  ctx.fillRect(10.5, -1.5, 3, 4);
+  // 灯芯光 + 柔光外圈
+  fillCircle(ctx, 12, 0, 1.5, PALETTE.playerAccent, 0.8);
+  fillCircle(ctx, 12, 0, 2.8, PALETTE.playerAccent, 0.22);
 }
 
 /** 敌人·行尸（zombie）：骷髅头剪影（art-bible §3 普通敌 = 骷髅头），暗血红纯剪影。
@@ -153,6 +174,23 @@ function zombieShape(ctx: Ctx, pose = 0): void {
   ctx.fillRect(-7, pose === 1 ? 6 : 6, 14, pose === 1 ? 5 : 4);
   ctx.fillStyle = PAPER;
   for (let i = -2; i <= 2; i += 1) ctx.fillRect(i * 2.6 - 1.2, pose === 1 ? 7 : 6.4, 2.4, pose === 1 ? 3.8 : 3.4);
+  // TASK-36 P0-2a 颅骨裂纹（额心致死伤；x≤2.5、y≥-13 颅顶内 ✔）
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, -8);
+  ctx.lineTo(0, -12);
+  ctx.moveTo(0, -10);
+  ctx.lineTo(2.5, -11.5);
+  ctx.stroke();
+  // TASK-36 P0-2b 眼眶眉骨高光（纸白上半弧；x=±7.9、y=-8.4 ≤14/-13 ✔）
+  ctx.strokeStyle = hexToRgba(PAPER, 0.5);
+  ctx.beginPath();
+  ctx.arc(-4.5, -5, 3.4, Math.PI, 0, true);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(4.5, -5, 3.4, Math.PI, 0, true);
+  ctx.stroke();
 }
 
 /** 敌人·血犬（wolf）：尖牙鼠形剪影（art-bible §3 普通敌 = 尖牙鼠形；更小更快，横向流线奔跑感）。
@@ -162,6 +200,19 @@ function wolfShape(ctx: Ctx, pose = 0): void {
   ctx.fillStyle = PALETTE.enemyWolf;
   ctx.beginPath();
   ctx.ellipse(pose === 1 ? 2 : 1, -1, pose === 1 ? 7.5 : 6.5, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // TASK-36 P0-3a 背脊棘刺（腐化骨刺，纯剪影同色；x∈[-4,2.5]、y≥-7.5 不碰耳尖 -8.2 ✔）
+  ctx.beginPath();
+  ctx.moveTo(-4, -4.5);
+  ctx.lineTo(-3, -7.5);
+  ctx.lineTo(-1.5, -4.5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(0, -4.5);
+  ctx.lineTo(1, -6.5);
+  ctx.lineTo(2.5, -4.5);
+  ctx.closePath();
   ctx.fill();
   // 头部圆 + 吻部尖出（朝右）
   ctx.beginPath();
@@ -207,6 +258,8 @@ function wolfShape(ctx: Ctx, pose = 0): void {
   ctx.lineTo(11.2, 0.6);
   ctx.closePath();
   ctx.fill();
+  // TASK-36 P0-3b 血口涎滴（危险红；x≈11.5 ≤12 ✔；若快照「红=危险」歧义可换 uiPaper 白涎）
+  fillCircle(ctx, 10.6, 3.2, 0.9, PALETTE.danger, 0.9);
   // 眼（深色）
   fillCircle(ctx, 8, -2.6, 1.1, INK);
 }
@@ -223,6 +276,22 @@ function tankShape(ctx: Ctx, pose = 0): void {
   ctx.lineTo(pose === 1 ? -19 : -18, 12);
   ctx.closePath();
   ctx.fill();
+  // TASK-36 P0-4a 屠刀（右手侧；刀柄 INK + 刀身主体 + 纸白刃光；最右 x=22.5 ≤24 ✔）
+  ctx.fillStyle = hexToRgba(INK, 0.85);
+  ctx.fillRect(14, -2, 3, 8); // 刀柄
+  ctx.fillStyle = PALETTE.enemyTank;
+  ctx.beginPath();
+  ctx.moveTo(17, -5);
+  ctx.lineTo(22, -3);
+  ctx.lineTo(21, 10);
+  ctx.lineTo(17, 9);
+  ctx.closePath();
+  ctx.fill(); // 刀身
+  ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.55);
+  ctx.fillRect(21.5, -3.5, 1, 13); // 刀背刃光（x 21.5..22.5）
+  // TASK-36 P0-4b 围裙带（躯干 y=3..4.5 处 1.5px 深色横带；pose1 肩更宽 x∈[-17,17] ≤24 ✔）
+  ctx.fillStyle = hexToRgba(INK, 0.7);
+  ctx.fillRect(pose === 1 ? -17 : -15, 3, pose === 1 ? 34 : 30, 1.5);
   // 双角头饰（形状编码，色盲可辨；变体外倾）
   ctx.beginPath();
   ctx.moveTo(-12, -10);
@@ -259,6 +328,16 @@ function bossShape(ctx: Ctx, pose = 0): void {
   ctx.lineTo(-f, 44);
   ctx.closePath();
   ctx.fill();
+  // TASK-36 P0-5b 仪式权杖（画序：披风后、侧翼前——翼盖杖杆下部 2px 形成"持杖"错觉；
+  // 最右 x=53 → ×1.05=55.65 → 60+55.65=115.65 ≤120 ✔；底 y=30 → 91.5 ≤120 ✔）
+  ctx.fillStyle = BOSS.COLOR_MAIN;
+  ctx.fillRect(47, -28, 2, 58); // 杖杆 y -28..30
+  fillCircle(ctx, 48, -32, 4, PALETTE.danger); // 杖首红宝石
+  ctx.strokeStyle = BOSS.COLOR_GOLD;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(48, -32, 5, 0, Math.PI * 2);
+  ctx.stroke(); // gold 外圈
   // 侧翼披风（两侧三角；变体更张开）
   ctx.beginPath();
   ctx.moveTo(-w, -14);
@@ -305,6 +384,10 @@ function bossShape(ctx: Ctx, pose = 0): void {
   ctx.lineTo(30, -8);
   ctx.closePath();
   ctx.fill();
+  // TASK-36 P0-5a 冠上血月宝石（王冠中尖 V 底点；危险红 + 纸白高光；
+  // 最上 y=-54-2=-56 → 放大 1.05 后绝对 1.2 ≥0 ✔，勿加 gold 外环 r3.5）
+  fillCircle(ctx, 0, -54, 2.0, PALETTE.danger);
+  fillCircle(ctx, -0.8, -54.8, 0.6, PALETTE.uiPaper, 0.85);
 }
 
 /**
@@ -429,6 +512,7 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   ctx.save();
   ctx.translate(16, 16);
   drawSilhouette(ctx, (g) => playerShape(g, 0), PALETTE.playerAccent, 1.12);
+  drawPlayerLantern(ctx); // TASK-36 P0-1a 冷青提灯（描边后正常比例，避免放大层残色）
   ctx.restore();
 
   // 普通 3 敌：纯剪影无描边（RV-C1 / art-bible §4 普通敌靠剪影）
@@ -484,6 +568,7 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   ctx.save();
   ctx.translate(120 + 16, 56 + 16);
   drawSilhouette(ctx, (g) => playerShape(g, 1), PALETTE.playerAccent, 1.12);
+  drawPlayerLantern(ctx); // TASK-36 P0-1a 冷青提灯（同帧变体）
   ctx.restore();
   // 僵尸变体 @ (120,88) 28×28
   ctx.save();

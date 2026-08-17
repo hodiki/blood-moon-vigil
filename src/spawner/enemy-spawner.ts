@@ -111,7 +111,8 @@ export class EnemySpawner {
     const ringMin = this.cfg.spawnRing[0]!;
     const ringMax = this.cfg.spawnRing[1]!;
     const pos = spawnPosition(this.player.x, this.player.y, ringMin, ringMax, Math.random() * Math.PI * 2, Math.random());
-    const enemy = this.enemyPool.acquire(pos.x, pos.y, `enemy-${kind}`);
+    // TASK-36：池契约 acquire(x,y,texture?,frame?) —— 显式 'characters' + 帧名（消除 __MISSING 警告）
+    const enemy = this.enemyPool.acquire(pos.x, pos.y, 'characters', `enemy-${kind}`);
     if (!enemy) return; // 已检查 activeCount，正常不会为 null
     enemy.spawn(kind, pos.x, pos.y);
   }

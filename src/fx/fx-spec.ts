@@ -49,4 +49,6 @@ export const FX_COLORS = {
   /** Boss 出场：猩红 + 金 */
   boss: BOSS.COLOR_MAIN,
   bossGold: BOSS.COLOR_GOLD,
+  /** TASK-36 冲击波白闪环：纸白（= PALETTE.uiPaper，token 别名，无新色相） */
+  paper: PALETTE.uiPaper,
 } as const;

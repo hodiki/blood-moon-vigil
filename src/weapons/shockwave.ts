@@ -14,6 +14,7 @@
 
 import Phaser from 'phaser';
 import { WEAPONS } from '@/config/balance';
+import type { FxManager } from '@/fx/fx-manager';
 import {
   isCooldownReady,
   tickCooldown,
@@ -26,6 +27,7 @@ import type { Player } from '@/player/player';
 
 export class ShockwaveWeapon {
   private readonly scene: Phaser.Scene;
+  private readonly fx: FxManager;
   private readonly ring: Phaser.GameObjects.Sprite;
   private readonly baseSize: number;
   private cooldown = 0;
@@ -37,8 +39,9 @@ export class ShockwaveWeapon {
   /** E3-S5 写回：冷却倍率 0.92^stacks（第 11 项） */
   private cooldownMultiplier = 1;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, fx: FxManager) {
     this.scene = scene;
+    this.fx = fx;
     this.ring = scene.add.sprite(0, 0, 'effects', 'shockwave').setDepth(85).setActive(false).setVisible(false);
     // 帧宽（不是图集整张宽）：effects 图集内 'shockwave' 帧 32px
     const frame = scene.textures.getFrame('effects', 'shockwave');
@@ -77,6 +80,11 @@ export class ShockwaveWeapon {
   /** TASK-28：当前扩散半径（升级范围 +50% 后 280→420→560；冲击波涟漪粒子用） */
   get radiusPx(): number {
     return this.radius;
+  }
+
+  /** TASK-36：冷却剩余秒（蓄力脉冲提示用；就绪=0） */
+  get cooldownRemaining(): number {
+    return this.cooldown;
   }
 
   /** 每帧：冷却递减 → 就绪且半径内有目标才释放（E3 空放决策） */
@@ -124,6 +132,8 @@ export class ShockwaveWeapon {
       ease: 'Quad.easeOut',
       onComplete: () => {
         this.ring.setActive(false).setVisible(false);
+        // TASK-36 最大半径白闪环：扩散到位瞬间一圈薄白闪（月蚀亮边；用 ring 固定位置防玩家漂移）
+        this.fx.shockwaveEdgeFlash(this.ring.x, this.ring.y, this.radius);
       },
     });
   }

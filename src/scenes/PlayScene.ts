@@ -141,7 +141,7 @@ export class PlayScene extends Phaser.Scene {
     // 对象池：maxSize 读 RuntimeConfig（ARCH §3.3 / 性能预算 #1）；classType=Boss（含普通敌）
     this.enemyPool = createArcadePool(this, this.cfg, 'enemies', Boss);
     this.gemPool = createArcadePool(this, this.cfg, 'gems', XpGem);
-    this.weaponSystem = new WeaponSystem(this, this.cfg, this.player, this.enemyPool);
+    this.weaponSystem = new WeaponSystem(this, this.cfg, this.player, this.enemyPool, this.fx);
     this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player);
     // E4-S3 收束：20:00 清场 + Boss 出场（预算恒 0 由 spawner 停止保证，S8 §⑥.3）
     this.spawner.onBossTime = () => {
@@ -299,7 +299,10 @@ export class PlayScene extends Phaser.Scene {
     this.fx.update(realDt);
     this.fx.tickMissileTrails(this.weaponSystem.missilePool, realDt);
     this.fx.tickOrbitRing(this.player, this.weaponSystem.orbit.unlocked, realDt);
+    this.fx.tickOrbitTrails(this.weaponSystem.orbit, realDt); // TASK-36 环绕球尾迹
     this.fx.tickGemTrails(this.gemPool, this.player, this.xp.magnetRadius, realDt);
+    // TASK-36 冲击波蓄力脉冲提示（最后 2s 呼吸）
+    this.fx.tickShockwaveCharge(this.player, this.weaponSystem.shockwave.cooldownRemaining, realDt);
     const shockwaveActive = this.weaponSystem.shockwave.active;
     if (shockwaveActive && !this.shockwaveWasActive) {
       // 冲击波涟漪：释放瞬间沿当前半径（含升级 +50%）扩散一圈粒子

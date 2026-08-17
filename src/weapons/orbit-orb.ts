@@ -13,6 +13,7 @@ import Phaser from 'phaser';
 import { WEAPONS } from '@/config/balance';
 import { hitEnemy } from '@/combat/damage';
 import { advanceOrbitAngle, orbitPosition, circlesOverlap, type TargetLike } from '@/weapons/weapon-math';
+import type { FxManager } from '@/fx/fx-manager';
 import type { Player } from '@/player/player';
 
 export interface OrbDamageTarget extends TargetLike {
@@ -32,7 +33,7 @@ export class OrbitWeapon {
   /** E3 门控：初始未解锁（upgrade-pool 第 1 项「解锁守夜之环」后才可见可伤） */
   private enabled = false;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, private readonly fx: FxManager) {
     for (let i = 0; i < WEAPONS.ORBIT.MAX_COUNT; i += 1) {
       const orb = scene.add.sprite(0, 0, 'characters', 'orb').setActive(false).setVisible(false).setDepth(90);
       this.orbs.push(orb);
@@ -70,6 +71,14 @@ export class OrbitWeapon {
     this.angularSpeedDeg = WEAPONS.ORBIT.ANGULAR_SPEED_DEG * multiplier;
   }
 
+  /** TASK-36：遍历可见环绕球位置（fx-manager.tickOrbitTrails 消费，结构性满足 OrbitTrailSource） */
+  eachOrbPosition(fn: (x: number, y: number) => void): void {
+    for (let i = 0; i < this.count; i += 1) {
+      const orb = this.orbs[i];
+      if (orb?.visible) fn(orb.x, orb.y);
+    }
+  }
+
   /** 每帧：旋转 + 命中判定（同目标 0.4s 内置冷却；伤害 = 8 × 总倍率，E2-S1） */
   update(
     dt: number,
@@ -93,6 +102,8 @@ export class OrbitWeapon {
         if (!circlesOverlap(pos.x, pos.y, WEAPONS.ORBIT.ORB_RADIUS, enemy.x, enemy.y, enemy.radius)) continue;
         enemy.orbitHitCooldownUntil = now + WEAPONS.ORBIT.PER_TARGET_COOLDOWN;
         hitEnemy(enemy, damage);
+        // TASK-36 命中火花：冷青 3 颗（fx 内全局节流 200ms，防 6 球高频刷屏）
+        this.fx.orbitHit(pos.x, pos.y, now);
       }
     }
   }

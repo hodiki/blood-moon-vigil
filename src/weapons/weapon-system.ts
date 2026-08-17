@@ -32,6 +32,7 @@ import {
 import { HomingMissile } from '@/weapons/homing-missile';
 import { OrbitWeapon, type OrbDamageTarget } from '@/weapons/orbit-orb';
 import { ShockwaveWeapon } from '@/weapons/shockwave';
+import type { FxManager } from '@/fx/fx-manager';
 import type { Enemy } from '@/enemies/enemy';
 import type { Player } from '@/player/player';
 
@@ -55,10 +56,11 @@ export class WeaponSystem {
     cfg: RuntimeConfig,
     private readonly player: Player,
     private readonly enemyPool: ArcadePoolLike<Enemy>,
+    private readonly fx: FxManager,
   ) {
     this.missilePool = createArcadePool(scene, cfg, 'bullets', HomingMissile);
-    this.orbit = new OrbitWeapon(scene);
-    this.shockwave = new ShockwaveWeapon(scene);
+    this.orbit = new OrbitWeapon(scene, fx);
+    this.shockwave = new ShockwaveWeapon(scene, fx);
     // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲由升级 1/2 解锁
     this.orbit.setEnabled(false);
     this.shockwave.setEnabled(false);
@@ -139,6 +141,8 @@ export class WeaponSystem {
     );
     // Phase 6 音频：发射成功 → weapon:fired（audio-bible §2 SFX#1）
     GameEvents.emit(GameEvent.WeaponFired, { x: this.player.x, y: this.player.y });
+    // TASK-36 发射喷涌：玩家位置开火小 puff（冷青）
+    this.fx.missileLaunch(this.player.x, this.player.y);
   }
 
   private checkMissileHits(): void {
@@ -158,6 +162,8 @@ export class WeaponSystem {
         if (shouldSpawnSplitMissiles(m.splitEligible, m.remainingPierce, this.missileSplit)) {
           this.spawnSplitSubMissiles(m);
         }
+        // TASK-36 命中反馈：冷青小冲击环 + 火花（命中点 = 弹体当前位置）
+        this.fx.missileImpact(m.x, m.y);
         m.dissipate();
         break;
       }
