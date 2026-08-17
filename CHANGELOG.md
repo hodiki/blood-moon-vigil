@@ -25,6 +25,12 @@
   - 环境氛围：血月天幕（moon 帧）+ 暗角渐晕（vignette 帧）+ 地面贴花 ×3（decal-rock/grass/blood），收敛 1 图集 fx-ambient（ambient +1 组批次）。
   - 纹理烘焙色值全量收敛为 token 派生（`hexToRgba`，code-review P1-2）；Boss 变体帧坐标收进 120px 帧界（美术复核 C-1 阻塞项修复）。
   - 新增 11 项单测（tests/unit/fx 9 + tests/unit/utils 2）；全量 294 单测（36 文件）。
+- **TASK-33 矢量图标 DOM 落地**（src/ui/icons.ts + 升级卡 / 武器槽集成）：
+  - 15 项矢量图标（升级卡 12 + 武器槽 3）由 Ardot 画布导出 SVG，本模块内联为模板（零静态资产、+0 draw call 增量）。
+  - 编码总则（asset-spec §3 一眼分型）：机制型 = 蓝紫底 PALETTE.baseLight + 信息蓝描边（1/2 号带 ★ 星徽 = 新武器解锁）；数值型 = 琥珀金底（读"数字加多少"）。
+  - **token 统一来源纪律**：模板内颜色一律 `{{token}}` 占位符，`ICON_COLORS` 全量派生自 balance.ts PALETTE / BOSS / GEM token（含新增 `PALETTE.uiPaper` 纸白），零散落字面量；同页多图标共存时 clipPath id 按 key 唯一化防 url 串扰。
+  - DOM 覆盖层（levelup-overlay / hud）消费 `renderIconSvg()` 替换原 CSS 圆点占位；武器槽未解锁态降饱和变暗（区分解锁/锁定）；DOM 布局沿用 ux-spec §2/§3（升级桌面 128/移动 72、武器桌面 48/移动 44）。
+  - 新增 9 项单测（tests/unit/ui/icons.test.ts：15 项 key 覆盖、类型分型、SVG 合法、token 解析、clipPath 唯一化、底色分型）；全量 303 单测（37 文件）。
 
 ### Changed
 

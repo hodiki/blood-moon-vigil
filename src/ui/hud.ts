@@ -27,6 +27,7 @@ import {
   bossFillFraction,
   type HudState,
 } from '@/ui/hud-state';
+import { renderIconSvg, weaponIconKeyForId } from '@/ui/icons';
 
 const ESC_HINT_SECONDS = 5;
 
@@ -65,9 +66,9 @@ export class Hud {
       <div class="bmv-hud-hp-num">100/100</div>
       <div class="bmv-hud-hp"><div class="bmv-hud-hp-fill"></div></div>
       <div class="bmv-hud-weapons">
-        <div class="bmv-hud-weapon active" data-weapon="missile">飞</div>
-        <div class="bmv-hud-weapon" data-weapon="orbit">环</div>
-        <div class="bmv-hud-weapon" data-weapon="shockwave">波</div>
+        <div class="bmv-hud-weapon active" data-weapon="missile">${renderIconSvg(weaponIconKeyForId('missile'))}</div>
+        <div class="bmv-hud-weapon" data-weapon="orbit">${renderIconSvg(weaponIconKeyForId('orbit'))}</div>
+        <div class="bmv-hud-weapon" data-weapon="shockwave">${renderIconSvg(weaponIconKeyForId('shockwave'))}</div>
       </div>
       <div class="bmv-hud-boss"><div class="bmv-hud-boss-fill"></div></div>
     `;
@@ -205,12 +206,18 @@ export class Hud {
         width: 48px; height: 48px;
         box-sizing: border-box;
         display: flex; align-items: center; justify-content: center;
-        font-size: 18px; font-weight: 700;
-        border: 2px solid #2A3346; border-radius: 8px;
-        background: #131722; color: #6A7280;
       }
-      .bmv-hud-weapon.active {
-        border-color: #54E6C9; color: #E8F0FA;
+      /* TASK-33：内联矢量武器图标（icons.ts），SVG 自带蓝紫底+冷青描边；未解锁降饱和变暗 */
+      .bmv-hud-weapon svg {
+        display: block;
+        width: 100%; height: 100%;
+      }
+      .bmv-hud-weapon:not(.active) svg {
+        opacity: 0.45;
+        filter: saturate(0.35) brightness(0.75);
+      }
+      .bmv-hud-weapon.active svg {
+        filter: none;
       }
       .bmv-hud-pause {
         position: absolute; right: 24px; top: 24px;
@@ -252,7 +259,7 @@ export class Hud {
           top: calc(24px + env(safe-area-inset-top, 0px));
           gap: 8px;
         }
-        .bmv-hud-weapon { width: 44px; height: 44px; font-size: 16px; }
+        .bmv-hud-weapon { width: 44px; height: 44px; }
         .bmv-hud-pause {
           right: calc(24px + env(safe-area-inset-right, 0px));
           top: calc(24px + env(safe-area-inset-top, 0px));

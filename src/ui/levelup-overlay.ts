@@ -13,6 +13,7 @@
 
 import { GameEvents, GameEvent } from '@/core/events';
 import { formatUpgradeOption, type UpgradeOption } from '@/upgrade/upgrade-pool';
+import { renderIconSvg, iconKeyForUpgradeId } from '@/ui/icons';
 
 const DEFAULT_TIMEOUT_SECONDS = 30;
 const CLICK_MAX_DURATION_MS = 500;
@@ -94,9 +95,8 @@ export class LevelUpOverlay {
       const option = this.options[i];
       if (!option) return;
       const { title, desc, effectText } = formatUpgradeOption(option);
-      const isMechanic = option.item.type === 'mechanic';
       card.innerHTML = `
-        <div class="bmv-upgrade-icon ${isMechanic ? 'mech' : 'num'}"></div>
+        <div class="bmv-upgrade-icon">${renderIconSvg(iconKeyForUpgradeId(option.item.id))}</div>
         <div class="bmv-upgrade-title">${escapeHtml(title)}</div>
         <div class="bmv-upgrade-desc">${escapeHtml(desc)}</div>
         <div class="bmv-upgrade-effect">${escapeHtml(effectText)}</div>
@@ -219,12 +219,13 @@ export class LevelUpOverlay {
       }
       .bmv-upgrade-icon {
         width: 128px; height: 128px;
-        transform: rotate(45deg);
-        border-radius: 8px;
         margin-bottom: 8px;
       }
-      .bmv-upgrade-icon.mech { background: #54E6C9; }
-      .bmv-upgrade-icon.num { background: #D4A017; }
+      /* TASK-33：内联矢量图标（icons.ts），SVG 自带底色分型（机制蓝紫/数值金），铺满容器缩放 */
+      .bmv-upgrade-icon svg {
+        display: block;
+        width: 100%; height: 100%;
+      }
       .bmv-upgrade-title {
         font-size: 22px; font-weight: 700;
         color: #F2F5F9;

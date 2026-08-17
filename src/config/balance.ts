@@ -31,6 +31,7 @@ export const PALETTE = {
   grassBlade: '#2A3B2E', // 草地草叶（低饱和暗绿——刻意压暗，避免与「绿=治疗」语义混淆）
   player: '#E8F0FA', // 月银白：玩家剪影
   playerAccent: '#54E6C9', // 冷青：玩家描边/选中态
+  uiPaper: '#F2F5F9', // 纸白：UI 文字/图标主体（art-bible §2；TASK-33 矢量图标 token）
   blocker: '#2A3346', // 灰蓝：障碍/墙（art-bible §5）
   danger: '#FF3B30', // 血橙红：危险/边界
   // 敌人编码（art-bible §4：暗红剪影/幽紫/猩红金；普通敌纯剪影无描边 → RV-C1）
