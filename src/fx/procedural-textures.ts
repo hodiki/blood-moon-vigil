@@ -676,7 +676,7 @@ function drawParticleShapes(ctx: Ctx, ox: number, oy: number): void {
   ctx.fillStyle = WHITE; // p-streak（横长，运动方向用 setAngle 对齐）
   ctx.fillRect(ox + 16, oy, 12, 4);
   fillDiamond(ctx, ox + 20, oy + 4, 4, WHITE); // p-diamond
-  strokeCircle(ctx, ox + 40, oy + 24, 22, WHITE, 3, 1); // p-ring（48×48，环半径 22）
+  strokeCircle(ctx, ox + 60, oy + 24, 22, WHITE, 3, 1); // p-ring（48×48：环心=帧中心 ox+60=188，r=22 → x:166~210 在帧 164~212 内，完整圆环；TASK-34 修复半圆）
 }
 
 /** 暗角渐晕：径向渐变（透明中心 → 基底色 55% 边缘，art-bible §5「压暗 20%」） */

@@ -126,7 +126,9 @@ export class WeaponSystem {
   private tryFireMissile(multiplier: number): void {
     const target = nearestEnemy({ x: this.player.x, y: this.player.y }, this.activeEnemies);
     if (!target) return; // 无目标不发射（省资源）
-    const missile = this.missilePool.acquire(this.player.x, this.player.y, 'missile');
+    // TASK-34：池契约 acquire(x,y,texture?,frame?) —— 必须显式传 'characters' 纹理 + 'missile' 帧，
+    // 否则 'missile' 落入 texture 槽 → 缺失纹理 __MISSING（全透明）→ 飞弹不可见（launch 不再纠正帧，异于 Enemy.spawn）
+    const missile = this.missilePool.acquire(this.player.x, this.player.y, 'characters', 'missile');
     if (!missile) return; // 同屏 ≤8：达上限跳过本冷却，不积压（W8-4）
     missile.launch(
       this.player.x,
@@ -165,7 +167,7 @@ export class WeaponSystem {
   /** 飞弹分裂：主弹命中消散时生成 split 枚次级弹（×0.6 伤，upgrade-pool 第 3 项） */
   private spawnSplitSubMissiles(parent: HomingMissile): void {
     for (let i = 0; i < this.missileSplit; i += 1) {
-      const sub = this.missilePool.acquire(parent.x, parent.y, 'missile');
+      const sub = this.missilePool.acquire(parent.x, parent.y, 'characters', 'missile');
       if (!sub) return; // 同屏 ≤8：池满跳过本批（不积压）
       // 次级弹：不穿透、不再分裂（TASK-21 Bug3 无限弹射根因）
       sub.launch(parent.x, parent.y, parent.damageValue * splitSubDamageMultiplier(), 0, false);
