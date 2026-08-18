@@ -5,6 +5,7 @@ import {
   isCooldownReady,
   steerToward,
   nearestEnemy,
+  selectHomingTarget,
   circlesOverlap,
   type TargetLike,
 } from '@/weapons/weapon-math';
@@ -51,5 +52,29 @@ describe('自动飞弹「血月猎手」数值与追踪数学（E2-S3 / weapons 
   it('圆-圆命中判定（飞弹 vs 敌人）', () => {
     expect(circlesOverlap(0, 0, 6, 10, 0, 14)).toBe(true); // 6+14=20 ≥ 10
     expect(circlesOverlap(0, 0, 6, 30, 0, 14)).toBe(false);
+  });
+
+  it('selectHomingTarget 制导过滤：跳过已命中目标，未命中目标中选最近；全已命中返回 null（TASK-37 B2）', () => {
+    // 玩家在原点；候选 3 个敌人：A 最近已命中、B 次近未命中、C 最远未命中
+    const a = { active: true, x: 50, y: 0 };
+    const b = { active: true, x: 200, y: 0 };
+    const c = { active: true, x: 500, y: 0 };
+    const enemies = [a, b, c];
+    const hitSet = new Set<TargetLike>([a]); // A 已穿透
+    const pick = selectHomingTarget({ x: 0, y: 0 }, enemies, (e) => hitSet.has(e));
+    expect(pick).toBe(b); // A 跳过，B 最近
+    // 全部命中 → null（飞弹应消散，不绕残敌抖动）
+    const allHit = new Set<TargetLike>([a, b, c]);
+    expect(selectHomingTarget({ x: 0, y: 0 }, enemies, (e) => allHit.has(e))).toBeNull();
+    // 全部 inactive → null
+    const inactive: TargetLike[] = [
+      { active: false, x: 50, y: 0 },
+      { active: false, x: 200, y: 0 },
+    ];
+    expect(selectHomingTarget({ x: 0, y: 0 }, inactive, () => false)).toBeNull();
+    // 命中记录只跳已命中：B 仍可选
+    hitSet.clear();
+    hitSet.add(b);
+    expect(selectHomingTarget({ x: 0, y: 0 }, enemies, (e) => hitSet.has(e))).toBe(a);
   });
 });

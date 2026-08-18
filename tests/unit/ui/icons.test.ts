@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ICONS,
   ICON_COLORS,
+  ICON_CENTERS,
   UPGRADE_ICON_KEYS,
   WEAPON_ICON_KEYS,
   renderIconSvg,
@@ -110,5 +111,76 @@ describe('icons 矢量图标数据完整性（TASK-33 / asset-spec §3 / art-bib
     expect(ICONS['upg-03']!.template).toContain('<rect fill="{{baseLight}}"');
     expect(ICONS['upg-10']!.template).toContain('<rect fill="{{gold}}"');
     expect(ICONS['weapon-01']!.template).toContain('<rect fill="{{baseLight}}"');
+  });
+
+  describe('TASK-37 B3 图标视觉重心居中（ICON_CENTERS + renderIconSvg 平移）', () => {
+    // 渲染缓存会跨用例复用，结构断言按 key 隔离
+    it('每 key 的 ICON_CENTERS 数据：null（已居中）或 {dx,dy} 数字；共 15 项全覆盖', () => {
+      expect(Object.keys(ICON_CENTERS)).toHaveLength(15);
+      for (const key of ALL_KEYS) {
+        const c = ICON_CENTERS[key];
+        if (c !== null) {
+          expect(typeof c.dx).toBe('number');
+          expect(typeof c.dy).toBe('number');
+          expect(Number.isFinite(c.dx)).toBe(true);
+          expect(Number.isFinite(c.dy)).toBe(true);
+        }
+      }
+    });
+
+    it('已居中 key（upg-06/upg-09/weapon-03）的渲染结果不含 translate 平移组', () => {
+      for (const k of ['upg-06', 'upg-09', 'weapon-03'] as const) {
+        const svg = renderIconSvg(k);
+        expect(svg, `${k} 不应有 transform 平移`).not.toContain('<g transform="translate(');
+      }
+    });
+
+    it('未居中 key 的渲染结果：在背景 rect 之后、最后一组 clipPath 之前插入平移组，且 dx/dy 与表一致', () => {
+      for (const key of ALL_KEYS) {
+        const c = ICON_CENTERS[key];
+        if (c === null) continue;
+        const svg = renderIconSvg(key);
+        // 背景 rect 是第一个 `<rect ... />`；检查平移组紧接其后（>= 允许紧邻）
+        const bgEnd = svg.indexOf('/>') + 2;
+        const lastClip = svg.lastIndexOf('<clipPath');
+        const groupOpen = svg.indexOf(`<g transform="translate(${c.dx} ${c.dy})">`);
+        expect(groupOpen, `${key} 缺少 translate 包裹`).toBeGreaterThan(-1);
+        expect(groupOpen, `${key} 平移组必须在背景 rect 之后`).toBeGreaterThanOrEqual(bgEnd);
+        expect(lastClip, `${key} 必须有 clipPath`).toBeGreaterThan(0);
+        expect(groupOpen, `${key} 平移组必须在外层 frame 的 clipPath 之前`).toBeLessThan(lastClip);
+        // 闭合 </g> 紧邻最后一组 clipPath 之前（renderIconSvg 插入位置唯一）
+        expect(
+          svg.substring(lastClip - 4, lastClip),
+          `${key} 闭合 </g> 必须在最后一组 clipPath 之前`,
+        ).toBe('</g>');
+      }
+    });
+
+    it('平移组在内容区内：夹在背景 rect 结束（第一个 `/>`）和最后一组 clipPath 起始之间', () => {
+      const svg = renderIconSvg('upg-10'); // 偏移最大（-15,-8）
+      const bgEnd = svg.indexOf('/>') + 2;
+      const lastClip = svg.lastIndexOf('<clipPath');
+      const groupOpen = svg.indexOf('<g transform="translate(-15 -8)">');
+      expect(bgEnd).toBeGreaterThan(0);
+      expect(groupOpen).toBeGreaterThanOrEqual(bgEnd);
+      expect(groupOpen).toBeLessThan(lastClip);
+      // 闭合 </g> 紧邻最后一组 clipPath 之前
+      expect(svg.substring(lastClip - 4, lastClip)).toBe('</g>');
+    });
+
+    it('平移组不破坏 token 解析与 clip id 唯一化：{{ 占位符为零、id 已 key 化', () => {
+      const svg = renderIconSvg('upg-01'); // 偏移 (0,4)
+      expect(svg).not.toContain('{{');
+      expect(svg).not.toContain('undefined');
+      expect(svg).toContain('id="upg-01-clip_0"');
+      expect(svg).toContain('url(#upg-01-clip_0)');
+      expect(svg).toContain('<g transform="translate(0 4)">');
+    });
+
+    it('renderIconSvg 缓存：同一 key 多次调用返回相同字符串（性能 + 行为稳定）', () => {
+      const a = renderIconSvg('upg-01');
+      const b = renderIconSvg('upg-01');
+      expect(a).toBe(b);
+    });
   });
 });

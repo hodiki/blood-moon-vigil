@@ -38,6 +38,7 @@ import { XpGem } from '@/xp/xp-gem';
 import { XpManager } from '@/xp/xp-manager';
 import { UpgradeState, rollThree, UPGRADE_BY_ID, type UpgradeOption } from '@/upgrade/upgrade-pool';
 import { applyUpgrade, type UpgradeWriteTargets } from '@/upgrade/upgrade-apply';
+import { playerEnemyContact, type ContactEnemy } from '@/combat/contact';
 import { LevelUpOverlay } from '@/ui/levelup-overlay';
 import { Hud, createHud } from '@/ui/hud';
 import { ResultsOverlay, createResultsOverlay } from '@/ui/results-overlay';
@@ -207,8 +208,20 @@ export class PlayScene extends Phaser.Scene {
     // 2) 敌人-障碍 AABB（复用 E1 障碍碰撞体系，E2-S5）
     this.physics.add.collider(this.enemyPool.group, this.mapSystem.blockers);
     // 3) 玩家-敌人接触伤害（overlap + attackTimer 间隔 + 玩家 0.5s 无敌帧，E8 §⑥.3；
-    //    Boss 同池 → 自动纳入本 overlap，接触伤害 30 / 间隔 2.0s 生效）
-    this.physics.add.overlap(this.player, this.enemyPool.group, this.onPlayerEnemyOverlap);
+    //    Boss 同池 → 自动纳入本 overlap，接触伤害 30 / 间隔 2.0s 生效）。
+    //    TASK-37 B1：箭头函数闭包绑 `this`（方法引用 `this.onPlayerEnemyOverlap` 直接传入
+    //    `add.overlap` 会丢失 `this` 绑定，物理 step 内 `this.player` 为 undefined → 首次接触
+    //    抛 `Cannot read properties of undefined (reading 'hurt')` → Phaser 主循环崩溃 → 画面卡死）。
+    this.physics.add.overlap(
+      this.player,
+      this.enemyPool.group,
+      (_o1, o2) =>
+        playerEnemyContact(
+          o2 as unknown as ContactEnemy,
+          this.time.now / 1000,
+          this.player,
+        ),
+    );
 
     // 事件订阅（ARCH §3.4：统一在 create 注册，shutdown 清空）
     GameEvents.on(GameEvent.PlayerDied, this.onPlayerDied, this);
@@ -318,26 +331,10 @@ export class PlayScene extends Phaser.Scene {
     if (this.isSmoke) this.tickSmoke();
   }
 
-  /** 玩家-敌人接触：按敌人攻击间隔造成伤害，玩家 0.5s 无敌帧合并同帧多敌（E8 §⑥.3） */
-  private onPlayerEnemyOverlap(
-    _obj1:
-      | Phaser.Types.Physics.Arcade.GameObjectWithBody
-      | Phaser.Physics.Arcade.Body
-      | Phaser.Physics.Arcade.StaticBody
-      | Phaser.Tilemaps.Tile,
-    obj2:
-      | Phaser.Types.Physics.Arcade.GameObjectWithBody
-      | Phaser.Physics.Arcade.Body
-      | Phaser.Physics.Arcade.StaticBody
-      | Phaser.Tilemaps.Tile,
-  ): void {
-    const enemy = obj2 as Enemy;
-    if (!enemy.active || enemy.attackTimer > 0) return;
-    enemy.attackTimer = enemy.attackInterval;
-    this.player.hurt(enemy.damage, this.time.now / 1000);
-  }
-
-  /** E4-S3 失败终局（玩家死亡） */
+  /**
+   * E4-S3 失败终局（玩家死亡）
+   * 由 core/events 订阅（PlayerDied），碰撞伤害在 src/combat/contact.playerEnemyContact 派发。
+   */
   private onPlayerDied(): void {
     this.finishGame(false);
   }

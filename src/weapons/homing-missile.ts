@@ -10,7 +10,7 @@
 
 import Phaser from 'phaser';
 import { WEAPONS } from '@/config/balance';
-import { steerToward, nearestEnemy, type TargetLike } from '@/weapons/weapon-math';
+import { steerToward, selectHomingTarget, type TargetLike } from '@/weapons/weapon-math';
 
 /** 飞弹需要感知的敌人集合（active 过滤由 nearestEnemy 完成） */
 export interface MissileEnemyContext {
@@ -79,14 +79,17 @@ export class HomingMissile extends Phaser.Physics.Arcade.Sprite {
     return this.canSplit;
   }
 
-  /** 每帧：寿命递减 → 重寻最近目标 → 400px/s 追踪；无目标原地消散（W8 §⑥.2） */
+  /** 每帧：寿命递减 → 选最近**未命中**目标 → 400px/s 追踪；寿命尽或全部目标已命中则原地消散
+   * （TASK-37 B2：穿透后必须忽略已命中目标，否则飞弹绕残敌抖动至 3s 寿命结束） */
   tick(dt: number, ctx: MissileEnemyContext): void {
     this.lifetime -= dt;
     if (this.lifetime <= 0) {
       this.dissipate();
       return;
     }
-    const target = nearestEnemy({ x: this.x, y: this.y }, ctx.enemies);
+    // TASK-37 B2：制导过滤已命中目标。穿透语义——命中 A 后继续寻找 B/C/…；
+    // 若场上无未命中目标则按 W8 §⑥.2「无目标原地消散」立即回收。
+    const target = selectHomingTarget({ x: this.x, y: this.y }, ctx.enemies, (e) => this.hasHit(e));
     if (!target) {
       this.dissipate();
       return;

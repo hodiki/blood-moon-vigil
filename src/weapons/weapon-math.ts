@@ -58,6 +58,32 @@ export function nearestEnemy<T extends TargetLike>(origin: Vec2, enemies: readon
   return best;
 }
 
+/**
+ * 飞弹制导目标选择（TASK-37 B2）：从候选敌人中选最近的一个，**跳过已命中目标**。
+ * 命中记录由调用方提供（missile.piercedTargets），用于穿透飞弹穿透后重新选目标、
+ * 以及「无新目标可命中」时触发消散（W8 §⑥.2 重寻/消散语义）。
+ *
+ * 若全部候选均已命中或未激活，返回 null。
+ */
+export function selectHomingTarget<T extends TargetLike>(
+  origin: Vec2,
+  enemies: readonly T[],
+  hasHit: (target: T) => boolean,
+): T | null {
+  let best: T | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const e of enemies) {
+    if (!e.active) continue;
+    if (hasHit(e)) continue; // TASK-37 B2：跳过已命中，防飞弹绕着已穿过的目标抖动至寿命结束
+    const d = distance(origin, e);
+    if (d < bestDist) {
+      bestDist = d;
+      best = e;
+    }
+  }
+  return best;
+}
+
 /** 度/秒 → 弧度/秒（环绕球转速换算，240°/s = 1.5s/圈） */
 export function degPerSecToRadPerSec(degPerSec: number): number {
   return (degPerSec * Math.PI) / 180;

@@ -33,6 +33,33 @@ export type WeaponIconKey = (typeof WEAPON_ICON_KEYS)[number];
 
 export type IconKey = UpgradeIconKey | WeaponIconKey;
 
+/**
+ * TASK-37 B3：图标视觉重心居中偏移表（viewBox 用户空间，px）。
+ * 数据来源：用 Playwright + SVGGraphicsElement.getCTM().transform×getBBox() 测量
+ * 15 项图标的「内容 bbox 中心 → viewBox 中心」差值；`null` 表示已居中无需平移。
+ * 应用时机：`renderIconSvg` 在 token 替换后、clip id 唯一化前，
+ * 在背景 rect 之后、最后一组描边 frame 的 `<clipPath>` 之前插入
+ * `<g transform="translate(dx dy)">…内容…</g>`，使图形重心对齐 viewBox 中心，
+ * 而底色 rect 与外层描边 frame 保持原位不变。
+ */
+export const ICON_CENTERS: Record<IconKey, { dx: number; dy: number } | null> = {
+  'upg-01': { dx: 0, dy: 4 },
+  'upg-02': { dx: 0, dy: 3 },
+  'upg-03': { dx: 4, dy: 0 },
+  'upg-04': { dx: -4, dy: -2 },
+  'upg-05': { dx: -5, dy: 2 },
+  'upg-06': null,
+  'upg-07': { dx: -5, dy: 0 },
+  'upg-08': { dx: 0, dy: 2 },
+  'upg-09': null,
+  'upg-10': { dx: -15, dy: -8 },
+  'upg-11': { dx: -4, dy: -2 },
+  'upg-12': { dx: -7, dy: -4 },
+  'weapon-01': { dx: 10, dy: 0 },
+  'weapon-02': { dx: 0, dy: 3 },
+  'weapon-03': null,
+};
+
 /** 图标 token 色板（全部派生自 balance token，禁止散落字面量） */
 export const ICON_COLORS = {
   /** 墨夜蓝黑：数值型前景 / 镂空瞳孔 */
@@ -83,8 +110,13 @@ export const ICONS: Record<IconKey, IconSpec> = {
  * 解析模板为最终 SVG 字符串：
  * 1. {{token}} → ICON_COLORS（未知 token 抛错，fail fast——禁止渲染坏图标）
  * 2. clipPath id 按 key 唯一化（同页多图标共存，防 url(#clip_N) 串扰）
+ * 3. TASK-37 B3：按 ICON_CENTERS 在「底色 rect 之后 / 最后一组描边 frame 的 clipPath 之前」
+ *    插入 `<g transform="translate(dx dy)">` 包裹内容（缓存：每 key 首次计算后复用）
  */
+const renderCache = new Map<IconKey, string>();
 export function renderIconSvg(key: IconKey): string {
+  const cached = renderCache.get(key);
+  if (cached !== undefined) return cached;
   const spec = ICONS[key];
   if (!spec) throw new Error('icons: 未知图标 key ' + key);
   let svg = spec.template.replace(/\{\{(\w+)\}\}/g, (_match, name: string) => {
@@ -92,8 +124,24 @@ export function renderIconSvg(key: IconKey): string {
     if (!value) throw new Error('icons: 未知 token「' + name + '」@ ' + key);
     return value;
   });
+  // TASK-37 B3：内容重心居中——底色 rect 之后、最后一组 clipPath（外层描边 frame）之前
+  // 插入平移组。clip-id 唯一化之前做（`<clipPath` 标签与位置不变；插入的 transform 不含 clip id）。
+  const center = ICON_CENTERS[key];
+  if (center) {
+    const afterBgEnd = svg.indexOf('/>') + 2; // 第一个 `/>` 紧后（背景 rect 自闭合）
+    const lastClipPath = svg.lastIndexOf('<clipPath');
+    if (afterBgEnd > 1 && lastClipPath > afterBgEnd) {
+      svg =
+        svg.slice(0, afterBgEnd) +
+        `<g transform="translate(${center.dx} ${center.dy})">` +
+        svg.slice(afterBgEnd, lastClipPath) +
+        '</g>' +
+        svg.slice(lastClipPath);
+    }
+  }
   svg = svg.replace(/id="clip_(\d+)"/g, 'id="' + key + '-clip_$1"');
   svg = svg.replace(/url\(#clip_(\d+)\)/g, 'url(#' + key + '-clip_$1)');
+  renderCache.set(key, svg);
   return svg;
 }
 
