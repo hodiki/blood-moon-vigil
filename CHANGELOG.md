@@ -41,6 +41,14 @@
 
 - 厚血怪保底生成 20s→40s（TASK-15）→ 回调 30s（TASK-18）：修复前期厚血堆积超判据（E2 C3）。
 - 冲击波改为"有目标才释放"（E2 C2 → E3 落地）：保宝石产出与清屏价值。
+- **TASK-41 R1 波次 3 · 剪影 v3.5 强化**（R1 反馈 E3「主角剪影看不出是啥」；方案 design/art-bible/silhouette-v35-spec.md，src/fx/procedural-textures.ts）：
+  - **P0-1 帽冠锥形尖顶**：playerShape 帽冠圆顶 → 锥形尖顶（两 pose 顶统一 y=-14；顺带修复 v3 pose1 顶 -15 的 0.8px 描边裁切 -16.8→-15.68 ✔）。
+  - **P0-2 帽檐加宽 22→26px**：x±11→±13（×1.12=14.56 ≤16 ✔），帽檐成为全身最宽特征（26/32=81% 帧宽）。
+  - **P0-3 提灯放大 + 光晕强化**：drawPlayerLantern 灯体 3×4→4×5、光晕 r2.8/α0.22 → 内圈 r4/α0.30 + 外圈 r5.2/α0.10（最右 x=15.7 ≤16 ✔）；保持描边层后单独绘制（TASK-36 约定）。
+  - **P1-1 披风开衩加深 + 下摆加宽**：开衩 1.5×7→2×9（pose0 y4..13 / pose1 y4..14）、pose0 下摆 ±12→±13.5（×1.12=15.12 ≤16 ✔）。
+  - **P1-2 屠夫屠刀加宽**：tankShape 刀身右缘 22→23（最右 x=23）、刃光 α0.55→0.75（48px 帧 x≤23.5 ≤24 ✔）。
+  - 纪律：帧名契约不变、色值全 token（player/playerAccent/uiPaper/INK/enemyTank）、描边 1.12 冷青维持（不加粗）；移动端 LOD 由渲染缩放天然达成（相机 zoom=1 双端 32px，≤16px 时最近邻 2:1 自然丢弃帽带/开衩/光晕外圈亚像素，16px 仍保留尖顶/宽檐/提灯核心；createCharactersAtlas 的 cfg.isMobile 钩子留作未来 16px LOD 收敛位）。
+  - 新增 11 项边界校验单测（tests/unit/fx/silhouette-bounds.test.ts，C-1 纪律：内容坐标 × 放大层 ≤ 帧半）；全量 342 单测（40 文件，基线 331 + 11）。
 - **TASK-39 R1 波次 2 平衡落地**（用户已拍板：移速 235 / 厚血经验 10 / 首级强制武器；方案 production/gdd/balance-r1-tuning.md）：
   - **E1 磁吸强化**：`GEM.MAGNET_RADIUS 80→140`、`MAGNET_SPEED 320→360`（src/config/balance.ts）；升级第 9 项（磁力+100%）随之 140→280→420 不贬值。
   - **E1 E-lite 宝石慢漂**：落地 >3s 且距玩家 >磁吸半径的宝石以 80px/s 慢漂向玩家（src/xp/xp-manager.ts stepGem 新增 drifting 分支 + XpGem.age 字段）；进入磁吸半径后切换 360px/s 吸入，保留"地面战利品/贪心张力"。

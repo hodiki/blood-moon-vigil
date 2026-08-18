@@ -1,8 +1,15 @@
 /**
- * fx/procedural-textures.ts —— 程序生成贴图 v3（资产审计升级 + TASK-28 美术表现力专项）
+ * fx/procedural-textures.ts —— 程序生成贴图 v3.5（资产审计升级 + TASK-28 美术表现力 + TASK-41 剪影强化）
  *
- * 版本：v3（TASK-22 剪影 v2 基础上的画面表现力升级 · Phase 6 穿插）
- * 保持「帧名 = 契约」：全部 v1/v2 帧 key 不变，实体代码零感知切换；v3 只做「加法」：
+ * 版本：v3.5（TASK-41 · silhouette-v35-spec · R1 波次3 玩家剪影辨识度强化）
+ * 保持「帧名 = 契约」：全部 v1/v2/v3 帧 key 不变，实体代码零感知切换；v3.5 只做「加法/替换」：
+ * - 玩家（playerShape）：帽冠圆顶 → 锥形尖顶（两 pose 顶统一 -14，顺带修 v3 pose1 顶 -15 的 0.8px 描边裁切）、
+ *   帽檐 22→26px（x±13 = 全身最宽）、披风开衩 1.5×7→2×9、pose0 下摆 ±12→±13.5。
+ * - 玩家提灯（drawPlayerLantern）：灯体 3×4→4×5、光晕 r2.8/α0.22 → 内圈 r4/α0.30 + 外圈 r5.2/α0.10（双层）。
+ * - 屠夫（tankShape）：屠刀刀身右缘 +1px（最右 x=23）、刃光 α0.55→0.75。
+ * 描边纪律：玩家仍 1.12 冷青（方案论证不加粗：1.16 会迫使 pose1 ±14 越界）；移动端 LOD 由渲染缩放天然达成
+ * （相机 zoom=1 双端 32px 实渲染；若未来 ≤16px，最近邻 2:1 下采样自然丢弃帽带/开衩/光晕外圈亚像素细节，
+ * 16px 下仍保留尖顶/宽檐/提灯核心 —— 收敛位 createCharactersAtlas 的 cfg.isMobile 钩子，见 silhouette-v35-spec §6）。
  * - 角色动画：5 实体（玩家/3 敌/Boss）各 +1 变体帧（`*-v`，pose=1），idle 慢速 / 移动快速两帧循环共用；
  *   characters 图集 256×256 → 512×256（变体帧放入同一图集 → 动画换帧不产生额外贴图批次）。
  * - 环境氛围：新增 'fx-ambient' 图集（512×256，LINEAR 过滤保证渐晕/光晕平滑）：
@@ -86,25 +93,31 @@ function drawSilhouette(
 }
 
 /**
- * 玩家·守夜人：圆帽 + 披风剪影（art-bible §3 玩家 = 圆帽披风；§4 月银白 + 冷青 2px 常亮描边）。
- * pose=0 基准；pose=1 变体：帽冠上移 1px + 披风外扩下摆（呼吸/移动摆动帧）。
- * TASK-36 P0-1b/P0-1c：帽带（帽檐下缘冷青横条）+ 三边开衩制式长袍（x=-8/0/+8，帧内等比）。
- * 中心 (0,0)，范围约 x[-12,12] y[-14,13]（放大 1.12 后仍在 32×32 帧内）。
+ * 玩家·守夜人：锥顶宽檐帽 + 披风剪影（art-bible §3 玩家 = 锥顶宽檐帽 + 披风 + 冷青提灯（TASK-41 v3.5）；
+ * §4 月银白 + 冷青 2px 常亮描边）。
+ * pose=0 基准；pose=1 变体：披风外扩下摆 + 开衩加深（呼吸/移动摆动帧）；帽冠两 pose 同顶，摆动只体现在披风。
+ * TASK-41 v3.5（silhouette-v35-spec §2）：帽冠圆顶→锥形尖顶（两 pose 顶统一 -14，修复 v3 pose1 顶 -15 的
+ * 0.8px 描边裁切）、帽檐 22→26px（x±13 = 全身最宽）、披风开衩 1.5×7→2×9、pose0 下摆 ±12→±13.5。
+ * 中心 (0,0)，范围约 x[-13.5,13.5] y[-14,14]（放大 1.12 后最外 ±15.68 ≤16 帧半，C-1 边界见 silhouette-v35-spec §5）。
  */
 function playerShape(ctx: Ctx, pose = 0): void {
   ctx.fillStyle = PALETTE.player;
-  // 帽冠（上半圆；变体上移 1px = 呼吸上浮）
+  // TASK-41 P0-1 帽冠：锥形尖顶（两 pose 同顶；肩 y=-6 与帽檐相接；顶 -14 → ×1.12=-15.68 ≤16 ✔ margin 0.32）
   ctx.beginPath();
-  ctx.arc(0, pose === 1 ? -7 : -6, 8, Math.PI, 0);
+  ctx.moveTo(-8, -6);
+  ctx.lineTo(-6, -12.5);
+  ctx.lineTo(0, -14);
+  ctx.lineTo(6, -12.5);
+  ctx.lineTo(8, -6);
   ctx.closePath();
   ctx.fill();
-  // 帽檐
-  ctx.fillRect(-11, -8, 22, 3);
-  // TASK-36 P0-1b 帽带：帽檐下缘 1px 冷青横条（制式夜巡帽；x±10 → ×1.12=11.2 ≤16 ✔）
+  // TASK-41 P0-2 帽檐（加宽 22→26px：x±13 → ×1.12=±14.56 ≤16 ✔ margin 1.44；26/32=81% 帧宽 = 全身最宽）
+  ctx.fillRect(-13, -8, 26, 3);
+  // TASK-36 P0-1b 帽带：帽檐下缘 1px 冷青横条（x±10 → ×1.12=11.2 ≤16 ✔；v3.5 决策记录 P1-6 保持原样）
   ctx.fillStyle = hexToRgba(PALETTE.playerAccent, 0.75);
   ctx.fillRect(-10, -5, 20, 1);
   ctx.fillStyle = PALETTE.player;
-  // TASK-36 P0-1c 披风：制式长袍梯形 + 三边开衩（INK 镂空；变体外扩 + 下摆下移 = 摆动/奔跑）
+  // TASK-36 P0-1c + TASK-41 P1-4 披风：制式长袍梯形 + 三边开衩（INK 镂空；开衩 1.5×7→2×9 加深加宽）
   if (pose === 1) {
     ctx.beginPath();
     ctx.moveTo(-9, -6);
@@ -113,41 +126,45 @@ function playerShape(ctx: Ctx, pose = 0): void {
     ctx.lineTo(-14, 14);
     ctx.closePath();
     ctx.fill();
-    // 三边开衩（INK 镂空，宽 1.5，从下摆上切；最外点 x=±14 → ×1.12=15.68 ≤16 ✔）
+    // 开衩（pose1 底 y=14 与披风对齐；x=±8.5 → ×1.12=9.52 ✔）
     ctx.fillStyle = INK;
-    ctx.fillRect(-8.75, 5, 1.5, 9);
-    ctx.fillRect(-0.75, 5, 1.5, 9);
-    ctx.fillRect(7.25, 5, 1.5, 9);
+    ctx.fillRect(-8.5, 4, 2, 10);
+    ctx.fillRect(-1, 4, 2, 10);
+    ctx.fillRect(6.5, 4, 2, 10);
     return;
   }
   ctx.beginPath();
   ctx.moveTo(-9, -5);
   ctx.lineTo(9, -5);
-  ctx.lineTo(12, 13);
-  ctx.lineTo(-12, 13);
+  ctx.lineTo(13.5, 13);
+  ctx.lineTo(-13.5, 13);
   ctx.closePath();
   ctx.fill();
-  // 三边开衩（INK 镂空，宽 1.5，从下摆上切；最外点 x=±12 → ×1.12=13.44 ≤16 ✔）
+  // 开衩（pose0 底 y=13；x=±8.5 → ×1.12=9.52 ✔）
   ctx.fillStyle = INK;
-  ctx.fillRect(-8.75, 6, 1.5, 7);
-  ctx.fillRect(-0.75, 6, 1.5, 7);
-  ctx.fillRect(7.25, 6, 1.5, 7);
+  ctx.fillRect(-8.5, 4, 2, 9);
+  ctx.fillRect(-1, 4, 2, 9);
+  ctx.fillRect(6.5, 4, 2, 9);
 }
 
 /**
- * TASK-36 P0-1a 守夜人冷青提灯：身份光源（描边后正常比例绘制，同帧 32×32 内）。
- * 灯杆/灯体/灯芯光 + 柔光外圈；最右点 x=14.8 ≤16 ✔，y∈[-6,2] ✔。
+ * TASK-41 v3.5 P0-3 守夜人冷青提灯：身份光源（描边后正常比例绘制，不参与 1.12 放大层，同帧 32×32 内）。
+ * 画序：光晕外圈 → 光晕内圈 → 灯杆 → 灯体 → 灯芯（光晕在最底层）。
+ * 最右 x=10.5+5.2=15.7 ≤16 ✔（安全上限，勿加 r≥5.5 会贴 16 裁切）；y∈[-4.7,5.7] ✔、灯杆 y=-6 ✔。
  */
 function drawPlayerLantern(ctx: Ctx): void {
-  // 灯杆：从披风右肩伸出的细杆
+  // 光晕外圈（宽柔光，α0.10；移动端 ≤16px 无意义，由渲染缩放自然省略）
+  fillCircle(ctx, 10.5, 0.5, 5.2, PALETTE.playerAccent, 0.1);
+  // 光晕内圈（比 v3 r2.8/α0.22 大且亮：r4/α0.30）
+  fillCircle(ctx, 10.5, 0.5, 4.0, PALETTE.playerAccent, 0.3);
+  // 灯杆（从帽檐右下缘伸出，避开加宽后的帽檐区；x 7..8.5, y -6..-1）
   ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.55);
-  ctx.fillRect(8, -6, 1.5, 5);
-  // 灯体：3×4px 方形灯（冷青）
+  ctx.fillRect(7, -6, 1.5, 5);
+  // 灯体（4×5，比 v3 3×4 大 67%；x 8.5..12.5, y -2..3）
   ctx.fillStyle = hexToRgba(PALETTE.playerAccent, 0.95);
-  ctx.fillRect(10.5, -1.5, 3, 4);
-  // 灯芯光 + 柔光外圈
-  fillCircle(ctx, 12, 0, 1.5, PALETTE.playerAccent, 0.8);
-  fillCircle(ctx, 12, 0, 2.8, PALETTE.playerAccent, 0.22);
+  ctx.fillRect(8.5, -2, 4, 5);
+  // 灯芯
+  fillCircle(ctx, 10.5, 0.5, 2.2, PALETTE.playerAccent, 0.85);
 }
 
 /** 敌人·行尸（zombie）：骷髅头剪影（art-bible §3 普通敌 = 骷髅头），暗血红纯剪影。
@@ -276,19 +293,20 @@ function tankShape(ctx: Ctx, pose = 0): void {
   ctx.lineTo(pose === 1 ? -19 : -18, 12);
   ctx.closePath();
   ctx.fill();
-  // TASK-36 P0-4a 屠刀（右手侧；刀柄 INK + 刀身主体 + 纸白刃光；最右 x=22.5 ≤24 ✔）
+  // TASK-36 P0-4a + TASK-41 P1-A 屠刀（右手侧；刀柄 INK + 刀身主体 + 纸白刃光）
+  // v3.5：刀身右缘 +1px（22→23 / 21→22），刃光 α0.55→0.75；最右 x=23（刃光 22.5..23.5）≤24 ✔（48px 帧无放大层）
   ctx.fillStyle = hexToRgba(INK, 0.85);
   ctx.fillRect(14, -2, 3, 8); // 刀柄
   ctx.fillStyle = PALETTE.enemyTank;
   ctx.beginPath();
   ctx.moveTo(17, -5);
-  ctx.lineTo(22, -3);
-  ctx.lineTo(21, 10);
+  ctx.lineTo(23, -3);
+  ctx.lineTo(22, 10);
   ctx.lineTo(17, 9);
   ctx.closePath();
-  ctx.fill(); // 刀身
-  ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.55);
-  ctx.fillRect(21.5, -3.5, 1, 13); // 刀背刃光（x 21.5..22.5）
+  ctx.fill(); // 刀身（右缘 +1px）
+  ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.75);
+  ctx.fillRect(22.5, -3.5, 1, 13); // 刀背刃光（x 22.5..23.5）
   // TASK-36 P0-4b 围裙带（躯干 y=3..4.5 处 1.5px 深色横带；pose1 肩更宽 x∈[-17,17] ≤24 ✔）
   ctx.fillStyle = hexToRgba(INK, 0.7);
   ctx.fillRect(pose === 1 ? -17 : -15, 3, pose === 1 ? 34 : 30, 1.5);
