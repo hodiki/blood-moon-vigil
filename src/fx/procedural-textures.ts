@@ -76,20 +76,23 @@ function fillDiamond(ctx: Ctx, cx: number, cy: number, r: number, color: string)
  * - 玩家需描边（冷青 2px）→ 先画放大 1.12× 的描边色层，再画正常主体层，露出边缘成描边；
  * - 普通敌纯剪影（RV-C1）→ 单层，无描边。
  * 镂空（眼窝/牙口/瞳孔）画在形状集合内，主体层会盖住放大层对应处，仅边缘露出描边色。
+ * TASK-42：shape 回调收 `bodyColor?` —— 放大层显式传 `outlineColor`，主体层用 shape 默认
+ * （玩家=月银白 / Boss=COLOR_MAIN）。此前 shape 内部写死 fillStyle 覆盖了 outlineColor，
+ * 导致玩家冷青描边从未可见（v3 起 pre-existing）。
  */
 function drawSilhouette(
   ctx: Ctx,
-  shape: (g: Ctx) => void,
+  shape: (g: Ctx, bodyColor?: string) => void,
   outlineColor?: string,
   outlineScale = 1.12,
 ): void {
   if (outlineColor) {
     ctx.save();
     ctx.scale(outlineScale, outlineScale);
-    shape(ctx);
+    shape(ctx, outlineColor); // TASK-42：放大层用 outlineColor（玩家=冷青 accent）
     ctx.restore();
   }
-  shape(ctx);
+  shape(ctx); // 主体层：shape 默认 bodyColor（玩家=月银白）
 }
 
 /**
@@ -100,8 +103,8 @@ function drawSilhouette(
  * 0.8px 描边裁切）、帽檐 22→26px（x±13 = 全身最宽）、披风开衩 1.5×7→2×9、pose0 下摆 ±12→±13.5。
  * 中心 (0,0)，范围约 x[-13.5,13.5] y[-14,14]（放大 1.12 后最外 ±15.68 ≤16 帧半，C-1 边界见 silhouette-v35-spec §5）。
  */
-function playerShape(ctx: Ctx, pose = 0): void {
-  ctx.fillStyle = PALETTE.player;
+function playerShape(ctx: Ctx, pose = 0, bodyColor?: string): void {
+  ctx.fillStyle = bodyColor ?? PALETTE.player;
   // TASK-41 P0-1 帽冠：锥形尖顶（两 pose 同顶；肩 y=-6 与帽檐相接；顶 -14 → ×1.12=-15.68 ≤16 ✔ margin 0.32）
   ctx.beginPath();
   ctx.moveTo(-8, -6);
@@ -116,7 +119,7 @@ function playerShape(ctx: Ctx, pose = 0): void {
   // TASK-36 P0-1b 帽带：帽檐下缘 1px 冷青横条（x±10 → ×1.12=11.2 ≤16 ✔；v3.5 决策记录 P1-6 保持原样）
   ctx.fillStyle = hexToRgba(PALETTE.playerAccent, 0.75);
   ctx.fillRect(-10, -5, 20, 1);
-  ctx.fillStyle = PALETTE.player;
+  ctx.fillStyle = bodyColor ?? PALETTE.player;
   // TASK-36 P0-1c + TASK-41 P1-4 披风：制式长袍梯形 + 三边开衩（INK 镂空；开衩 1.5×7→2×9 加深加宽）
   if (pose === 1) {
     ctx.beginPath();
@@ -334,11 +337,11 @@ function tankShape(ctx: Ctx, pose = 0): void {
  * 中心 (0,0)，范围约 x[-56,56] y[-60,44]（C-1：侧翼/披风收至 56，放大 1.05 后最外点 ≈58.8，
  * 即 60+58.8=118.8 < 120px 帧界 ✔）。
  */
-function bossShape(ctx: Ctx, pose = 0): void {
+function bossShape(ctx: Ctx, pose = 0, bodyColor?: string): void {
   // 披风主体（倒梯形；变体外扩）
   const w = pose === 1 ? 48 : 42;
   const f = pose === 1 ? 56 : 52;
-  ctx.fillStyle = BOSS.COLOR_MAIN;
+  ctx.fillStyle = bodyColor ?? BOSS.COLOR_MAIN;
   ctx.beginPath();
   ctx.moveTo(-w, -22);
   ctx.lineTo(w, -22);
@@ -348,7 +351,7 @@ function bossShape(ctx: Ctx, pose = 0): void {
   ctx.fill();
   // TASK-36 P0-5b 仪式权杖（画序：披风后、侧翼前——翼盖杖杆下部 2px 形成"持杖"错觉；
   // 最右 x=53 → ×1.05=55.65 → 60+55.65=115.65 ≤120 ✔；底 y=30 → 91.5 ≤120 ✔）
-  ctx.fillStyle = BOSS.COLOR_MAIN;
+  ctx.fillStyle = bodyColor ?? BOSS.COLOR_MAIN;
   ctx.fillRect(47, -28, 2, 58); // 杖杆 y -28..30
   fillCircle(ctx, 48, -32, 4, PALETTE.danger); // 杖首红宝石
   ctx.strokeStyle = BOSS.COLOR_GOLD;
@@ -529,7 +532,7 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   // 玩家：圆帽披风，冷青 2px 烘焙描边（art-bible §4，帧 32×32 @ (0,0)）
   ctx.save();
   ctx.translate(16, 16);
-  drawSilhouette(ctx, (g) => playerShape(g, 0), PALETTE.playerAccent, 1.12);
+  drawSilhouette(ctx, (g, color) => playerShape(g, 0, color), PALETTE.playerAccent, 1.12);
   drawPlayerLantern(ctx); // TASK-36 P0-1a 冷青提灯（描边后正常比例，避免放大层残色）
   ctx.restore();
 
@@ -550,7 +553,7 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   // Boss：猩红金剪影 @ (0,56)，120×120；桌面烘焙猩红 4px 描边（outlineEnabled=true）
   ctx.save();
   ctx.translate(60, 56 + 60);
-  drawSilhouette(ctx, (g) => bossShape(g, 0), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
+  drawSilhouette(ctx, (g, color) => bossShape(g, 0, color), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
   ctx.restore();
 
   // 飞弹：月银白箭头弹体 + 冷青尾焰（帧 16×12 @ (156,0)，朝向 0rad 右）
@@ -585,7 +588,7 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   // 玩家变体 @ (120,56) 32×32
   ctx.save();
   ctx.translate(120 + 16, 56 + 16);
-  drawSilhouette(ctx, (g) => playerShape(g, 1), PALETTE.playerAccent, 1.12);
+  drawSilhouette(ctx, (g, color) => playerShape(g, 1, color), PALETTE.playerAccent, 1.12);
   drawPlayerLantern(ctx); // TASK-36 P0-1a 冷青提灯（同帧变体）
   ctx.restore();
   // 僵尸变体 @ (120,88) 28×28
@@ -606,7 +609,7 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   // Boss 变体 @ (160,56) 120×120（与玩家/僵尸/疾行变体无重叠，见注释布局）
   ctx.save();
   ctx.translate(160 + 60, 56 + 60);
-  drawSilhouette(ctx, (g) => bossShape(g, 1), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
+  drawSilhouette(ctx, (g, color) => bossShape(g, 1, color), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
   ctx.restore();
 
   canvas.refresh();

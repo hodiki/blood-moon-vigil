@@ -65,6 +65,7 @@
 - **P0 Bug1**：选卡后 WASD 持续按住失效（键盘恢复守卫）。
 - **P0 Bug2**：移动端 DOM 覆盖层视口适配（升级/结算层在真机错位）。
 - **P0 Bug3**：飞弹分裂无限弹射（同屏子弹数超预算 8；修复后 1 主弹 + 2 次级 ≤8）。
+- **TASK-42 玩家冷青描边生效**（TASK-41 顺带发现的 pre-existing；src/fx/procedural-textures.ts）：`drawSilhouette` 放大层设计意图为「先画 outlineColor（玩家=冷青 PALETTE.playerAccent）1.12× → 再画主体白层」，但 `playerShape`/`bossShape` 内部首行 `ctx.fillStyle = PALETTE.player / BOSS.COLOR_MAIN` 覆盖了 outlineColor → 放大层实际是白色/同色，**玩家冷青 2px 描边自 v3 起从未可见**（白色 halo 隐于白身）。修复（方案 B，shape 收 bodyColor 参数）：`drawSilhouette` 放大层显式 `shape(ctx, outlineColor)`、主体层用 shape 默认 bodyColor；`playerShape(ctx, pose, bodyColor?)` / `bossShape(ctx, pose, bodyColor?)` 用 `bodyColor ?? 默认色`；4 处图集闭包改为 `(g, color) => playerShape(g, pose, color)`。效果：玩家 = 月银白主体 + 可见冷青 ~2px 描边带（1.12× 边缘，97 描边像素实测）；Boss 描边 = 猩红 COLOR_MAIN 与身体同色保持现状不变；普通敌（zombie/wolf/tank）无 outlineColor 保持纯剪影；帧名契约/token/TASK-41 v3.5 细节全部不变（描边 1.12 为安全上限——1.15× 会使 pose1 ±14→16.1 越帧）。
 - **TASK-34 Bug-1**：守夜之环轨道残影「p-ring」显示为半圆（`drawParticleShapes` 环心 `ox+40` 偏离帧中心 `ox+60` 20px，左半被帧界裁掉；修复后环心对齐帧中心 (188,24)，r=22 → 完整圆环；其它粒子形状经核验 p-circle/p-square/p-streak/p-diamond 绘制坐标均在帧内，未受影响）。
 - **TASK-34 Bug-2**：自动飞弹「血月猎手」渲染异常（`weapon-system` 调 `acquire(x,y,'missile')` 把帧名 'missile' 误传入池契约的 **texture** 槽；HomingMissile.launch() 不像 Enemy.spawn() 那样纠正帧 → 飞弹挂在 Phaser `__MISSING` 全透明纹理上不可见。修复：两处 `acquire` 调用补齐 `'characters'` 纹理参数，帧契约 `'missile'` 不变、实体零改动；池契约与其它调用方（Enemy.spawn 显式 setTexture 纠正 / PlayScene Boss 'enemy-boss' / XpGem 'effects'+'gem'）的差异在注释中点明）。
 - **TASK-37 R1 波次 1（玩家撞怪卡死 / 飞弹残留 / 图标居中）**：
