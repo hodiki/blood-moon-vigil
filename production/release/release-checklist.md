@@ -9,9 +9,9 @@
 | # | 门禁项 | 通过标准 | 数据源 / 责任 | 状态 |
 |---|---|---|---|---|
 | G1 | R3 Playtest | 出口判定 PASS：concept §9 全项 + 双端矩阵验收达标 | playtest-plan §6 结算表 / 严守真 | ☐ |
-| G2 | M2 性能三闸 | 桌面 avg≥58 且 min≥50；移动 avg≥30；峰值≤400/250；子弹≤8；draw call≤8 | `npm run bench` + `bench:browser` + 真机 / 程基岩 | ☐ |
-| G3 | 单元测试 | ≥292 全绿（当前 35 文件 292 passed） | `npm test` / 严守真 | ☐ |
-| G4 | 构建 | `npm run build` 退出码 0（tsc --noEmit && vite build） | 本地/CI / 程基岩 | ☐ |
+| G2 | M2 性能三闸 | 桌面 avg≥58 且 min≥50；移动 avg≥30；峰值≤400/250；子弹≤8；draw call≤8 | `npm run bench` + `bench:browser` + 真机 / 程基岩 | ☑ 无头基准（2026-08-18）：桌面峰值400/子弹7.96/draw call5、移动峰值250/draw call5，断言全过；bench:browser+真机 FPS 待 R1 补 |
+| G3 | 单元测试 | ≥292 全绿 | `npm test` / 严守真 | ☑ **309 项 / 37 文件全绿**（2026-08-18，TASK-36 后基线）|
+| G4 | 构建 | `npm run build` 退出码 0（tsc --noEmit && vite build） | 本地/CI / 程基岩 | ☑ 多次 build exit 0（2026-08-18，TASK-36 版 dist 已上线轻应用+Lighthouse）|
 | G5 | 双端冒烟 | 桌面 Chrome + 移动真机：开局 5s 首怪、HUD LV1、结算可进、0 console error | 冒烟手测 / 严守真 | ☐ |
 | G6 | 可访问性 Basic | §3 八条落实：双编码/对比度/触控热区/字号/减少闪烁/焦点可见/高对比/双通道 | accessibility-tiers §3 / 林绘澄 | ☐ |
 | G7 | Bug 门禁 | 无未关闭 P0/P1 Bug | QA bug 记录 / 严守真 | ☐ |
