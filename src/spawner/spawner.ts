@@ -27,17 +27,20 @@ export interface SpawnStage {
   tankGuaranteeEvery: number;
 }
 
-/** 构成权重阶段表（spawner §③：0–3min / 3–8min / 8–15min / 15–20min；TASK-39 R1 波次2 权重重构） */
+/** 构成权重阶段表（spawner §③：0–3min / 3–8min / 8–15min / 15–20min；
+ * TASK-39 R1 波次2 权重重构；TASK-43 R2 精英提前 + 密度提速：
+ * 0–3min 加随机 0.5% 厚血（首见精英 ~1.5–3min，保底 3.5min 兜底，模拟 8/8 种子 ≤3.2min）、
+ * 3–8min 随机 2%→3%、中后段小幅上调 —— 全程 5min 节点场上厚血 ≤2（C3 FUNC-E2-07 仍达标）） */
 export const SPAWN_STAGES: readonly SpawnStage[] = [
-  { start: 0, end: 180, weights: { zombie: 0.9, wolf: 0.1, tank: 0 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
-  { start: 180, end: 480, weights: { zombie: 0.78, wolf: 0.2, tank: 0.02 }, tankGuaranteeEvery: SPAWNER.TANK_GUARANTEE_EVERY_SECONDS },
-  { start: 480, end: 900, weights: { zombie: 0.55, wolf: 0.36, tank: 0.09 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
-  { start: 900, end: SPAWNER.BOSS_TIME, weights: { zombie: 0.45, wolf: 0.35, tank: 0.16 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
+  { start: 0, end: 180, weights: { zombie: 0.895, wolf: 0.1, tank: 0.005 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
+  { start: 180, end: 480, weights: { zombie: 0.77, wolf: 0.2, tank: 0.03 }, tankGuaranteeEvery: SPAWNER.TANK_GUARANTEE_EVERY_SECONDS },
+  { start: 480, end: 900, weights: { zombie: 0.53, wolf: 0.36, tank: 0.11 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
+  { start: 900, end: SPAWNER.BOSS_TIME, weights: { zombie: 0.47, wolf: 0.35, tank: 0.18 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
 ] as const;
 
 /**
- * 生成预算（点数/s）：budget(t) = 1.2 × (1 + 3.0×t/1200) × (1 + 0.3×sin(2πt/75))
- * 完整公式（含正弦波峰波谷，spawner §③；TASK-39 R1 波次2 参数已收敛于 balance SPAWNER）。
+ * 生成预算（点数/s）：budget(t) = 1.2 × (1 + 3.3×t/1200) × (1 + 0.3×sin(2πt/75))
+ * 完整公式（含正弦波峰波谷，spawner §③；TASK-39 R1 波次2 + TASK-43 R2 参数收敛于 balance SPAWNER）。
  */
 export function budget(t: number): number {
   const linear = 1 + (SPAWNER.LINEAR_SCALE * t) / SPAWNER.LINEAR_TOTAL_SECONDS;

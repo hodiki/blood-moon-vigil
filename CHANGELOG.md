@@ -59,9 +59,18 @@
   - **E2 厚血经验**：`ENEMIES.tank.xp 15→10`（E3 预授权判据 R1 Lv47 触发，压后期经验通胀）。
   - **文档同步**：`design/art-bible/art-bible.md` §4 精英"3 倍经验"口径改为 10、§7 拾取磁吸 80→140px（附 E-lite 漂移说明）。
   - 单测：新增 12 项（xp-manager 漂移 3 + 集成 1、upgrade-pool forceWeapon 4、tank-warning 时序 2、balance TANK_WARNING 断言并入既有项）；同步更新 §5.2 清单（balance/enemy-panel/player-stats/spawner/xp-manager 断言 220→235、80→140、15→10、预算新期望值）。全量 331 单测（38 文件，基线 321 + 10），`npm run bench` 通过（峰值 400/250、draw call 5、totalSpawned 3587）。
+- **TASK-43 R2 节奏加速**（R2 用户反馈「约刷小怪到 15 级后才出现精英，希望继续加快节奏」；目标 3–5min 见首只精英 = 屠夫 600HP；方案 src/config/balance.ts + src/spawner/spawner.ts）：
+  - **整体密度 +10%**：`SPAWNER.LINEAR_SCALE 3.0→3.3`，20min 均值预算 4.8→**5.16 点/s**，前期小怪/经验节奏同步提速；`WAVE_AMPLITUDE 0.3` 不动（峰谷比 1.86 仍 ≥40%，S8-3）。
+  - **精英更早（双路径保障 3–5min）**：`SPAWN_STAGES[0]` 加随机 0.5% 厚血（0–3min），`SPAWN_STAGES[1]` 随机 2%→**3%**（3–8min），`SPAWN_STAGES[2/3]` 0.09→**0.11** / 0.16→**0.18**（中后段小幅上调，"中期到 Boss 过渡更平滑"）。`TANK_GUARANTEE_EVERY_SECONDS 30` 不动（C-7 决策记录：再降会退回"厚血未发现"，本次用"0–3min 随机 0.5% + 3–8min 随机 3% + 30s 保底"双路径达标，保底 3.5min 兜底）。模型实测（8/8 种子）：首只厚血 1.5–3.2min 出现，5min 节点场上厚血 ≤2（C3 FUNC-E2-07 仍达标），20min 经验有效值 ≥3000 / 可达 Lv30+（E3 预授权判据仍满足）。
+  - **不破坏硬标准**：B1 接触链（contact.ts 纯函数）/ 首级强制武器（forceWeaponFirst）/ 屠夫预警 2.5s（TANK_WARNING_SECONDS）/ 移动端降档配置均不动；C-7 保底不动；敌人面板 HP/伤害/移速/半径不动（enemies §①"面板恒定"硬设计）。
+  - **不破坏前置单测**：`c3-tank-simulation` 3 项（保底 30s 5min on-field ≤2 仍 ✔，3 个断言 0.05 内复算验证）、`tank-warning` 2 项（保底未动 + Math.random=0.5 mock 仍抽到僵尸，时序不变）、`xp-curve` 4 项（≥3000 / Lv≥30 下界仍 ✔）、`perf-assert`（峰值 400/250、draw call 5、totalSpawned 随 LINEAR ↑ 至 ~3900 仍 >3000）。同步更新断言 6 项（balance LINEAR_SCALE 3.0→3.3、spawner budget/budgetMean/权重/边界）+ 6 项陈旧期望值（2.1/3.0/4.8 → 2.19/3.18/5.16；90/10/0 → 89.5/10/0.5；78/20/2 → 77/20/3；55/36/9 → 53/36/11；45/35/16 → 47/35/18；边界 0.9/0.78/0.55/0.45 → 0.895/0.77/0.53/0.47），全部以"新模型实测值"为基线（非"改到绿"）。
 
 ### Fixed
 
+- **TASK-43 R2 无敌回归 + 血条消失**（R2 反馈 P0：「看不到主角血条、碰怪不扣血不失败，处于无敌状态」）：
+  - **运行时取证根因（Playwright + debug hook，1280×720 视口）**：伤害链本身正常（强制瞬移接触 hp 100→90、hp:changed 事件触发、120s 站桩+自动选卡自然接触 116→86/96→83/83→82 三次扣血、降低 hp 至 15 强制群殴 hp→0 触发 player:died → 「守夜失败」结算页）；**真正的根因 = DOM 覆盖层与画布不对齐**：Phaser Scale.FIT 把画布按视口等比缩放并居中（letterbox），但 `#ui-overlay`（含 HUD/升级/结算/暂停/启动覆盖层）此前以视口坐标系直接定位（CSS `inset: 0` + 设计空间坐标如 HP 条 top:1018px）。在视口高度 < 设计高（1080）的常见笔记本/轻应用窗口（1280×720 / 1366×768）下，**底部 HUD（HP 数值 1018 / HP 条 1042）渲染到可视区外** → 用户「看不到血条」；叠加自动飞弹远程击杀 + 玩家走位拉扯实际很少被怪贴身 → 看不到 HP 掉落 → 误判「无敌」（实际是"看不到 + 罕见被摸"）。无 console.error / pageerror / 异常（无 B1 类崩溃，伤害系统从 TASK-37 修复后即正常）。
+  - **修复（架构级，保留 ux-spec 布局）**：新 `src/ui/overlay-scale.ts`（含纯函数 `computeOverlayLayout` 可脱离 DOM 单测 + `syncOverlayToCanvas(game)`）—— 把 `#ui-overlay` 同步到画布「渲染矩形 + 缩放」（布局按设计空间 1920×1080，transform: scale 缩放到画布实际渲染尺寸，再定位到画布左上角）。`main.ts` 在游戏创建后 + `Phaser.Scale.Events.RESIZE` + `window.resize` 三处调用同步函数。效果：1280×720 下 HP 条 (16,695) / HP 数值 (16,679) `inViewport: true` ✔；1366×768 下 (17,741) / (17,724) ✔；1920×1080 全屏 (24,1042) / (24,1018) 零回归（scale=1）。各覆盖层（升级卡/结算/暂停/启动）`inset:0` + 居中布局天然随 transform 落在画布内，指针命中由浏览器按变换矩阵反算（无破坏）。**不引入**新依赖、**不修改**任何覆盖层 DOM 结构/交互/动画（升级冷青描边 + 缩放、结算三段式统计 + 再来一局等全部沿用）、**不破坏** ux-spec §2 桌面 HUD（HP 仍底左、LV/XP 仍顶左、武器槽顶右）。
+  - **回归单测**：新增 6 项 `tests/unit/ui/overlay-scale.test.ts`（满尺寸零回归 / 1280×720 HP 在视口内 / 1366×768 HP 在视口内 / 方形视口 letterbox HP 在视口内 / game-root 非零偏移 / designWidth≤0 防御）。**全套** 348/348 单测（41 文件，基线 342 + 6）绿、`npx tsc --noEmit` 0、`npm run bench` 通过（峰值 400/250、draw call 5）；Playwright e2e 冒烟通过；3 视口下死亡流程截图清晰：HP 0/100 显式可见、结算「守夜失败」居中可点。
 - **P0 Bug1**：选卡后 WASD 持续按住失效（键盘恢复守卫）。
 - **P0 Bug2**：移动端 DOM 覆盖层视口适配（升级/结算层在真机错位）。
 - **P0 Bug3**：飞弹分裂无限弹射（同屏子弹数超预算 8；修复后 1 主弹 + 2 次级 ≤8）。

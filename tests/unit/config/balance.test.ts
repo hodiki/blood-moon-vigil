@@ -76,10 +76,10 @@ describe('武器数值常量与 weapons §③ 一致（E2-S3 基线）', () => {
   });
 });
 
-describe('生成器常量与 spawner §③ 一致（E2-S4 基线；TASK-39 R1 波次2 预算参数）', () => {
-  it('budget 参数：基数 1.2 / 线性 3.0 / 周期 1200 / 波幅 0.3 / 周期 75s', () => {
+describe('生成器常量与 spawner §③ 一致（E2-S4 基线；TASK-39 R1 波次2 + TASK-43 R2 预算参数）', () => {
+  it('budget 参数：基数 1.2 / 线性 3.3 / 周期 1200 / 波幅 0.3 / 周期 75s', () => {
     expect(SPAWNER.BASE_BUDGET).toBe(1.2);
-    expect(SPAWNER.LINEAR_SCALE).toBe(3.0);
+    expect(SPAWNER.LINEAR_SCALE).toBe(3.3);
     expect(SPAWNER.LINEAR_TOTAL_SECONDS).toBe(1200);
     expect(SPAWNER.WAVE_AMPLITUDE).toBe(0.3);
     expect(SPAWNER.WAVE_PERIOD_SECONDS).toBe(75);

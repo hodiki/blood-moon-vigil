@@ -129,13 +129,14 @@ export const INITIAL_DPS_REFERENCE = 33.5;
 
 /**
  * 敌潮生成器（spawner §③，E2-S4 / spawner.test 埋点断言）。
- * budget(t) = 1.2 × (1 + 3.0×t/1200) × (1 + 0.3×sin(2πt/75))。
- * TASK-39 R1 波次2：LINEAR_SCALE 2.5→3.0（20min 均值 4.2→4.8 点/s，中后段密度提升）、
- * WAVE_AMPLITUDE 0.4→0.3（波谷变浅 ×0.6→×0.7，前期不空场；峰谷比 2.33→1.86 仍 ≥40%）。
+ * budget(t) = 1.2 × (1 + 3.3×t/1200) × (1 + 0.3×sin(2πt/75))。
+ * TASK-39 R1 波次2：LINEAR_SCALE 2.5→3.0、WAVE_AMPLITUDE 0.4→0.3；
+ * TASK-43 R2：LINEAR_SCALE 3.0→3.3（20min 均值 4.8→5.16 点/s，整体 +10% 密度，
+ * 前期小怪/经验节奏提速）；WAVE_AMPLITUDE 0.3 不动（峰谷比 1.86 仍 ≥40%，S8-3）。
  */
 export const SPAWNER = {
   BASE_BUDGET: 1.2, // 基数 点/s
-  LINEAR_SCALE: 3.0, // 线性项系数（R1 波次2）
+  LINEAR_SCALE: 3.3, // 线性项系数（TASK-43 R2）
   LINEAR_TOTAL_SECONDS: 1200, // 20 分钟线性项分母
   WAVE_AMPLITUDE: 0.3, // 正弦波幅 ±30%（R1 波次2；仍满足相邻周期差异 ≥40%）
   WAVE_PERIOD_SECONDS: 75, // 正弦周期
@@ -145,8 +146,10 @@ export const SPAWNER = {
    * 3–8min 每 N 秒保底 1 厚血。
    * E3 C3 首验调整：20s → 40s（design-review-e2 C3，TASK-15 预授权）；
    * E4 Sprint 4 用户真机回调（TASK-18 授权）：40s → 30s；
-   * TASK-39 R1 波次2：保持 30s 不动（C-7 决策记录：再降会退回"厚血未发现"，
-   * 本次用「血月印记预警 + 随机 3%→2% 减少叠加」解决"突兀"，而非减数量）。
+   * TASK-39 R1 波次2：保持 30s 不动（C-7 决策记录：再降会退回"厚血未发现"）；
+   * TASK-43 R2：保持 30s —— 提前首见精英改由「0–3min 随机 0.5% + 3–8min 随机 3%」
+   * 双路径达成（模拟：8/8 种子 3.2min 内见首只，保底 3.5min 兜底），不再压缩保底
+   * 以免 5min 节点场上厚血超 C3 ≤2 判据（FUNC-E2-07）。
    */
   TANK_GUARANTEE_EVERY_SECONDS: 30,
   /** TASK-39 E2 屠夫预警：保底厚血出生前 N 秒在出生点显示血月印记（红圈精灵 + 低音） */

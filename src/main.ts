@@ -10,6 +10,7 @@ import { detectIsMobile } from '@/utils/device';
 import { getRuntimeConfig } from '@/config/runtime-config';
 import { createGameConfig } from '@/config/game-config';
 import { installConsoleErrorCapture } from '@/utils/smoke';
+import { syncOverlayToCanvas } from '@/ui/overlay-scale';
 
 const isSmoke =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('smoke');
@@ -21,4 +22,10 @@ const cfg = getRuntimeConfig(detectIsMobile());
 export const runtimeConfig = cfg;
 
 // eslint-disable-next-line no-new
-new Phaser.Game(createGameConfig(cfg));
+const game = new Phaser.Game(createGameConfig(cfg));
+
+// TASK-43 P0：DOM 覆盖层（HUD/升级卡/结算页）与 Scale.FIT 画布对齐 —— 底部 HUD（HP 条）
+// 在视口高度 < 设计高（1080）时不再落到可视区外；首次 + 画布/窗口尺寸变化时同步。
+syncOverlayToCanvas(game);
+game.scale.on(Phaser.Scale.Events.RESIZE, () => syncOverlayToCanvas(game));
+window.addEventListener('resize', () => syncOverlayToCanvas(game));

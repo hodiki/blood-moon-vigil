@@ -10,19 +10,19 @@ import {
 } from '@/spawner/spawner';
 import { SPAWNER } from '@/config/balance';
 
-describe('生成预算 budget(t)（E2-S4 / spawner §③ / S8-1；TASK-39 R1 波次2 LINEAR 2.5→3.0、WAVE 0.4→0.3）', () => {
+describe('生成预算 budget(t)（E2-S4 / spawner §③ / S8-1；TASK-39 R1 波次2 + TASK-43 R2 LINEAR 3.0→3.3、WAVE 保持 0.3）', () => {
   // 任务指定断言点 t=0/300/600/1200（恰为 sin(2πt/75)=0，与压力曲线表一致）
-  it('t=0/300/600/1200 期望值 1.2 / 2.1 / 3.0 / 4.8（±1e-6）', () => {
+  it('t=0/300/600/1200 期望值 1.2 / 2.19 / 3.18 / 5.16（±1e-6；TASK-43 R2 LINEAR 3.3）', () => {
     expect(budget(0)).toBeCloseTo(1.2, 6);
-    expect(budget(300)).toBeCloseTo(2.1, 6);
-    expect(budget(600)).toBeCloseTo(3.0, 6);
-    expect(budget(1200)).toBeCloseTo(4.8, 6);
+    expect(budget(300)).toBeCloseTo(2.19, 6);
+    expect(budget(600)).toBeCloseTo(3.18, 6);
+    expect(budget(1200)).toBeCloseTo(5.16, 6);
   });
 
-  it('压力曲线表为「平均预算」（budgetMean，正弦项均值为 0）：60→1.38 … 1080→4.44', () => {
+  it('压力曲线表为「平均预算」（budgetMean，正弦项均值为 0）：60→1.398 … 1080→4.764', () => {
     const table: [number, number][] = [
-      [0, 1.2], [60, 1.38], [180, 1.74], [300, 2.1], [480, 2.64],
-      [720, 3.36], [900, 3.9], [1080, 4.44], [1200, 4.8],
+      [0, 1.2], [60, 1.398], [180, 1.794], [300, 2.19], [480, 2.784],
+      [720, 3.576], [900, 4.17], [1080, 4.764], [1200, 5.16],
     ];
     for (const [t, expected] of table) {
       expect(budgetMean(t)).toBeCloseTo(expected, 6);
@@ -42,38 +42,38 @@ describe('生成预算 budget(t)（E2-S4 / spawner §③ / S8-1；TASK-39 R1 波
     expect((peak - trough) / trough).toBeGreaterThanOrEqual(0.4);
   });
 
-  it('20 分钟线性项达 4.8 点/s（1.2×(1+3.0×1200/1200)）', () => {
-    expect(budget(1200)).toBeCloseTo(4.8, 6);
+  it('20 分钟线性项达 5.16 点/s（1.2×(1+3.3×1200/1200)）', () => {
+    expect(budget(1200)).toBeCloseTo(5.16, 6);
   });
 });
 
-describe('构成权重阶段表（spawner §③ / S8-1；TASK-39 R1 波次2 权重重构）', () => {
-  it('0–3min：90/10/0，无厚血保底', () => {
+describe('构成权重阶段表（spawner §③ / S8-1；TASK-39 R1 波次2 + TASK-43 R2 精英提前/密度提速）', () => {
+  it('0–3min：89.5/10/0.5，无厚血保底（TASK-43 R2 加随机 0.5% 精英，首见 ~1.5–3min）', () => {
     const stage = stageForTime(60);
-    expect(stage.weights).toEqual({ zombie: 0.9, wolf: 0.1, tank: 0 });
+    expect(stage.weights).toEqual({ zombie: 0.895, wolf: 0.1, tank: 0.005 });
     expect(Number.isFinite(stage.tankGuaranteeEvery)).toBe(false);
   });
 
-  it('3–8min：78/20/2，每 30s 保底 1 厚血（屠夫随机 3%→2%；C-7 保底不变）', () => {
+  it('3–8min：77/20/3，每 30s 保底 1 厚血（屠夫随机 2%→3%；C-7 保底不变）', () => {
     const stage = stageForTime(300);
-    expect(stage.weights).toEqual({ zombie: 0.78, wolf: 0.2, tank: 0.02 });
+    expect(stage.weights).toEqual({ zombie: 0.77, wolf: 0.2, tank: 0.03 });
     expect(stage.tankGuaranteeEvery).toBe(30);
   });
 
-  it('8–15min：55/36/9，无保底（中段填实）', () => {
-    expect(stageForTime(600).weights).toEqual({ zombie: 0.55, wolf: 0.36, tank: 0.09 });
+  it('8–15min：53/36/11，无保底（中段填实）', () => {
+    expect(stageForTime(600).weights).toEqual({ zombie: 0.53, wolf: 0.36, tank: 0.11 });
     expect(Number.isFinite(stageForTime(600).tankGuaranteeEvery)).toBe(false);
   });
 
-  it('15–20min：45/35/16，无保底', () => {
-    expect(stageForTime(1000).weights).toEqual({ zombie: 0.45, wolf: 0.35, tank: 0.16 });
+  it('15–20min：47/35/18，无保底', () => {
+    expect(stageForTime(1000).weights).toEqual({ zombie: 0.47, wolf: 0.35, tank: 0.18 });
   });
 
   it('阶段边界：t=180/480/900 进入下一阶段（左闭右开）', () => {
-    expect(stageForTime(179.9).weights.zombie).toBe(0.9);
-    expect(stageForTime(180).weights.zombie).toBe(0.78);
-    expect(stageForTime(480).weights.zombie).toBe(0.55);
-    expect(stageForTime(900).weights.zombie).toBe(0.45);
+    expect(stageForTime(179.9).weights.zombie).toBe(0.895);
+    expect(stageForTime(180).weights.zombie).toBe(0.77);
+    expect(stageForTime(480).weights.zombie).toBe(0.53);
+    expect(stageForTime(900).weights.zombie).toBe(0.47);
   });
 
   it('阶段表覆盖 0→BOSS_TIME 且末阶段收于 1200（S8-4 收束钩子）', () => {
@@ -84,10 +84,11 @@ describe('构成权重阶段表（spawner §③ / S8-1；TASK-39 R1 波次2 权�
 
 describe('抽签与保底（纯函数）', () => {
   it('pickEnemyKind 按权重区间抽签（r∈[0,1)）', () => {
-    const stage1 = { zombie: 0.9, wolf: 0.1, tank: 0 };
+    const stage1 = { zombie: 0.895, wolf: 0.1, tank: 0.005 };
     expect(pickEnemyKind(stage1, 0.5)).toBe('zombie');
-    expect(pickEnemyKind(stage1, 0.95)).toBe('wolf'); // tank 权重 0 抽不到
-    const stage2 = { zombie: 0.78, wolf: 0.2, tank: 0.02 };
+    expect(pickEnemyKind(stage1, 0.95)).toBe('wolf'); // 0.95 < 0.995
+    expect(pickEnemyKind(stage1, 0.998)).toBe('tank'); // 0.998 ≥ 0.995
+    const stage2 = { zombie: 0.77, wolf: 0.2, tank: 0.03 };
     expect(pickEnemyKind(stage2, 0.5)).toBe('zombie');
     expect(pickEnemyKind(stage2, 0.9)).toBe('wolf');
     expect(pickEnemyKind(stage2, 0.99)).toBe('tank');
