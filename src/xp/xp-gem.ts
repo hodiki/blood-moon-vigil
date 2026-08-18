@@ -10,8 +10,10 @@
 import Phaser from 'phaser';
 
 export class XpGem extends Phaser.Physics.Arcade.Sprite {
-  /** 本宝石经验值（僵尸 1 / 疾行 2 / 厚血 15 / Boss 100，enemies §③） */
+  /** 本宝石经验值（僵尸 1 / 疾行 2 / 厚血 10 / Boss 100，enemies §③） */
   xpValue = 0;
+  /** TASK-39 E1 E-lite：已落地秒数（滞留慢漂判定；spawn 清零，XpManager 每帧累加） */
+  age = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture?: string, frame?: string | number) {
     super(scene, x, y, texture ?? 'effects', frame ?? 'gem');
@@ -26,6 +28,7 @@ export class XpGem extends Phaser.Physics.Arcade.Sprite {
   /** 从池取出：重置经验值并激活（ADR-001 组件式数据字段） */
   spawn(x: number, y: number, xpValue: number): void {
     this.xpValue = xpValue;
+    this.age = 0;
     this.setPosition(x, y);
     this.setActive(true).setVisible(true);
     const body = this.body as Phaser.Physics.Arcade.Body;

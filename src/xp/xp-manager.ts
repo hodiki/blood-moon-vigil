@@ -45,13 +45,24 @@ export interface GemLike {
   y: number;
 }
 
-export type GemStepResult = 'idle' | 'moving' | 'collected';
+export type GemStepResult = 'idle' | 'drifting' | 'moving' | 'collected';
+
+/** TASK-39 E1 E-lite 滞留慢漂配置（由 XpManager 从 balance GEM + 宝石 age 组装） */
+export interface GemDriftOptions {
+  /** 宝石已落地秒数（gem.age，XpManager 每帧累加） */
+  ageSeconds: number;
+  /** 超过该年龄才开始漂移（GEM.DRIFT_AGE_THRESHOLD = 3s） */
+  ageThreshold: number;
+  /** 漂移速度 px/s（GEM.DRIFT_SPEED = 80，低于玩家移速 → 不会"免费全屏拾取"） */
+  driftSpeed: number;
+}
 
 /**
  * 磁吸/拾取单步（纯函数）：
  * - 距离 ≤ pickupRadius → collected（拾取，E3-S1）
- * - 距离 ≤ magnetRadius → 以 magnetSpeed 向玩家移动（磁吸 80px，upgrade-pool 第 9 项可强化）
- * - 否则 idle（不吸附）
+ * - 距离 ≤ magnetRadius → 以 magnetSpeed 向玩家移动（磁吸 140px，upgrade-pool 第 9 项可强化）
+ * - 距离 > magnetRadius → 若启用漂移且已落地超时 → 以 driftSpeed 慢漂向玩家（drifting）；
+ *   否则 idle（不吸附）
  * 返回结果并原地修改 gem 坐标（Phaser Sprite 的 x/y 访问器即位移渲染）。
  */
 export function stepGem(
@@ -61,12 +72,22 @@ export function stepGem(
   magnetRadius: number,
   magnetSpeed: number,
   pickupRadius: number,
+  drift?: GemDriftOptions,
 ): GemStepResult {
   const dx = player.x - gem.x;
   const dy = player.y - gem.y;
   const dist = Math.hypot(dx, dy);
   if (dist <= pickupRadius) return 'collected';
-  if (dist > magnetRadius) return 'idle';
+  if (dist > magnetRadius) {
+    // E-lite 滞留漂移：落地超时且距玩家超出磁吸半径 → 慢漂向玩家（保留"地面战利品"张力）
+    if (drift && drift.ageSeconds >= drift.ageThreshold) {
+      const step = Math.min(dist, drift.driftSpeed * dtSeconds);
+      gem.x += (dx / dist) * step;
+      gem.y += (dy / dist) * step;
+      return 'drifting';
+    }
+    return 'idle';
+  }
   if (dist > 0.0001) {
     const step = Math.min(dist, magnetSpeed * dtSeconds);
     gem.x += (dx / dist) * step;
@@ -97,10 +118,16 @@ export class XpManager {
     this.magnetMultiplier = multiplier;
   }
 
-  /** 每帧：磁吸 + 拾取（只遍历 active 宝石，磁吸每帧距离检查 ≤300 次，RV-C4 可忽略） */
+  /** 每帧：漂移年龄累加 + 磁吸 + 拾取（只遍历 active 宝石，磁吸每帧距离检查 ≤300 次，RV-C4 可忽略） */
   update(dt: number): void {
     this.gemPool.eachActive((gem) => {
-      const result = stepGem(gem, this.player, dt, this.magnetRadius, GEM.MAGNET_SPEED, GEM.PICKUP_RADIUS);
+      gem.age += dt; // TASK-39 E1 E-lite：落地年龄（滞留 >3s 才启动慢漂）
+      const drift: GemDriftOptions = {
+        ageSeconds: gem.age,
+        ageThreshold: GEM.DRIFT_AGE_THRESHOLD,
+        driftSpeed: GEM.DRIFT_SPEED,
+      };
+      const result = stepGem(gem, this.player, dt, this.magnetRadius, GEM.MAGNET_SPEED, GEM.PICKUP_RADIUS, drift);
       if (result === 'collected') {
         this.addXp(gem.xpValue);
         // TASK-28：负载补 x/y（拾取爆点定位）；既有消费方（HUD/音频）只读 amount，加字段不破坏

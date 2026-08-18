@@ -47,7 +47,7 @@ export const PALETTE = {
 export const PLAYER = {
   SPAWN_X: WORLD.WIDTH / 2,
   SPAWN_Y: WORLD.HEIGHT / 2,
-  MOVE_SPEED: 220, // px/s（ARCH E1-S6 验收：getMove × 220px/s）
+  MOVE_SPEED: 235, // px/s（TASK-39 R1 波次2：220→235 +6.8%，用户已批；E1-S6 验收基线同步）
   MAX_HP: 100, // upgrade-pool v0.2 裁决（TASK-11）已确认 HP=100（control-manifest §9 C-3）
   DAMAGE_MULTIPLIER: 1.0, // 初始倍率（upgrade-pool §③）
   INVULNERABLE_TIME: 0.5, // s（enemies §⑥.3 接触无敌帧）
@@ -87,7 +87,8 @@ export interface EnemyPanel {
 export const ENEMIES: Record<EnemyKindId, EnemyPanel> = {
   zombie: { hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 },
   wolf: { hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2 },
-  tank: { hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 15 },
+  // TASK-39 R1 波次2：厚血经验 15→10（E3 预授权判据触发：R1 满局 Lv47 → 压后期经验通胀，目标 Lv42–45）
+  tank: { hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 10 },
   boss: { hp: 6000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100 },
 };
 
@@ -128,24 +129,28 @@ export const INITIAL_DPS_REFERENCE = 33.5;
 
 /**
  * 敌潮生成器（spawner §③，E2-S4 / spawner.test 埋点断言）。
- * budget(t) = 1.2 × (1 + 2.5×t/1200) × (1 + 0.4×sin(2πt/75))。
+ * budget(t) = 1.2 × (1 + 3.0×t/1200) × (1 + 0.3×sin(2πt/75))。
+ * TASK-39 R1 波次2：LINEAR_SCALE 2.5→3.0（20min 均值 4.2→4.8 点/s，中后段密度提升）、
+ * WAVE_AMPLITUDE 0.4→0.3（波谷变浅 ×0.6→×0.7，前期不空场；峰谷比 2.33→1.86 仍 ≥40%）。
  */
 export const SPAWNER = {
   BASE_BUDGET: 1.2, // 基数 点/s
-  LINEAR_SCALE: 2.5, // 线性项系数
+  LINEAR_SCALE: 3.0, // 线性项系数（R1 波次2）
   LINEAR_TOTAL_SECONDS: 1200, // 20 分钟线性项分母
-  WAVE_AMPLITUDE: 0.4, // 正弦波幅 ±40%
+  WAVE_AMPLITUDE: 0.3, // 正弦波幅 ±30%（R1 波次2；仍满足相邻周期差异 ≥40%）
   WAVE_PERIOD_SECONDS: 75, // 正弦周期
   BOSS_TIME: 1200, // 20:00 Boss 收束
   RETRY_PAUSE_SECONDS: 2, // 达上限暂停生成 2s 后重试（不丢弃预算）
   /**
    * 3–8min 每 N 秒保底 1 厚血。
    * E3 C3 首验调整：20s → 40s（design-review-e2 C3，TASK-15 预授权）；
-   * E4 Sprint 4 用户真机回调（TASK-18 授权）：40s → 30s —— 3 分钟前权重 0% + 40s 保底双重削弱
-   * 导致厚血怪"未发现"，回调至 30s 提高存在感；若 30s 仍过稀则记录 CONCERNS 供设计侧裁决，
-   * 不擅自再调（control-manifest §9 C-7）。
+   * E4 Sprint 4 用户真机回调（TASK-18 授权）：40s → 30s；
+   * TASK-39 R1 波次2：保持 30s 不动（C-7 决策记录：再降会退回"厚血未发现"，
+   * 本次用「血月印记预警 + 随机 3%→2% 减少叠加」解决"突兀"，而非减数量）。
    */
   TANK_GUARANTEE_EVERY_SECONDS: 30,
+  /** TASK-39 E2 屠夫预警：保底厚血出生前 N 秒在出生点显示血月印记（红圈精灵 + 低音） */
+  TANK_WARNING_SECONDS: 2.5,
 } as const;
 
 /**
@@ -249,15 +254,21 @@ export const XP = {
 
 /**
  * 经验宝石（E3-S1 / ARCH §3.2 池表）：蓝菱 #4FC3F7。
- * 本体 12px 视觉 / 拾取识别区 16px / 磁吸 80px（upgrade-pool 第 9 项 +100% → 160/240）。
- * 磁吸速度 GDD 未指定，320px/s 为工程假设（CONCERNS 记录）。
+ * 本体 12px 视觉 / 拾取识别区 16px / 磁吸 140px（TASK-39 R1 波次2：80→140，覆盖近距离击杀+走位偏差）。
+ * 磁吸速度 320→360px/s（140px 内 0.39s 吸入，手感干脆；升级第 9 项 +100% → 280→420）。
+ * E-lite 滞留慢漂（TASK-39 E1 辅）：落地 >3s 且距玩家 >磁吸半径时以 80px/s 向玩家漂移
+ * （低于玩家移速 235，不会变"免费全屏拾取"；进入磁吸半径后切换 360px/s 吸入）。
  */
 export const GEM = {
   COLOR: '#4FC3F7',
   BODY_SIZE: 12,
   PICKUP_RADIUS: 16,
-  MAGNET_RADIUS: 80,
-  MAGNET_SPEED: 320,
+  MAGNET_RADIUS: 140,
+  MAGNET_SPEED: 360,
+  /** E-lite 漂移：落地年龄阈值 s */
+  DRIFT_AGE_THRESHOLD: 3,
+  /** E-lite 漂移速度 px/s */
+  DRIFT_SPEED: 80,
 } as const;
 
 /** 升级项类型：mechanic=机制改变型 / numeric=纯数值型（upgrade-pool §③） */

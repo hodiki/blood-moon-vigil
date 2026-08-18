@@ -109,6 +109,10 @@ export const GameEvent = {
   RestartRequested: 'game:restart',
   /** E4-S4 结算：返回启动（ResultsOverlay → PlayScene.scene.start('Boot')） */
   ToMenuRequested: 'game:to-menu',
+  /** TASK-39 E2 屠夫预警：保底厚血出生前血月印记开始（payload { x, y }，PlayScene 生成红圈 + 音频低音） */
+  TankWarning: 'enemy:tank-warning',
+  /** TASK-39 E2 屠夫预警：预约厚血落地（payload { x, y }，PlayScene 销毁印记） */
+  TankSpawned: 'enemy:tank-spawned',
 } as const;
 
 export type GameEventName = (typeof GameEvent)[keyof typeof GameEvent];

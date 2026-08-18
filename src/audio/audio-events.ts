@@ -38,6 +38,8 @@ export function bindAudioEvents(): () => void {
     audio.vibrate(15); // 受击短震（bible §6）
   });
   on(GameEvent.UpgradeChosen, () => audio.playSfx('confirm'));
+  // TASK-39 E2 屠夫预警：精英登场低音提前（复用 boss 低频重音；bible §2，比出生时更早给玩家听觉预兆）
+  on(GameEvent.TankWarning, () => audio.playSfx('boss'));
   on(GameEvent.BossSpawned, () => {
     audio.playSfx('boss');
     audio.setBossMode(true); // 心跳双拍 +3dB（bible §1）

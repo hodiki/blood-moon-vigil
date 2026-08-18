@@ -3,12 +3,12 @@ import { PlayerStats, moveDisplacement } from '@/player/player-stats';
 import { PLAYER, GROWTH } from '@/config/balance';
 import { clampToWorld } from '@/utils/math';
 
-describe('PlayerStats 初始属性（upgrade-pool §③ / E1-S6）', () => {
-  it('初始：HP=100、移速 220、倍率 1.0、无敌帧 0.5s、等级 1', () => {
+describe('PlayerStats 初始属性（upgrade-pool §③ / E1-S6；TASK-39 移速 220→235）', () => {
+  it('初始：HP=100、移速 235、倍率 1.0、无敌帧 0.5s、等级 1', () => {
     const s = new PlayerStats();
     expect(s.maxHp).toBe(PLAYER.MAX_HP);
     expect(s.hp).toBe(PLAYER.MAX_HP);
-    expect(s.moveSpeed).toBe(220);
+    expect(s.moveSpeed).toBe(235);
     expect(s.damageMultiplier).toBe(1.0);
     expect(s.invulnerableTime).toBe(0.5);
     expect(s.level).toBe(1);
@@ -24,18 +24,18 @@ describe('PlayerStats 升级成长（upgrade-pool §③）', () => {
     expect(s.damageMultiplier).toBeCloseTo(1.04, 6);
   });
 
-  it('每 5 级移速 +4px/s（第 5/10 级生效）', () => {
+  it('每 5 级移速 +4px/s（第 5/10 级生效；235 基线）', () => {
     const s = new PlayerStats();
     for (let i = 0; i < 4; i += 1) s.levelUp(); // 到 5 级
-    expect(s.moveSpeed).toBe(220 + 4);
+    expect(s.moveSpeed).toBe(235 + 4);
     for (let i = 0; i < 5; i += 1) s.levelUp(); // 到 10 级
-    expect(s.moveSpeed).toBe(220 + 8);
+    expect(s.moveSpeed).toBe(235 + 8);
   });
 
-  it('第 5 级前移速不变（4 级时仍 220）', () => {
+  it('第 5 级前移速不变（4 级时仍 235）', () => {
     const s = new PlayerStats();
     for (let i = 0; i < 3; i += 1) s.levelUp(); // 到 4 级
-    expect(s.moveSpeed).toBe(220);
+    expect(s.moveSpeed).toBe(235);
   });
 });
 
@@ -80,17 +80,17 @@ describe('E3-S2 升级池倍率与吸血（upgrade-pool §③ / E3-S5 写回）'
   });
 });
 
-describe('移动位移与边界 clamp（E1-S6 验收）', () => {
-  it('getMove × 220px/s：1 秒位移 220px', () => {
+describe('移动位移与边界 clamp（E1-S6 验收；TASK-39 移速 220→235）', () => {
+  it('getMove × 235px/s：1 秒位移 235px', () => {
     const d = moveDisplacement({ x: 1, y: 0 }, PLAYER.MOVE_SPEED, 1);
-    expect(d.x).toBe(220);
+    expect(d.x).toBe(235);
     expect(d.y).toBe(0);
   });
 
   it('斜向向量 × 移速：位移长度 = 移速 × dt', () => {
     const move = { x: Math.SQRT1_2, y: -Math.SQRT1_2 };
     const d = moveDisplacement(move, PLAYER.MOVE_SPEED, 0.5);
-    expect(Math.hypot(d.x, d.y)).toBeCloseTo(110, 6);
+    expect(Math.hypot(d.x, d.y)).toBeCloseTo(117.5, 6);
   });
 
   it('clampToWorld：坐标恒在 [0,3000]²（S9 边界）', () => {

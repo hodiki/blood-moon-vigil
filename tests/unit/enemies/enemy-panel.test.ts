@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { ENEMIES, type EnemyKindId } from '@/config/balance';
 import { ENEMY_PANELS, NORMAL_ENEMY_KINDS, isNormalEnemy, enemyPanel } from '@/enemies/enemy-types';
 
-/** enemies §③ 数值表（埋点断言基线，与 GDD 逐项一致） */
+/** enemies §③ 数值表（埋点断言基线，与 GDD 逐项一致；TASK-39 厚血经验 15→10） */
 const PANEL_TABLE: Record<EnemyKindId, { hp: number; speed: number; damage: number; attackInterval: number; radius: number; xp: number }> = {
   zombie: { hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 },
   wolf: { hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2 },
-  tank: { hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 15 },
+  tank: { hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 10 },
   boss: { hp: 6000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100 },
 };
 
@@ -19,7 +19,7 @@ describe('敌人面板与 GDD 一致（E2-S2 / enemies §③ / E8-1）', () => {
     expect(ENEMIES.wolf).toEqual(PANEL_TABLE.wolf);
   });
 
-  it('厚血怪「屠夫」600HP/35px/s/20伤/1.5s/22px/15经验', () => {
+  it('厚血怪「屠夫」600HP/35px/s/20伤/1.5s/22px/10经验（TASK-39 15→10 压后期经验通胀）', () => {
     expect(ENEMIES.tank).toEqual(PANEL_TABLE.tank);
   });
 
@@ -27,9 +27,8 @@ describe('敌人面板与 GDD 一致（E2-S2 / enemies §③ / E8-1）', () => {
     expect(ENEMIES.boss).toEqual(PANEL_TABLE.boss);
   });
 
-  it('厚血怪死亡掉 15 经验 = 3 倍于僵尸（E8-3）', () => {
-    expect(ENEMIES.tank.xp).toBe(ENEMIES.zombie.xp * 15);
-    expect(ENEMIES.tank.xp).toBe(15);
+  it('厚血怪死亡掉 10 经验（TASK-39 R1 波次2：15→10，E3 预授权判据「R1 满局 Lv47」触发压通胀）', () => {
+    expect(ENEMIES.tank.xp).toBe(10);
   });
 
   it('Boss 死亡掉 100 经验（E8-3）', () => {

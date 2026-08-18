@@ -107,4 +107,37 @@ describe('抽取规则（upgrade-pool §③ / U8-4）', () => {
       expect(typeof p.item.desc).toBe('string');
     }
   });
+
+  describe('TASK-39 E2 首级强制武器（forceWeaponFirst）', () => {
+    it('forceWeaponFirst=true：三选一必含 1 或 2 号（即使 rng 偏向末尾项）', () => {
+      const state = new UpgradeState();
+      // rng 恒 0.999 → 加权不放回正常会取末尾数值项（10/11/12…），不含 1/2 号武器
+      const picks = rollThree(state, () => 0.999, { forceWeaponFirst: true });
+      expect(picks.some((p) => p.id === 1 || p.id === 2)).toBe(true);
+    });
+
+    it('forceWeaponFirst=true 且武器已满级（1/2 号都选过）：自然回落、不强制', () => {
+      const state = new UpgradeState();
+      state.orbitUnlocked = true;
+      state.shockwaveUnlocked = true;
+      // 武器满级后 force 无可用项 → 正常加权抽取（此时首抽仍可能抽到任意未满级项）
+      const picks = rollThree(state, () => 0.01, { forceWeaponFirst: true });
+      expect(picks.some((p) => p.id === 1 || p.id === 2)).toBe(false); // 已满级不可能再出现
+      expect(picks).toHaveLength(3);
+    });
+
+    it('forceWeaponFirst=false（默认）：保持纯随机（不含武器也可能）', () => {
+      const state = new UpgradeState();
+      const picks = rollThree(state, () => 0.999);
+      // 纯随机可能完全不含 1/2 号（末尾数值项优先）——这正是"首级无武器"旧问题的复现前提
+      expect(picks.some((p) => p.id === 1 || p.id === 2)).toBe(false);
+    });
+
+    it('首级强制后其余 2 项不重复且来自候选池（不放回）', () => {
+      const state = new UpgradeState();
+      const picks = rollThree(state, () => 0.5, { forceWeaponFirst: true });
+      expect(picks).toHaveLength(3);
+      expect(new Set(picks.map((p) => p.id)).size).toBe(3);
+    });
+  });
 });

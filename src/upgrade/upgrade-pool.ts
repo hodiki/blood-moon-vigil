@@ -35,6 +35,16 @@ export interface UpgradeOption {
   item: UpgradeItemData;
 }
 
+/** rollThree 可选参数（TASK-39 E2 首级强制武器） */
+export interface RollThreeOptions {
+  /**
+   * 首级强制武器：保证三选一至少含 1 或 2 号（守夜之环/月蚀脉冲）之一。
+   * 规则：先在候选池随机取一把可用武器（未满级）入三选一，其余 2 项正常加权抽取。
+   * 仅首级调用方传 true（PlayScene 记首次抽取标志）；两把武器都满级时自然跳过。
+   */
+  forceWeaponFirst?: boolean;
+}
+
 /** 当前升级叠加/解锁状态（E3-S3 抽取与 E3-S5 写回共用） */
 export class UpgradeState {
   missileSplit = 0; // 3 飞弹分裂（≤2）
@@ -88,16 +98,37 @@ export function pickWeight(item: UpgradeItemData, state: UpgradeState): number {
 /**
  * 三选一抽取（不放回抽样）：
  * 1. 候选 = 未满级项；全满级 → 回退数值项 10（可重复，恒在池内）。
- * 2. 加权不放回取 3 项（未解锁 ×2 / 上次选过 ×0.5）。
- * 3. 极端兜底：候选不足 3 时用项 10 补齐（理论不发生，项 10 恒可用）。
+ * 2. TASK-39 E2（opts.forceWeaponFirst）：首级先保证 1/2 号武器之一入三选一（随机取一）。
+ * 3. 加权不放回取足 3 项（未解锁 ×2 / 上次选过 ×0.5）。
+ * 4. 极端兜底：候选不足 3 时用项 10 补齐（理论不发生，项 10 恒可用）。
  * random 可注入（测试用确定性 rng），默认 Math.random。
  */
-export function rollThree(state: UpgradeState, random: () => number = Math.random): UpgradeOption[] {
+export function rollThree(
+  state: UpgradeState,
+  random: () => number = Math.random,
+  opts: RollThreeOptions = {},
+): UpgradeOption[] {
   let candidates = UPGRADES.filter((item) => !isMaxed(item, state));
   if (candidates.length === 0) candidates = [UPGRADE_BY_ID[10]!];
 
   const pool = [...candidates];
   const picks: UpgradeOption[] = [];
+
+  // TASK-39 E2：首级强制武器 —— 先随机取 1 或 2 号（守夜之环/月蚀脉冲）入三选一
+  if (opts.forceWeaponFirst) {
+    const weaponIds = [1, 2] as const;
+    const available = weaponIds.filter((id) => pool.some((i) => i.id === id));
+    if (available.length > 0) {
+      const chosenId = available[Math.floor(random() * available.length)]!;
+      const idx = pool.findIndex((i) => i.id === chosenId);
+      if (idx >= 0) {
+        const item = pool[idx]!;
+        pool.splice(idx, 1);
+        picks.push({ id: item.id, item });
+      }
+    }
+  }
+
   while (picks.length < 3 && pool.length > 0) {
     const weights = pool.map((item) => pickWeight(item, state));
     const total = weights.reduce((a, b) => a + b, 0);

@@ -19,9 +19,10 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { WORLD, PLAYER, BOSS, type EnemyKindId } from '@/config/balance';
+import { WORLD, PLAYER, BOSS, PALETTE, type EnemyKindId } from '@/config/balance';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
+import { hexToRgbInt } from '@/utils/math';
 import { collectSmokeResult, writeSmokeResult, SMOKE_FRAMES_COUNT } from '@/utils/smoke';
 import { FpsMonitor, estimateDrawCalls, writeBenchResult } from '@/utils/perf';
 import type { InputSource } from '@/input/input-source';
@@ -98,6 +99,10 @@ export class PlayScene extends Phaser.Scene {
   private fx!: FxManager;
   /** TASK-28 冲击波涟漪上升沿检测（active 从 false→true 时触发一次涟漪） */
   private shockwaveWasActive = false;
+  /** TASK-39 E2 屠夫预警：血月印记精灵（保底厚血预约出生时显示，落地时销毁；null = 无） */
+  private tankMark: Phaser.GameObjects.Image | null = null;
+  /** TASK-39 E2 首级强制武器：首次 rollThree 保证三选一含 1/2 号武器（消费后置 false） */
+  private firstUpgradeRoll = true;
 
   // 冒烟自检状态
   private smokeStartedAt = 0;
@@ -233,6 +238,9 @@ export class PlayScene extends Phaser.Scene {
     GameEvents.on(GameEvent.ToMenuRequested, this.onToMenuRequested, this);
     // TASK-28：宝石拾取爆点（负载含 x/y，TASK-28 增补）
     GameEvents.on(GameEvent.GemCollected, this.onGemCollected, this);
+    // TASK-39 E2：屠夫预警（血月印记出现/落地）
+    GameEvents.on(GameEvent.TankWarning, this.onTankWarning, this);
+    GameEvents.on(GameEvent.TankSpawned, this.onTankSpawned, this);
 
     // 相机跟随 + 世界边界（S9）
     this.cameras.main.setBounds(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
@@ -418,13 +426,51 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * TASK-39 E2 屠夫预警：保底厚血预约出生 → 出生点生成血月印记（复用 fx-ambient p-ring 红圈，
+   * 桌面 edgeWarning 叠加边缘红光脉动由既有机制承担；移动端无全屏红晕，本地印记为主预兆）。
+   * 印记脉冲 0.35s×yoyo×3 ≈ 2.5s；落地时（tank:spawned）销毁。
+   */
+  private onTankWarning(args: unknown): void {
+    const p = args as { x: number; y: number };
+    this.destroyTankMark();
+    const mark = this.add
+      .image(p.x, p.y, 'fx-ambient', 'p-ring')
+      .setDepth(60)
+      .setDisplaySize(72, 72)
+      .setTint(hexToRgbInt(PALETTE.danger))
+      .setAlpha(0.9);
+    this.tweens.add({
+      targets: mark,
+      alpha: 0.35,
+      scale: 0.92,
+      duration: 350,
+      yoyo: true,
+      repeat: 3,
+    });
+    this.tankMark = mark;
+  }
+
+  /** TASK-39 E2 屠夫预警：预约厚血落地 → 销毁印记 */
+  private onTankSpawned(): void {
+    this.destroyTankMark();
+  }
+
+  private destroyTankMark(): void {
+    if (this.tankMark) {
+      this.tankMark.destroy();
+      this.tankMark = null;
+    }
+  }
+
   /** 经验达标 → 升级：属性成长 + 抽三选一 + LEVEL_UP 状态（CM §3.3） */
   private onLevelUp(args: unknown): void {
     const payload = args as { level: number; xpNeeded: number };
     this.player.stats.levelUp(); // E3-S2 自动成长（+8HP/+4%/每5级+4px/s）
     // E4-S1 HUD：升级回血（+8）后 HP 变化
     GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-    const options = rollThree(this.upgradeState);
+    const options = rollThree(this.upgradeState, undefined, { forceWeaponFirst: this.firstUpgradeRoll });
+    this.firstUpgradeRoll = false; // 首级强制武器已消费（TASK-39 E2）
     this.lastOptions = options;
     // E4-S1 升级时间戳埋点（后期升级间隔 / Lv47 预警数据源，供文策渊评审）
     this.stats.recordLevelUp(payload.level, this.spawner.elapsedSeconds);

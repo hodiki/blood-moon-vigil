@@ -41,6 +41,16 @@
 
 - 厚血怪保底生成 20s→40s（TASK-15）→ 回调 30s（TASK-18）：修复前期厚血堆积超判据（E2 C3）。
 - 冲击波改为"有目标才释放"（E2 C2 → E3 落地）：保宝石产出与清屏价值。
+- **TASK-39 R1 波次 2 平衡落地**（用户已拍板：移速 235 / 厚血经验 10 / 首级强制武器；方案 production/gdd/balance-r1-tuning.md）：
+  - **E1 磁吸强化**：`GEM.MAGNET_RADIUS 80→140`、`MAGNET_SPEED 320→360`（src/config/balance.ts）；升级第 9 项（磁力+100%）随之 140→280→420 不贬值。
+  - **E1 E-lite 宝石慢漂**：落地 >3s 且距玩家 >磁吸半径的宝石以 80px/s 慢漂向玩家（src/xp/xp-manager.ts stepGem 新增 drifting 分支 + XpGem.age 字段）；进入磁吸半径后切换 360px/s 吸入，保留"地面战利品/贪心张力"。
+  - **E1 玩家移速**：`PLAYER.MOVE_SPEED 220→235`（+6.8%，用户已批）。
+  - **E2 敌潮重构**：`SPAWNER.LINEAR_SCALE 2.5→3.0`（20min 均值预算 4.2→4.8 点/s）、`WAVE_AMPLITUDE 0.4→0.3`（峰谷比 2.33→1.86 仍 ≥40%）；`SPAWN_STAGES` 四阶段权重按方案更新（0-3min 90/10/0、3-8min 78/20/2、8-15min 55/36/9、15-20min 45/35/16），屠夫随机 3%→2%、保底 30s 不动。
+  - **E2 屠夫预警**：保底厚血出生前 2.5s 血月印记（`SPAWNER.TANK_WARNING_SECONDS=2.5`；enemy-spawner 预约落地时序 + PlayScene 红圈 p-ring 脉冲精灵 + audio-events 绑定低频重音，事件 `enemy:tank-warning`/`enemy:tank-spawned`）。
+  - **E2 首级强制武器**：`rollThree(state, random, { forceWeaponFirst })` 保证首级三选一含 1/2 号（守夜之环/月蚀脉冲）之一（src/upgrade/upgrade-pool.ts；PlayScene 记首次抽取标志）。
+  - **E2 厚血经验**：`ENEMIES.tank.xp 15→10`（E3 预授权判据 R1 Lv47 触发，压后期经验通胀）。
+  - **文档同步**：`design/art-bible/art-bible.md` §4 精英"3 倍经验"口径改为 10、§7 拾取磁吸 80→140px（附 E-lite 漂移说明）。
+  - 单测：新增 12 项（xp-manager 漂移 3 + 集成 1、upgrade-pool forceWeapon 4、tank-warning 时序 2、balance TANK_WARNING 断言并入既有项）；同步更新 §5.2 清单（balance/enemy-panel/player-stats/spawner/xp-manager 断言 220→235、80→140、15→10、预算新期望值）。全量 331 单测（38 文件，基线 321 + 10），`npm run bench` 通过（峰值 400/250、draw call 5、totalSpawned 3587）。
 
 ### Fixed
 
