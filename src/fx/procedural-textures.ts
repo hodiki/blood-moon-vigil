@@ -337,8 +337,7 @@ function tankShape(ctx: Ctx, pose = 0): void {
  * 中心 (0,0)，范围约 x[-56,56] y[-60,44]（C-1：侧翼/披风收至 56，放大 1.05 后最外点 ≈58.8，
  * 即 60+58.8=118.8 < 120px 帧界 ✔）。
  */
-function bossShape(ctx: Ctx, pose = 0, bodyColor?: string): void {
-  // 披风主体（倒梯形；变体外扩）
+function bossShape(ctx: Ctx, pose = 0, bodyColor?: string): void {  // 披风主体（倒梯形；变体外扩）
   const w = pose === 1 ? 48 : 42;
   const f = pose === 1 ? 56 : 52;
   ctx.fillStyle = bodyColor ?? BOSS.COLOR_MAIN;
@@ -411,6 +410,495 @@ function bossShape(ctx: Ctx, pose = 0, bodyColor?: string): void {
   fillCircle(ctx, -0.8, -54.8, 0.6, PALETTE.uiPaper, 0.85);
 }
 
+// ============================================================================
+// E4-S4 程序剪影兜底（asset-spec v1.1 §4.2）：15 新敌 + 变体帧（32×32，无描边 RV-C1）
+// 帧名 = 契约（frame-registry），M4 外部素材按帧名无痛替换。
+// 颜色：BLOOD 亡者暗红系 / BEAST 兽群灰棕系（PALETTE token，唯一来源）。
+// ============================================================================
+
+/** 墓穴甲虫（enemy_g1_3）：圆壳 + 六足 + 触角（暗红） */
+function beetleShape(ctx: Ctx, pose = 0, color = PALETTE.enemyZombie): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 11, 9, 0, 0, Math.PI * 2); // 圆壳
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 7, 5.5, 0, 0, Math.PI * 2); // 背甲中线
+  ctx.fillStyle = INK;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(-4, -1, 2.2, 2.6, 0, 0, Math.PI * 2); // 眼
+  ctx.fillStyle = PAPER;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(4, -1, 2.2, 2.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 触角
+  ctx.fillStyle = color;
+  ctx.fillRect(-11, -6, 2, 4);
+  ctx.fillRect(9, -6, 2, 4);
+  // 足（pose1 收拢）
+  ctx.fillRect(-9, pose === 1 ? 8 : 4, 2, 6);
+  ctx.fillRect(-3, pose === 1 ? 9 : 6, 2, 5);
+  ctx.fillRect(3, pose === 1 ? 9 : 6, 2, 5);
+  ctx.fillRect(7, pose === 1 ? 8 : 4, 2, 6);
+}
+
+/** 血犬（enemy_g1_2）：尖牙犬形（复用疾行狼家族，耳更垂、吻更短） */
+function houndShape(ctx: Ctx, pose = 0, color = PALETTE.enemyWolf): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(pose === 1 ? 2 : 1, -1, 6.5, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(7.5, -1.5, 3.2, 0, Math.PI * 2); // 头
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(8.5, -3.2);
+  ctx.lineTo(11, -0.6);
+  ctx.lineTo(8.5, 1.6);
+  ctx.closePath();
+  ctx.fill(); // 吻
+  ctx.beginPath();
+  ctx.moveTo(3, -5);
+  ctx.lineTo(4.5, -7.2); // 垂耳
+  ctx.lineTo(6.8, -4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-6, -1.5);
+  ctx.lineTo(-9.8, -5.5); // 尾
+  ctx.lineTo(-5.5, 1.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = PAPER;
+  ctx.beginPath();
+  ctx.moveTo(9.2, 0.8); // 尖牙
+  ctx.lineTo(10.2, 3);
+  ctx.lineTo(11, 0.6);
+  ctx.closePath();
+  ctx.fill();
+  fillCircle(ctx, 8, -2.6, 1.1, INK);
+}
+
+/** 亡魂（enemy_g1_4）：半透明残影（幽紫）+ 波状下摆 + 空洞眼 */
+function wraithShape(ctx: Ctx, pose = 0, color = PALETTE.enemyWraith): void {
+  ctx.globalAlpha = pose === 1 ? 0.55 : 0.75; // 变体更透明（残影）
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(-8, -10);
+  ctx.quadraticCurveTo(0, -14, 8, -10); // 头圆顶
+  ctx.lineTo(8, 6);
+  // 波状下摆
+  ctx.quadraticCurveTo(5, 10, 2, 6);
+  ctx.quadraticCurveTo(-1, 10, -4, 6);
+  ctx.quadraticCurveTo(-7, 10, -8, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  // 空洞眼（纸白描边 + 深瞳 = 幽灵危险编码）
+  fillCircle(ctx, -4, -6, 3, PAPER);
+  fillCircle(ctx, 4, -6, 3, PAPER);
+  fillCircle(ctx, -4, -6, 1.6, INK);
+  fillCircle(ctx, 4, -6, 1.6, INK);
+}
+
+/** 尸巫（enemy_g1_5）：骷髅 + 法杖 + 兜帽（暗红褐） */
+function necroShape(ctx: Ctx, pose = 0, color = PALETTE.enemyNecro): void {
+  ctx.fillStyle = color;
+  // 兜帽（三角兜帽 + 袍身）
+  ctx.beginPath();
+  ctx.moveTo(-9, -6);
+  ctx.lineTo(-6, -13);
+  ctx.lineTo(0, -10);
+  ctx.lineTo(6, -13);
+  ctx.lineTo(9, -6);
+  ctx.lineTo(11, 12);
+  ctx.lineTo(-11, 12);
+  ctx.closePath();
+  ctx.fill();
+  // 骷髅脸（纸白 + 深瞳 + 牙）
+  fillCircle(ctx, 0, -3, 5, PAPER);
+  fillCircle(ctx, -2.2, -4, 1.4, INK);
+  fillCircle(ctx, 2.2, -4, 1.4, INK);
+  ctx.fillStyle = INK;
+  ctx.fillRect(-3, -1, 6, 1.4);
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(-2, 0.5, 1.4, 1.6);
+  ctx.fillRect(0.6, 0.5, 1.4, 1.6);
+  // 法杖（右手侧，pose1 抬起）
+  ctx.fillStyle = color;
+  ctx.fillRect(10, pose === 1 ? -14 : -8, 2, 24);
+  fillCircle(ctx, 11, pose === 1 ? -16 : -10, 3, PALETTE.enemyBoss); // 杖首红宝石
+}
+
+/**
+ * 守墓者（enemy_g1_6 精英，R-C3-RULING）：1.5x 巨尸轮廓 + 断碑残冠尖顶剪影（幽紫）。
+ * GDD 视觉编码「1.5x·幽紫 3px·断碑残冠」——程序兜底以幽紫主体 + INK 3px 轮廓 rim
+ * （断碑深色边，仅用既有 token；M4 素材按 art-spec 幽紫 3px 精确替换）+ 双编码角饰。
+ * pose=1 变体：肩部外扩 + 双角外倾 + 断碑尖顶侧倾（蓄力帧，同既有 elite 变体语义）。
+ * 中心 (0,0)，主体半宽 ≤14、3px stroke 外扩 1.5 → 最外 15.5 ≤16 帧半 ✔（32×32）。
+ */
+function gravekeeperShape(ctx: Ctx, pose = 0, color = PALETTE.enemyGravekeeper): void {
+  ctx.beginPath();
+  // 1.5x 巨尸主体（宽肩倒梯形；变体肩更宽）
+  ctx.moveTo(pose === 1 ? -13 : -12, -6);
+  ctx.lineTo(pose === 1 ? 13 : 12, -6);
+  ctx.lineTo(pose === 1 ? 15 : 14, 13);
+  ctx.lineTo(pose === 1 ? -15 : -14, 13);
+  ctx.closePath();
+  // 双编码角饰（色盲可辨的角形，同 tank 双角语义；变体外倾）
+  ctx.moveTo(-11, -6);
+  ctx.lineTo(pose === 1 ? -14 : -13, -12);
+  ctx.lineTo(-7, -8);
+  ctx.closePath();
+  ctx.moveTo(11, -6);
+  ctx.lineTo(pose === 1 ? 14 : 13, -12);
+  ctx.lineTo(7, -8);
+  ctx.closePath();
+  // 断碑残冠（中心断碑：锯齿尖顶 = 断裂墓碑轮廓；变体侧倾）
+  ctx.moveTo(-5, -6);
+  ctx.lineTo(pose === 1 ? -3 : -2, -13);
+  ctx.lineTo(0, -7);
+  ctx.lineTo(pose === 1 ? 1 : 2, -11);
+  ctx.lineTo(5, -6);
+  ctx.closePath();
+  // 幽紫 3px 描边：先以 INK 3px stroke 轮廓（断碑深色 rim），再填幽紫主体
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.fill();
+  // 眼点（深色；变体略下移 = 蓄力低首）
+  fillCircle(ctx, -5, -1 + (pose === 1 ? 1 : 0), 1.8, INK);
+  fillCircle(ctx, 5, -1 + (pose === 1 ? 1 : 0), 1.8, INK);
+  // 断碑裂纹（深色细线）
+  ctx.strokeStyle = hexToRgba(INK, 0.8);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-7, 4);
+  ctx.lineTo(-5, 9);
+  ctx.moveTo(3, 3);
+  ctx.lineTo(5, 8);
+  ctx.stroke();
+}
+
+/** 血信徒（enemy_g2_1）：兜帽烛台（暗红，兜帽前伸持烛） */
+function acolyteShape(ctx: Ctx, pose = 0, color = PALETTE.enemyZombie): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(-9, -6);
+  ctx.lineTo(-5, -12);
+  ctx.lineTo(0, -8);
+  ctx.lineTo(5, -12);
+  ctx.lineTo(9, -6);
+  ctx.lineTo(11, 12);
+  ctx.lineTo(-11, 12);
+  ctx.closePath();
+  ctx.fill();
+  // 兜帽暗面（镂空）
+  fillCircle(ctx, 0, -2, 4.4, INK);
+  // 烛台（前伸，pose1 微倾）
+  ctx.fillStyle = PALETTE.enemyBoss;
+  ctx.fillRect(pose === 1 ? 4 : 6, -14, 2, 8);
+  fillCircle(ctx, pose === 1 ? 5 : 7, -15, 2.4, PALETTE.uiPaper); // 烛焰
+}
+
+/** 血蝠（enemy_g2_2）：翼形（空中=相位；暗红更小） */
+function batShape(ctx: Ctx, pose = 0, color = PALETTE.enemyWolf): void {
+  ctx.fillStyle = color;
+  // 双翼（pose1 展开更宽）
+  const wing = pose === 1 ? 14 : 12;
+  ctx.beginPath();
+  ctx.moveTo(-3, -2);
+  ctx.lineTo(-wing, -8);
+  ctx.lineTo(-8, 1);
+  ctx.lineTo(-wing + 4, 6);
+  ctx.lineTo(-2, 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(3, -2);
+  ctx.lineTo(wing, -8);
+  ctx.lineTo(8, 1);
+  ctx.lineTo(wing - 4, 6);
+  ctx.lineTo(2, 2);
+  ctx.closePath();
+  ctx.fill();
+  // 躯干 + 双耳
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 3.4, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-2, -3);
+  ctx.lineTo(-3, -8);
+  ctx.lineTo(0, -4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(2, -3);
+  ctx.lineTo(3, -8);
+  ctx.lineTo(0, -4);
+  ctx.closePath();
+  ctx.fill();
+  fillCircle(ctx, -1.4, 1, 0.9, PAPER);
+  fillCircle(ctx, 1.4, 1, 0.9, PAPER);
+}
+
+/** 圣杯侍僧（enemy_g2_3）：长袍 + 圣杯 + 头顶符文（暗红幽紫调） */
+function cupbearerShape(ctx: Ctx, pose = 0, color = PALETTE.enemyTank): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(-8, -8);
+  ctx.lineTo(8, -8);
+  ctx.lineTo(10, 12);
+  ctx.lineTo(-10, 12);
+  ctx.closePath();
+  ctx.fill();
+  // 头
+  fillCircle(ctx, 0, -12, 4, color);
+  // 圣杯（胸前，pose1 举起）
+  ctx.fillStyle = PALETTE.enemyBoss;
+  if (pose === 1) {
+    ctx.fillRect(2, -18, 2, 10);
+    ctx.fillRect(0, -20, 6, 3);
+  } else {
+    ctx.fillRect(-2, -4, 4, 3);
+  }
+  // 头顶符文（纸白十字 = 圣杯语义）
+  ctx.fillStyle = PALETTE.uiPaper;
+  ctx.fillRect(-1.5, -15, 3, 5);
+  ctx.fillRect(-3, -13, 6, 1);
+}
+
+/** 血肉畸体（enemy_g2_4 精英）：多臂畸体（幽紫精英，宽大） */
+function fleshmassShape(ctx: Ctx, pose = 0, color = PALETTE.enemyTank): void {
+  ctx.fillStyle = color;
+  // 主躯干（大块头）
+  ctx.beginPath();
+  ctx.ellipse(0, 2, 13, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 多臂（pose1 更多伸出）
+  const arms = pose === 1 ? 5 : 4;
+  for (let i = 0; i < arms; i += 1) {
+    const a = -Math.PI / 2 + (i / arms) * Math.PI;
+    ctx.save();
+    ctx.translate(Math.cos(a) * 11, 2 + Math.sin(a) * 9);
+    ctx.rotate(a);
+    ctx.fillRect(0, -1.5, 8, 3);
+    ctx.restore();
+  }
+  // 眼点（多处）
+  fillCircle(ctx, -4, 0, 1.6, PAPER);
+  fillCircle(ctx, 0, -2, 1.6, PAPER);
+  fillCircle(ctx, 4, 0, 1.6, PAPER);
+  // 大嘴
+  ctx.fillStyle = INK;
+  ctx.fillRect(-5, 5, 10, 2.4);
+}
+
+/** 忏悔者（enemy_g2_5）：长袍持烛（暗红；远程烛火弹语义 = 手持烛） */
+function penitentShape(ctx: Ctx, pose = 0, color = PALETTE.enemyZombie): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(-8, -8);
+  ctx.lineTo(8, -8);
+  ctx.lineTo(9, 12);
+  ctx.lineTo(-9, 12);
+  ctx.closePath();
+  ctx.fill();
+  fillCircle(ctx, 0, -12, 4, color); // 头
+  // 持烛（pose1 前伸投掷姿态）
+  ctx.fillStyle = PALETTE.enemyBoss;
+  ctx.fillRect(pose === 1 ? 7 : -3, pose === 1 ? -6 : 1, 2, 7);
+  fillCircle(ctx, pose === 1 ? 8 : -2, pose === 1 ? -8 : 0, 2.2, PALETTE.uiPaper); // 烛焰
+}
+
+/** 灰狼（enemy_g3_1）：竖耳灰狼（暗灰棕） */
+function greywolfShape(ctx: Ctx, pose = 0, color = PALETTE.beastGrey): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(pose === 1 ? 2 : 1, -1, 6.5, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(7.5, -1.5, 3.2, 0, Math.PI * 2); // 头
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(8.5, -3.4);
+  ctx.lineTo(11.8, -0.6);
+  ctx.lineTo(8.5, 1.8);
+  ctx.closePath();
+  ctx.fill(); // 吻
+  // 竖耳（灰狼特征：直立尖耳）
+  ctx.beginPath();
+  ctx.moveTo(3, -5);
+  ctx.lineTo(4.5, -9.5);
+  ctx.lineTo(7, -4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(6.5, -4.6);
+  ctx.lineTo(8.5, -8.8);
+  ctx.lineTo(10, -3.4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-6, -1.5); // 尾
+  ctx.lineTo(-9.8, -5.5);
+  ctx.lineTo(-5.5, 1.2);
+  ctx.closePath();
+  ctx.fill();
+  fillCircle(ctx, 8, -2.6, 1.1, INK);
+  fillCircle(ctx, 8.2, -3.4, 0.5, PAPER);
+}
+
+/** 暗影狼（enemy_g3_2）：流线暗狼（暗蓝灰，更细长高速） */
+function shadowwolfShape(ctx: Ctx, pose = 0, color = PALETTE.beastShadow): void {
+  ctx.fillStyle = color;
+  // 更细长流线躯干（pose1 拉长奔跑）
+  ctx.beginPath();
+  ctx.ellipse(pose === 1 ? 3 : 2, -1, pose === 1 ? 8 : 7, 3.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(8.5, -1.5, 2.8, 0, Math.PI * 2); // 头（更小更尖）
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(9.5, -3);
+  ctx.lineTo(12.4, -0.4);
+  ctx.lineTo(9.5, 1.6);
+  ctx.closePath();
+  ctx.fill(); // 尖吻
+  ctx.beginPath();
+  ctx.moveTo(4, -4.6);
+  ctx.lineTo(5.5, -8.6); // 贴耳（流线：耳向后）
+  ctx.lineTo(8, -4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-6.5, -1);
+  ctx.lineTo(-10.4, -4.6); // 细尾
+  ctx.lineTo(-6, 0.8);
+  ctx.closePath();
+  ctx.fill();
+  fillCircle(ctx, 9, -2.4, 0.9, PAPER); // 狼眼
+  fillCircle(ctx, 9.2, -3.2, 0.4, INK);
+}
+
+/** 石甲狼（enemy_g3_3 精英）：石甲纹灰狼（冷灰精英，背部石甲板） */
+function stonewolfShape(ctx: Ctx, pose = 0, color = PALETTE.beastStone): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(1, 0, 7.5, 4.6, 0, 0, Math.PI * 2); // 更厚实躯干
+  ctx.fill();
+  // 头（pose1 低头蓄力 → 头略下移）
+  ctx.beginPath();
+  ctx.arc(8, -1.5 + (pose === 1 ? 1.2 : 0), 3.4, 0, Math.PI * 2); // 头
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(9.2, -3.6);
+  ctx.lineTo(12, -0.6);
+  ctx.lineTo(9.2, 1.8);
+  ctx.closePath();
+  ctx.fill(); // 吻
+  // 竖耳（石甲短粗耳）
+  ctx.beginPath();
+  ctx.moveTo(3.4, -5.4);
+  ctx.lineTo(4.6, -8.6);
+  ctx.lineTo(7, -4.4);
+  ctx.closePath();
+  ctx.fill();
+  // 背部石甲板（冷灰亮块，石甲纹语义）
+  ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.5);
+  ctx.beginPath();
+  ctx.moveTo(-6, -4);
+  ctx.lineTo(-1, -6);
+  ctx.lineTo(3, -4.4);
+  ctx.lineTo(0, -1.6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = color;
+  // 石甲裂缝（INK 细线）
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-4, -5);
+  ctx.lineTo(-2, -3);
+  ctx.moveTo(0, -5);
+  ctx.lineTo(1, -3);
+  ctx.stroke();
+  fillCircle(ctx, 8.6, -2.6, 1.2, INK);
+  fillCircle(ctx, 8.8, -3.4, 0.5, PAPER);
+}
+
+/** 狼裔猎手（enemy_g3_4）：人形狼首（暗褐；持刃/冲锋姿态） */
+function wolfhunterShape(ctx: Ctx, pose = 0, color = PALETTE.beastHunter): void {
+  ctx.fillStyle = color;
+  // 人形躯干（直立）
+  ctx.beginPath();
+  ctx.moveTo(-5, -6);
+  ctx.lineTo(5, -6);
+  ctx.lineTo(6, 10);
+  ctx.lineTo(-6, 10);
+  ctx.closePath();
+  ctx.fill();
+  // 狼首（竖耳 + 尖吻，侧脸朝右）
+  ctx.beginPath();
+  ctx.arc(1, -9, 4.6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(3, -11);
+  ctx.lineTo(8, -8);
+  ctx.lineTo(3, -6);
+  ctx.closePath();
+  ctx.fill(); // 吻
+  ctx.beginPath();
+  ctx.moveTo(-1.5, -13);
+  ctx.lineTo(-1, -18);
+  ctx.lineTo(1.5, -12.5);
+  ctx.closePath();
+  ctx.fill(); // 左耳
+  ctx.beginPath();
+  ctx.moveTo(2.5, -13.4);
+  ctx.lineTo(4, -18);
+  ctx.lineTo(5.5, -12.6);
+  ctx.closePath();
+  ctx.fill(); // 右耳
+  // 臂持刃（pose1 冲锋前指）
+  ctx.fillRect(pose === 1 ? 3 : 4, pose === 1 ? -3 : 0, 2, 8);
+  ctx.beginPath();
+  ctx.moveTo(pose === 1 ? 10 : 9, pose === 1 ? -8 : -5);
+  ctx.lineTo(pose === 1 ? 14 : 13, pose === 1 ? -6 : -3);
+  ctx.lineTo(pose === 1 ? 8 : 7, pose === 1 ? -2 : 1);
+  ctx.closePath();
+  ctx.fill(); // 刃
+  fillCircle(ctx, 2, -9.6, 1.1, INK); // 狼眼
+  fillCircle(ctx, 2.3, -10.4, 0.5, PAPER);
+}
+
+/** 15 敌兜底 shape 表（asset-spec §4.2 兜底映射；frame → shape 函数）。
+ *  15 敌配置帧中 g1_1 行尸复用既有 enemy-zombie（createCharactersAtlas 单独绘制），
+ *  其余 14 帧（13 既有 + R-C3-RULING enemy-gravekeeper）走本表。 */
+const ENEMY_SHAPE_FALLBACK: Record<
+  string,
+  { shape: (ctx: Ctx, pose: number) => void; cell: number }
+> = {
+  'enemy-beetle': { shape: beetleShape, cell: 32 },
+  'enemy-hound': { shape: houndShape, cell: 32 },
+  'enemy-wraith': { shape: wraithShape, cell: 32 },
+  'enemy-necro': { shape: necroShape, cell: 32 },
+  'enemy-gravekeeper': { shape: gravekeeperShape, cell: 32 },
+  'enemy-acolyte': { shape: acolyteShape, cell: 32 },
+  'enemy-bat': { shape: batShape, cell: 32 },
+  'enemy-cupbearer': { shape: cupbearerShape, cell: 32 },
+  'enemy-fleshmass': { shape: fleshmassShape, cell: 32 },
+  'enemy-penitent': { shape: penitentShape, cell: 32 },
+  'enemy-greywolf': { shape: greywolfShape, cell: 32 },
+  'enemy-shadowwolf': { shape: shadowwolfShape, cell: 32 },
+  'enemy-stonewolf': { shape: stonewolfShape, cell: 32 },
+  'enemy-wolfhunter': { shape: wolfhunterShape, cell: 32 },
+};
+
 /**
  * 生成全部程序贴图（幂等：已存在的 key 跳过，兼容 scene.restart）。
  * 由 PlayScene.create 调用；不再单独生成散纹理。
@@ -418,6 +906,8 @@ function bossShape(ctx: Ctx, pose = 0, bodyColor?: string): void {
 export function createProceduralTextures(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   createGroundTile(scene);
   createGrassTile(scene);
+  createChurchTiles(scene);
+  createDenTiles(scene);
   createBlockerTile(scene);
   createCharactersAtlas(scene, cfg);
   createEffectsAtlas(scene);
@@ -496,6 +986,106 @@ function createGrassTile(scene: Phaser.Scene): void {
     ctx.fill();
   }
   canvas.refresh();
+}
+
+/** 教堂 tile（E4-S4 程序剪影兜底，gdd-maps §3.2）：石砖 + 暗红地毯 */
+function createChurchTiles(scene: Phaser.Scene): void {
+  const size = TILE.SIZE;
+  // 教堂石砖：暗灰基底 + 砖缝网格 + 风化（与墓地石板区分：更冷灰、砖块缝）
+  if (!scene.textures.exists('tile-church-stone')) {
+    const canvas = scene.textures.createCanvas('tile-church-stone', size, size);
+    if (canvas) {
+      const ctx = canvas.getContext();
+      ctx.fillStyle = '#232A38';
+      ctx.fillRect(0, 0, size, size);
+      ctx.strokeStyle = 'rgba(11,14,20,0.6)';
+      ctx.lineWidth = 1;
+      const brickW = size / 2;
+      const brickH = size / 4;
+      for (let row = 0; row < 4; row += 1) {
+        const offset = row % 2 === 0 ? 0 : brickW / 2;
+        for (let col = -1; col < 3; col += 1) {
+          ctx.strokeRect(col * brickW + offset, row * brickH, brickW, brickH);
+        }
+      }
+      const rng = mulberry32(20260820);
+      for (let i = 0; i < 24; i += 1) {
+        ctx.fillStyle = rng() > 0.5 ? 'rgba(43,52,70,0.5)' : 'rgba(8,10,16,0.4)';
+        ctx.fillRect(Math.floor(rng() * size), Math.floor(rng() * size), 2, 2);
+      }
+      canvas.refresh();
+    }
+  }
+  // 教堂暗红地毯：低饱和红底 + 菱形纹（装饰语义 α 由 MapSystem 降 0.35，与血池危险区分）
+  if (!scene.textures.exists('tile-church-carpet')) {
+    const canvas = scene.textures.createCanvas('tile-church-carpet', size, size);
+    if (canvas) {
+      const ctx = canvas.getContext();
+      ctx.fillStyle = '#3A2426';
+      ctx.fillRect(0, 0, size, size);
+      ctx.strokeStyle = 'rgba(84,230,201,0.14)'; // 冷青细纹（圣辉语义，低饱和）
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(size / 2, i * 16);
+        ctx.lineTo(i % 2 === 0 ? 8 : size - 8, size / 2);
+        ctx.stroke();
+      }
+      canvas.refresh();
+    }
+  }
+}
+
+/** 狼穴 tile（E4-S4 程序剪影兜底，gdd-maps §3.3）：岩地 + 暗绿草 */
+function createDenTiles(scene: Phaser.Scene): void {
+  const size = TILE.SIZE;
+  // 狼穴岩地：暗褐灰 + 碎石 + 裂纹
+  if (!scene.textures.exists('tile-den-earth')) {
+    const canvas = scene.textures.createCanvas('tile-den-earth', size, size);
+    if (canvas) {
+      const ctx = canvas.getContext();
+      ctx.fillStyle = '#241F1C';
+      ctx.fillRect(0, 0, size, size);
+      const rng = mulberry32(20260821);
+      for (let i = 0; i < 10; i += 1) {
+        ctx.fillStyle = rng() > 0.5 ? '#332B26' : '#1A1614';
+        ctx.beginPath();
+        ctx.ellipse(rng() * size, rng() * size, 2 + rng() * 4, 1.5 + rng() * 3, rng() * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = 'rgba(11,14,20,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(8, 8);
+      ctx.lineTo(20, 30);
+      ctx.moveTo(48, 4);
+      ctx.lineTo(40, 28);
+      ctx.stroke();
+      canvas.refresh();
+    }
+  }
+  // 狼穴暗绿草：暗绿基底 + 短草叶（比墓地草地更暗更密，BEAST 领地）
+  if (!scene.textures.exists('tile-den-grass')) {
+    const canvas = scene.textures.createCanvas('tile-den-grass', size, size);
+    if (canvas) {
+      const ctx = canvas.getContext();
+      ctx.fillStyle = '#141A16';
+      ctx.fillRect(0, 0, size, size);
+      const rng = mulberry32(20260822);
+      ctx.strokeStyle = '#26332A';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 160; i += 1) {
+        const x = rng() * size;
+        const y = rng() * size;
+        const len = 2 + rng() * 4;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + (rng() - 0.5) * 2, y - len);
+        ctx.stroke();
+      }
+      canvas.refresh();
+    }
+  }
 }
 
 /** 障碍地砖：灰蓝实心 + 顶缘高光 + 底缘阴影 + 风化噪点（art-bible §5 可阻挡物画实心） */
@@ -612,6 +1202,26 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   drawSilhouette(ctx, (g, color) => bossShape(g, 1, color), cfg.outlineEnabled ? BOSS.COLOR_MAIN : undefined, 1.05);
   ctx.restore();
 
+  // E4-S4：15 敌兜底程序剪影（asset-spec §4.2 兜底映射）——
+  // 网格 (284,56) 起，7 列 × 4 行 32×32 单元：base 帧（行1-2）+ 变体帧（行3-4）
+  const enemyFrames = Object.keys(ENEMY_SHAPE_FALLBACK);
+  enemyFrames.forEach((frame, i) => {
+    const col = i % 7;
+    const row = Math.floor(i / 7);
+    const spec = ENEMY_SHAPE_FALLBACK[frame]!;
+    // base 帧
+    ctx.save();
+    ctx.translate(284 + col * 32 + 16, 56 + row * 32 + 16);
+    spec.shape(ctx, 0);
+    ctx.restore();
+    // 变体帧（pose1）：行 3-4（vRow = 2 + row；15 敌兜底表 14 帧 = base 2 行 + 变体 2 行）
+    const vRow = 2 + row;
+    ctx.save();
+    ctx.translate(284 + col * 32 + 16, 56 + vRow * 32 + 16);
+    spec.shape(ctx, 1);
+    ctx.restore();
+  });
+
   canvas.refresh();
 
   // 注册帧（frame 名与既有 texture key 一一对应，实体代码零感知切换；新增 `*-v` 变体帧）
@@ -628,13 +1238,21 @@ function createCharactersAtlas(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   tex.add('enemy-wolf-v', 0, 120, 116, 24, 24);
   tex.add('enemy-tank-v', 0, 120, 188, 48, 48);
   tex.add('enemy-boss-v', 0, 160, 56, BOSS.TEXTURE_SIZE, BOSS.TEXTURE_SIZE);
+
+  // E4-S4：15 敌兜底帧注册（base + -v 变体；与绘制网格一致 (284,56) 7 列 32×32）
+  enemyFrames.forEach((frame, i) => {
+    const col = i % 7;
+    const row = Math.floor(i / 7);
+    tex.add(frame, 0, 284 + col * 32, 56 + row * 32, 32, 32);
+    tex.add(`${frame}-v`, 0, 284 + col * 32, 56 + (2 + row) * 32, 32, 32);
+  });
 }
 
-/** effects 图集 v3：冲击波环 / 经验宝石（烘焙光晕）/ 摇杆 / 贴花 ×3（1 批） */
+/** effects 图集 v3：冲击波环 / 经验宝石（烘焙光晕）/ 摇杆 / 贴花 ×3 + E4-S4 障碍帧（1 批） */
 function createEffectsAtlas(scene: Phaser.Scene): void {
   if (scene.textures.exists('effects')) return;
   const W = 256;
-  const H = 128;
+  const H = 192;
   const canvas = scene.textures.createCanvas('effects', W, H);
   if (!canvas) return;
   const ctx = canvas.getContext();
@@ -697,6 +1315,9 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
   ctx.ellipse(6, 11, 3, 1.6, -0.3, 0, Math.PI * 2);
   ctx.fill();
 
+  // E4-S4：障碍帧（40×40 @ y=128；实心灰蓝 + 高光/阴影，可阻挡物语义）
+  drawObstacleFrames(ctx);
+
   canvas.refresh();
 
   const tex = scene.textures.get('effects');
@@ -707,6 +1328,103 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
   tex.add('decal-rock', 0, 0, 96, 16, 16);
   tex.add('decal-grass', 0, 16, 96, 16, 16);
   tex.add('decal-blood', 0, 32, 96, 16, 16);
+  // E4-S4：教堂/狼穴障碍帧 + 血池贴花（40×40 @ y=128，MapSystem 圆形碰撞体消费）
+  tex.add('obst-church-pillar', 0, 0, 128, 40, 40);
+  tex.add('obst-church-bench', 0, 40, 128, 40, 40);
+  tex.add('obst-church-altar', 0, 80, 128, 40, 40);
+  tex.add('obst-den-rock', 0, 120, 128, 40, 40);
+  tex.add('obst-den-log', 0, 160, 128, 40, 40);
+  tex.add('decal-bloodpool', 0, 200, 128, 40, 40);
+}
+
+/** 障碍帧绘制（E4-S4，40×40 @ y=128）：教堂立柱/长椅/祭坛 + 狼穴巨石/倒木 + 血池贴花 */
+function drawObstacleFrames(ctx: Ctx): void {
+  // 教堂立柱（obst-church-pillar）：灰蓝柱体 + 柱头/柱基 + 顶缘高光
+  ctx.fillStyle = PALETTE.blocker;
+  ctx.fillRect(6, 8, 28, 24); // 柱身
+  ctx.fillRect(2, 4, 36, 6); // 柱头
+  ctx.fillRect(2, 32, 36, 5); // 柱基
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fillRect(8, 6, 4, 28); // 高光
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.fillRect(30, 10, 3, 24); // 阴影
+
+  // 教堂长椅（obst-church-bench）：靠背 + 座面 + 腿
+  const bx = 40;
+  ctx.fillStyle = PALETTE.blocker;
+  ctx.fillRect(bx + 4, 6, 30, 5); // 靠背
+  ctx.fillRect(bx + 4, 16, 32, 6); // 座面
+  ctx.fillRect(bx + 6, 22, 3, 12); // 腿
+  ctx.fillRect(bx + 31, 22, 3, 12);
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fillRect(bx + 5, 17, 30, 2);
+
+  // 教堂祭坛（obst-church-altar）：石台 + 圣杯剪影
+  const ax = 80;
+  ctx.fillStyle = PALETTE.blocker;
+  ctx.fillRect(ax + 4, 20, 32, 12); // 台面
+  ctx.fillRect(ax + 8, 32, 24, 5); // 台基
+  ctx.fillStyle = hexToRgba(PALETTE.uiPaper, 0.7);
+  ctx.fillRect(ax + 17, 10, 6, 10); // 圣杯
+  ctx.fillStyle = hexToRgba(PALETTE.danger, 0.8);
+  ctx.beginPath();
+  ctx.arc(ax + 20, 8, 3, 0, Math.PI * 2); // 杯口红
+  ctx.fill();
+
+  // 狼穴巨石（obst-den-rock）：多棱岩石 + 顶光底影
+  const rx = 120;
+  ctx.fillStyle = PALETTE.blocker;
+  ctx.beginPath();
+  ctx.moveTo(rx + 4, 32);
+  ctx.lineTo(rx + 10, 6);
+  ctx.lineTo(rx + 26, 2);
+  ctx.lineTo(rx + 36, 18);
+  ctx.lineTo(rx + 32, 34);
+  ctx.lineTo(rx + 8, 36);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath();
+  ctx.moveTo(rx + 10, 6);
+  ctx.lineTo(rx + 26, 2);
+  ctx.lineTo(rx + 18, 16);
+  ctx.closePath();
+  ctx.fill();
+
+  // 狼穴倒木（obst-den-log）：横木 + 断口 + 木纹
+  const lx = 160;
+  ctx.fillStyle = '#3A3028';
+  ctx.fillRect(lx + 4, 16, 32, 8); // 木身
+  ctx.beginPath();
+  ctx.arc(lx + 4, 20, 4.4, 0, Math.PI * 2); // 断口
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(11,14,20,0.55)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(lx + 10, 17);
+  ctx.lineTo(lx + 10, 23);
+  ctx.moveTo(lx + 18, 17);
+  ctx.lineTo(lx + 18, 23);
+  ctx.moveTo(lx + 26, 17);
+  ctx.lineTo(lx + 26, 23);
+  ctx.stroke();
+
+  // 血池贴花（decal-bloodpool）：暗红圆池 + 波纹边 + 危险红描边（与地毯区分）
+  const px = 200;
+  ctx.fillStyle = hexToRgba(PALETTE.enemyZombie, 0.85);
+  ctx.beginPath();
+  ctx.ellipse(px + 20, 20, 17, 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = hexToRgba(PALETTE.danger, 0.9);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(px + 20, 20, 17, 15, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = hexToRgba(PALETTE.uiPaper, 0.45);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(px + 20, 20, 12, 10, 0, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 /**
@@ -717,8 +1435,7 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
  * - vignette 256×256 @ (256,0)：径向暗角渐变（透明中心 → 基底色 55% 边缘）
  * 整图集 LINEAR 过滤（渐晕/光晕放大平滑；粒子轻微柔化无碍剪影风格）。
  */
-function createAmbientAtlas(scene: Phaser.Scene): void {
-  if (scene.textures.exists('fx-ambient')) return;
+function createAmbientAtlas(scene: Phaser.Scene): void {  if (scene.textures.exists('fx-ambient')) return;
   const W = 512;
   const H = 256;
   const canvas = scene.textures.createCanvas('fx-ambient', W, H);

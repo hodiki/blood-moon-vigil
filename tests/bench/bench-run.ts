@@ -3,11 +3,11 @@
  *
  * 执行流程：
  * 1. 无头逻辑基准（headless，环境无关，CI 可跑）：
- *    - 桌面 & 移动配置各跑 20 分钟峰值模拟
+ *    - 桌面 & 移动配置各跑 6 分钟峰值模拟（TASK-31 收尾 BOSS_TIME=360）
  *    - 断言：同屏敌人峰值 ≤400/250（上限节流生效）、子弹 ≤8、draw call ≤8
  * 2. 浏览器真实 fps 基准（可选，BENCH_BROWSER=1 时执行）：
  *    - spawn `vite preview`（需先 `npm run build`）→ Playwright chromium 打开 `/?bench=1`
- *    - 60s 峰值压力（游戏 20× 时缩放 → 覆盖 20:00 收束）→ 读 window.__BENCH_RESULT__
+ *    - 36s 峰值压力（游戏 20× 时缩放 → 覆盖 6:00 收束）→ 读 window.__BENCH_RESULT__
  *    - 断言桌面 avgFps≥58 / minFps≥50；BENCH_STRICT_FPS=1 时 fps 未达标 → 退出码非 0
  * 说明：headless 无渲染，不出真实 fps；真实 fps 以桌面 Chrome（集显）浏览器为准
  * （ARCH §6.1「桌面 Chrome 最新 + 集显」）—— headless swiftshader 数值仅作参考。
@@ -92,7 +92,7 @@ async function browserBench(): Promise<{ result: BenchResult | null; note: strin
   }
 
   // eslint-disable-next-line no-console
-  console.log('[bench] 启动 vite preview + Playwright chromium（60s 峰值压力，请耐心等待…）');
+  console.log('[bench] 启动 vite preview + Playwright chromium（36s 峰值压力，请耐心等待…）');
   const server: ChildProcess = spawn('npx', ['vite', 'preview', '--port', String(PREVIEW_PORT), '--strictPort'], {
     stdio: 'ignore',
     shell: process.platform === 'win32',

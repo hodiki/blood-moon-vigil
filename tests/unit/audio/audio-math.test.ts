@@ -30,29 +30,27 @@ function makeStorage(init: Record<string, string> = {}): AudioStorage {
   };
 }
 
-describe('心跳 BPM 分段线性映射（audio-bible §1：开局 60 → 5min 80 → 10min 100 → 15min 120 → 20min 140）', () => {
+describe('心跳 BPM 分段线性映射（audio-bible §1 · TASK-31 收尾：开局 60 → 2min 80 → 4min 100 → 6min 140）', () => {
   it.each([
     [0, 60],
-    [150, 70],
-    [300, 80],
-    [450, 90],
-    [600, 100],
-    [750, 110],
-    [900, 120],
-    [1050, 130],
-    [1200, 140],
+    [60, 70],
+    [120, 80],
+    [180, 90],
+    [240, 100],
+    [300, 120],
+    [360, 140],
   ])('t=%d s → BPM=%d', (t, bpm) => {
     expect(heartbeatBpmAt(t)).toBeCloseTo(bpm, 6);
   });
 
-  it('超 20:00 钳制 140（上限防噪），负值钳制 60', () => {
+  it('超 6:00 钳制 140（上限防噪），负值钳制 60', () => {
     expect(heartbeatBpmAt(1500)).toBe(HEARTBEAT.BPM_MAX);
     expect(heartbeatBpmAt(-5)).toBe(HEARTBEAT.BPM_MIN);
   });
 
-  it('0..1200 单调不降（心跳随局时只加速不停滞）', () => {
+  it('0..360 单调不降（心跳随局时只加速不停滞）', () => {
     let prev = -Infinity;
-    for (let t = 0; t <= 1200; t += 30) {
+    for (let t = 0; t <= 360; t += 30) {
       const bpm = heartbeatBpmAt(t);
       expect(bpm).toBeGreaterThanOrEqual(prev);
       prev = bpm;

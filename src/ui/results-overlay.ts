@@ -3,7 +3,7 @@
  *
  * 进入：GameState 转 GAMEOVER 后 PlayScene emit game:over { stats } → 本层订阅渲染。
  * 内容（ux-spec §4 / CM R3）：
- * - 标题「守夜失败」或「血月退散·守夜完成」；统计行：存活时间 / 击杀数 / 等级
+ * - 标题「守夜失败」或「封印稳固·守夜完成」（narratives-spec §8.1，来源 narratives.ts）；统计行：存活时间 / 击杀数 / 等级
  * - Build 回顾：所选升级清单（RunResult.build，滚动区，超 12 项滚动）
  * - 「再来一局」→ emit game:restart（PlayScene → scene.restart()，CM R1/R2）
  *   「返回启动」→ emit game:to-menu（PlayScene → scene.start('Boot')）
@@ -15,8 +15,19 @@ import { GameEvents, GameEvent } from '@/core/events';
 import { getOverlayHost } from '@/ui/overlay-host';
 import { incrementRestartCount } from '@/stats/session-stats';
 import type { RunResult } from '@/stats/run-stats';
+import { NARRATIVES, entryByKey } from '@/narratives/narratives';
 
 const ROLL_DURATION_MS = 800;
+
+/**
+ * 结算标题（narratives-spec §8.1 / C-5 必改）：胜利 =「封印稳固·守夜完成」（封印语义 + 守夜完成，
+ * 呼应 world-bible §2 封印渗血）；失败 =「守夜失败。」。文案只读 narratives.ts 表（按 key 引用，
+ * spec §2 key 为工程引用键），不硬编码；表缺失时兜底 = 设计终稿文本（与表一致，防漂移）。
+ */
+export function resultTitle(victory: boolean): string {
+  const entry = entryByKey(NARRATIVES, victory ? 'n_result_victory' : 'n_result_defeat');
+  return entry?.text ?? (victory ? '封印稳固·守夜完成' : '守夜失败。');
+}
 
 /** game:over 事件 payload（PlayScene.finishGame 构造；TASK-21 P1 增补 sessionRestartCount） */
 export interface GameOverPayload {
@@ -32,6 +43,7 @@ export class ResultsOverlay {
   private readonly killsEl: HTMLElement;
   private readonly levelEl: HTMLElement;
   private readonly buildEl: HTMLElement;
+  private readonly telEls: Record<'offers' | 'xp' | 'evolution' | 'related' | 'boss', HTMLElement>;
   private readonly handlers: Array<{ event: string; fn: (...args: unknown[]) => void }> = [];
   private rollRaf = 0;
 
@@ -48,6 +60,14 @@ export class ResultsOverlay {
           <div class="bmv-results-row"><span class="bmv-results-label">存活时间</span><span class="bmv-results-value" data-roll="time">0:00</span></div>
           <div class="bmv-results-row"><span class="bmv-results-label">击杀数</span><span class="bmv-results-value" data-roll="kills">0</span></div>
           <div class="bmv-results-row"><span class="bmv-results-label">等级</span><span class="bmv-results-value" data-roll="level">1</span></div>
+        </div>
+        <div class="bmv-results-telemetry">
+          <div class="bmv-results-telemetry-title">真机遥测（M3）</div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">升级 offer</span><span class="bmv-results-value" data-tel="offers">0</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">本局经验</span><span class="bmv-results-value" data-tel="xp">0</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">进化完成</span><span class="bmv-results-value" data-tel="evolution">0</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">build 相关卡占比</span><span class="bmv-results-value" data-tel="related">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">Boss 战时长</span><span class="bmv-results-value" data-tel="boss">–</span></div>
         </div>
         <div class="bmv-results-build">
           <div class="bmv-results-build-title">Build 回顾</div>
@@ -66,6 +86,13 @@ export class ResultsOverlay {
     this.killsEl = this.root.querySelector('[data-roll="kills"]') as HTMLElement;
     this.levelEl = this.root.querySelector('[data-roll="level"]') as HTMLElement;
     this.buildEl = this.root.querySelector('.bmv-results-build-list') as HTMLElement;
+    this.telEls = {
+      offers: this.root.querySelector('[data-tel="offers"]') as HTMLElement,
+      xp: this.root.querySelector('[data-tel="xp"]') as HTMLElement,
+      evolution: this.root.querySelector('[data-tel="evolution"]') as HTMLElement,
+      related: this.root.querySelector('[data-tel="related"]') as HTMLElement,
+      boss: this.root.querySelector('[data-tel="boss"]') as HTMLElement,
+    };
 
     const restartBtn = this.root.querySelector('.bmv-results-restart') as HTMLElement;
     const menuBtn = this.root.querySelector('.bmv-results-menu') as HTMLElement;
@@ -88,9 +115,26 @@ export class ResultsOverlay {
   /** 展示结算（game:over 自动触发；也可由 PlayScene 直接调用） */
   show(stats: RunResult): void {
     this.root.style.display = 'flex';
-    this.titleEl.textContent = stats.victory ? '血月退散·守夜完成' : '守夜失败';
+    // C-5：标题文案来源 narratives.ts（封印稳固·守夜完成 / 守夜失败。）
+    this.titleEl.textContent = resultTitle(stats.victory);
     this.renderBuild(stats.build);
+    this.renderTelemetry(stats);
     this.rollNumbers(stats);
+  }
+
+  /** M3 真机埋点：结算页静态展示 5 项遥测（upgrade-experience-v2 §4.4；真机验证直接读结算页） */
+  private renderTelemetry(stats: RunResult): void {
+    this.telEls.offers.textContent = String(stats.offersPerRun);
+    this.telEls.xp.textContent = String(stats.xpGainedPerRun);
+    this.telEls.evolution.textContent = stats.evolutionComplete
+      ? `${stats.evolutionCompleteCount} 次（达成）`
+      : String(stats.evolutionCompleteCount);
+    this.telEls.related.textContent = stats.relatedCardShare === null
+      ? '–'
+      : `${Math.round(stats.relatedCardShare * 100)}%`;
+    this.telEls.boss.textContent = stats.bossFightSeconds === null
+      ? '–'
+      : `${Math.round(stats.bossFightSeconds * 10) / 10}s`;
   }
 
   destroy(): void {
@@ -187,6 +231,25 @@ export class ResultsOverlay {
         font-size: 28px; color: #F2F5F9;
         padding: 6px 0;
       }
+      .bmv-results-telemetry {
+        width: 100%;
+        margin-bottom: 16px;
+        background: #0B0E14; border-radius: 8px;
+        padding: 8px 12px;
+        box-sizing: border-box;
+        border: 1px solid #2A3346;
+      }
+      .bmv-results-telemetry-title {
+        font-size: 14px; font-weight: 700;
+        color: #54E6C9; margin-bottom: 4px;
+        letter-spacing: 1px;
+      }
+      .bmv-results-trow {
+        display: flex; justify-content: space-between;
+        font-size: 15px; color: #F2F5F9;
+        padding: 2px 0;
+        font-variant-numeric: tabular-nums;
+      }
       .bmv-results-label { color: #A9B4C4; }
       .bmv-results-value { font-weight: 700; font-variant-numeric: tabular-nums; }
       .bmv-results-build {
@@ -246,7 +309,7 @@ export class ResultsOverlay {
   }
 }
 
-/** 秒 → "M:SS"（如 20:00）；含小数时四舍五入到秒 */
+/** 秒 → "M:SS"（如 6:00）；含小数时四舍五入到秒 */
 export function formatSeconds(seconds: number): string {
   const total = Math.max(0, Math.round(seconds));
   const m = Math.floor(total / 60);

@@ -23,24 +23,29 @@ export interface SpawnStage {
   start: number;
   end: number;
   weights: StageWeights;
-  /** 厚血保底间隔 s：仅 3–8min 阶段为 20s；其余阶段无保底 = Infinity */
+  /** 厚血保底间隔 s：S2=30s、S3=20s；无保底阶段 = Infinity */
   tankGuaranteeEvery: number;
 }
 
-/** 构成权重阶段表（spawner §③：0–3min / 3–8min / 8–15min / 15–20min；
- * TASK-39 R1 波次2 权重重构；TASK-43 R2 精英提前 + 密度提速：
- * 0–3min 加随机 0.5% 厚血（首见精英 ~1.5–3min，保底 3.5min 兜底，模拟 8/8 种子 ≤3.2min）、
- * 3–8min 随机 2%→3%、中后段小幅上调 —— 全程 5min 节点场上厚血 ≤2（C3 FUNC-E2-07 仍达标）） */
+/**
+ * 构成权重阶段表（spawner §③；TASK-31 收尾节奏调整 rhythm-pace-adj §2：4 段→3 段；
+ * TASK-32 裁决 CONCERNS #1（rhythm-pace-adj §9）：S3 tank 0.12→0.05，C3 判据重标定）：
+ * - S1 0–120s（0–2min）：上手爽感；tank 0.5% 随机保留「惊喜首见」
+ * - S2 120–240s（2–4min）：精英期，保底每 30s 开启（2:00/2:30/3:00 各 1 只 → 3min 前必见 ≥2 保底精英）
+ * - S3 240–360s（4–6min）：Boss 前峰值爬升，保底加密至每 20s；
+ *   tank 0.05（TASK-32 裁决，防「0.12→360s≈27.5 绝望墙」；wolf 0.33 提速逼走位）
+ * 权重和均为 1.0（0.90+0.095+0.005 / 0.80+0.17+0.03 / 0.62+0.33+0.05）。
+ */
 export const SPAWN_STAGES: readonly SpawnStage[] = [
-  { start: 0, end: 180, weights: { zombie: 0.895, wolf: 0.1, tank: 0.005 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
-  { start: 180, end: 480, weights: { zombie: 0.77, wolf: 0.2, tank: 0.03 }, tankGuaranteeEvery: SPAWNER.TANK_GUARANTEE_EVERY_SECONDS },
-  { start: 480, end: 900, weights: { zombie: 0.53, wolf: 0.36, tank: 0.11 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
-  { start: 900, end: SPAWNER.BOSS_TIME, weights: { zombie: 0.47, wolf: 0.35, tank: 0.18 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
+  { start: 0, end: 120, weights: { zombie: 0.9, wolf: 0.095, tank: 0.005 }, tankGuaranteeEvery: Number.POSITIVE_INFINITY },
+  { start: 120, end: 240, weights: { zombie: 0.8, wolf: 0.17, tank: 0.03 }, tankGuaranteeEvery: SPAWNER.TANK_GUARANTEE_EVERY_SECONDS },
+  { start: 240, end: SPAWNER.BOSS_TIME, weights: { zombie: 0.62, wolf: 0.33, tank: 0.05 }, tankGuaranteeEvery: SPAWNER.TANK_GUARANTEE_EVERY_SECONDS_S3 },
 ] as const;
 
 /**
- * 生成预算（点数/s）：budget(t) = 1.2 × (1 + 3.3×t/1200) × (1 + 0.3×sin(2πt/75))
- * 完整公式（含正弦波峰波谷，spawner §③；TASK-39 R1 波次2 + TASK-43 R2 参数收敛于 balance SPAWNER）。
+ * 生成预算（点数/s）：budget(t) = 1.2 × (1 + 1.2×t/360) × (1 + 0.3×sin(2πt/60))
+ * 完整公式（含正弦波峰波谷，spawner §③；TASK-39 R1 波次2 + TASK-43 R2 + TASK-31 收尾
+ * 参数收敛于 balance SPAWNER）。
  */
 export function budget(t: number): number {
   const linear = 1 + (SPAWNER.LINEAR_SCALE * t) / SPAWNER.LINEAR_TOTAL_SECONDS;
@@ -50,7 +55,7 @@ export function budget(t: number): number {
 
 /**
  * 平均预算（去掉正弦项，即 spawner §③ 压力曲线表的"平均预算"列）：
- * 1.2 → 1.35 → 1.65 → ... → 4.2。文档对照用；实际生成用 budget(t)。
+ * 1.2 → 1.44 → 1.68 → ... → 2.64。文档对照用；实际生成用 budget(t)。
  */
 export function budgetMean(t: number): number {
   return SPAWNER.BASE_BUDGET * (1 + (SPAWNER.LINEAR_SCALE * t) / SPAWNER.LINEAR_TOTAL_SECONDS);
@@ -81,7 +86,7 @@ export function tankGuaranteeDue(accumulatedSeconds: number, guaranteeEvery: num
 }
 
 /**
- * 20:00 Boss 收束触发判定（S8 §⑥.3 / E4-S3）：局时秒 ≥ BOSS_TIME（1200s）即触发。
+ * 6:00 Boss 收束触发判定（S8 §⑥.3 / E4-S3）：局时秒 ≥ BOSS_TIME（360s）即触发。
  * 由 EnemySpawner.update 在 RUNNING 态秒制累加后调用；dt ≤50ms（clampDelta），
  * 触发误差 ≤ 单帧 dt ≤ 0.05s，满足 RV-C8「±0.1s」精度。
  */

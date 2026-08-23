@@ -78,4 +78,7 @@ export function syncOverlayToCanvas(game: Phaser.Game): void {
   host.style.height = `${layout.height}px`;
   host.style.transform = `scale(${layout.scale})`;
   host.style.transformOrigin = 'top left';
+  // M3 叙事双端：注入缩放因子供覆盖层 CSS 消费（移动端字号 ≥16px 物理：
+  // 设计字号 = 16/scale 向上取整，narratives-spec §1.3/§11 —— narrative-overlays.ts）
+  host.style.setProperty('--bmv-overlay-scale', String(layout.scale));
 }

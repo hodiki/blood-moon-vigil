@@ -76,7 +76,7 @@ export class Pool<T extends Poolable> {
 }
 
 /** 池种类（对应 ARCH §3.2 池表 / 双端预算） */
-export type PoolKind = 'enemies' | 'bullets' | 'gems';
+export type PoolKind = 'enemies' | 'bullets' | 'gems' | 'heals';
 
 /** 从 RuntimeConfig 读取对应池上限（唯一数据源，避免散落魔法数字） */
 export function maxSizeFor(cfg: RuntimeConfig, kind: PoolKind): number {
@@ -87,6 +87,8 @@ export function maxSizeFor(cfg: RuntimeConfig, kind: PoolKind): number {
       return 8; // 子弹池双端一致（ARCH §3.2）
     case 'gems':
       return cfg.maxGems;
+    case 'heals':
+      return cfg.maxHeals; // M3 治疗道具（占位低掉落率，池小）
   }
 }
 
@@ -101,7 +103,9 @@ export interface ArcadePoolLike<T extends Phaser.Physics.Arcade.Sprite> {
 }
 
 /**
- * 创建 Arcade.Group 对象池：maxSize 来自 RuntimeConfig（ARCH §3.3 / 性能预算 #1）。
+ * 创建 Arcade.Group 对象池：maxSize 来自 RuntimeConfig（ARCH §3.3 / 性能预算 #1），
+ * 或由 maxSizeOverride 显式给定（E2-S2 弹道上限按武器配置 WEAPON_CONFIGS.maxActive，
+ * 不一律走 RuntimeConfig —— sprint-m2-plan §5.1「弹道上限按武器配置」）。
  * 池满策略固定为 'reject'（生成器/武器层自带节流，对齐 ARCH §3.3 池满策略）。
  * E1 阶段无池化实体，此函数由 E2+ 调用。
  */
@@ -110,8 +114,9 @@ export function createArcadePool<T extends Phaser.Physics.Arcade.Sprite>(
   cfg: RuntimeConfig,
   kind: PoolKind,
   classType: new (scene: Phaser.Scene, x: number, y: number, texture?: string) => T,
+  maxSizeOverride?: number,
 ): ArcadePoolLike<T> {
-  const maxSize = maxSizeFor(cfg, kind);
+  const maxSize = maxSizeOverride ?? maxSizeFor(cfg, kind);
   const group = scene.physics.add.group({
     classType,
     maxSize,

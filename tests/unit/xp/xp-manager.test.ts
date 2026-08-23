@@ -152,6 +152,16 @@ describe('XpManager 经验累计与升级消费（E3-S1/S2）', () => {
     expect(m.xp).toBe(0);
   });
 
+  it('M3 真机埋点：xpGained 累计拾取总量（含升级消耗，口径 = 拾取总量；xpGainedPerRun 数据源）', () => {
+    const m = makeManager();
+    expect(m.xpGained).toBe(0); // 初始 0
+    m.addXp(5);
+    m.addXp(8);
+    expect(m.xpGained).toBe(13); // 与 xp 余额无关：升级消耗后 xp=0，但拾取总量保留
+    m.addXp(1363);
+    expect(m.xpGained).toBe(1376); // 13 + 1363
+  });
+
   it('大额宝石一次连升（1363 点 → Lv30）且挂起升级逐个消费', () => {
     const m = makeManager();
     const ups = m.addXp(1363);

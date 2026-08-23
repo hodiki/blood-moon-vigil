@@ -26,6 +26,8 @@ export interface ContactEnemy {
   readonly attackInterval: number;
   /** 接触伤害（已乘玩家总倍率，enemy-panel 提供原始值） */
   readonly damage: number;
+  /** M1b 主动技：眩晕截止（秒时间戳）；> nowSeconds 期间不造成接触伤害（冻结攻击） */
+  readonly stunnedUntil: number;
 }
 
 export interface ContactPlayer {
@@ -43,14 +45,14 @@ export interface ContactPlayer {
  * @param enemy 当前重叠的敌人
  * @param nowSeconds 场景时间秒（`scene.time.now / 1000`，无敌帧时间戳比较用）
  * @param player 玩家（提供 hurt）
- * @returns 是否造成伤害（false = 敌人未激活或在冷却中，或玩家无敌帧内）
+ * @returns 是否造成伤害（false = 敌人未激活/冷却中/眩晕中，或玩家无敌帧内）
  */
 export function playerEnemyContact(
   enemy: ContactEnemy,
   nowSeconds: number,
   player: ContactPlayer,
 ): boolean {
-  if (!enemy.active || enemy.attackTimer > 0) return false;
+  if (!enemy.active || enemy.attackTimer > 0 || enemy.stunnedUntil > nowSeconds) return false;
   enemy.attackTimer = enemy.attackInterval;
   return player.hurt(enemy.damage, nowSeconds);
 }

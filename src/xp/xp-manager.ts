@@ -99,8 +99,14 @@ export function stepGem(
 export class XpManager {
   xp = 0;
   level = 1;
+  /** M3 真机埋点：本局经验拾取总量（xpGainedPerRun 数据源；addXp 每次累加，局终由 PlayScene 汇入 RunStats） */
+  xpGained = 0;
   /** 磁吸半径倍率（upgrade-pool 第 9 项：+100% → ×2，×3）；1 = 80px */
   private magnetMultiplier = 1;
+  /** E4-S1 守夜人「提灯圣辉」：磁吸半径附加 px（与倍率叠加，content-design-outline §2.2） */
+  private magnetRadiusBonus = 0;
+  /** E4-S4 升级池 up_g_9：拾取半径附加 px（+40px ×2，与磁力叠加） */
+  private pickupRadiusBonus = 0;
   /** 跨阈值但尚未进入选卡流程的升级次数（大宝石一次连升） */
   private pendingLevelUps = 0;
 
@@ -110,12 +116,26 @@ export class XpManager {
   ) {}
 
   get magnetRadius(): number {
-    return GEM.MAGNET_RADIUS * this.magnetMultiplier;
+    return GEM.MAGNET_RADIUS * this.magnetMultiplier + this.magnetRadiusBonus;
+  }
+
+  get pickupRadius(): number {
+    return GEM.PICKUP_RADIUS + this.pickupRadiusBonus;
   }
 
   /** E3-S5 写回：经验磁力 +100%（upgrade-pool 第 9 项） */
   setMagnetMultiplier(multiplier: number): void {
     this.magnetMultiplier = multiplier;
+  }
+
+  /** E4-S1 写回：磁吸半径附加 px（守夜人专属被动 +20px；随角色装配） */
+  setMagnetRadiusBonus(bonus: number): void {
+    this.magnetRadiusBonus = bonus;
+  }
+
+  /** E4-S4 写回：拾取半径附加 px（up_g_9 拾取范围 +40px；与磁力叠加） */
+  addPickupRadiusBonus(bonus: number): void {
+    this.pickupRadiusBonus += bonus;
   }
 
   /** 每帧：漂移年龄累加 + 磁吸 + 拾取（只遍历 active 宝石，磁吸每帧距离检查 ≤300 次，RV-C4 可忽略） */
@@ -127,7 +147,7 @@ export class XpManager {
         ageThreshold: GEM.DRIFT_AGE_THRESHOLD,
         driftSpeed: GEM.DRIFT_SPEED,
       };
-      const result = stepGem(gem, this.player, dt, this.magnetRadius, GEM.MAGNET_SPEED, GEM.PICKUP_RADIUS, drift);
+      const result = stepGem(gem, this.player, dt, this.magnetRadius, GEM.MAGNET_SPEED, this.pickupRadius, drift);
       if (result === 'collected') {
         this.addXp(gem.xpValue);
         // TASK-28：负载补 x/y（拾取爆点定位）；既有消费方（HUD/音频）只读 amount，加字段不破坏
@@ -144,6 +164,7 @@ export class XpManager {
    */
   addXp(amount: number): number {
     this.xp += amount;
+    this.xpGained += amount; // M3 真机埋点：拾取累计（含升级消耗，口径 = 拾取总量）
     let ups = 0;
     while (this.xp >= needXp(this.level) && this.level < XP.MAX_LEVEL) {
       this.xp -= needXp(this.level);

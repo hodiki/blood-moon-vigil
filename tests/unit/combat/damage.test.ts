@@ -3,12 +3,13 @@ import {
   totalMultiplier,
   computeHitDamage,
   isInvulnerable,
+  extendInvulnerabilityUntil,
   applyDamage,
   hitEnemy,
   type Damageable,
   type Killable,
 } from '@/combat/damage';
-import { WEAPONS, PLAYER } from '@/config/balance';
+import { WEAPONS, PLAYER, ACTIVE_SKILL } from '@/config/balance';
 
 describe('伤害结算纯函数（E2-S1 / S8）', () => {
   it('总倍率 = 基础倍率 + 升级池加成（加法叠加防指数膨胀，upgrade-pool §③）', () => {
@@ -25,6 +26,14 @@ describe('伤害结算纯函数（E2-S1 / S8）', () => {
     expect(isInvulnerable(1.0, 1.5)).toBe(true); // 仍在无敌窗内
     expect(isInvulnerable(1.5, 1.5)).toBe(false); // 临界点不再免疫
     expect(isInvulnerable(2.0, 1.5)).toBe(false);
+  });
+
+  it('M1b 主动技：extendInvulnerabilityUntil 延长无敌（取较晚者，不缩短已有更长无敌）', () => {
+    // 主动技 1.5s（ACTIVE_SKILL.INVULN_DURATION）叠加在受击 0.5s 无敌帧上
+    const baseUntil = 10 + 0.5; // 受击无敌到 10.5
+    expect(extendInvulnerabilityUntil(baseUntil, 10, ACTIVE_SKILL.INVULN_DURATION)).toBeCloseTo(11.5, 6);
+    // 已有更长无敌（如 12）不被缩短
+    expect(extendInvulnerabilityUntil(12, 10, ACTIVE_SKILL.INVULN_DURATION)).toBe(12);
   });
 
   it('applyDamage：扣血 clamp 到 0，返回是否死亡', () => {

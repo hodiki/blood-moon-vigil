@@ -31,13 +31,25 @@ export class ShockwaveWeapon {
   private readonly ring: Phaser.GameObjects.Sprite;
   private readonly baseSize: number;
   private cooldown = 0;
-  private radius: number = WEAPONS.SHOCKWAVE.RADIUS;
+  /** 范围乘区（legacy 升级 setRadiusMultiplier；与钥被动独立乘法叠加） */
+  private radiusMultiplier = 1;
   /** E3 门控：初始未解锁（upgrade-pool 第 2 项） */
   private enabled = false;
   /** E3-S5 写回：击退 80px（第 7 项） */
   private knockback = false;
   /** E3-S5 写回：冷却倍率 0.92^stacks（第 11 项） */
   private cooldownMultiplier = 1;
+  /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0） */
+  private focusedCooldownMultiplier = 1;
+  /** E4-S4 钥被动：key_holy 范围 ×1.15 / key_tome 冷却 ×0.9 / key_silver 伤害 ×1.12 */
+  private keyRadiusMult = 1;
+  private keyCooldownMult = 1;
+  private keyDamageMult = 1;
+
+  /** 当前扩散半径 = 基础 × legacy 乘区 × 钥乘区（280 → 升级 420/560 → key_holy ×1.15） */
+  private get radius(): number {
+    return WEAPONS.SHOCKWAVE.RADIUS * this.radiusMultiplier * this.keyRadiusMult;
+  }
 
   constructor(scene: Phaser.Scene, fx: FxManager) {
     this.scene = scene;
@@ -57,9 +69,16 @@ export class ShockwaveWeapon {
     this.enabled = enabled;
   }
 
-  /** E3 升级接口：范围 +50%（280→420→560px，W8-3 / upgrade-pool 第 5 项） */
+  /** E3 升级接口：范围 +50%（280→420→560px，W8-3 / upgrade-pool 第 5 项；与钥被动乘法叠加） */
   setRadiusMultiplier(multiplier: number): void {
-    this.radius = WEAPONS.SHOCKWAVE.RADIUS * multiplier;
+    this.radiusMultiplier = multiplier;
+  }
+
+  /** E4-S4 钥被动写回（key_holy 范围 / key_tome 冷却 / key_silver 伤害；与 legacy 乘区独立叠加） */
+  setKeyPassives(keys: { areaRadiusMult: number; cooldownMult: number; damageMult: number }): void {
+    this.keyRadiusMult = keys.areaRadiusMult;
+    this.keyCooldownMult = keys.cooldownMult;
+    this.keyDamageMult = keys.damageMult;
   }
 
   /** E3-S5 写回：击退 80px（upgrade-pool 第 7 项） */
@@ -70,6 +89,11 @@ export class ShockwaveWeapon {
   /** E3-S5 写回：冷却 ×0.92^stacks（upgrade-pool 第 11 项，飞弹/冲击波共用） */
   setCooldownMultiplier(multiplier: number): void {
     this.cooldownMultiplier = multiplier;
+  }
+
+  /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0；乘法叠加于全局冷却） */
+  setFocusedCooldownMultiplier(multiplier: number): void {
+    this.focusedCooldownMultiplier = multiplier;
   }
 
   /** E4-S5 基准：扩散环当前是否活跃（draw call 估算用） */
@@ -88,27 +112,33 @@ export class ShockwaveWeapon {
   }
 
   /** 每帧：冷却递减 → 就绪且半径内有目标才释放（E3 空放决策） */
-  update(dt: number, player: Player, enemies: readonly DamageTargetLike[], damageMultiplier: number): void {
+  update(
+    dt: number,
+    player: Player,
+    enemies: readonly DamageTargetLike[],
+    damageMultiplier: number,
+    now: number = Number.POSITIVE_INFINITY,
+  ): void {
     if (!this.enabled) return; // E3 门控：未解锁不冷却不释放
     this.cooldown = tickCooldown(this.cooldown, dt);
     if (!isCooldownReady(this.cooldown)) return;
     // 有目标才释放：半径内无 active 敌人则保持就绪等待（保宝石产出，design-review-e2 C2）
     const hasTargetInRadius = enemies.some((e) => e.active && distance(player, e) <= this.radius);
     if (!hasTargetInRadius) return;
-    this.cooldown = WEAPONS.SHOCKWAVE.COOLDOWN * this.cooldownMultiplier;
-    this.fire(player, enemies, damageMultiplier);
+    this.cooldown = WEAPONS.SHOCKWAVE.COOLDOWN * this.cooldownMultiplier * this.focusedCooldownMultiplier * this.keyCooldownMult;
+    this.fire(player, enemies, damageMultiplier, now);
   }
 
   /** 玩家死亡：清除扩散环 + 冷却重置（W8 §⑥.5） */
   clearAll(): void {
-    this.cooldown = WEAPONS.SHOCKWAVE.COOLDOWN * this.cooldownMultiplier;
+    this.cooldown = WEAPONS.SHOCKWAVE.COOLDOWN * this.cooldownMultiplier * this.keyCooldownMult;
     this.scene.tweens.killTweensOf(this.ring);
     this.ring.setActive(false).setVisible(false);
   }
 
-  private fire(player: Player, enemies: readonly DamageTargetLike[], damageMultiplier: number): void {
-    // 全方向穿透：半径内全部敌人受 60 × 总倍率；击杀已由 damageAllInRadius 内 kill 处理
-    damageAllInRadius(enemies, { x: player.x, y: player.y }, this.radius, WEAPONS.SHOCKWAVE.DAMAGE * damageMultiplier);
+  private fire(player: Player, enemies: readonly DamageTargetLike[], damageMultiplier: number, now: number): void {
+    // 全方向穿透：半径内全部敌人受 60 × key_silver × 总倍率；击杀已由 damageAllInRadius 内 kill 处理
+    damageAllInRadius(enemies, { x: player.x, y: player.y }, this.radius, WEAPONS.SHOCKWAVE.DAMAGE * this.keyDamageMult * damageMultiplier, now);
     // E3-S5 写回：击退 80px（第 7 项）；同步 Arcade body 位置，避免下一物理步回弹
     if (this.knockback) {
       knockbackEnemies(enemies, { x: player.x, y: player.y }, this.radius, WEAPONS.SHOCKWAVE.KNOCKBACK_DISTANCE);

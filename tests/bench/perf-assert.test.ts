@@ -10,7 +10,7 @@ import { SPAWNER, WEAPONS } from '@/config/balance';
 
 /**
  * E4-S5 性能基准断言（test-framework §3.4 / epics E4-S5）：
- * 纯函数断言 + 无头逻辑基准（20 分钟峰值模拟）—— 环境无关、可机械判定。
+ * 纯函数断言 + 无头逻辑基准（6 分钟峰值模拟 · TASK-31 收尾）—— 环境无关、可机械判定。
  */
 
 const desktopMetrics = {
@@ -73,12 +73,12 @@ describe('assertBenchMetrics（纯函数断言）', () => {
   });
 });
 
-describe('无头逻辑基准（20 分钟峰值模拟）', () => {
+describe('无头逻辑基准（6 分钟峰值模拟 · TASK-31 收尾 BOSS_TIME 360）', () => {
   it('桌面：同屏峰值 = 上限 400（上限节流生效），总生成 ≫ 上限', () => {
     const r = runHeadlessBench({ maxEnemies: DESKTOP_THRESHOLDS.maxEnemies, platform: 'desktop' });
     expect(r.peakActiveEnemies).toBe(400);
-    // 20 分钟均值预算 ≈2.7 点/s × 1200s ≈ 3240 只，远超上限 400 → 证明节流而非限总量
-    expect(r.totalSpawned).toBeGreaterThan(3000);
+    // 6 分钟总生成 ≈691 只（均值 ~1.9 点/s × 360s），远超上限 400 → 证明节流而非限总量
+    expect(r.totalSpawned).toBeGreaterThan(400);
     expect(r.simulatedSeconds).toBe(SPAWNER.BOSS_TIME);
     expect(r.peakActiveBullets).toBeLessThanOrEqual(WEAPONS.MISSILE.MAX_ACTIVE);
   });

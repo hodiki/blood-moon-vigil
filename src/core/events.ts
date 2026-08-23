@@ -113,6 +113,10 @@ export const GameEvent = {
   TankWarning: 'enemy:tank-warning',
   /** TASK-39 E2 屠夫预警：预约厚血落地（payload { x, y }，PlayScene 销毁印记） */
   TankSpawned: 'enemy:tank-spawned',
+  /** M3 治疗道具：拾取完成（payload { amount, x, y }，HealManager emit；PlayScene 接 fx 治疗绿发光 + HpChanged） */
+  HealCollected: 'xp:heal-collected',
+  /** M3 轻叙事：图鉴新条目（payload 无；PlayScene 聚合同帧解锁合并 emit 1 条，narratives-spec §6 n_toast_codex） */
+  CodexUpdated: 'codex:updated',
 } as const;
 
 export type GameEventName = (typeof GameEvent)[keyof typeof GameEvent];

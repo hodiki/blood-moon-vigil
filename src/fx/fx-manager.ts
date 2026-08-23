@@ -234,6 +234,12 @@ export class FxManager {
     this.emitBurst('p-circle', x, y, [FX_COLORS.gem], FX.GEM_PICKUP_COUNT, 90, 2.5, 0.3);
   }
 
+  /** M3 治疗道具拾取发光：治疗绿 #43D17C 喷点（复用粒子池/帧，不新增 draw call；绿=治疗语义） */
+  healPickup(x: number, y: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitBurst('p-circle', x, y, [FX_COLORS.heal], FX.GEM_PICKUP_COUNT, 90, 2.5, 0.3);
+  }
+
   /** 升级三选一出现：金 + 冷青双色喷点 + 金点扩散环（稀有/奖励语义） */
   levelUpBurst(x: number, y: number): void {
     if (!this.cfg.fxBursts) return;
@@ -253,6 +259,13 @@ export class FxManager {
     if (!this.cfg.fxBursts) return;
     const count = this.cfg.isMobile ? FX.RIPPLE_COUNT_MOBILE : FX.RIPPLE_COUNT;
     this.emitRing('p-circle', x, y, [FX_COLORS.shockwave], count, radius, FX.RIPPLE_SPEED, FX.RIPPLE_SIZE, 0.5);
+  }
+
+  /** M1b 主动技「提灯闪耀」：冷青扩散环 + 纸白核心闪（20s CD 稀有触发；纯粒子，不新增 draw call） */
+  lanternFlash(x: number, y: number, radius: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitRing('p-ring', x, y, [FX_COLORS.lanternFlash], 14, radius, 60, 3, 0.5);
+    this.emitBurst('p-circle', x, y, [FX_COLORS.lanternFlashCore, FX_COLORS.lanternFlash], 10, 90, 2.5, 0.4);
   }
 
   /** TASK-36 冲击波最大半径白闪环：扩散到位的月蚀亮边（纸白短命） */

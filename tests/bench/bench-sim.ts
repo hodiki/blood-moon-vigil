@@ -17,7 +17,7 @@ import { estimateDrawCalls } from '@/utils/perf';
 
 export interface HeadlessBenchResult {
   platform: 'desktop' | 'mobile';
-  /** 模拟局时秒（完整 20 分钟到收束） */
+  /** 模拟局时秒（完整 6 分钟到收束，TASK-31 BOSS_TIME=360） */
   simulatedSeconds: number;
   /** 模拟帧数（60Hz） */
   framesSimulated: number;

@@ -11,6 +11,13 @@
  */
 
 import { UPGRADES, type UpgradeItemData } from '@/config/balance';
+import {
+  emptyClassUpgradeStacks,
+  classUpgradeTotal,
+  isClassFullyUpgraded,
+  type ClassUpgradeStacks,
+} from '@/weapons/class-upgrades';
+import type { WeaponClass } from '@/config/balance';
 
 export type { UpgradeType } from '@/config/balance';
 
@@ -59,8 +66,60 @@ export class UpgradeState {
   damageBonusStacks = 0; // 10 伤害强化 +15%（可重复）
   cooldownReductionStacks = 0; // 11 冷却缩减 -8%（≤3）
   maxHpBonusStacks = 0; // 12 最大生命 +20（≤5）
-  /** 上次选择项 id（抽取权重 ×0.5；无则 null） */
-  lastPickId: number | null = null;
+  /** 上次选择项 id（抽取权重 ×0.5；无则 null；E4-S4 v2 池为内容 ID 字符串） */
+  lastPickId: number | string | null = null;
+
+  /**
+   * E2-S8 泛化：内容 ID → 叠加次数（40 项池，up_w_a1~d3 / key_* / up_g_*）。
+   * 既有 12 项仍走命名域（back-compat，既有测试断言）；新 40 项写本 map。
+   * 武器类强化 12 分支：单分支上限 2（gdd-upgrade-pool-v2 §3.3）。
+   */
+  stacks: Record<string, number> = {};
+
+  /** 某内容 ID 项当前叠加（0 = 未选） */
+  stackOf(upgradeId: string): number {
+    return this.stacks[upgradeId] ?? 0;
+  }
+
+  /** 叠加一层（clamp 到上限）；返回新值 */
+  addStack(upgradeId: string, maxStack: number): number {
+    const next = Math.min((this.stacks[upgradeId] ?? 0) + 1, maxStack);
+    this.stacks[upgradeId] = next;
+    return next;
+  }
+
+  /** 武器类强化堆叠快照（E2-S8：类强化写回 / 超武合成条件判定用） */
+  classUpgradeStacks(): ClassUpgradeStacks {
+    const s = emptyClassUpgradeStacks();
+    s.a1 = this.stackOf('up_w_a1');
+    s.a2 = this.stackOf('up_w_a2');
+    s.a3 = this.stackOf('up_w_a3');
+    s.b1 = this.stackOf('up_w_b1');
+    s.b2 = this.stackOf('up_w_b2');
+    s.b3 = this.stackOf('up_w_b3');
+    s.c1 = this.stackOf('up_w_c1');
+    s.c2 = this.stackOf('up_w_c2');
+    s.c3 = this.stackOf('up_w_c3');
+    s.d1 = this.stackOf('up_w_d1');
+    s.d2 = this.stackOf('up_w_d2');
+    s.d3 = this.stackOf('up_w_d3');
+    return s;
+  }
+
+  /** 某类累计强化次数（超武合成条件 1：≥3） */
+  classUpgradeTotalFor(cls: WeaponClass): number {
+    return classUpgradeTotal(this.classUpgradeStacks(), cls);
+  }
+
+  /** 类满级判定（累计 ≥3 次，gdd-weapons-v2 §5.1） */
+  isClassFullyUpgraded(cls: WeaponClass): boolean {
+    return isClassFullyUpgraded(this.classUpgradeStacks(), cls);
+  }
+
+  /** 是否持有某被动钥（key_*，超武合成条件 2） */
+  hasKey(keyId: string): boolean {
+    return this.stackOf(keyId) >= 1;
+  }
 }
 
 /** 某项当前叠加次数（0 = 从未选择 = 未解锁） */

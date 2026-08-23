@@ -34,6 +34,10 @@ const ESC_HINT_SECONDS = 5;
 interface HudOptions {
   cfg: RuntimeConfig;
   onPauseToggle: () => void;
+  /** M1b 主动技：移动端技能按钮点按回调（PlayScene 接线到 tryCastActiveSkill） */
+  onActiveSkill?: () => void;
+  /** E4-S2 主动技名（移动端技能按钮 aria-label；缺省提灯闪耀） */
+  skillName?: string;
 }
 
 export class Hud {
@@ -49,6 +53,12 @@ export class Hud {
   private readonly pauseEl: HTMLElement | null;
   private readonly escHintEl: HTMLElement | null;
   private readonly pauseHandler: (() => void) | null;
+  /** M1b 主动技：移动端技能按钮（96×96 视觉 / 热区 96 ≥44；右下角） */
+  private readonly skillEl: HTMLElement | null;
+  /** M1b 主动技：冷却转圈遮罩（conic-gradient 径向遮罩，pillars §6.3 HUD） */
+  private readonly skillCdEl: HTMLElement | null;
+  private readonly skillHandler: (() => void) | null;
+  private lastSkillCdFrac = -1;
   private readonly offFns: Array<() => void> = [];
   private escHintTimer: number | null = null;
 
@@ -57,6 +67,9 @@ export class Hud {
     this.pauseHandler = opts.onPauseToggle;
     this.pauseEl = null;
     this.escHintEl = null;
+    this.skillHandler = opts.onActiveSkill ?? null;
+    this.skillEl = null;
+    this.skillCdEl = null;
 
     this.root = document.createElement('div');
     this.root.className = 'bmv-hud';
@@ -95,8 +108,22 @@ export class Hud {
       this.pauseEl.setAttribute('aria-label', '暂停');
       this.pauseEl.addEventListener('click', this.pauseHandler);
       this.root.appendChild(this.pauseEl);
+      // M1b 主动技：技能按钮（pillars §6.3：右下角、视觉 96×96、热区 ≥44、非 RUNNING 隐藏）
+      this.skillEl = document.createElement('div');
+      this.skillEl.className = 'bmv-hud-skill';
+      this.skillEl.setAttribute('aria-label', opts.skillName ?? '提灯闪耀');
+      this.skillEl.innerHTML = `
+        <div class="bmv-hud-skill-cd"></div>
+        <div class="bmv-hud-skill-icon">✦</div>
+        <div class="bmv-hud-skill-charges" hidden>1</div>
+      `;
+      if (this.skillHandler) this.skillEl.addEventListener('click', this.skillHandler);
+      this.root.appendChild(this.skillEl);
+      this.skillCdEl = this.skillEl.querySelector('.bmv-hud-skill-cd') as HTMLElement | null;
     } else {
       this.pauseEl = null;
+      this.skillEl = null;
+      this.skillCdEl = null;
       // 桌面：开局 0~5s 顶部中央「Esc 暂停」提示后淡出（ux-spec §2）
       this.escHintEl = document.createElement('div');
       this.escHintEl.className = 'bmv-hud-esc-hint';
@@ -128,11 +155,36 @@ export class Hud {
     this.apply();
   }
 
+  /** M1b 主动技：技能按钮可见性（非 RUNNING 态隐藏，CM §5 状态联动；桌面无按钮为 no-op） */
+  setSkillVisible(visible: boolean): void {
+    if (this.skillEl) this.skillEl.hidden = !visible;
+  }
+
+  /** M1b 主动技：冷却转圈（剩余/总 CD → conic-gradient 径向遮罩；就绪=0 全透明） */
+  setSkillCooldown(remainingSeconds: number, totalSeconds: number): void {
+    if (!this.skillCdEl) return;
+    const frac = totalSeconds > 0 ? Math.max(0, Math.min(1, remainingSeconds / totalSeconds)) : 0;
+    // 防每帧 style 抖动：变化 <0.5% 跳过（DOM 单元素，仍只读展示，不改游戏状态）
+    if (Math.abs(frac - this.lastSkillCdFrac) < 0.005) return;
+    this.lastSkillCdFrac = frac;
+    this.skillCdEl.style.background = `conic-gradient(rgba(11,14,20,0.72) ${frac * 360}deg, transparent ${frac * 360}deg)`;
+  }
+
+  /** E4-S2 充能制：技能按钮充能数角标（血猎手 2 段；单充能隐藏） */
+  setSkillCharges(count: number): void {
+    if (!this.skillEl) return;
+    const el = this.skillEl.querySelector('.bmv-hud-skill-charges') as HTMLElement | null;
+    if (!el) return;
+    el.textContent = String(count);
+    el.hidden = count <= 1;
+  }
+
   /** 场景关闭：解除订阅 + 移除 DOM + 清提示定时器 */
   destroy(): void {
     for (const off of this.offFns) off();
     if (this.escHintTimer !== null) window.clearTimeout(this.escHintTimer);
     if (this.pauseEl && this.pauseHandler) this.pauseEl.removeEventListener('click', this.pauseHandler);
+    if (this.skillEl && this.skillHandler) this.skillEl.removeEventListener('click', this.skillHandler);
     this.root.remove();
   }
 
@@ -228,6 +280,38 @@ export class Hud {
         pointer-events: auto; cursor: pointer;
         user-select: none; -webkit-user-select: none;
       }
+      /* M1b 主动技：技能按钮（pillars §6.3：右下角、视觉 96×96、热区=视觉 ≥44；与右上暂停对角对称） */
+      .bmv-hud-skill {
+        position: absolute; right: 24px; bottom: 24px;
+        width: 96px; height: 96px;
+        box-sizing: border-box;
+        display: flex; align-items: center; justify-content: center;
+        background: #131722; border: 2px solid #54E6C9; border-radius: 12px;
+        pointer-events: auto; cursor: pointer;
+        user-select: none; -webkit-user-select: none;
+        touch-action: none;
+      }
+      .bmv-hud-skill[hidden] { display: none; }
+      .bmv-hud-skill-icon {
+        font-size: 36px; color: #E8F0FA;
+        text-shadow: 0 0 8px rgba(84, 230, 201, 0.6);
+        pointer-events: none;
+      }
+      .bmv-hud-skill-cd {
+        position: absolute; inset: 0; border-radius: 10px;
+        background: conic-gradient(rgba(11,14,20,0.72) 0deg, transparent 0deg);
+        pointer-events: none;
+      }
+      .bmv-hud-skill-charges {
+        position: absolute; top: -6px; right: -6px;
+        min-width: 22px; height: 22px; box-sizing: border-box;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0 4px;
+        font-size: 13px; font-weight: 700; color: #F2F5F9;
+        background: #2A3346; border: 2px solid #54E6C9; border-radius: 999px;
+        pointer-events: none;
+      }
+      .bmv-hud-skill-charges[hidden] { display: none; }
       .bmv-hud-esc-hint {
         position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
         font-size: 16px; color: #A9B4C4;
@@ -265,6 +349,10 @@ export class Hud {
           top: calc(24px + env(safe-area-inset-top, 0px));
         }
         .bmv-hud-boss { left: 25%; width: 50%; top: 12px; }
+        .bmv-hud-skill {
+          right: calc(24px + env(safe-area-inset-right, 0px));
+          bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        }
       }
     `;
     host.appendChild(style);

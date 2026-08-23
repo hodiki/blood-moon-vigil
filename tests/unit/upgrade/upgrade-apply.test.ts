@@ -3,6 +3,7 @@ import { PlayerStats } from '@/player/player-stats';
 import { UpgradeState } from '@/upgrade/upgrade-pool';
 import {
   applyUpgrade,
+  applyUpgradeById,
   splitSubDamageMultiplier,
   shockwaveRadiusMultiplierForStacks,
   magnetMultiplierForStacks,
@@ -28,6 +29,7 @@ function makeTargets(): { calls: string[]; stats: PlayerStats; targets: UpgradeW
       setMissileSplit: (n) => calls.push(`missile.split:${n}`),
       setMissilePierce: (n) => calls.push(`missile.pierce:${n}`),
       setCooldownMultiplier: (m) => calls.push(`cooldown:${m}`),
+      setClassUpgrade: (s) => calls.push(`class-upgrade:a1=${s.a1},b1=${s.b1},c1=${s.c1},d1=${s.d1}`),
     },
     xp: { setMagnetMultiplier: (m) => calls.push(`xp.magnet:${m}`) },
   };
@@ -164,5 +166,65 @@ describe('总伤害倍率聚合（design-review-e2 #2 / upgrade-pool §③）', 
     stats.addDamageBonus(0.15);
     expect(stats.upgradeBonusMultiplier).toBeCloseTo(0.3, 6);
     expect(stats.totalDamageMultiplier).toBeCloseTo(1.3, 6);
+  });
+});
+
+describe('E2-S8 武器类强化 12 分支写回（up_w_a1~d3，gdd-upgrade-pool-v2 §3.3）', () => {
+  it('A1 弹幕分裂：叠加 2 层（≤2）；写回 setClassUpgrade 含 a1 派生', () => {
+    const { calls, targets } = makeTargets();
+    const state = new UpgradeState();
+    applyUpgradeById(state, targets, 'up_w_a1');
+    applyUpgradeById(state, targets, 'up_w_a1');
+    expect(state.stackOf('up_w_a1')).toBe(2);
+    expect(state.classUpgradeStacks().a1).toBe(2);
+    expect(calls).toContain('class-upgrade:a1=1,b1=0,c1=0,d1=0');
+    expect(calls).toContain('class-upgrade:a1=2,b1=0,c1=0,d1=0');
+  });
+
+  it('A2/A3/B/C/D 分支各自独立叠加；单分支上限 2（第 3 次不再叠加）', () => {
+    const { targets } = makeTargets();
+    const state = new UpgradeState();
+    applyUpgradeById(state, targets, 'up_w_a2');
+    applyUpgradeById(state, targets, 'up_w_a2');
+    applyUpgradeById(state, targets, 'up_w_a2'); // 超限：clamp 2
+    expect(state.stackOf('up_w_a2')).toBe(2);
+    const stacks = state.classUpgradeStacks();
+    expect(stacks.a2).toBe(2);
+    expect(stacks.a1).toBe(0); // 互不影响
+  });
+
+  it('12 分支覆盖：A/B/C/D 各 3 分支写入正确', () => {
+    const { targets } = makeTargets();
+    const state = new UpgradeState();
+    const ids = ['up_w_a1', 'up_w_a2', 'up_w_a3', 'up_w_b1', 'up_w_b2', 'up_w_b3', 'up_w_c1', 'up_w_c2', 'up_w_c3', 'up_w_d1', 'up_w_d2', 'up_w_d3'] as const;
+    for (const id of ids) applyUpgradeById(state, targets, id);
+    const s = state.classUpgradeStacks();
+    expect(s.a1).toBe(1); expect(s.a2).toBe(1); expect(s.a3).toBe(1);
+    expect(s.b1).toBe(1); expect(s.b2).toBe(1); expect(s.b3).toBe(1);
+    expect(s.c1).toBe(1); expect(s.c2).toBe(1); expect(s.c3).toBe(1);
+    expect(s.d1).toBe(1); expect(s.d2).toBe(1); expect(s.d3).toBe(1);
+  });
+
+  it('类成型判定（M3-DESIGN-1 阈值 3→2）：A 类 2 次（a1×2）→ isClassFullyUpgraded(A) = true；1 次不满足', () => {
+    const { targets } = makeTargets();
+    const state = new UpgradeState();
+    applyUpgradeById(state, targets, 'up_w_a1');
+    expect(state.classUpgradeTotalFor('A')).toBe(1);
+    expect(state.isClassFullyUpgraded('A')).toBe(false); // 1 < 2
+    applyUpgradeById(state, targets, 'up_w_a1');
+    expect(state.classUpgradeTotalFor('A')).toBe(2);
+    expect(state.isClassFullyUpgraded('A')).toBe(true); // ≥2（超武合成条件 1；M3-DESIGN-1 进化前置）
+    applyUpgradeById(state, targets, 'up_w_a3');
+    expect(state.classUpgradeTotalFor('A')).toBe(3);
+    expect(state.isClassFullyUpgraded('A')).toBe(true); // 3 ≥ 2 仍满足
+  });
+
+  it('被动钥记录持有（key_*，叠加上限 1）；hasKey 驱动超武合成条件 2', () => {
+    const { targets } = makeTargets();
+    const state = new UpgradeState();
+    applyUpgradeById(state, targets, 'key_scope');
+    expect(state.hasKey('key_scope')).toBe(true);
+    expect(state.stackOf('key_scope')).toBe(1);
+    expect(state.hasKey('key_holy')).toBe(false); // 未取
   });
 });

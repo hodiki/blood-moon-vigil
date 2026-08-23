@@ -63,15 +63,17 @@ describe('Pool 纯逻辑池（ARCH §3.2/§3.3 / ADR-001）', () => {
 });
 
 describe('maxSizeFor：池上限从 RuntimeConfig 读取（唯一数据源）', () => {
-  it('桌面：敌人 400 / 宝石 300 / 子弹 8', () => {
+  it('桌面：敌人 400 / 宝石 300 / 子弹 8 / 治疗道具 48', () => {
     expect(maxSizeFor(DESKTOP_CONFIG, 'enemies')).toBe(400);
     expect(maxSizeFor(DESKTOP_CONFIG, 'gems')).toBe(300);
     expect(maxSizeFor(DESKTOP_CONFIG, 'bullets')).toBe(8);
+    expect(maxSizeFor(DESKTOP_CONFIG, 'heals')).toBe(48);
   });
 
-  it('移动：敌人 250 / 宝石 200 / 子弹 8（双端一致）', () => {
+  it('移动：敌人 250 / 宝石 200 / 子弹 8（双端一致）/ 治疗道具 32', () => {
     expect(maxSizeFor(MOBILE_CONFIG, 'enemies')).toBe(250);
     expect(maxSizeFor(MOBILE_CONFIG, 'gems')).toBe(200);
     expect(maxSizeFor(MOBILE_CONFIG, 'bullets')).toBe(8);
+    expect(maxSizeFor(MOBILE_CONFIG, 'heals')).toBe(32);
   });
 });

@@ -28,6 +28,8 @@ export class TouchInput implements InputSource {
   private enabled = true;
   private pauseCb: (() => void) | null = null;
   private tapCb: ((x: number, y: number) => void) | null = null;
+  /** M1b 主动技：移动端由 DOM 技能按钮 notify 触发（按钮在 HUD，经此回调进同一入口） */
+  private skillCb: (() => void) | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -107,6 +109,16 @@ export class TouchInput implements InputSource {
 
   onPauseToggle(cb: () => void): void {
     this.pauseCb = cb;
+  }
+
+  /** M1b 主动技：移动端注册释放回调（由 DOM 技能按钮 notifyActiveSkill 触发） */
+  onActiveSkill(cb: () => void): void {
+    this.skillCb = cb;
+  }
+
+  /** M1b 主动技：HUD 技能按钮点按 → 触发释放请求（相位门禁在 PlayScene.tryCastActiveSkill） */
+  notifyActiveSkill(): void {
+    this.skillCb?.();
   }
 
   onTap(cb: (x: number, y: number) => void): void {

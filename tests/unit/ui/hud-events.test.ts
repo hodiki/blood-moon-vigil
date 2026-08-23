@@ -63,17 +63,17 @@ describe('HUD 状态归约器（E4-S1 事件流）', () => {
     expect(s.weapons).toEqual({ missile: true, orbit: true, shockwave: true });
   });
 
-  it('boss:spawned 显示 Boss 血条；boss:hp 更新填充；boss:defeated/game:over 隐藏', () => {
+  it('boss:spawned 显示 Boss 血条；boss:hp 更新填充；boss:defeated/game:over 隐藏（TASK-31 Boss HP 4000）', () => {
     let s = createInitialHudState();
-    s = reduceHudState(s, GameEvent.BossSpawned, { bossHp: 6000 });
-    expect(s.bossHp).toBe(6000);
-    expect(s.bossMaxHp).toBe(6000);
+    s = reduceHudState(s, GameEvent.BossSpawned, { bossHp: 4000 });
+    expect(s.bossHp).toBe(4000);
+    expect(s.bossMaxHp).toBe(4000);
     expect(bossFillFraction(s)).toBe(1);
-    s = reduceHudState(s, GameEvent.BossHpChanged, { hp: 3000, maxHp: 6000 });
+    s = reduceHudState(s, GameEvent.BossHpChanged, { hp: 2000, maxHp: 4000 });
     expect(bossFillFraction(s)).toBeCloseTo(0.5, 6);
     s = reduceHudState(s, GameEvent.BossDefeated, { bossHp: 0 });
     expect(s.bossHp).toBeNull();
-    s = reduceHudState(s, GameEvent.BossSpawned, { bossHp: 6000 });
+    s = reduceHudState(s, GameEvent.BossSpawned, { bossHp: 4000 });
     s = reduceHudState(s, GameEvent.GameOver, { stats: {} });
     expect(s.bossHp).toBeNull();
   });
@@ -85,11 +85,11 @@ describe('HUD 状态归约器（E4-S1 事件流）', () => {
 });
 
 describe('结算页时长格式化（E4-S4 / ux-spec §4「存活时间」）', () => {
-  it('秒 → M:SS（20:00 收束 = "20:00"；超 1 分钟补零）', () => {
+  it('秒 → M:SS（6:00 收束 = "6:00"；超 1 分钟补零）', () => {
     expect(formatSeconds(0)).toBe('0:00');
     expect(formatSeconds(59.4)).toBe('0:59');
     expect(formatSeconds(59.6)).toBe('1:00'); // 四舍五入到秒
-    expect(formatSeconds(1200)).toBe('20:00');
+    expect(formatSeconds(360)).toBe('6:00');
     expect(formatSeconds(65)).toBe('1:05');
   });
 });

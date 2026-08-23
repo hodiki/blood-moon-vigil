@@ -6,6 +6,8 @@ class FakeEnemy implements ContactEnemy {
   attackTimer = 0;
   attackInterval = 1.0;
   damage = 10;
+  /** M1b 主动技：眩晕截止（秒时间戳）；> nowSeconds 期间不造成接触伤害 */
+  stunnedUntil = 0;
 }
 
 class FakePlayer implements ContactPlayer {
@@ -67,5 +69,24 @@ describe('playerEnemyContact 玩家-敌人接触伤害纯函数（TASK-37 B1 / e
     expect(player.hurtCalls).toHaveLength(0);
     // 注意：attackTimer 仍被重置为 interval（攻击计时与受击时机解耦；enemies §⑥.3）
     expect(enemy.attackTimer).toBe(1.0);
+  });
+
+  // —— M1b 主动技「提灯闪耀」眩晕：眩晕期内不造成接触伤害（content §2.2） ——
+  it('眩晕中：不造成接触伤害，且不重置攻击计时（冻结攻击节奏）', () => {
+    const enemy = new FakeEnemy();
+    enemy.stunnedUntil = 5; // now=3 < 5 → 眩晕中
+    enemy.attackTimer = 0.2;
+    const player = new FakePlayer();
+    expect(playerEnemyContact(enemy, 3, player)).toBe(false);
+    expect(player.hurtCalls).toHaveLength(0);
+    expect(enemy.attackTimer).toBe(0.2); // 攻击计时未被重置/递减
+  });
+
+  it('眩晕结束：恢复可造成接触伤害', () => {
+    const enemy = new FakeEnemy();
+    enemy.stunnedUntil = 5; // now=6 > 5 → 眩晕结束
+    const player = new FakePlayer();
+    expect(playerEnemyContact(enemy, 6, player)).toBe(true);
+    expect(player.hurtCalls).toEqual([{ amount: 10, now: 6 }]);
   });
 });

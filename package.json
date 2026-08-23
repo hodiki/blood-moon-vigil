@@ -12,7 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "vite-node tests/bench/bench-run.ts",
-    "bench:browser": "vite-node tests/bench/bench-run.ts --browser --strict-fps"
+    "bench:browser": "vite-node tests/bench/bench-run.ts --browser --strict-fps",
+    "frame-registry:export": "vite-node scripts/export-frame-registry.ts",
+    "frame-registry:ci": "vite-node scripts/verify-frame-registry.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

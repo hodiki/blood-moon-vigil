@@ -15,6 +15,8 @@ export interface RuntimeConfig {
   readonly maxEnemies: number; // 400 / 250
   readonly maxParticles: number; // 200 / 100
   readonly maxGems: number; // 300 / 200
+  /** M3 治疗道具池上限（占位低掉落率 6%，池小：桌面 48 / 移动 32） */
+  readonly maxHeals: number;
   readonly outlineEnabled: boolean; // 描边：桌面 true / 移动 false
   readonly screenShake: boolean; // 震动：桌面 true / 移动 false
   readonly edgeWarning: boolean; // 边缘红光呼吸：桌面 true / 移动 false
@@ -35,6 +37,7 @@ export const DESKTOP_CONFIG: RuntimeConfig = Object.freeze({
   maxEnemies: 400,
   maxParticles: 200,
   maxGems: 300,
+  maxHeals: 48,
   outlineEnabled: true,
   screenShake: true,
   edgeWarning: true,
@@ -52,6 +55,7 @@ export const MOBILE_CONFIG: RuntimeConfig = Object.freeze({
   maxEnemies: 250,
   maxParticles: 100,
   maxGems: 200,
+  maxHeals: 32,
   outlineEnabled: false,
   screenShake: false,
   edgeWarning: false,

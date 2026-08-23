@@ -10,8 +10,9 @@
  */
 
 import type Phaser from 'phaser';
-import { WORLD, TILE, PALETTE } from '@/config/balance';
+import { WORLD, TILE, PALETTE, MAP_CONFIGS, type MapId } from '@/config/balance';
 import { mulberry32, hexToRgbInt } from '@/utils/math';
+import { buildObstacleCircles, buildBloodPools } from '@/map/map-generator';
 
 export interface ObstacleRect {
   x: number;
@@ -75,33 +76,44 @@ function overlapsSpawnSafe(rect: ObstacleRect, cx: number, cy: number): boolean 
 
 export class MapSystem {
   readonly ground: Phaser.GameObjects.TileSprite;
-  /** 中心草地区（TASK-22：石板/草地双材质，depth -99 铺在石板之上） */
+  /** 中心覆盖区（TASK-22：石板/草地双材质；教堂=暗红地毯装饰语义 α0.35） */
   readonly grass: Phaser.GameObjects.TileSprite;
-  /** TASK-28 地面贴花：碎石/草叶/血迹（静态精灵，depth -98，随 effects 组批次） */
+  /** TASK-28 地面贴花：碎石/草叶/血迹（静态精灵，depth -98，随 effects 组批次；graveyard 基准） */
   readonly decals: Phaser.GameObjects.Image[];
   readonly blockers: Phaser.Physics.Arcade.StaticGroup;
   readonly bounds: Phaser.GameObjects.Graphics;
 
+  /**
+   * E3-S6 数据驱动：mapId 默认 graveyard（基准行为与既有完全一致，L2 冒烟回归安全）；
+   * 教堂/狼穴按 MAP_CONFIGS 渲染 tile/圆形障碍/血池（M2-S4 地图解锁流接入选择）。
+   * graveyard 保留 AABB 布局（layout 参数）；其余图用圆形碰撞体（buildObstacleCircles 确定性种子）。
+   */
   constructor(
     scene: Phaser.Scene,
     layout: ObstacleRect[] = buildObstacleLayout(),
     decalCount: number = DECAL_COUNT_DESKTOP,
+    mapId: MapId = 'map_graveyard',
   ) {
+    const mapCfg = MAP_CONFIGS[mapId];
+    const w = mapCfg.width;
+    const h = mapCfg.height;
     this.ground = scene.add
-      .tileSprite(WORLD.WIDTH / 2, WORLD.HEIGHT / 2, WORLD.WIDTH, WORLD.HEIGHT, 'tile-ground')
+      .tileSprite(w / 2, h / 2, w, h, mapCfg.tiles[0] ?? 'tile-ground')
       .setDepth(-100);
     this.grass = scene.add
-      .tileSprite(WORLD.WIDTH / 2, WORLD.HEIGHT / 2, GRASS_ZONE_SIZE, GRASS_ZONE_SIZE, 'tile-grass')
+      .tileSprite(w / 2, h / 2, GRASS_ZONE_SIZE, GRASS_ZONE_SIZE, mapCfg.tiles[1] ?? 'tile-grass')
       .setDepth(-99);
+    // 暗红地毯 = 装饰语义（低饱和 α0.35 无闪烁），与血池危险编码（红斜纹+闪烁+白描边）区分（gdd-maps §3.2）
+    if (mapId === 'map_cathedral') this.grass.setAlpha(0.35);
 
-    // TASK-28 地面贴花：确定性散布，避开出生安全区；贴花不参与碰撞（纯视觉）
+    // TASK-28 地面贴花：确定性散布，避开出生安全区；贴花不参与碰撞（纯视觉，graveyard 基准）
     const decalFrames = ['decal-rock', 'decal-grass', 'decal-blood'] as const;
     const decalRng = mulberry32(DECAL_SEED);
     this.decals = [];
     for (let i = 0; i < decalCount; i += 1) {
-      const x = 2 * TILE.SIZE + decalRng() * (WORLD.WIDTH - 4 * TILE.SIZE);
-      const y = 2 * TILE.SIZE + decalRng() * (WORLD.HEIGHT - 4 * TILE.SIZE);
-      if (overlapsSpawnSafe({ x, y, w: 1, h: 1 }, WORLD.WIDTH / 2, WORLD.HEIGHT / 2)) continue;
+      const x = 2 * TILE.SIZE + decalRng() * (w - 4 * TILE.SIZE);
+      const y = 2 * TILE.SIZE + decalRng() * (h - 4 * TILE.SIZE);
+      if (overlapsSpawnSafe({ x, y, w: 1, h: 1 }, w / 2, h / 2)) continue;
       const frame = decalFrames[Math.floor(decalRng() * decalFrames.length)] ?? 'decal-rock';
       const img = scene.add.image(x, y, 'effects', frame).setDepth(-98);
       img.setAlpha(frame === 'decal-blood' ? 0.35 + decalRng() * 0.2 : 0.6 + decalRng() * 0.35);
@@ -109,19 +121,36 @@ export class MapSystem {
       this.decals.push(img);
     }
 
-    // 障碍 StaticGroup（AABB，S9）
+    // 障碍 StaticGroup：graveyard AABB（既有）；教堂/狼穴 圆形碰撞体（E3-S8 生成器）
     this.blockers = scene.physics.add.staticGroup();
-    for (const rect of layout) {
-      const sprite = this.blockers.create(rect.x + rect.w / 2, rect.y + rect.h / 2, 'blocker') as Phaser.Physics.Arcade.Sprite;
-      sprite.setDisplaySize(rect.w, rect.h);
-      const body = sprite.body as Phaser.Physics.Arcade.StaticBody;
-      body.setSize(rect.w, rect.h);
-      body.updateFromGameObject();
+    if (mapId === 'map_graveyard') {
+      for (const rect of layout) {
+        const sprite = this.blockers.create(rect.x + rect.w / 2, rect.y + rect.h / 2, 'blocker') as Phaser.Physics.Arcade.Sprite;
+        sprite.setDisplaySize(rect.w, rect.h);
+        const body = sprite.body as Phaser.Physics.Arcade.StaticBody;
+        body.setSize(rect.w, rect.h);
+        body.updateFromGameObject();
+      }
+    } else {
+      // 圆形障碍（obst-* 帧）；血池优先：血池覆盖处不生成障碍（map-generator 已保证）
+      for (const c of buildObstacleCircles(mapId, OBSTACLE_LAYOUT_SEED)) {
+        const sprite = this.blockers.create(c.x, c.y, 'effects', c.frame) as Phaser.Physics.Arcade.Sprite;
+        sprite.setDisplaySize(c.radius * 2, c.radius * 2);
+        const body = sprite.body as Phaser.Physics.Arcade.StaticBody;
+        body.setCircle(c.radius, c.radius, c.radius);
+        body.updateFromGameObject();
+      }
+      // 教堂血池贴花（decal-bloodpool，危险编码由渲染层叠加红斜纹/闪烁/白描边）
+      for (const p of buildBloodPools(mapId, OBSTACLE_LAYOUT_SEED)) {
+        const decal = scene.add.image(p.x, p.y, 'effects', 'decal-bloodpool').setDepth(-97);
+        decal.setDisplaySize(p.radius * 2, p.radius * 2);
+        this.decals.push(decal);
+      }
     }
 
     // 世界边界描线（垂直切片可见性；正式版由 edgeWarning 红光替代，E2+）
     this.bounds = scene.add.graphics().setDepth(50);
     this.bounds.lineStyle(3, hexToRgbInt(PALETTE.danger), 0.4);
-    this.bounds.strokeRect(1.5, 1.5, WORLD.WIDTH - 3, WORLD.HEIGHT - 3);
+    this.bounds.strokeRect(1.5, 1.5, w - 3, h - 3);
   }
 }

@@ -12,6 +12,7 @@
 
 import { HESITATION, GAME } from '@/config/balance';
 import type { UpgradeOption } from '@/upgrade/upgrade-pool';
+import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
 
 export interface UpgradeChoiceRecord {
   id: number;
@@ -47,6 +48,18 @@ export interface RunResult {
   bossDpsEstimate: number | null;
   /** Boss 战时长是否落在 60~90s 最终判据窗口 */
   bossInTargetWindow: boolean;
+  /** M1b 主动技：本局释放次数（埋点 activeSkillCasts；判据 ≤18、目标中位 ~12） */
+  activeSkillCasts: number;
+  /** M3 真机埋点：单局升级三选一出现轮数（upgrade-experience-v2 §4.4 / §1.1，校验基准局 14 口径） */
+  offersPerRun: number;
+  /** M3 真机埋点：单局经验拾取总量（xpGainedPerRun，校验拾取率；中位 <400 需先修磁力再谈升级体验） */
+  xpGainedPerRun: number;
+  /** M3 真机埋点：单局进化完成次数（进化达成率数据源 = 完成 ≥1 次的局数 / 局数，§1.2） */
+  evolutionCompleteCount: number;
+  /** M3 真机埋点：单局是否完成 ≥1 次进化（基准局 ≥50% / 全通局 ≥80% 判据） */
+  evolutionComplete: boolean;
+  /** M3 真机埋点：单局三选一「build 相关卡」占比（related/总 offer 卡，向心性 ≥50% 判据） */
+  relatedCardShare: number | null;
 }
 
 // —— 纠结时刻纯函数（可单测） ——
@@ -64,6 +77,17 @@ export function optionsStrengthClose(options: readonly UpgradeOption[]): boolean
 export function isHesitation(dwellSeconds: number, options: readonly UpgradeOption[]): boolean {
   if (dwellSeconds >= HESITATION.DWELL_SECONDS) return true;
   return optionsStrengthClose(options);
+}
+
+/** E4-S4：v2 池（内容 ID）选项强度接近判定（进化卡/机制卡 = 蓝紫/幽紫 → 都想选） */
+export function optionsStrengthCloseV2(options: readonly UpgradeV2Option[]): boolean {
+  return options.length >= 2 && options.every((o) => o.kind === 'evolution' || o.cardKind === 'blue-purple');
+}
+
+/** E4-S4：v2 池纠结判定（停留 >3s 或全机制卡） */
+export function isHesitationV2(dwellSeconds: number, options: readonly UpgradeV2Option[]): boolean {
+  if (dwellSeconds >= HESITATION.DWELL_SECONDS) return true;
+  return optionsStrengthCloseV2(options);
 }
 
 // —— Boss 战时长 / DPS 纯函数（可单测） ——
@@ -102,6 +126,19 @@ export function reachedLevelAtLeast(level: number, target: number): boolean {
   return level >= target;
 }
 
+// —— M3 真机埋点纯函数（可单测，upgrade-experience-v2 §4.4） ——
+
+/** relatedCardShare = related 卡数 / 总 offer 卡数；无 offer 卡时 null（不参与占比） */
+export function relatedCardShareOf(related: number, total: number): number | null {
+  if (total <= 0) return null;
+  return Math.min(1, Math.max(0, related / total));
+}
+
+/** 进化达成（口径 §1.2：完成 ≥1 次进化 = 达成） */
+export function evolutionCompleted(count: number): boolean {
+  return count >= 1;
+}
+
 // —— 单局收集器 ——
 
 export class RunStats {
@@ -111,6 +148,43 @@ export class RunStats {
   upgradeTimestamps: number[] = [];
   upgrades: UpgradeChoiceRecord[] = [];
   boss: BossMetrics | null = null;
+  /** M1b 主动技：本局释放次数（activeSkillCasts 埋点；局终进 RunResult） */
+  activeSkillCasts = 0;
+  /** M3 真机埋点：三选一出现轮数（offersPerRun；onLevelUp 每轮 +1） */
+  offersPerRun = 0;
+  /** M3 真机埋点：本局经验拾取总量（xpGainedPerRun；XpManager.addXp 累计，局终进 RunResult） */
+  xpGainedPerRun = 0;
+  /** M3 真机埋点：本局进化完成次数（evolutionComplete；消费进化卡成功时 +1） */
+  evolutionCompleteCount = 0;
+  /** M3 真机埋点：三选一中标记为「build 相关卡」的卡数（relatedCardShare 分子） */
+  relatedOfferCards = 0;
+  /** M3 真机埋点：三选一总卡数（relatedCardShare 分母；= offersPerRun × 每轮卡数） */
+  totalOfferCards = 0;
+
+  /** M1b 主动技：成功释放一次（PlayScene 在 ActiveSkill.tryCast 返回 true 后调用） */
+  recordActiveSkillCast(): void {
+    this.activeSkillCasts += 1;
+  }
+
+  /**
+   * M3 真机埋点：一次三选一出现（PlayScene.onLevelUp 在 rollThreeV2 返回后调用）。
+   * offersPerRun +1；逐卡统计 related 标记（rollThreeV2 按 §2.1 保底席位判定写回 option.related）。
+   */
+  recordUpgradeOffered(options: readonly UpgradeV2Option[]): void {
+    this.offersPerRun += 1;
+    this.totalOfferCards += options.length;
+    for (const o of options) if (o.related) this.relatedOfferCards += 1;
+  }
+
+  /** M3 真机埋点：拾取经验累计（PlayScene.finishGame 从 XpManager.xpGained 汇入） */
+  recordXpGained(amount: number): void {
+    this.xpGainedPerRun += amount;
+  }
+
+  /** M3 真机埋点：一次进化完成（PlayScene.onUpgradeChosen 消费进化卡成功时调用） */
+  recordEvolutionComplete(): void {
+    this.evolutionCompleteCount += 1;
+  }
 
   recordKill(): void {
     this.kills += 1;
@@ -130,6 +204,11 @@ export class RunStats {
   /** 纠结埋点：dwell 停留时长 + 本次三张选项（>=3/局 为设计判据，FUNC-E3-06） */
   recordHesitation(dwellSeconds: number, options: readonly UpgradeOption[]): void {
     if (isHesitation(dwellSeconds, options)) this.hesitationCount += 1;
+  }
+
+  /** E4-S4：v2 池纠结埋点 */
+  recordHesitationV2(dwellSeconds: number, options: readonly UpgradeV2Option[]): void {
+    if (isHesitationV2(dwellSeconds, options)) this.hesitationCount += 1;
   }
 
   recordBossSpawn(timeSeconds: number, spawnHp: number): void {
@@ -156,6 +235,12 @@ export class RunStats {
       bossFightSeconds: bossFightSeconds(this.boss),
       bossDpsEstimate: bossDpsEstimate(this.boss),
       bossInTargetWindow: bossInTargetWindow(this.boss),
+      activeSkillCasts: this.activeSkillCasts,
+      offersPerRun: this.offersPerRun,
+      xpGainedPerRun: this.xpGainedPerRun,
+      evolutionCompleteCount: this.evolutionCompleteCount,
+      evolutionComplete: evolutionCompleted(this.evolutionCompleteCount),
+      relatedCardShare: relatedCardShareOf(this.relatedOfferCards, this.totalOfferCards),
     };
   }
 }

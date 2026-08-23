@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { WORLD, TILE, PALETTE, PLAYER, GROWTH, JOYSTICK, ENEMIES, WEAPONS, SPAWNER, XP, GEM, UPGRADES } from '@/config/balance';
+import {
+  WORLD, TILE, PALETTE, PLAYER, GROWTH, JOYSTICK, ENEMIES, WEAPONS, SPAWNER, XP, GEM, UPGRADES,
+  ACTIVE_SKILL_RULES,
+  WEAPON_CONFIGS, EVOLUTIONS, ENEMY_CONFIGS, BOSSES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, UPGRADE_POOL,
+  type PowerTag,
+} from '@/config/balance';
 
 describe('balance 数值常量表与 GDD 一致（test-framework §4 埋点断言基线）', () => {
   it('世界 3000×3000、tile 64×64（S9 / art-bible §5）', () => {
@@ -41,12 +46,12 @@ describe('balance 数值常量表与 GDD 一致（test-framework §4 埋点断�
   });
 });
 
-describe('敌人面板常量与 enemies §③ 一致（E2-S2 基线；TASK-39 厚血经验 15→10）', () => {
-  it('僵尸 12HP/55/10/1.0/14/1；疾行 10HP/150/8/0.8/12/2；厚血 600HP/35/20/1.5/22/10；Boss 6000HP/28/30/2.0/40/100', () => {
+describe('敌人面板常量与 enemies §③ 一致（E2-S2 基线；TASK-39 厚血经验 15→10；TASK-31 Boss HP 6000→4000）', () => {
+  it('僵尸 12HP/55/10/1.0/14/1；疾行 10HP/150/8/0.8/12/2；厚血 600HP/35/20/1.5/22/10；Boss 4000HP/28/30/2.0/40/100', () => {
     expect(ENEMIES.zombie).toEqual({ hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 });
     expect(ENEMIES.wolf).toEqual({ hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2 });
     expect(ENEMIES.tank).toEqual({ hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 10 });
-    expect(ENEMIES.boss).toEqual({ hp: 6000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100 });
+    expect(ENEMIES.boss).toEqual({ hp: 4000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100 });
   });
 });
 
@@ -76,19 +81,20 @@ describe('武器数值常量与 weapons §③ 一致（E2-S3 基线）', () => {
   });
 });
 
-describe('生成器常量与 spawner §③ 一致（E2-S4 基线；TASK-39 R1 波次2 + TASK-43 R2 预算参数）', () => {
-  it('budget 参数：基数 1.2 / 线性 3.3 / 周期 1200 / 波幅 0.3 / 周期 75s', () => {
+describe('生成器常量与 spawner §③ 一致（E2-S4 基线；TASK-39 R1 波次2 + TASK-43 R2 + TASK-31 收尾预算参数）', () => {
+  it('budget 参数：基数 1.2 / 线性 1.2 / 周期 360 / 波幅 0.3 / 周期 60s（TASK-31 收尾 6min 局）', () => {
     expect(SPAWNER.BASE_BUDGET).toBe(1.2);
-    expect(SPAWNER.LINEAR_SCALE).toBe(3.3);
-    expect(SPAWNER.LINEAR_TOTAL_SECONDS).toBe(1200);
+    expect(SPAWNER.LINEAR_SCALE).toBe(1.2);
+    expect(SPAWNER.LINEAR_TOTAL_SECONDS).toBe(360);
     expect(SPAWNER.WAVE_AMPLITUDE).toBe(0.3);
-    expect(SPAWNER.WAVE_PERIOD_SECONDS).toBe(75);
+    expect(SPAWNER.WAVE_PERIOD_SECONDS).toBe(60);
   });
 
-  it('20:00 Boss 收束 + 同屏节流参数 + 屠夫预警（TASK-39 E2）', () => {
-    expect(SPAWNER.BOSS_TIME).toBe(1200);
+  it('6:00 Boss 收束 + 同屏节流参数 + 屠夫预警（TASK-39 E2；TASK-31 收尾 1200→360）', () => {
+    expect(SPAWNER.BOSS_TIME).toBe(360);
     expect(SPAWNER.RETRY_PAUSE_SECONDS).toBe(2);
-    expect(SPAWNER.TANK_GUARANTEE_EVERY_SECONDS).toBe(30); // E4 Sprint4 用户回调 40→30（C-7）
+    expect(SPAWNER.TANK_GUARANTEE_EVERY_SECONDS).toBe(30); // S2（120–240s）阶段保底
+    expect(SPAWNER.TANK_GUARANTEE_EVERY_SECONDS_S3).toBe(20); // S3（240–360s）阶段保底（TASK-31 新增）
     expect(SPAWNER.TANK_WARNING_SECONDS).toBe(2.5); // 保底厚血出生前 2.5s 血月印记预警
   });
 });
@@ -121,5 +127,80 @@ describe('经验/宝石/升级池常量（E3 基线）', () => {
     expect(UPGRADES[9]).toMatchObject({ id: 10, name: '伤害强化 +15%', type: 'numeric', maxStack: Number.POSITIVE_INFINITY });
     expect(UPGRADES[10]).toMatchObject({ id: 11, name: '冷却缩减 -8%', type: 'numeric', maxStack: 3 });
     expect(UPGRADES[11]).toMatchObject({ id: 12, name: '最大生命 +20', type: 'numeric', maxStack: 5 });
+  });
+});
+
+describe('M2-S1a 内容表骨架（content-design-outline v1.1 数据驱动，纯数据层）', () => {
+  it('表规模：武器 14 / 超武 7 / 敌人 15 / Boss 4 / 角色 4 / 主动技 4 / 地图 3 / 升级池 40（R-C3-RULING 敌人 14→15）', () => {
+    expect(Object.keys(WEAPON_CONFIGS)).toHaveLength(14);
+    expect(EVOLUTIONS).toHaveLength(7);
+    expect(Object.keys(ENEMY_CONFIGS)).toHaveLength(15);
+    expect(Object.keys(BOSSES)).toHaveLength(4);
+    expect(Object.keys(HEROES)).toHaveLength(4);
+    expect(Object.keys(ACTIVE_SKILLS)).toHaveLength(4);
+    expect(Object.keys(MAP_CONFIGS)).toHaveLength(3);
+    expect(UPGRADE_POOL).toHaveLength(40);
+  });
+
+  it('powerTag 五 tag 规范（SILVER/HALLOWED/BEAST/BLOOD/MOON）全覆盖', () => {
+    const tags = new Set<PowerTag>(['SILVER', 'HALLOWED', 'BEAST', 'BLOOD', 'MOON']);
+    for (const w of Object.values(WEAPON_CONFIGS)) expect(tags.has(w.powerTag)).toBe(true);
+    for (const e of Object.values(ENEMY_CONFIGS)) expect(tags.has(e.powerTag)).toBe(true);
+    for (const b of Object.values(BOSSES)) expect(tags.has(b.powerTag)).toBe(true);
+    for (const h of Object.values(HEROES)) expect(tags.has(h.powerTag)).toBe(true);
+  });
+
+  it('角色表 4：成长曲线草图与 content-design-outline §2.6 一致', () => {
+    expect(HEROES.hero_edmund).toMatchObject({ initialHp: 100, hpPerLevel: 8, initialSpeed: 220, speedEveryNLevels: 5, damagePctPerLevel: 0.04, initialWeapon: 'wpn_a_1' });
+    expect(HEROES.hero_cassandra).toMatchObject({ initialHp: 85, hpPerLevel: 6, initialSpeed: 245, speedEveryNLevels: 4, initialWeapon: 'wpn_a_2' });
+    expect(HEROES.hero_violet).toMatchObject({ initialHp: 115, hpPerLevel: 10, initialSpeed: 205, speedEveryNLevels: 6, initialWeapon: 'wpn_a_3' });
+    expect(HEROES.hero_galvan).toMatchObject({ initialHp: 125, hpPerLevel: 12, initialSpeed: 215, speedEveryNLevels: 5, initialWeapon: 'wpn_d_2' });
+  });
+
+  it('主动技表 4：类型/CD/充能与 gdd-active-skill §3.2 一致', () => {
+    expect(ACTIVE_SKILLS.hero_edmund).toMatchObject({ type: 'DEFENSE', cd: 20, radius: 240, stunDuration: 2.5, invulnDuration: 1.5 });
+    expect(ACTIVE_SKILLS.hero_cassandra).toMatchObject({ type: 'MOBILITY', cd: 12, charges: 2, chargeInterval: 8, dashDistance: 240, dashDamage: 40, markDamageMult: 1.2, markDuration: 4, damageMultFactor: 0.5 });
+    expect(ACTIVE_SKILLS.hero_violet).toMatchObject({ type: 'DEFENSE', cd: 22, radius: 300, slowPct: 0.4, slowDuration: 4, healPct: 0.2 });
+    expect(ACTIVE_SKILLS.hero_galvan).toMatchObject({ type: 'BURST', cd: 24, duration: 8, moveSpeedPct: 0.3, lifestealOnKill: 1, damageMultFactor: 0.5 });
+  });
+
+  it('红线条目常量（E1-S5）：狂化倍率加法 +0.40、接触光环平摊 25 伤/s（与主动技表同源）', () => {
+    expect(ACTIVE_SKILL_RULES.RAGE_MULTIPLIER_ADD).toBe(0.4);
+    expect(ACTIVE_SKILL_RULES.CONTACT_AURA_FLAT_DPS).toBe(25);
+    expect(ACTIVE_SKILLS.hero_galvan.rageMultiplierAdd).toBe(ACTIVE_SKILL_RULES.RAGE_MULTIPLIER_ADD);
+    expect(ACTIVE_SKILLS.hero_galvan.contactAuraFlat).toBe(ACTIVE_SKILL_RULES.CONTACT_AURA_FLAT_DPS);
+  });
+
+  it('升级池 40 项结构：每项带内容 ID / 名称 / 类型 / 标签 / 卡面 / 叠加上限；机制型 ≥50%', () => {
+    const ids = new Set(UPGRADE_POOL.map((u) => u.id));
+    expect(ids.size).toBe(40); // 内容 ID 唯一
+    for (const u of UPGRADE_POOL) {
+      expect(u.name.length).toBeGreaterThan(0);
+      expect(u.tags.length).toBeGreaterThan(0);
+      expect(['blue-purple', 'amber-gold']).toContain(u.cardKind);
+      expect(u.maxStack).toBeGreaterThan(0);
+    }
+    const mechanicRatio = UPGRADE_POOL.filter((u) => u.type === 'mechanic').length / UPGRADE_POOL.length;
+    expect(mechanicRatio).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it('升级池标签语义：全局/key 面向所有人；武器类按类；主动技强化仅当前角色（gdd-upgrade-pool-v2 §3.1）', () => {
+    expect(UPGRADE_POOL.filter((u) => u.tags.includes('global'))).toHaveLength(9);
+    expect(UPGRADE_POOL.filter((u) => u.tags.includes('key'))).toHaveLength(7);
+    expect(UPGRADE_POOL.filter((u) => u.tags.some((t) => t.startsWith('weapon_class_')))).toHaveLength(12);
+    expect(UPGRADE_POOL.filter((u) => u.tags.includes('hero_edmund'))).toHaveLength(3);
+    expect(UPGRADE_POOL.filter((u) => u.tags.includes('hero_galvan'))).toHaveLength(3);
+  });
+
+  it('超武钥 7 项带进化目标，与 EVOLUTIONS 映射闭环（weapon_evolution { wpnId, keyId, evoId }）', () => {
+    const keys = UPGRADE_POOL.filter((u) => u.tags.includes('key'));
+    expect(keys).toHaveLength(7);
+    for (const k of keys) expect(k.evolutionTarget).toBeDefined();
+    for (const evo of EVOLUTIONS) {
+      const key = UPGRADE_POOL.find((u) => u.id === evo.keyId);
+      expect(key).toBeDefined();
+      expect(key!.evolutionTarget).toBe(evo.evoId);
+      expect(WEAPON_CONFIGS[evo.wpnId].frame.length).toBeGreaterThan(0);
+    }
   });
 });

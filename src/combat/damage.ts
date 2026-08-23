@@ -41,6 +41,18 @@ export function isInvulnerable(nowSeconds: number, invulnerableUntil: number): b
 }
 
 /**
+ * 延长无敌截止：取「现截止」与「now + duration」的较晚者（不缩短已有更长无敌）。
+ * 主动技「提灯闪耀」无敌 1.5s 与受击 0.5s 无敌帧共用同一截止字段（player.invulnerableUntil）。
+ */
+export function extendInvulnerabilityUntil(
+  currentUntil: number,
+  nowSeconds: number,
+  durationSeconds: number,
+): number {
+  return Math.max(currentUntil, nowSeconds + durationSeconds);
+}
+
+/**
  * 对目标扣血（clamp 到 0），返回是否死亡（HP ≤ 0）。
  * 不触发副作用 —— 死亡分发由调用方通过 hitEnemy / kill 完成。
  */

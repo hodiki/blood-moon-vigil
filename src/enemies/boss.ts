@@ -3,7 +3,7 @@
  *
  * 设计说明：
  * - 复用 Enemy 基类（面板驱动 + 直线 AI + kill 分发），Boss 面板见 balance.ENEMIES.boss
- *   （6000HP / 28px/s / 30伤 / 2.0s / 40px / 100经验，E2-S2 埋点断言已含）。
+ *   （4000HP / 28px/s / 30伤 / 2.0s / 40px / 100经验，E2-S2 埋点断言已含；TASK-31 收尾 6000→4000）。
  * - 与普通敌同池（ARCH §3.3 普通 3 敌共用一池，Boss 由 E4 单独 spawn 进同一池，
  *   使 WeaponSystem 自动将 Boss 纳入目标列表——飞弹/环绕球/冲击波可命中 Boss）。
  * - 出场 0.5s 霸体（enemies §⑥.5 / art-bible §4）：`beginGrace(now)` 后 graceUntil 内不承伤，

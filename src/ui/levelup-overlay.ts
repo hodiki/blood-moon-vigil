@@ -13,6 +13,7 @@
 
 import { GameEvents, GameEvent } from '@/core/events';
 import { formatUpgradeOption, type UpgradeOption } from '@/upgrade/upgrade-pool';
+import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
 import { renderIconSvg, iconKeyForUpgradeId } from '@/ui/icons';
 
 const DEFAULT_TIMEOUT_SECONDS = 30;
@@ -28,6 +29,8 @@ export class LevelUpOverlay {
   private readonly cards: HTMLElement[] = [];
   private readonly cardHandlers: Array<{ down: (e: PointerEvent) => void; up: (e: PointerEvent) => void }> = [];
   private options: UpgradeOption[] = [];
+  /** E4-S4：v2 池（内容 ID）选项；非空时本层按 v2 渲染/派发 */
+  private optionsV2: UpgradeV2Option[] | null = null;
   private timeoutId: number | null = null;
   /** 本次展示时间戳（纠结埋点 dwell 计算，E4-S1） */
   private shownAt = 0;
@@ -59,11 +62,23 @@ export class LevelUpOverlay {
     window.addEventListener('keydown', this.onKeyDown);
   }
 
-  /** 显示三张升级卡（进 LEVEL_UP 时由 PlayScene 调用） */
+  /** 显示三张升级卡（进 LEVEL_UP 时由 PlayScene 调用；legacy 12 项池） */
   show(options: UpgradeOption[]): void {
+    this.optionsV2 = null;
     this.options = options;
     this.shownAt = Date.now(); // 纠结埋点：展示时刻
     this.render();
+    this.root.style.display = 'flex';
+    this.clearTimeout();
+    this.timeoutId = window.setTimeout(() => this.choose(0), this.timeoutSeconds * 1000);
+  }
+
+  /** E4-S4：显示 v2 池（40 项内容 ID）三张卡 */
+  showV2(options: UpgradeV2Option[]): void {
+    this.options = [];
+    this.optionsV2 = options;
+    this.shownAt = Date.now();
+    this.renderV2();
     this.root.style.display = 'flex';
     this.clearTimeout();
     this.timeoutId = window.setTimeout(() => this.choose(0), this.timeoutSeconds * 1000);
@@ -101,6 +116,35 @@ export class LevelUpOverlay {
         <div class="bmv-upgrade-desc">${escapeHtml(desc)}</div>
         <div class="bmv-upgrade-effect">${escapeHtml(effectText)}</div>
       `;
+    });
+  }
+
+  /** E4-S4：v2 卡渲染（内容 ID 池；进化卡/解锁变体用 ★ 星徽，M3 换正式图标） */
+  private renderV2(): void {
+    this.cards.forEach((card, i) => {
+      card.classList.remove('bmv-selected');
+      card.innerHTML = '';
+      const option = this.optionsV2?.[i];
+      if (!option) return;
+      const star = option.kind === 'evolution' ? '★★' : option.unlockVariant ? '★' : '';
+      const iconInner =
+        option.kind === 'evolution'
+          ? '<div class="bmv-upgrade-icon bmv-evo-icon">★★ 进化</div>'
+          : `<div class="bmv-upgrade-icon bmv-v2-icon">${escapeHtml(option.effectText)}${star ? '<div class="bmv-star">' + star + '</div>' : ''}</div>`;
+      card.innerHTML = `
+        ${iconInner}
+        <div class="bmv-upgrade-title">${escapeHtml(option.name)}</div>
+        <div class="bmv-upgrade-desc">${escapeHtml(option.desc)}</div>
+        <div class="bmv-upgrade-effect">${escapeHtml(option.effectText)}</div>
+      `;
+      // 卡面底色分型（asset-spec §1.6：机制蓝紫 / 数值金 / 进化幽紫；E4-S4）
+      const kindClass =
+        option.kind === 'evolution'
+          ? 'bmv-evo-card'
+          : option.cardKind === 'amber-gold'
+            ? 'bmv-numeric-card'
+            : 'bmv-mechanic-card';
+      card.classList.add(kindClass);
     });
   }
 
@@ -146,10 +190,15 @@ export class LevelUpOverlay {
   private choose(index: number): void {
     if (this.root.style.display === 'none') return;
     const option = this.options[index];
+    const optionV2 = this.optionsV2?.[index];
     const dwellSeconds = this.shownAt > 0 ? (Date.now() - this.shownAt) / 1000 : 0;
     this.hide();
+    // E4-S4：v2 池 optionId = 内容 ID 字符串（upgradeId/evoId）；legacy = 数字 id
+    const optionId: number | string = optionV2
+      ? (optionV2.upgradeId ?? optionV2.evoId ?? 'up_g_1')
+      : (option?.id ?? 1);
     // 单向数据流：只发事件，不写游戏状态（ADR-004）；dwellSeconds 供纠结时刻埋点（E4-S1）
-    GameEvents.emit(GameEvent.UpgradeChosen, { optionId: option?.id ?? 1, index, dwellSeconds });
+    GameEvents.emit(GameEvent.UpgradeChosen, { optionId, index, dwellSeconds });
   }
 
   private clearTimeout(): void {
@@ -225,6 +274,27 @@ export class LevelUpOverlay {
       .bmv-upgrade-icon svg {
         display: block;
         width: 100%; height: 100%;
+      }
+      /* E4-S4 v2 卡：底色分型（asset-spec §1.6 机制蓝紫 / 数值金 / 进化幽紫）；图标区用色块 + 文字占位 */
+      .bmv-mechanic-card { background: #131722; border-color: #4FC3F7; }
+      .bmv-numeric-card { background: #2A2A1C; border-color: #FFC93C; }
+      .bmv-evo-card { background: #241A33; border-color: #B06AF0; }
+      .bmv-v2-icon {
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; font-weight: 700; color: #F2F5F9;
+        background: #0B0E14; border: 2px solid #2A3346; border-radius: 10px;
+        position: relative;
+      }
+      .bmv-evo-icon {
+        display: flex; align-items: center; justify-content: center;
+        font-size: 26px; font-weight: 700; color: #B06AF0;
+        background: #0B0E14; border: 3px solid #54E6C9; border-radius: 10px;
+        text-shadow: 0 0 8px rgba(176,106,240,0.8);
+      }
+      .bmv-star {
+        position: absolute; top: -8px; right: -8px;
+        font-size: 22px; color: #FFC93C;
+        text-shadow: 0 0 6px rgba(255,201,60,0.9);
       }
       .bmv-upgrade-title {
         font-size: 22px; font-weight: 700;

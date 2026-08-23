@@ -2,7 +2,7 @@
  * audio/audio-math.ts —— 音频纯函数层（test-framework §1.2：可脱离 Phaser/WebAudio 单测）
  *
  * 数值来源（audio-bible.md，设计数值不自行改动）：
- * - §1 心跳 BPM 分段线性：开局 60 → 5min 80 → 10min 100 → 15min 120 → 20min(Boss) 140（上限）
+ * - §1 心跳 BPM 分段线性：开局 60 → 2min 80 → 4min 100 → 6min(Boss) 140（上限；TASK-31 收尾压缩）
  * - §1 濒死（HP<30%）BPM +10 / 音量 +2dB；§3 程序心跳基线 -16dB（濒死 -14dB）
  * - §1 心跳基频 ≈55~70Hz；§3 暂停/选卡心跳层 -4dB；§1 Boss 战音量 +3dB、双拍
  * - §3 同发上限 8 路（移动 6，本 Demo 统一 6）；同一事件 min-gap 限流（宝石 80ms）
@@ -11,13 +11,16 @@
  * 本模块不 import Phaser、不触碰 WebAudio 节点，全部为可断言纯函数。
  */
 
-/** 心跳 BPM 曲线控制点（秒, BPM）；20:00=1200s 收束对应峰值 140 */
+/**
+ * 心跳 BPM 曲线控制点（秒, BPM）；6:00=360s 收束对应峰值 140。
+ * TASK-31 收尾（rhythm-pace-adj §5）：[0,60],[300,80],[600,100],[900,120],[1200,140]
+ * → [0,60],[120,80],[240,100],[360,140] —— 240–360s 段斜率 +40/2min（Boss 前翻倍加速）。
+ */
 export const BPM_CURVE: ReadonlyArray<readonly [number, number]> = [
   [0, 60],
-  [300, 80],
-  [600, 100],
-  [900, 120],
-  [1200, 140],
+  [120, 80],
+  [240, 100],
+  [360, 140],
 ];
 
 export const HEARTBEAT = {
@@ -58,7 +61,7 @@ export function clamp01(v: number): number {
 
 /**
  * 心跳 BPM = f(t) 分段线性映射，直接消费 spawner.elapsedSeconds（audio-bible §1）。
- * t 钳制到 [0, 1200]：负值回 60，超 20:00 恒 140（上限防噪）。
+ * t 钳制到 [0, 360]：负值回 60，超 6:00 恒 140（上限防噪）。
  */
 export function heartbeatBpmAt(tSeconds: number): number {
   const pts = BPM_CURVE;

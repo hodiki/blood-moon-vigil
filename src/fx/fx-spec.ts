@@ -51,4 +51,54 @@ export const FX_COLORS = {
   bossGold: BOSS.COLOR_GOLD,
   /** TASK-36 冲击波白闪环：纸白（= PALETTE.uiPaper，token 别名，无新色相） */
   paper: PALETTE.uiPaper,
+  /** M1b 主动技「提灯闪耀」：冷青外环（= 玩家 accent，提灯冷青语义） */
+  lanternFlash: PALETTE.playerAccent,
+  /** M1b 主动技「提灯闪耀」：纸白核心闪（闪光高亮） */
+  lanternFlashCore: PALETTE.uiPaper,
+  /** M3 治疗道具拾取发光：治疗绿 #43D17C（art-bible 绿=治疗语义） */
+  heal: PALETTE.heal,
+} as const;
+
+/**
+ * E3-S9 特殊行为标记 5 类（gdd-enemies §4.2 / asset-spec §2.6）。
+ * 预算纪律：标记 = 静态 Image 随敌人组批次（1 Image/怪），不消费粒子池。
+ * 反制依赖：移动端全保留；警告线加粗 2px（§⑦）。
+ */
+export const SPECIAL_MARKERS = {
+  /** 幽紫光环（尸巫）：敌脚下 40~48px 幽紫 #B06AF0，α0.30 呼吸 1s 周期 */
+  aura: {
+    frame: 'marker-aura',
+    /** GDD §4.2 直接指定幽紫 #B06AF0（非调色板 token，注释标注来源） */
+    color: '#B06AF0',
+    alpha: 0.3,
+    radius: 44,
+    breatheSeconds: 1,
+  },
+  /** 半透明 + 残影（亡魂）：本体 α0.5 + 2~3 ghost（α0.25、间隔 60ms、冷青微光） */
+  phase: {
+    bodyAlpha: 0.5,
+    ghostAlpha: 0.25,
+    ghostIntervalMs: 60,
+    ghostCount: 3,
+  },
+  /** 蓄力红警告线（狼裔猎手/狼王）：玩家↔怪红线段，移动端加粗 2px */
+  warningline: {
+    frame: 'marker-warningline',
+    color: PALETTE.danger,
+    widthDesktop: 1,
+    widthMobile: 2,
+  },
+  /** 头顶符文（圣杯侍僧/尼禄召唤）：16×16 圣杯符文，纸白 + 幽紫微光呼吸 1s */
+  rune: {
+    frame: 'marker-rune',
+    size: 16,
+    color: PALETTE.uiPaper,
+    breatheSeconds: 1,
+  },
+  /** 投射红色预警（忏悔者/尼禄血池）：烛火弹 1.5px 红描边 + 外圈红晕 r12 α0.25 */
+  ranged: {
+    outline: 1.5,
+    haloRadius: 12,
+    haloAlpha: 0.25,
+  },
 } as const;

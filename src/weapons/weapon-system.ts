@@ -1,20 +1,23 @@
 /**
- * weapons/weapon-system.ts —— 武器系统（ARCH §3.1 装配 / S3 / E2-S3/E2-S6）
+ * weapons/weapon-system.ts —— 武器系统（E2-S1 注册表驱动重构 / ARCH §3.1 装配 / S3）
  *
- * 三武器全自动触发、无任何手动瞄准/攻击输入（W8-1 / 支柱 1）：
- * - 飞弹：冷却 1.2s → 发射 → 追踪 → 命中/消散（同屏 ≤8，达上限跳过本冷却）
- * - 环绕球：常驻旋转 + 命中（同目标 0.4s 内置冷却）
- * - 冲击波：8s 冷却 → 半径内全方向穿透（无目标也释放）
- * 伤害统一走 E2-S1 入口：基础伤害 × 玩家总倍率（computeHitDamage / hitEnemy）。
- * 本系统只做装配与帧转发，冷却/命中数学在 weapon-math.ts（可单测）。
+ * 重构目标（sprint-m2-plan E2-S1）：由「3 硬编码」→「WeaponId → WeaponBehavior 注册表」。
+ * - 统一接口 WeaponBehavior.update(dt, now, ctx)（weapons-v2 §3.0 / weapon-behavior.ts）；
+ * - 既有血月猎手/守夜之环/月蚀脉冲迁移为注册行为（DPS/冷却/上限断言不变，回归门）；
+ * - 新武器四类（A2~A5 / B2~B3 / C2~C3 / D1~D3）按类注册，update 统一遍历注册表。
+ *
+ * 公开 API 保持（PlayScene 消费）：missilePool / orbit / shockwave /
+ * setMissileSplit / setMissilePierce / setCooldownMultiplier / update / clearAll。
+ * 纯逻辑（冷却/命中/上限/扫掠）在 weapon-runtime.ts / weapon-math.ts（可单测）。
  */
 
 import Phaser from 'phaser';
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
-import { WEAPONS } from '@/config/balance';
+import { WEAPONS, type WeaponId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
+import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
 import { splitSubDamageMultiplier } from '@/upgrade/upgrade-apply';
 import {
   applyMissileSplit,
@@ -32,24 +35,262 @@ import {
 import { HomingMissile } from '@/weapons/homing-missile';
 import { OrbitWeapon, type OrbDamageTarget } from '@/weapons/orbit-orb';
 import { ShockwaveWeapon } from '@/weapons/shockwave';
+import { WeaponRegistry, type WeaponBehavior, type WeaponUpdateContext } from '@/weapons/weapon-behavior';
+import { ProjectileWeaponBehavior } from '@/weapons/projectile-weapon';
+import { OrbitWeaponBehavior } from '@/weapons/orbit-weapons';
+import { GroundPoolWeaponBehavior } from '@/weapons/ground-weapons';
+import { SummonWeaponBehavior } from '@/weapons/summon-weapons';
+import { SuperWeaponBehavior } from '@/weapons/super-weapon-behavior';
+import { SUPER_WEAPON_EVOLUTION } from '@/weapons/super-weapons';
+import { EvolutionState } from '@/weapons/evolution-engine';
+import { emptyKeyPassiveState, type KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { FxManager } from '@/fx/fx-manager';
 import type { Enemy } from '@/enemies/enemy';
 import type { Player } from '@/player/player';
+
+/** 血月猎手行为（迁移既有飞弹逻辑，E2-S1 等价迁移） */
+export class MissileWeaponBehavior implements WeaponBehavior {
+  readonly weaponClass = 'A' as const;
+  readonly weaponId = 'wpn_a_1' as const;
+  private enabled = true; // 血月猎手 = 初始武器，默认启用（角色初始武器门控在 E4-S1）
+  private cooldown = 0;
+  private split = 0;
+  private pierce = 0;
+  private cooldownMultiplier = 1;
+  /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0） */
+  private focusedCooldownMultiplier = 1;
+  /** E4-S4 钥被动（key_tome 冷却 ×0.9 / key_silver 伤害 ×1.12；key_scope 射程对追踪弹不接线——
+   *  追踪飞弹行程 = 3s×400px/s = 1200px 已远超出生环带 900px，射程 +15% 无实际收益，记档不实现） */
+  private keyCooldownMult = 1;
+  private keyDamageMult = 1;
+  /** E4-S2 血影突袭标记：命中时刻（秒时间戳，由 ctx.now 每帧同步） */
+  private now = 0;
+
+  constructor(
+    private readonly pool: ArcadePoolLike<HomingMissile>,
+    private readonly player: Player,
+    private readonly fx: FxManager,
+  ) {}
+
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
+  applyClassUpgrade(stacks: { a1: number; a2: number; a3: number }): void {
+    this.split = stacks.a1;
+    this.pierce = stacks.a2;
+  }
+
+  setMissileSplit(level: number): void {
+    const next = applyMissileSplit({ split: this.split, pierce: this.pierce }, level);
+    this.split = next.split;
+    this.pierce = next.pierce;
+  }
+
+  setMissilePierce(count: number): void {
+    const next = applyMissilePierce({ split: this.split, pierce: this.pierce }, count);
+    this.pierce = next.pierce;
+    this.split = next.split;
+  }
+
+  setCooldownMultiplier(multiplier: number): void {
+    this.cooldownMultiplier = multiplier;
+  }
+
+  /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0；乘法叠加于全局冷却） */
+  applyFocusedCooldown(multiplier: number): void {
+    this.focusedCooldownMultiplier = multiplier;
+  }
+
+  /** E4-S4 钥被动（key_tome 冷却 ×0.9 独立乘区 / key_silver 伤害 ×1.12） */
+  applyKeyPassives(keys: KeyPassiveState): void {
+    this.keyCooldownMult = keys.cooldownMult;
+    this.keyDamageMult = keys.damageMult;
+  }
+
+  clearAll(): void {
+    this.pool.eachActive((m) => m.dissipate());
+    this.cooldown = 0;
+  }
+
+  update(ctx: WeaponUpdateContext): void {
+    if (!this.enabled) return;
+    this.now = ctx.now; // E4-S2 标记命中时刻同步
+    const mult = ctx.damageMultiplier;
+    this.cooldown = tickCooldown(this.cooldown, ctx.dt);
+    if (isCooldownReady(this.cooldown)) {
+      this.cooldown = this.missileCooldownSeconds() * this.cooldownMultiplier * this.focusedCooldownMultiplier * this.keyCooldownMult;
+      this.tryFireMissile(mult, ctx.enemies);
+    }
+    const homingCtx = { enemies: ctx.enemies as readonly TargetLike[] };
+    this.pool.eachActive((m) => m.tick(ctx.dt, homingCtx));
+    this.checkMissileHits(ctx.enemies);
+  }
+
+  private missileCooldownSeconds(): number {
+    // 读 WEAPONS.MISSILE.COOLDOWN（import 侧常量，避免重复魔法数字）
+    return WEAPONS_MISSILE_COOLDOWN;
+  }
+
+  private tryFireMissile(multiplier: number, enemies: readonly Enemy[]): void {
+    const target = nearestEnemy({ x: this.player.x, y: this.player.y }, enemies);
+    if (!target) return; // 无目标不发射（省资源）
+    const missile = this.pool.acquire(this.player.x, this.player.y, 'characters', 'missile');
+    if (!missile) return; // 同屏 ≤8：达上限跳过本冷却，不积压
+    missile.launch(
+      this.player.x,
+      this.player.y,
+      computeHitDamage(WEAPONS_MISSILE_DAMAGE * this.keyDamageMult, multiplier), // key_silver 伤害 ×1.12
+      this.pierce,
+      this.split > 0,
+    );
+    GameEvents.emit(GameEvent.WeaponFired, { x: this.player.x, y: this.player.y });
+    this.fx.missileLaunch(this.player.x, this.player.y);
+  }
+
+  private checkMissileHits(enemies: readonly Enemy[]): void {
+    this.pool.eachActive((m) => {
+      for (const enemy of enemies) {
+        if (!enemy.active) continue;
+        if (m.hasHit(enemy)) continue;
+        if (!circlesOverlap(m.x, m.y, m.radius, enemy.x, enemy.y, enemy.radius)) continue;
+        // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20（now 秒时间戳由 ctx.now 传入）
+        const hitDamage = weaponDamageOnTarget(m.damageValue, enemy, this.now);
+        hitEnemy(enemy, hitDamage);
+        m.recordHit(enemy);
+        if (m.remainingPierce > 0) {
+          m.consumePierce();
+          continue;
+        }
+        if (shouldSpawnSplitMissiles(m.splitEligible, m.remainingPierce, this.split)) {
+          this.spawnSplitSubMissiles(m);
+        }
+        this.fx.missileImpact(m.x, m.y);
+        m.dissipate();
+        break;
+      }
+    });
+  }
+
+  private spawnSplitSubMissiles(parent: HomingMissile): void {
+    for (let i = 0; i < this.split; i += 1) {
+      const sub = this.pool.acquire(parent.x, parent.y, 'characters', 'missile');
+      if (!sub) return; // 池满跳过本批（不积压）
+      sub.launch(parent.x, parent.y, parent.damageValue * splitSubDamageMultiplier(), 0, false);
+    }
+  }
+}
+
+/** 血月猎手常量（数值源在 balance.ts） */
+const WEAPONS_MISSILE_COOLDOWN = WEAPONS.MISSILE.COOLDOWN;
+const WEAPONS_MISSILE_DAMAGE = WEAPONS.MISSILE.DAMAGE;
+
+/** 守夜之环行为适配器（既有 OrbitWeapon 包装为 WeaponBehavior） */
+class OrbitBehaviorAdapter implements WeaponBehavior {
+  readonly weaponClass = 'B' as const;
+  readonly weaponId = 'wpn_b_1' as const;
+
+  constructor(private readonly orbit: OrbitWeapon, private readonly player: Player) {}
+
+  setEnabled(enabled: boolean): void {
+    this.orbit.setEnabled(enabled);
+  }
+
+  applyClassUpgrade(stacks: { b1: number; b2: number; b3: number }): void {
+    for (let i = 0; i < stacks.b1; i += 1) this.orbit.addOrb();
+    if (stacks.b2 > 0) this.orbit.setAngularSpeedMultiplier(Math.pow(1.2, stacks.b2));
+    // B3 半径派生：OrbitWeapon 无 setRadius 接口，E2-S8 后经 OrbitWeaponBehavior 统一处理；
+    // 守夜之环保留既有接口（radius 由 E4-S4 升级池扩展接入），此处不回归
+  }
+
+  /** E4-S4 钥被动：key_holy 范围 ×1.15 / key_silver 伤害 ×1.12（守夜之环） */
+  applyKeyPassives(keys: KeyPassiveState): void {
+    this.orbit.setKeyRadiusMultiplier(keys.areaRadiusMult);
+    this.orbit.setKeyDamageMultiplier(keys.damageMult);
+  }
+
+  clearAll(): void {
+    this.orbit.clearAll();
+  }
+
+  update(ctx: WeaponUpdateContext): void {
+    this.orbit.update(ctx.dt, ctx.now, this.player, ctx.enemies as readonly OrbDamageTarget[], ctx.damageMultiplier);
+  }
+}
+
+/** 月蚀脉冲行为适配器（既有 ShockwaveWeapon 包装为 WeaponBehavior） */
+class ShockwaveBehaviorAdapter implements WeaponBehavior {
+  readonly weaponClass = 'C' as const;
+  readonly weaponId = 'wpn_c_1' as const;
+
+  constructor(private readonly shockwave: ShockwaveWeapon, private readonly player: Player) {}
+
+  setEnabled(enabled: boolean): void {
+    this.shockwave.setEnabled(enabled);
+  }
+
+  applyClassUpgrade(): void {
+    // 月蚀脉冲半径/伤害/持续派生走既有升级接口（E3-S5 setRadiusMultiplier 等）；
+    // C1 类强化写回由 E4-S4 升级池统一接入（本冲刺保留既有接口语义，不回归）
+  }
+
+  /** M3-DESIGN-1 专精疾射：转发独立冷却乘区到 ShockwaveWeapon */
+  applyFocusedCooldown(multiplier: number): void {
+    this.shockwave.setFocusedCooldownMultiplier(multiplier);
+  }
+
+  /** E4-S4 钥被动：key_holy 范围 ×1.15 / key_tome 冷却 ×0.9 / key_silver 伤害 ×1.12（月蚀脉冲） */
+  applyKeyPassives(keys: KeyPassiveState): void {
+    this.shockwave.setKeyPassives(keys);
+  }
+
+  clearAll(): void {
+    this.shockwave.clearAll();
+  }
+
+  update(ctx: WeaponUpdateContext): void {
+    this.shockwave.update(ctx.dt, this.player, ctx.enemies as readonly DamageTargetLike[], ctx.damageMultiplier, ctx.now);
+  }
+}
+
+/** 新武器注册（四类，E2-S2~S5）：A2~A5 弹幕 / B2~B3 环绕 / C2~C3 地面池 / D1~D3 召唤 */
+function registerNewWeaponBehaviors(
+  registry: WeaponRegistry,
+  scene: Phaser.Scene,
+  cfg: RuntimeConfig,
+  fx: FxManager,
+): void {
+  // A 类：银针连弩 / 圣银火铳 / 幽灵飞刃 / 骨钉标枪（血月猎手由 MissileWeaponBehavior 注册）
+  for (const id of ['wpn_a_2', 'wpn_a_3', 'wpn_a_4', 'wpn_a_5'] as const) {
+    registry.register(new ProjectileWeaponBehavior(scene, cfg, id, fx));
+  }
+  // B 类：荆棘圣环 / 圣光壁垒（守夜之环由 OrbitBehaviorAdapter 注册）
+  for (const id of ['wpn_b_2', 'wpn_b_3'] as const) {
+    registry.register(new OrbitWeaponBehavior(scene, id, fx));
+  }
+  // C 类：血池喷涌 / 审判圣火（月蚀脉冲由 ShockwaveBehaviorAdapter 注册）
+  for (const id of ['wpn_c_2', 'wpn_c_3'] as const) {
+    registry.register(new GroundPoolWeaponBehavior(scene, id, fx));
+  }
+  // D 类：血蝠群 / 狼影猎犬 / 断罪锁链
+  for (const id of ['wpn_d_1', 'wpn_d_2', 'wpn_d_3'] as const) {
+    registry.register(new SummonWeaponBehavior(scene, id, fx));
+  }
+}
 
 export class WeaponSystem {
   readonly missilePool: ArcadePoolLike<HomingMissile>;
   readonly orbit: OrbitWeapon;
   readonly shockwave: ShockwaveWeapon;
+  /** E2-S1：WeaponId → WeaponBehavior 注册表 */
+  readonly registry = new WeaponRegistry();
 
-  /** 复用数组，避免每帧分配（core 零热路径分配纪律的 gameplay 侧近似） */
+  private readonly missile: MissileWeaponBehavior;
   private readonly activeEnemies: Enemy[] = [];
-  private missileCooldown = 0;
-  /** E3-S5 写回：飞弹分裂次级弹数（upgrade-pool 第 3 项，≤2） */
-  private missileSplit = 0;
-  /** E3-S5 写回：飞弹穿透次数（第 6 项，≤1） */
-  private missilePierce = 0;
-  /** E3-S5 写回：全部武器冷却倍率 0.92^stacks（第 11 项） */
-  private cooldownMultiplier = 1;
+  /** E2-S6：超武进化状态（不可逆；源武器 → 超武） */
+  readonly evolution = new EvolutionState();
+  /** E4-S4：被动钥数值效果派生（key_* 7；超武合成条件 2 由 UpgradeState.hasKey 提供） */
+  private keyPassives: KeyPassiveState = emptyKeyPassiveState();
 
   constructor(
     scene: Phaser.Scene,
@@ -61,122 +302,124 @@ export class WeaponSystem {
     this.missilePool = createArcadePool(scene, cfg, 'bullets', HomingMissile);
     this.orbit = new OrbitWeapon(scene, fx);
     this.shockwave = new ShockwaveWeapon(scene, fx);
-    // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲由升级 1/2 解锁
+
+    // 注册 3 既有武器行为（E2-S1 等价迁移）
+    this.missile = new MissileWeaponBehavior(this.missilePool, this.player, this.fx);
+    this.registry.register(this.missile);
+    this.registry.register(new OrbitBehaviorAdapter(this.orbit, this.player));
+    this.registry.register(new ShockwaveBehaviorAdapter(this.shockwave, this.player));
+
+    // 注册新武器四类行为（E2-S2~S5）
+    registerNewWeaponBehaviors(this.registry, scene, cfg, fx);
+
+    // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲初始未解锁；
+    // 其余新武器由 E4-S5 解锁流开启（本冲刺保持未启用，行为注册但不运行）
     this.orbit.setEnabled(false);
     this.shockwave.setEnabled(false);
+    for (const id of ['wpn_a_2', 'wpn_a_3', 'wpn_a_4', 'wpn_a_5', 'wpn_b_2', 'wpn_b_3', 'wpn_c_2', 'wpn_c_3', 'wpn_d_1', 'wpn_d_2', 'wpn_d_3'] as const) {
+      this.registry.get(id)?.setEnabled(false);
+    }
   }
 
-  // —— E3-S5 升级写回接口（UpgradeWriteTargets.weapons） ——
-  // TASK-21 Bug3：分裂与穿透互斥（后选者生效；applyMissileSplit/Pierce 纯函数互清）
+  // —— 既有升级写回接口（UpgradeWriteTargets.weapons，PlayScene 消费） ——
   setMissileSplit(level: number): void {
-    const next = applyMissileSplit({ split: this.missileSplit, pierce: this.missilePierce }, level);
-    this.missileSplit = next.split;
-    this.missilePierce = next.pierce;
+    this.missile.setMissileSplit(level);
   }
 
   setMissilePierce(count: number): void {
-    const next = applyMissilePierce({ split: this.missileSplit, pierce: this.missilePierce }, count);
-    this.missileSplit = next.split;
-    this.missilePierce = next.pierce;
+    this.missile.setMissilePierce(count);
   }
 
   setCooldownMultiplier(multiplier: number): void {
-    this.cooldownMultiplier = multiplier;
+    this.missile.setCooldownMultiplier(multiplier);
     this.shockwave.setCooldownMultiplier(multiplier);
+  }
+
+  /** E2-S8：武器类强化写回广播（up_w_a1~d3）—— 由 upgrade-apply 调用 */
+  applyClassUpgrade(stacks: { a1: number; a2: number; a3: number; b1: number; b2: number; b3: number; c1: number; c2: number; c3: number; d1: number; d2: number; d3: number }): void {
+    this.registry.applyClassUpgrade(stacks);
+  }
+
+  /** E4-S4：被动钥数值效果写回（key_* 7；记录派生状态 + 广播到支持的行为） */
+  setKeyPassives(keys: KeyPassiveState): void {
+    this.keyPassives = keys;
+    this.registry.applyKeyPassives(keys);
+  }
+
+  /** M3-DESIGN-1 up_g_2 专精疾射：目标武器独立冷却乘区写回（广播；无冷却行为 no-op） */
+  setFocusedCooldown(weaponIds: readonly WeaponId[], multiplier: number): void {
+    this.registry.applyFocusedCooldown(weaponIds, multiplier);
+  }
+
+  /** E4-S4：当前钥被动派生（供行为/测试查询） */
+  get keyPassiveState(): KeyPassiveState {
+    return this.keyPassives;
+  }
+
+  /** 解锁某武器（E4-S5 解锁流；本冲刺供测试/调试） */
+  unlockWeapon(weaponId: Parameters<WeaponRegistry['get']>[0]): void {
+    this.registry.get(weaponId)?.setEnabled(true);
+  }
+
+  /**
+   * E4-S1 角色初始武器门控：禁用默认飞弹（wpn_a_1），启用角色初始武器。
+   * 非守夜人角色开局无血月猎手（content-design-outline §2.3~2.5）；守夜人保持飞弹。
+   */
+  applyInitialWeapon(initialWeapon: WeaponId): void {
+    this.registry.get('wpn_a_1')?.setEnabled(initialWeapon === 'wpn_a_1');
+    this.registry.get(initialWeapon)?.setEnabled(true);
+  }
+
+  /**
+   * E2-S6：超武进化（原子切换，gdd-weapons-v2 §5.1）。
+   * 流程：进化瞬间清空旧弹体 → 源武器行为替换为超武行为（注册表同 key 覆盖）→ 标记不可逆。
+   * 超武不再吃类强化（SuperWeaponBehavior.applyClassUpgrade 为 no-op）。
+   * 返回是否成功（无进化映射 / 已进化 → false）。
+   */
+  evolve(weaponId: WeaponId, scene: Phaser.Scene, cfg: RuntimeConfig): boolean {
+    const evoId = SUPER_WEAPON_EVOLUTION[weaponId];
+    if (!evoId) return false; // 7 把无超武武器不可进化
+    if (this.evolution.isEvolved(weaponId)) return false; // 不可逆
+    const source = this.registry.get(weaponId);
+    if (!source) return false;
+    source.clearAll(); // 进化瞬间清空该武器旧弹体（原子切换）
+    const superBehavior = new SuperWeaponBehavior(scene, cfg, weaponId, evoId, this.fx);
+    superBehavior.setEnabled(true);
+    this.registry.register(superBehavior); // 同 key 覆盖：源武器 → 超武
+    this.evolution.commit(weaponId, evoId);
+    return true;
+  }
+
+  /** E2-S6：合成条件判定辅助（供升级池进化卡入池；7 把无超武武器返回 false） */
+  isEvolutionEligible(weaponId: WeaponId, classStacks: number, hasKey: boolean): boolean {
+    if (this.evolution.isEvolved(weaponId)) return false; // 已进化不再出现
+    return SUPER_WEAPON_EVOLUTION[weaponId] !== undefined && classStacks >= 3 && hasKey;
   }
 
   update(dt: number, now: number): void {
     this.refreshEnemies(now);
     const mult = this.player.stats.totalDamageMultiplier;
-
-    // 飞弹：冷却触发（无目标不发射，W8 §⑥.1）
-    this.missileCooldown = tickCooldown(this.missileCooldown, dt);
-    if (isCooldownReady(this.missileCooldown)) {
-      this.missileCooldown = WEAPONS.MISSILE.COOLDOWN * this.cooldownMultiplier;
-      this.tryFireMissile(mult);
-    }
-    // 飞弹：追踪 + 命中
-    const ctx = { enemies: this.activeEnemies as readonly TargetLike[] };
-    this.missilePool.eachActive((m) => m.tick(dt, ctx));
-    this.checkMissileHits();
-
-    // 环绕球 + 冲击波
-    this.orbit.update(dt, now, this.player, this.activeEnemies as readonly OrbDamageTarget[], mult);
-    this.shockwave.update(dt, this.player, this.activeEnemies as readonly DamageTargetLike[], mult);
+    const ctx: WeaponUpdateContext = {
+      dt,
+      now,
+      player: this.player,
+      enemies: this.activeEnemies,
+      damageMultiplier: mult,
+    };
+    // 注册表统一遍历（既有 3 武器 + 新武器四类）
+    this.registry.each((behavior) => behavior.update(ctx));
   }
 
-  /** 玩家死亡：清除全部子弹与环绕球、冲击波冷却重置（W8 §⑥.5 / CM R5） */
+  /** 玩家死亡：清除全部弹体/环绕球/召唤物/地面领域 + 冷却重置（gdd-weapons-v2 §⑥.7） */
   clearAll(): void {
-    this.missilePool.eachActive((m) => m.dissipate());
-    this.orbit.clearAll();
-    this.shockwave.clearAll();
+    this.registry.each((behavior) => behavior.clearAll());
   }
 
-  /**
-   * 刷新目标列表（只收集 active 敌人）。
-   * E4-S2：Boss 出场 0.5s 霸体期内不承伤（enemies §⑥.5）——按 `graceUntil` 过滤，
-   * 飞弹/环绕球/冲击波在霸体期不把 Boss 当目标；霸体结束自然恢复可命中。
-   */
   private refreshEnemies(now: number): void {
     this.activeEnemies.length = 0;
     this.enemyPool.eachActive((e) => {
       if (e.graceUntil > now) return; // 霸体期内跳过（Boss 出场 0.5s）
       this.activeEnemies.push(e);
     });
-  }
-
-  private tryFireMissile(multiplier: number): void {
-    const target = nearestEnemy({ x: this.player.x, y: this.player.y }, this.activeEnemies);
-    if (!target) return; // 无目标不发射（省资源）
-    // TASK-34：池契约 acquire(x,y,texture?,frame?) —— 必须显式传 'characters' 纹理 + 'missile' 帧，
-    // 否则 'missile' 落入 texture 槽 → 缺失纹理 __MISSING（全透明）→ 飞弹不可见（launch 不再纠正帧，异于 Enemy.spawn）
-    const missile = this.missilePool.acquire(this.player.x, this.player.y, 'characters', 'missile');
-    if (!missile) return; // 同屏 ≤8：达上限跳过本冷却，不积压（W8-4）
-    missile.launch(
-      this.player.x,
-      this.player.y,
-      computeHitDamage(WEAPONS.MISSILE.DAMAGE, multiplier),
-      this.missilePierce,
-      this.missileSplit > 0, // 主弹可分裂（TASK-21 Bug3）
-    );
-    // Phase 6 音频：发射成功 → weapon:fired（audio-bible §2 SFX#1）
-    GameEvents.emit(GameEvent.WeaponFired, { x: this.player.x, y: this.player.y });
-    // TASK-36 发射喷涌：玩家位置开火小 puff（冷青）
-    this.fx.missileLaunch(this.player.x, this.player.y);
-  }
-
-  private checkMissileHits(): void {
-    this.missilePool.eachActive((m) => {
-      for (const enemy of this.activeEnemies) {
-        if (!enemy.active) continue;
-        if (m.hasHit(enemy)) continue; // 穿透已命中目标不重复命中
-        if (!circlesOverlap(m.x, m.y, m.radius, enemy.x, enemy.y, enemy.radius)) continue;
-        hitEnemy(enemy, m.damageValue); // 击杀已由 hitEnemy 内 kill() 分发（enemy:killed）
-        m.recordHit(enemy);
-        if (m.remainingPierce > 0) {
-          m.consumePierce(); // 穿透：继续飞行（W8 §⑤ / upgrade-pool 第 6 项）
-          continue;
-        }
-        // 命中即消散（W8 §③）；TASK-21 Bug3：仅主弹且无剩余穿透时分裂（次级弹不再分裂，
-        // 穿透优先路径已消费），随后正常消散回池
-        if (shouldSpawnSplitMissiles(m.splitEligible, m.remainingPierce, this.missileSplit)) {
-          this.spawnSplitSubMissiles(m);
-        }
-        // TASK-36 命中反馈：冷青小冲击环 + 火花（命中点 = 弹体当前位置）
-        this.fx.missileImpact(m.x, m.y);
-        m.dissipate();
-        break;
-      }
-    });
-  }
-
-  /** 飞弹分裂：主弹命中消散时生成 split 枚次级弹（×0.6 伤，upgrade-pool 第 3 项） */
-  private spawnSplitSubMissiles(parent: HomingMissile): void {
-    for (let i = 0; i < this.missileSplit; i += 1) {
-      const sub = this.missilePool.acquire(parent.x, parent.y, 'characters', 'missile');
-      if (!sub) return; // 同屏 ≤8：池满跳过本批（不积压）
-      // 次级弹：不穿透、不再分裂（TASK-21 Bug3 无限弹射根因）
-      sub.launch(parent.x, parent.y, parent.damageValue * splitSubDamageMultiplier(), 0, false);
-    }
   }
 }

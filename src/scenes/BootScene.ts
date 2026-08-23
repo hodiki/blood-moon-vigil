@@ -12,7 +12,8 @@
 
 import Phaser from 'phaser';
 import { AudioManager } from '@/audio/audio-manager';
-import { createStartOverlay, type StartOverlay } from '@/ui/start-overlay';
+import { createStartOverlay, unlockFromSave, type StartOverlay } from '@/ui/start-overlay';
+import { loadSave } from '@/stats/save';
 import { detectIsMobile } from '@/utils/device';
 
 export class BootScene extends Phaser.Scene {
@@ -39,11 +40,16 @@ export class BootScene extends Phaser.Scene {
     }
 
     // ux-spec §1：启动页「点击开始」= 唯一音频解锁点（audio-bible §4 硬前提）
-    this.startOverlay = createStartOverlay(() => {
-      AudioManager.getInstance().unlock();
-      this.startOverlay?.destroy();
-      this.startOverlay = null;
-      this.scene.start('Play');
-    });
+    // E4-S9：地图选择最小 UI（读局外存档解锁状态；图鉴/功绩 UI 归 M3，start-overlay 功能行消费 save）
+    const saveData = loadSave(window.localStorage, detectIsMobile() ? 'mobile' : 'desktop');
+    this.startOverlay = createStartOverlay(
+      () => {
+        AudioManager.getInstance().unlock();
+        this.startOverlay?.destroy();
+        this.startOverlay = null;
+        this.scene.start('Play');
+      },
+      { unlock: unlockFromSave(saveData), save: saveData },
+    );
   }
 }

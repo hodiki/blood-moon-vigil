@@ -15,6 +15,12 @@ playwright-report/
 *.log
 .DS_Store
 Thumbs.db
+.v2check/
+.vitest-cache/
+
+# 恢复/分析临时目录（2026-08-23 git 对象库损坏恢复残留 + 本机平衡分析脚本）
+.git.broken-*/
+.tmp-analysis/
 
 # 编辑器
 .vscode/

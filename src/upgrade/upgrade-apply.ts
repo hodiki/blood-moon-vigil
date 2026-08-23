@@ -20,6 +20,8 @@
 
 import type { PlayerStats } from '@/player/player-stats';
 import type { UpgradeState } from '@/upgrade/upgrade-pool';
+import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
+import type { UpgradeId } from '@/config/balance';
 
 /** 写回目标接口（PlayScene 装配真实实现；测试注入 fake） */
 export interface UpgradeWriteTargets {
@@ -37,6 +39,8 @@ export interface UpgradeWriteTargets {
     setMissileSplit(level: number): void; // 分裂次级弹数量
     setMissilePierce(count: number): void; // 穿透数
     setCooldownMultiplier(multiplier: number): void; // 全部武器冷却 ×m
+    /** E2-S8：武器类强化写回（12 分支派生重算；up_w_a1~d3） */
+    setClassUpgrade(stacks: ClassUpgradeStacks): void;
   };
   xp: {
     setMagnetMultiplier(multiplier: number): void; // 磁吸半径 ×m
@@ -135,4 +139,50 @@ export function applyUpgrade(state: UpgradeState, targets: UpgradeWriteTargets, 
     default:
       break;
   }
+}
+
+// ============================================================================
+// E2-S8：40 项池内容 ID 写回（UpgradeId → 状态 + 写回）
+// 本冲刺落地：武器类强化 12 分支（up_w_a1~d3）+ 被动钥 7（key_* 记录持有，
+// 数值效果由 E4-S4 升级池生效接入；钥持有本身驱动超武合成条件 2）。
+// ============================================================================
+
+/** 武器类强化分支单分支叠加上限 2（gdd-upgrade-pool-v2 §3.3） */
+export const CLASS_BRANCH_MAX = 2;
+
+/** 武器类强化分支 → 内容 ID（12 项） */
+export const CLASS_BRANCH_UPGRADE_IDS = {
+  a1: 'up_w_a1', a2: 'up_w_a2', a3: 'up_w_a3',
+  b1: 'up_w_b1', b2: 'up_w_b2', b3: 'up_w_b3',
+  c1: 'up_w_c1', c2: 'up_w_c2', c3: 'up_w_c3',
+  d1: 'up_w_d1', d2: 'up_w_d2', d3: 'up_w_d3',
+} as const;
+
+const CLASS_BRANCH_IDS: readonly UpgradeId[] = [
+  'up_w_a1', 'up_w_a2', 'up_w_a3',
+  'up_w_b1', 'up_w_b2', 'up_w_b3',
+  'up_w_c1', 'up_w_c2', 'up_w_c3',
+  'up_w_d1', 'up_w_d2', 'up_w_d3',
+];
+
+const KEY_IDS: readonly UpgradeId[] = [
+  'key_scope', 'key_holy', 'key_tome', 'key_silver', 'key_pact', 'key_bone', 'key_grail',
+];
+
+/**
+ * 40 项池内容 ID 写回（E2-S8）：
+ * - 武器类强化：叠加一层（≤2）→ 写回 WeaponSystem.setClassUpgrade（派生参数重算）；
+ * - 被动钥：记录持有（叠加上限 1），数值效果 E4-S4 接入（钥持有驱动超武合成条件 2）。
+ */
+export function applyUpgradeById(state: UpgradeState, targets: UpgradeWriteTargets, upgradeId: UpgradeId): void {
+  if ((CLASS_BRANCH_IDS as readonly string[]).includes(upgradeId)) {
+    state.addStack(upgradeId, CLASS_BRANCH_MAX);
+    targets.weapons.setClassUpgrade(state.classUpgradeStacks());
+    return;
+  }
+  if ((KEY_IDS as readonly string[]).includes(upgradeId)) {
+    state.addStack(upgradeId, 1);
+    return;
+  }
+  // 其余内容 ID（全局/主动技强化）由 E4-S4 升级池生效接入；本冲刺不写回
 }

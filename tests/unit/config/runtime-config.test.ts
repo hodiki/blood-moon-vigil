@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { DESKTOP_CONFIG, MOBILE_CONFIG, getRuntimeConfig } from '@/config/runtime-config';
 
 describe('RuntimeConfig 桌面配置快照（ARCH §4.2 / RV-C2）', () => {
-  it('实体上限 400/200/300', () => {
+  it('实体上限 400/200/300（含 M3 治疗道具池 48）', () => {
     expect(DESKTOP_CONFIG.maxEnemies).toBe(400);
     expect(DESKTOP_CONFIG.maxParticles).toBe(200);
     expect(DESKTOP_CONFIG.maxGems).toBe(300);
+    expect(DESKTOP_CONFIG.maxHeals).toBe(48);
   });
 
   it('分辨率 1920×1080', () => {
@@ -27,10 +28,11 @@ describe('RuntimeConfig 桌面配置快照（ARCH §4.2 / RV-C2）', () => {
 });
 
 describe('RuntimeConfig 移动配置快照（ARCH §4.2 / RV-C2 720×1280）', () => {
-  it('实体上限 250/100/200（移动端削减）', () => {
+  it('实体上限 250/100/200（移动端削减；治疗道具池 32）', () => {
     expect(MOBILE_CONFIG.maxEnemies).toBe(250);
     expect(MOBILE_CONFIG.maxParticles).toBe(100);
     expect(MOBILE_CONFIG.maxGems).toBe(200);
+    expect(MOBILE_CONFIG.maxHeals).toBe(32);
   });
 
   it('分辨率 720×1280（竖屏，最小实体 ≥16px 硬标准）', () => {

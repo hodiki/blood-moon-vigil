@@ -10,12 +10,16 @@
  */
 
 import Phaser from 'phaser';
-import { enemyPanel, type EnemyKindId } from '@/enemies/enemy-types';
+import { enemyPanel, runtimeKindForEnemyId, type EnemyKindId } from '@/enemies/enemy-types';
+import type { EnemyConfig, EnemyId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
+import { slowedSpeed } from '@/active-skill/active-skill-effects';
 import type { Player } from '@/player/player';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   kind: EnemyKindId = 'zombie';
+  /** E3-S1 内容 ID（15 敌；旧 kind 三敌/Boss 为 null） */
+  enemyId: EnemyId | null = null;
   maxHp = 0;
   hp = 0;
   speed = 0;
@@ -30,6 +34,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   orbitHitCooldownUntil = 0;
   /** 霸体截止（秒时间戳）：期内不承伤（E4-S2 Boss 出场 0.5s 霸体；普通敌恒 0） */
   graceUntil = 0;
+  /** M1b 主动技：眩晕截止（秒时间戳）：> now 期间冻结移动（updateMovement）且不造成接触伤害（contact） */
+  stunnedUntil = 0;
+  /** E4-S2 主动技「安魂曲」：减速截止（秒时间戳）+ 减速比例（40% = 0.4） */
+  slowUntil = 0;
+  slowPct = 0;
+  /** E4-S2 主动技「血影突袭」：标记截止（秒时间戳）+ 标记武器伤害倍率（+20% = 1.2） */
+  markUntil = 0;
+  markDamageMult = 1;
 
   /**
    * 构造器：池契约 acquire(x,y,texture?,frame?) —— 由调用方显式传 'characters' + 帧名
@@ -50,6 +62,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   spawn(kind: EnemyKindId, x: number, y: number): void {
     const panel = enemyPanel(kind);
     this.kind = kind;
+    this.enemyId = null;
     this.maxHp = panel.hp;
     this.hp = panel.hp;
     this.speed = panel.speed;
@@ -60,6 +73,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.attackTimer = 0;
     this.orbitHitCooldownUntil = 0;
     this.graceUntil = 0; // 霸体由 Boss.beginGrace 显式设置；普通敌恒 0
+    this.stunnedUntil = 0; // M1b 主动技：眩晕截止重置（重开/复用不残留）
+    this.slowUntil = 0; // E4-S2 安魂曲：减速重置
+    this.slowPct = 0;
+    this.markUntil = 0; // E4-S2 血影突袭：标记重置
+    this.markDamageMult = 1;
     this.setTexture('characters', `enemy-${kind}`);
     this.setPosition(x, y);
     this.setActive(true).setVisible(true);
@@ -69,8 +87,47 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.reset(x, y);
   }
 
-  /** AI 移动：向玩家直线移动（各自移速，enemies §③ / E8-2）；帧率无关由 velocity 驱动 */
-  updateMovement(dt: number, player: Player): void {
+  /**
+   * E3-S1 从池取出：按 EnemyConfig（15 敌）注册 —— 面板/移速/攻击间隔/碰撞半径/经验全走配置。
+   * 帧名取 config.frame（如 enemy-hound/enemy-wraith），池分类由 runtimeKindForEnemyId 派生
+   * （死亡溅射/剪影颜色等 4 类消费）。特殊行为运行时由 enemy-behaviors.ts 纯函数驱动。
+   */
+  spawnByConfig(cfg: EnemyConfig, x: number, y: number): void {
+    this.enemyId = cfg.id;
+    this.kind = runtimeKindForEnemyId(cfg.id);
+    this.maxHp = cfg.hp;
+    this.hp = cfg.hp;
+    this.speed = cfg.speed;
+    this.damage = cfg.damage;
+    this.xp = cfg.xp;
+    this.attackInterval = cfg.attackInterval;
+    this.radius = cfg.radius;
+    this.attackTimer = 0;
+    this.orbitHitCooldownUntil = 0;
+    this.graceUntil = 0;
+    this.stunnedUntil = 0;
+    this.slowUntil = 0; // E4-S2 安魂曲：减速重置
+    this.slowPct = 0;
+    this.markUntil = 0; // E4-S2 血影突袭：标记重置
+    this.markDamageMult = 1;
+    this.setTexture('characters', cfg.frame);
+    this.setPosition(x, y);
+    this.setActive(true).setVisible(true);
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.enable = true;
+    body.setCircle(cfg.radius);
+    body.reset(x, y);
+  }
+
+  /** AI 移动：向玩家直线移动（各自移速，enemies §③ / E8-2）；帧率无关由 velocity 驱动。
+   *  M1b 主动技：`now` 秒时间戳（scene.time.now/1000）；眩晕期内冻结（速度 0、攻击计时不递减，
+   *  眩晕结束自然恢复移动与攻击节奏）。缺省 now=0 → 永不眩晕（兼容旧调用方）。 */
+  updateMovement(dt: number, player: Player, now = 0): void {
+    if (this.stunnedUntil > now) {
+      const body = this.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(0, 0);
+      return; // 眩晕：冻结移动与攻击计时（contact.ts 同步阻止接触伤害）
+    }
     this.attackTimer = Math.max(0, this.attackTimer - dt);
     const body = this.body as Phaser.Physics.Arcade.Body;
     const dx = player.x - this.x;
@@ -80,7 +137,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       body.setVelocity(0, 0);
       return;
     }
-    body.setVelocity((dx / len) * this.speed, (dy / len) * this.speed);
+    // E4-S2 安魂曲：减速期内移速 ×(1-slowPct)（slowUntil 截止后自然恢复）
+    const currentSpeed = slowedSpeed(this.speed, this, now);
+    body.setVelocity((dx / len) * currentSpeed, (dy / len) * currentSpeed);
   }
 
   /**
@@ -95,6 +154,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.enable = false;
     GameEvents.emit(GameEvent.EnemyKilled, {
       enemyType: this.kind,
+      // E4-S6 图鉴数据层：15 敌/Boss 内容 ID（旧 kind 三敌为 null，图鉴只记录内容 ID 击杀）
+      enemyId: this.enemyId,
       xp: this.xp,
       x: this.x,
       y: this.y,

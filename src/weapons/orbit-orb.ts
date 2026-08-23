@@ -12,6 +12,7 @@
 import Phaser from 'phaser';
 import { WEAPONS } from '@/config/balance';
 import { hitEnemy } from '@/combat/damage';
+import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
 import { advanceOrbitAngle, orbitPosition, circlesOverlap, type TargetLike } from '@/weapons/weapon-math';
 import type { FxManager } from '@/fx/fx-manager';
 import type { Player } from '@/player/player';
@@ -22,6 +23,9 @@ export interface OrbDamageTarget extends TargetLike {
   orbitHitCooldownUntil: number;
   /** 碰撞半径（来自敌人面板，Enemy.radius） */
   radius: number;
+  /** E4-S2 血影突袭标记（可选） */
+  markUntil?: number;
+  markDamageMult?: number;
 }
 
 export class OrbitWeapon {
@@ -30,6 +34,8 @@ export class OrbitWeapon {
   private count: number = WEAPONS.ORBIT.BASE_COUNT;
   private radius: number = WEAPONS.ORBIT.RADIUS;
   private angularSpeedDeg: number = WEAPONS.ORBIT.ANGULAR_SPEED_DEG;
+  /** E4-S4 钥被动：key_silver 伤害 ×1.12（默认 1） */
+  private keyDamageMult = 1;
   /** E3 门控：初始未解锁（upgrade-pool 第 1 项「解锁守夜之环」后才可见可伤） */
   private enabled = false;
 
@@ -71,6 +77,16 @@ export class OrbitWeapon {
     this.angularSpeedDeg = WEAPONS.ORBIT.ANGULAR_SPEED_DEG * multiplier;
   }
 
+  /** E4-S4 钥被动：key_holy 范围 +15%（radius ×1.15；乘法叠加于基础半径） */
+  setKeyRadiusMultiplier(multiplier: number): void {
+    this.radius = WEAPONS.ORBIT.RADIUS * multiplier;
+  }
+
+  /** E4-S4 钥被动：key_silver 伤害 +12%（伤害 ×1.12；乘法叠加于总倍率） */
+  setKeyDamageMultiplier(multiplier: number): void {
+    this.keyDamageMult = multiplier;
+  }
+
   /** TASK-36：遍历可见环绕球位置（fx-manager.tickOrbitTrails 消费，结构性满足 OrbitTrailSource） */
   eachOrbPosition(fn: (x: number, y: number) => void): void {
     for (let i = 0; i < this.count; i += 1) {
@@ -89,7 +105,7 @@ export class OrbitWeapon {
   ): void {
     if (!this.enabled) return; // E3 门控：未解锁不旋转不命中
     this.angleRad = advanceOrbitAngle(this.angleRad, this.angularSpeedDeg, dt);
-    const damage = WEAPONS.ORBIT.DAMAGE * damageMultiplier;
+    const damage = WEAPONS.ORBIT.DAMAGE * this.keyDamageMult * damageMultiplier;
     for (let i = 0; i < this.count; i += 1) {
       const orb = this.orbs[i];
       if (!orb) continue;
@@ -101,7 +117,8 @@ export class OrbitWeapon {
         if (now < enemy.orbitHitCooldownUntil) continue; // 同目标 0.4s CD
         if (!circlesOverlap(pos.x, pos.y, WEAPONS.ORBIT.ORB_RADIUS, enemy.x, enemy.y, enemy.radius)) continue;
         enemy.orbitHitCooldownUntil = now + WEAPONS.ORBIT.PER_TARGET_COOLDOWN;
-        hitEnemy(enemy, damage);
+        // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
+        hitEnemy(enemy, weaponDamageOnTarget(damage, enemy, now));
         // TASK-36 命中火花：冷青 3 颗（fx 内全局节流 200ms，防 6 球高频刷屏）
         this.fx.orbitHit(pos.x, pos.y, now);
       }

@@ -8,7 +8,7 @@
  *    DOM HUD/结算/选卡 = 0（ADR-004）。阈值 ≤8（art-bible §7 / RV 放行 4）。
  *    注：程序生成贴图（procedural-textures）已收敛为 characters/effects 两组，
  *    故设计口径与真实纹理批次数一致；未经合批的散纹理会在 Phase 6 正式图集时复核。
- * 3. BenchResult：`?bench=1` 60s 峰值压力后写入 window.__BENCH_RESULT__ 的结构。
+ * 3. BenchResult：`?bench=1` 36s 峰值压力后写入 window.__BENCH_RESULT__ 的结构（TASK-31 收尾 60s→36s）。
  */
 
 declare global {

@@ -8,10 +8,10 @@
  * E4 装配（收束与性能达标）：
  * - E4-S1 HUD：DOM 覆盖层（等级/经验/HP/武器槽/暂停键 + Boss 顶部血条），0 draw call
  * - E4-S2 Boss「血月尊者」：同池复用（weapons 自动可命中）、0.5s 霸体闪红、猩红金程序贴图
- * - E4-S3 20:00 收束：spawner.onBossTime → 清场 + Boss 出场；Boss 击杀→胜利终局、
+ * - E4-S3 6:00 收束：spawner.onBossTime → 清场 + Boss 出场；Boss 击杀→胜利终局、
  *   玩家死亡→失败终局（GAMEOVER 四态机）
  * - E4-S4 结算页：game:over { stats } → ResultsOverlay；再来一局/返回启动事件
- * - E4-S5 性能基准：`?bench=1` 60s 峰值压力（20× 时缩放 + 三武器全开 + 玩家免死），
+ * - E4-S5 性能基准：`?bench=1` 36s 峰值压力（20× 时缩放 + 三武器全开 + 玩家免死），
  *   记录 avg/min fps、实体峰值、draw call 估算 → window.__BENCH_RESULT__
  */
 
@@ -19,15 +19,31 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { WORLD, PLAYER, BOSS, PALETTE, type EnemyKindId } from '@/config/balance';
+import { PLAYER, BOSS, PALETTE, ACTIVE_SKILL, ACTIVE_SKILL_RULES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, EVOLUTIONS, WEAPON_CONFIGS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
+import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
-import { hexToRgbInt } from '@/utils/math';
+import { clampToWorld, hexToRgbInt, type Vec2 } from '@/utils/math';
 import { collectSmokeResult, writeSmokeResult, SMOKE_FRAMES_COUNT } from '@/utils/smoke';
 import { FpsMonitor, estimateDrawCalls, writeBenchResult } from '@/utils/perf';
 import type { InputSource } from '@/input/input-source';
 import { KeyboardInput } from '@/input/keyboard-input';
 import { TouchInput } from '@/input/touch-input';
+import { ActiveSkill } from '@/active-skill/active-skill';
+import { stunEnemiesInRadius } from '@/active-skill/active-skill-math';
+import {
+  applySlowInRadius,
+  contactAuraTick,
+  dashDirection,
+  dashStep,
+  damageAndMarkDash,
+  healFractionOfMax,
+  rageMultiplierAdd,
+  rageMoveSpeedPct,
+  RageBuff,
+  type DashEnemyLike,
+} from '@/active-skill/active-skill-effects';
+import { createActiveSkillRuntime, ActiveSkillRuntimeConfig } from '@/active-skill/active-skill-runtime';
 import { Player } from '@/player/player';
 import { MapSystem, DECAL_COUNT_DESKTOP, DECAL_COUNT_MOBILE } from '@/map/map';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
@@ -37,8 +53,12 @@ import { WeaponSystem } from '@/weapons/weapon-system';
 import { EnemySpawner } from '@/spawner/enemy-spawner';
 import { XpGem } from '@/xp/xp-gem';
 import { XpManager } from '@/xp/xp-manager';
-import { UpgradeState, rollThree, UPGRADE_BY_ID, type UpgradeOption } from '@/upgrade/upgrade-pool';
+import { HealPickup } from '@/xp/heal-pickup';
+import { HealManager, shouldDropHeal } from '@/xp/heal-manager';
+import { UpgradeState, UPGRADE_BY_ID, type UpgradeOption } from '@/upgrade/upgrade-pool';
 import { applyUpgrade, type UpgradeWriteTargets } from '@/upgrade/upgrade-apply';
+import { rollThreeV2, poolItemById, type UpgradeV2Option, type UpgradePoolV2Context } from '@/upgrade/upgrade-pool-v2';
+import { applyUpgradeByIdV2, type UpgradeV2WriteTargets } from '@/upgrade/upgrade-apply-v2';
 import { playerEnemyContact, type ContactEnemy } from '@/combat/contact';
 import { LevelUpOverlay } from '@/ui/levelup-overlay';
 import { Hud, createHud } from '@/ui/hud';
@@ -47,25 +67,37 @@ import { PauseOverlay, createPauseOverlay } from '@/ui/pause-overlay';
 import { getOverlayHost } from '@/ui/overlay-host';
 import { RunStats } from '@/stats/run-stats';
 import { readRestartCount } from '@/stats/session-stats';
+import { CodexTracker, MOON_AVATAR_ENTRY_ID, eventEntriesForMapCleared } from '@/codex/codex';
+import { computeMeritApplication, calculateMeritPoints, type MeritAppliedResult } from '@/stats/merit';
+import { loadSave, writeSave, recordMapCleared, type SaveData } from '@/stats/save';
 import { createProceduralTextures } from '@/fx/procedural-textures';
 import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim } from '@/fx/anim';
 import { FxManager } from '@/fx/fx-manager';
 import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
+import { NarrativeDispatcher } from '@/narratives/narrative-dispatcher';
+import { DEFAULT_NARRATIVE_BINDINGS } from '@/narratives/narrative-bindings';
 
-/** E4-S5 基准：20× 时缩放 —— 60 真实秒 ≈ 1200 局时秒（20:00 收束覆盖） */
+/**
+ * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
+ * TASK-31 收尾（rhythm-pace-adj §6）：BENCH_DURATION_MS 60_000→36_000，
+ * 36s = 完整 1 局 + Boss 战全程 + 第 2 局爬升，峰值段（300–360 局时 = 15–18 真实秒）有 18s 持续采样。
+ */
 const BENCH_TIME_SCALE = 20;
-const BENCH_DURATION_MS = 60_000;
+const BENCH_DURATION_MS = 36_000;
 
 interface EnemyKilledPayload {
   enemyType: string;
+  /** E4-S6 图鉴：内容 ID（15 敌/Boss；旧 kind 三敌 null） */
+  enemyId?: EnemyId | BossId | null;
   xp: number;
   x: number;
   y: number;
 }
 
 interface UpgradeChosenPayload {
-  optionId: number;
+  /** E4-S4：v2 池为内容 ID 字符串（up_/key_/evo_）；legacy 为数字 id */
+  optionId: number | string;
   index: number;
   dwellSeconds?: number;
 }
@@ -81,6 +113,9 @@ export class PlayScene extends Phaser.Scene {
   private spawner!: EnemySpawner;
   private gemPool!: ArcadePoolLike<XpGem>;
   private xp!: XpManager;
+  /** M3 治疗道具：池 + 掉落/拾取管理器（content-design-outline §7；随修女被动落地） */
+  private healPool!: ArcadePoolLike<HealPickup>;
+  private healManager!: HealManager;
   private upgradeState!: UpgradeState;
   private upgradeTargets!: UpgradeWriteTargets;
   private overlay!: LevelUpOverlay;
@@ -91,7 +126,7 @@ export class PlayScene extends Phaser.Scene {
   /** Phase 6 音频：事件 → AudioManager 接线解绑（配合 resetGameEvents 纪律） */
   private unbindAudioEvents: (() => void) | null = null;
   private stats = new RunStats();
-  /** 当前 Boss（20:00 出场；null = 未出场） */
+  /** 当前 Boss（6:00 出场；null = 未出场） */
   private boss: Boss | null = null;
   /** 最近一次三选一选项（纠结埋点判定用，E4-S1） */
   private lastOptions: UpgradeOption[] = [];
@@ -101,8 +136,39 @@ export class PlayScene extends Phaser.Scene {
   private shockwaveWasActive = false;
   /** TASK-39 E2 屠夫预警：血月印记精灵（保底厚血预约出生时显示，落地时销毁；null = 无） */
   private tankMark: Phaser.GameObjects.Image | null = null;
-  /** TASK-39 E2 首级强制武器：首次 rollThree 保证三选一含 1/2 号武器（消费后置 false） */
-  private firstUpgradeRoll = true;
+  /** M1b 主动技「提灯闪耀」：CD/防抖/计数（效果结算在 tryCastActiveSkill） */
+  private activeSkill!: ActiveSkill;
+  /** E4-S1 当前角色（开局从 session-selection 读取） */
+  private heroId: HeroId = 'hero_edmund';
+  /** E4-S1 当前地图（开局从 session-selection 读取；相机/玩家 clamp 按 MAP_CONFIGS 尺寸） */
+  private mapId: MapId = 'map_graveyard';
+  /** E4-S2 血影突袭冲刺状态（null = 非冲刺；dir=冲刺方向、remaining=剩余距离） */
+  private dash: { dir: Vec2; remaining: number } | null = null;
+  /** E4-S2 血月狂化 buff（8s 窗口；玩家死亡/重开清空） */
+  private rage = new RageBuff();
+  /** E4-S3 主动技运行时配置（升级分支改写；效果结算统一读本类） */
+  private skillRuntime!: ActiveSkillRuntimeConfig;
+  /** E4-S4 v2 升级池写回目标（PlayScene 装配） */
+  private upgradeV2Targets!: UpgradeV2WriteTargets;
+  /** E4-S5 已拥有武器 id（初始武器 + 解锁；v2 抽取上下文） */
+  private ownedWeaponIds: WeaponId[] = [];
+  /** E4-S4 最近一次 v2 三选一选项（纠结埋点） */
+  private lastOptionsV2: UpgradeV2Option[] = [];
+  /** E4-S6 图鉴追踪器（单会话内存态；持久化走 save） */
+  private codex = new CodexTracker();
+  /** E4-S7/S8 局外存档（读入 create；局终写回） */
+  private saveData: SaveData | null = null;
+  /** E4-S7 纯局内模式（关闭全部功绩加成） */
+  private pureInGame = false;
+  /** E4-S7 本局首杀 Boss/精英数（功绩 +2/只） */
+  private firstBossKillsThisRun = 0;
+  /** E4-S7 本局血月化身击杀（功绩 +5） */
+  private avatarKillsThisRun = 0;
+  /** M3 轻叙事：局内事件 → 文本表 → DOM 覆盖层（narrative-framework §5/§7；宿主 #ui-overlay） */
+  private narratives!: NarrativeDispatcher;
+  private unbindNarratives: (() => void) | null = null;
+  /** M3 图鉴 toast：局内首次解锁任一条目 → 同帧合并 emit 1 条（narratives-spec §6 n_toast_codex） */
+  private codexToastPending = false;
 
   // 冒烟自检状态
   private smokeStartedAt = 0;
@@ -133,23 +199,47 @@ export class PlayScene extends Phaser.Scene {
     createCharacterAnims(this);
     this.fx = new FxManager(this, this.cfg);
 
+    // E4-S1/S9：开局角色 + 地图从 session-selection 读取（解锁门禁由保存数据层校验，
+    // PlayScene 兜底非法选择回退默认，见 session-selection.selectHeroSafely/selectMapSafely）
+    this.heroId = getSelectedHero();
+    this.mapId = getSelectedMap();
+    // E4-S6/S7/S8：加载局外存档（图鉴/功绩/通关；多端独立）+ 装配图鉴追踪器 + 纯局内模式
+    this.saveData = loadSave(window.localStorage, this.cfg.isMobile ? 'mobile' : 'desktop');
+    this.codex = new CodexTracker(this.saveData.codexUnlocked);
+    this.pureInGame = this.saveData.pureInGame;
+
     this.state = new GameState();
     // 副作用唯一入口（ADR-003）：物理/Tween/输入冻结集中在 applyPhase
     this.state.onChange((phase) => this.applyPhase(phase));
 
+    const mapCfg = MAP_CONFIGS[this.mapId];
     this.mapSystem = new MapSystem(
       this,
       undefined,
       this.cfg.isMobile ? DECAL_COUNT_MOBILE : DECAL_COUNT_DESKTOP,
+      this.mapId,
     );
-    this.player = new Player(this, PLAYER.SPAWN_X, PLAYER.SPAWN_Y);
+    this.player = new Player(this, mapCfg.width / 2, mapCfg.height / 2, HEROES[this.heroId], this.mapId);
 
     // 对象池：maxSize 读 RuntimeConfig（ARCH §3.3 / 性能预算 #1）；classType=Boss（含普通敌）
     this.enemyPool = createArcadePool(this, this.cfg, 'enemies', Boss);
     this.gemPool = createArcadePool(this, this.cfg, 'gems', XpGem);
+    // M3 治疗道具池（merit-ui-spec §11：精英/Boss 保底掉落；数值改 balance.HEAL 常量，管线零改动）
+    this.healPool = createArcadePool(this, this.cfg, 'heals', HealPickup);
+    this.healManager = new HealManager(this.healPool, this.player, this.player.stats);
     this.weaponSystem = new WeaponSystem(this, this.cfg, this.player, this.enemyPool, this.fx);
-    this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player);
-    // E4-S3 收束：20:00 清场 + Boss 出场（预算恒 0 由 spawner 停止保证，S8 §⑥.3）
+    // E4-S1 角色初始武器门控：仅角色初始武器启用（守夜人=飞弹 / 血猎手=银针 / 修女=火铳 / 狼裔=猎犬）
+    this.weaponSystem.applyInitialWeapon(HEROES[this.heroId].initialWeapon);
+    // E4-S5 已拥有武器集（初始武器 + 后续解锁；v2 抽取上下文 / 新武器解锁变体）
+    this.ownedWeaponIds = [HEROES[this.heroId].initialWeapon];
+    // E4-S6 初始武器 → 图鉴 obtain 记录（首获幂等）
+    this.codex.recordObtain(HEROES[this.heroId].initialWeapon);
+    // E4-S7 功绩加成开局生效（纯局内模式关闭全部；数据层记录 applied 状态）
+    const merit = computeMeritApplication(this.saveData.meritEquipped, this.pureInGame, HEROES[this.heroId]);
+    this.applyMeritToStats(merit);
+    // M2 收口：生成器按当前地图装配（槽位池/权重覆盖/移速加权，E3-S7）
+    this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId);
+    // E4-S3 收束：6:00 清场 + Boss 出场（预算恒 0 由 spawner 停止保证，S8 §⑥.3）
     this.spawner.onBossTime = () => {
       this.spawner.clearAll();
       this.spawnBoss();
@@ -157,6 +247,8 @@ export class PlayScene extends Phaser.Scene {
 
     // E3 成长闭环：经验 / 升级池 / 覆盖层
     this.xp = new XpManager(this.gemPool, this.player);
+    // E4-S1 守夜人「提灯圣辉」：经验磁力 +20px（专属被动；非守夜人为 0）
+    this.xp.setMagnetRadiusBonus(this.player.stats.magnetRadiusBonus);
     this.upgradeState = new UpgradeState();
     this.upgradeTargets = {
       stats: this.player.stats,
@@ -173,14 +265,65 @@ export class PlayScene extends Phaser.Scene {
         setMissileSplit: (n) => this.weaponSystem.setMissileSplit(n),
         setMissilePierce: (n) => this.weaponSystem.setMissilePierce(n),
         setCooldownMultiplier: (m) => this.weaponSystem.setCooldownMultiplier(m),
+        // E2-S8：武器类强化写回（12 分支派生重算，WeaponSystem 广播到注册表）
+        setClassUpgrade: (stacks) => this.weaponSystem.applyClassUpgrade(stacks),
       },
       xp: {
         setMagnetMultiplier: (m) => this.xp.setMagnetMultiplier(m),
       },
     };
+    // E4-S4：v2 升级池写回目标（40 项内容 ID 全量；E4-S5 解锁 / E4-S3 主动技强化 / E4-S6 图鉴挂钩）
+    this.upgradeV2Targets = {
+      stats: this.player.stats,
+      weapons: {
+        setMissileSplit: (n) => this.weaponSystem.setMissileSplit(n),
+        setMissilePierce: (n) => this.weaponSystem.setMissilePierce(n),
+        setCooldownMultiplier: (m) => this.weaponSystem.setCooldownMultiplier(m),
+        setClassUpgrade: (s) => this.weaponSystem.applyClassUpgrade(s),
+        setKeyPassives: (k) => this.weaponSystem.setKeyPassives(k),
+        unlockWeapon: (w) => this.onWeaponUnlocked(w),
+        // M3-DESIGN-1 up_g_2 专精疾射：目标武器独立冷却乘区广播
+        setFocusedCooldown: (weaponIds, mult) => this.weaponSystem.setFocusedCooldown(weaponIds, mult),
+      },
+      xp: {
+        setMagnetMultiplier: (m) => this.xp.setMagnetMultiplier(m),
+        setMagnetRadiusBonus: (b) => this.xp.setMagnetRadiusBonus(b),
+        addPickupRadiusBonus: (b) => this.xp.addPickupRadiusBonus(b),
+      },
+      activeSkill: {
+        applyActiveSkillUpgrade: (upId) => this.onActiveSkillUpgrade(upId),
+      },
+    };
     this.overlay = new LevelUpOverlay(getOverlayHost(), {});
-    this.hud = createHud({ cfg: this.cfg, onPauseToggle: () => this.togglePause() });
+    // E4-S2 主动技：按角色装配（CD/充能段数/充能间隔；效果结算见 tryCastActiveSkill）
+    this.skillRuntime = createActiveSkillRuntime(this.heroId);
+    this.activeSkill = new ActiveSkill(
+      this.skillRuntime.cd,
+      ACTIVE_SKILL.INPUT_LOCK_SECONDS, // 释放后 100ms 输入锁定防抖（pillars §6.7-3，全角色统一）
+      this.skillRuntime.charges ?? 1,
+      this.skillRuntime.chargeInterval ?? 0,
+    );
+    this.hud = createHud({
+      cfg: this.cfg,
+      skillName: this.skillRuntime.name ?? ACTIVE_SKILLS[this.heroId].name,
+      onPauseToggle: () => this.togglePause(),
+      onActiveSkill: () => this.tryCastActiveSkill(), // 移动端技能按钮 → 同一释放入口
+    });
+    // E4-S2 充能制：技能按钮初始充能数角标（血猎手 2 段；其余隐藏）
+    if (this.cfg.isMobile) this.hud.setSkillCharges(this.activeSkill.chargeCount);
+    // M1b 主动技：非 RUNNING 态技能按钮隐藏（CM §5 状态联动；桌面无按钮 no-op）
+    this.state.onChange((phase) => this.hud.setSkillVisible(phase === GamePhase.RUNNING));
     this.results = createResultsOverlay();
+
+    // M3 轻叙事：装配分发器 + 默认事件绑定 + 开局序章句（§5 开局 5s；文本表占位，M3-DESIGN-2 终稿替换）
+    this.narratives = new NarrativeDispatcher({
+      host: getOverlayHost(),
+      isMobile: () => this.cfg.isMobile,
+    });
+    this.narratives.resetRunState();
+    this.unbindNarratives = this.narratives.bind(GameEvents, DEFAULT_NARRATIVE_BINDINGS);
+    // M3 开局横幅（spec §3 开局 5s）：按当前地图选序章句（TRIGGER_SELECTORS map-open）
+    this.narratives.show('map-open', { mapId: this.mapId });
 
     // Phase 6 音频：新一局 BGM 心跳重置回 60 + 事件接线（audio-bible §4）
     const audio = AudioManager.getInstance();
@@ -241,9 +384,11 @@ export class PlayScene extends Phaser.Scene {
     // TASK-39 E2：屠夫预警（血月印记出现/落地）
     GameEvents.on(GameEvent.TankWarning, this.onTankWarning, this);
     GameEvents.on(GameEvent.TankSpawned, this.onTankSpawned, this);
+    // M3 治疗道具：拾取完成 → 治疗绿发光 + HpChanged（治疗量已由 HealManager 应用）
+    GameEvents.on(GameEvent.HealCollected, this.onHealCollected, this);
 
-    // 相机跟随 + 世界边界（S9）
-    this.cameras.main.setBounds(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
+    // 相机跟随 + 世界边界（S9 / E4-S9：按 MAP_CONFIGS 尺寸联动，替换 WORLD 3000 硬编码）
+    this.cameras.main.setBounds(0, 0, mapCfg.width, mapCfg.height);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
     this.cameras.main.setRoundPixels(true);
 
@@ -252,11 +397,13 @@ export class PlayScene extends Phaser.Scene {
       ? new TouchInput(this, this.cfg)
       : new KeyboardInput(this);
     this.inputSource.onPauseToggle(() => this.togglePause());
+    // M1b 主动技：桌面 Space/Shift + 移动端按钮统一走 tryCastActiveSkill（相位门禁在场景层）
+    this.inputSource.onActiveSkill(() => this.tryCastActiveSkill());
 
     // 防泄漏：场景关闭时清事件总线 + 输入
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
 
-    // E4-S5 基准模式：三武器全开 + 玩家免死 + 60s 峰值压力（生成器 20× 加速到 20:00 收束）
+    // E4-S5 基准模式：三武器全开 + 玩家免死 + 36s 峰值压力（生成器 20× 加速到 6:00 收束）
     if (this.isBench) {
       this.weaponSystem.orbit.unlock();
       this.weaponSystem.shockwave.unlock();
@@ -272,7 +419,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    // E4-S5 基准：持续记录帧率（不受状态机短路影响），60s 后写结果一次
+    // E4-S5 基准：持续记录帧率（不受状态机短路影响），36s 后写结果一次
     if (this.isBench) {
       this.benchFps.record(delta);
       this.trackBenchPeaks();
@@ -294,25 +441,48 @@ export class PlayScene extends Phaser.Scene {
     if (this.state.get() !== GamePhase.RUNNING) return; // ADR-003 短路：非 RUNNING 不做战斗逻辑
 
     let dt = clampDelta(delta); // 秒制、防跳怪（ARCH §3.5 / 预算表 #10）
-    if (this.isBench) dt *= BENCH_TIME_SCALE; // 基准：20× 时缩放模拟 20 分钟峰值
+    if (this.isBench) dt *= BENCH_TIME_SCALE; // 基准：20× 时缩放模拟 6 分钟收束
     const realDt = clampDelta(delta); // TASK-28：特效寿命用真实 dt（基准 20× 不加速视觉节奏）
     const now = this.time.now / 1000; // 秒时间戳（无敌帧/环绕球 CD/Boss 霸体）
 
     // 1) 玩家移动（velocity 驱动，fixedStep 60Hz）+ TASK-28 idle/移动动画
     const move = this.inputSource.getMove();
-    this.player.update(move);
+    // E4-S2 血影突袭：冲刺期间由冲刺推进接管位移（结束后输入向量天然保留，gdd §⑥.2）
+    if (this.dash) {
+      this.updateDash(dt, now);
+    } else {
+      this.player.update(move, now);
+    }
     tickPlayerAnim(this.player);
-    // 2) 敌潮生成（budget(t) 秒制累加；20:00 自动触发 onBossTime）
+    // E4-S2 血月狂化：buff 生效/失效同步 + 接触光环 tick（gdd §3.2 口径 3 平摊）
+    this.updateRage(dt, now);
+    // M1b 主动技：冷却递减（秒制，帧率无关）+ 移动端按钮冷却转圈（HUD 只读展示；不打断移动输入）
+    this.activeSkill.update(dt);
+    if (this.cfg.isMobile) {
+      const skillCfg = ACTIVE_SKILLS[this.heroId];
+      const cdTotal = skillCfg.charges ? skillCfg.chargeInterval ?? skillCfg.cd : skillCfg.cd;
+      this.hud.setSkillCooldown(this.activeSkill.cooldown, cdTotal);
+      this.hud.setSkillCharges(this.activeSkill.chargeCount);
+    }
+    // 2) 敌潮生成（budget(t) 秒制累加；6:00 自动触发 onBossTime）
     this.spawner.update(dt);
     // 3) 敌人 AI（朝玩家移动 + 攻击计时）+ TASK-28 敌型动画（普通 3 敌 idle/move，Boss 恒 idle）
+    //    M1b：now 秒时间戳供眩晕判定（updateMovement 内冻结移动）
     this.enemyPool.eachActive((e) => {
-      e.updateMovement(dt, this.player);
+      e.updateMovement(dt, this.player, now);
       tickEnemyAnim(e);
     });
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now);
     // 5) 经验宝石磁吸/拾取（E3-S1）
     this.xp.update(dt);
+    // 5b) M3 治疗道具拾取（精英/Boss 保底；拾取即治疗 + emit）
+    this.healManager.update(dt);
+    // 5c) M3 图鉴 toast：局内首次解锁任一条目 → 同帧合并 emit 1 条（spec §6 n_toast_codex「多条目同帧合并 1 条」）
+    if (this.codexToastPending) {
+      this.codexToastPending = false;
+      GameEvents.emit(GameEvent.CodexUpdated);
+    }
     // 6) 升级挂起消费：跨阈值 → emit level:up → onLevelUp（LEVEL_UP 流程）
     this.xp.consumePendingLevelUp();
 
@@ -350,6 +520,14 @@ export class PlayScene extends Phaser.Scene {
   /** E4-S3 胜利终局（Boss 击杀） */
   private onBossDefeated(): void {
     this.stats.recordBossDefeated(this.spawner.elapsedSeconds);
+    // E4-S6 图鉴 progress：首通地图 → 事件条目（墓地→起源/守夜会；教堂→血廷；狼穴→兽群）
+    if (this.saveData) {
+      const isNewClear = recordMapCleared(this.saveData, this.mapId);
+      for (const entryId of eventEntriesForMapCleared(this.mapId)) {
+        if (this.codex.recordProgress(entryId)) this.codexToastPending = true;
+      }
+      if (isNewClear) writeSave(window.localStorage, this.saveData, this.cfg.isMobile ? 'mobile' : 'desktop');
+    }
     this.finishGame(true);
   }
 
@@ -359,9 +537,31 @@ export class PlayScene extends Phaser.Scene {
     this.weaponSystem.clearAll(); // W8 §⑥.5：清空子弹/环绕球 + 冲击波冷却重置
     this.fx.clearAll(); // TASK-28：清空粒子（结算页背景干净）
     this.overlay.hide(); // 防止结算时残留选卡覆盖层
+    // E4-S2 玩家死亡/终局：狂化 buff 立即清除（gdd §⑥.8）、冲刺中断、倍率/移速加成归零
+    this.rage.clear();
+    this.dash = null;
+    this.player.stats.setRageBonus(0);
+    this.player.stats.rageSpeedPct = 0;
+    // M3 真机埋点：局终汇入经验拾取总量（xpGainedPerRun；XpManager 为唯一经验入口，须在 finish 快照前）
+    this.stats.recordXpGained(this.xp.xpGained);
     const result = this.stats.finish(victory, this.spawner.elapsedSeconds);
     // TASK-26 P0：本局 RunResult 挂全局，供导出脚本自动捕获（production/playtests/export-script.js）
     (globalThis as any).__BMV_LAST_RUN = result;
+    // E4-S7 功绩结算：存活/击杀/通关/首杀/化身 → 累计到局外存档（纯局内模式仍结算点数，
+    // 但加成不生效；gdd-codex §3.4 数据层记录）
+    if (this.saveData) {
+      const earned = calculateMeritPoints({
+        survivalSeconds: result.survivalSeconds,
+        kills: result.kills,
+        victory: result.victory,
+        firstBossKills: this.firstBossKillsThisRun,
+        avatarKills: this.avatarKillsThisRun,
+      });
+      this.saveData.meritPoints += earned;
+      // 图鉴解锁快照 + 功绩点数 + 装备 + 通关 + 纯局内模式 一并持久化
+      this.saveData.codexUnlocked = this.codex.snapshot();
+      writeSave(window.localStorage, this.saveData, this.cfg.isMobile ? 'mobile' : 'desktop');
+    }
     this.state.set(GamePhase.GAMEOVER); // CM §5 联动
     // TASK-21 P1：game:over payload 增补 session 级累计重开次数（concept §9 重开率数据源）
     GameEvents.emit(GameEvent.GameOver, {
@@ -370,7 +570,7 @@ export class PlayScene extends Phaser.Scene {
     });
   }
 
-  /** E4-S3 20:00 Boss 出场：清场已完成，在玩家前方一段距离登场 + 0.5s 霸体闪红 */
+  /** E4-S3 6:00 Boss 出场：清场已完成，在玩家前方一段距离登场 + 0.5s 霸体闪红 */
   private spawnBoss(): void {
     const now = this.time.now / 1000;
     const boss = this.enemyPool.acquire(this.player.x, this.player.y, 'characters', 'enemy-boss') as Boss | null;
@@ -395,7 +595,8 @@ export class PlayScene extends Phaser.Scene {
     // TASK-28：Boss 出场特效 —— 猩红金冲击环 + 金点爆发 + 屏幕震动（移动端震动关闭）
     this.fx.bossEntrance(bx, by);
     if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
-    GameEvents.emit(GameEvent.BossSpawned, { bossHp: boss.hp });
+    // M3 叙事：Boss 登场按 bossId 分句（spec §5/§6 bottom-banner；narrative-bindings 路由）
+    GameEvents.emit(GameEvent.BossSpawned, { bossHp: boss.hp, bossId: MAP_CONFIGS[this.mapId].boss });
     this.stats.recordBossSpawn(this.spawner.elapsedSeconds, boss.hp);
   }
 
@@ -408,14 +609,47 @@ export class PlayScene extends Phaser.Scene {
   private onEnemyKilled(args: unknown): void {
     const payload = args as EnemyKilledPayload;
     this.stats.recordKill();
+    // E4-S6 图鉴：首杀记录（15 敌/Boss；内容 ID 幂等；旧 kind 三敌 enemyId 为 null 跳过）
+    if (payload.enemyId) {
+      if (this.codex.recordKill(payload.enemyId)) {
+        this.codexToastPending = true; // 图鉴 toast（同帧合并，update 末尾 emit）
+        // 首杀 Boss/精英 → 功绩 +2/只（E4-S7；精英 = tank 运行时类，Boss = boss 类）
+        const kind = payload.enemyType as EnemyKindId;
+        if (kind === 'boss' || kind === 'tank') this.firstBossKillsThisRun += 1;
+        // 血月化身（boss_4）：任意图稀有月坠 → 图鉴隐藏条目 + 功绩 +5（gdd-codex §3.2/§3.4）
+        if (payload.enemyId === 'boss_4') {
+          this.codex.recordTrigger(MOON_AVATAR_ENTRY_ID);
+          this.avatarKillsThisRun += 1;
+        }
+      }
+    }
     // TASK-28：击杀溅射（颜色/形状按敌人类型分化）
     this.fx.deathBurst(payload.x, payload.y, payload.enemyType as EnemyKindId);
     if (payload.enemyType !== 'boss') {
       this.xp.dropGem(payload.xp, payload.x, payload.y);
     }
+    // M3 治疗道具（merit-ui-spec §11 + 平衡模拟调整）：精英（tank 槽）掉率 50% / Boss 保底；
+    // 普通怪不掉（防掉落稀释）；Boss 保底 100%（shouldDropHeal 内按 HEAL.ELITE_DROP_CHANCE 判定）
+    if (shouldDropHeal(payload.enemyType)) {
+      this.healManager.dropHeal(payload.x, payload.y);
+    }
     if (this.player.stats.applyLifesteal()) {
       GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
     }
+    // E4-S2 血月狂化：狂化中击杀回 1 HP（gdd §3.2 / ACTIVE_SKILLS.hero_galvan.lifestealOnKill；
+    // 仅狼裔狂化窗口内生效，与吸血升级/兽血愈合被动加法叠加）
+    if (this.rage.active(this.time.now / 1000) && ACTIVE_SKILLS.hero_galvan.lifestealOnKill) {
+      const before = this.player.stats.hp;
+      this.player.stats.hp = Math.min(
+        this.player.stats.maxHp,
+        this.player.stats.hp + ACTIVE_SKILLS.hero_galvan.lifestealOnKill,
+      );
+      if (this.player.stats.hp > before) {
+        GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      }
+    }
+    // M3-DESIGN-1 up_g_4 踏月而行：击杀后 2s 移速 +15%（PlayerStats 时间窗，无 HP 变化）
+    this.player.stats.triggerKillSpeedBuff(this.time.now / 1000);
   }
 
   /** TASK-28：宝石拾取爆点（payload 由 xp-manager 补 x/y） */
@@ -424,6 +658,154 @@ export class PlayScene extends Phaser.Scene {
     if (typeof p.x === 'number' && typeof p.y === 'number') {
       this.fx.gemPickup(p.x, p.y);
     }
+  }
+
+  /** M3 治疗道具拾取：治疗绿发光 + HpChanged（治疗量已由 HealManager 写入 stats） */
+  private onHealCollected(args: unknown): void {
+    const p = args as { amount: number; x?: number; y?: number };
+    if (typeof p.x === 'number' && typeof p.y === 'number') {
+      this.fx.healPickup(p.x, p.y);
+    }
+    GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+  }
+
+  /**
+   * M1b 主动技释放入口（桌面 Space/Shift + 移动端技能按钮共用；E4-S2 按角色分发）。
+   * 门禁（pillars §6.6 / CM §5）：仅 RUNNING 可释放 —— LEVEL_UP/PAUSED/GAMEOVER 冻结；
+   * CD 未就绪 / 释放后 100ms 防抖由 ActiveSkill.tryCast 拒绝。
+   * 释放不打断移动输入（移动向量仍由 player.update 每帧消费，本方法只结算效果）。
+   */
+  private tryCastActiveSkill(): void {
+    if (this.state.get() !== GamePhase.RUNNING) return; // 非 RUNNING 冻结（含释放瞬间切 LEVEL_UP 的按下即结算：已生效则冻结后不追加）
+    const now = this.time.now / 1000;
+    if (!this.activeSkill.tryCast(now)) return; // CD / 充能 / 100ms 防抖
+    const cfg = ACTIVE_SKILLS[this.heroId];
+    switch (this.heroId) {
+      case 'hero_edmund':
+        this.applyLanternFlash(now);
+        break;
+      case 'hero_cassandra':
+        this.startDash(now);
+        break;
+      case 'hero_violet':
+        this.applyRequiem(now);
+        break;
+      case 'hero_galvan':
+        this.applyRage(now);
+        break;
+    }
+    this.stats.recordActiveSkillCast(); // 埋点 activeSkillCasts（每局次数）
+    // 视觉最小实现：通用冷青扩散环（复用 lanternFlash；角色专属特效 M3 扩展）
+    this.fx.lanternFlash(this.player.x, this.player.y, cfg.radius ?? ACTIVE_SKILL.RADIUS);
+  }
+
+  /** E4-S2 血影突袭：开始冲刺（方向 = 当前输入方向；无输入默认右向） */
+  private startDash(_now: number): void {
+    const cfg = ACTIVE_SKILLS.hero_cassandra;
+    const move = this.inputSource.getMove();
+    this.dash = { dir: dashDirection(move), remaining: cfg.dashDistance ?? 0 };
+  }
+
+  /** E4-S2 血影突袭：冲刺推进（每帧位移 + 路径伤害 + 标记；gdd §3.2 / §⑥.7） */
+  private updateDash(dt: number, now: number): void {
+    if (!this.dash) return;
+    const cfg = ACTIVE_SKILLS.hero_cassandra;
+    const from = { x: this.player.x, y: this.player.y };
+    const { remaining, step } = dashStep(
+      this.dash.remaining,
+      dt,
+      cfg.dashDistance ?? 0,
+      cfg.dashDuration ?? ACTIVE_SKILL_RULES.DASH_DURATION_SECONDS,
+    );
+    this.dash.remaining = remaining;
+    const to = {
+      x: this.player.x + this.dash.dir.x * step,
+      y: this.player.y + this.dash.dir.y * step,
+    };
+    // clamp 到地图边界（E4-S9 尺寸联动；障碍碰撞由 physics collider 处理，gdd §⑥.7 障碍前停止）
+    const clamped = clampToWorld(to, MAP_CONFIGS[this.mapId].width, MAP_CONFIGS[this.mapId].height);
+    this.player.setPosition(clamped.x, clamped.y);
+    // 路径伤害 + 标记：damage = 40 × 0.5 × 总倍率（伤害型主动技只吃 0.5× 总倍率，gdd §3.1）
+    const damage =
+      (cfg.dashDamage ?? 0) * (cfg.damageMultFactor ?? 0.5) * this.player.stats.totalDamageMultiplier;
+    const enemies: Enemy[] = [];
+    this.enemyPool.eachActive((e) => enemies.push(e));
+    damageAndMarkDash(
+      enemies as unknown as DashEnemyLike[],
+      from,
+      { x: this.player.x, y: this.player.y },
+      PLAYER.RADIUS,
+      damage,
+      cfg.markDuration ?? 0,
+      cfg.markDamageMult ?? 1,
+      now,
+    );
+    if (this.dash.remaining <= 0) this.dash = null; // 冲刺结束；输入向量由 player.update 每帧读 inputSource 天然保留
+  }
+
+  /** E4-S2 安魂曲：300px 内减速 40%（4s）+ 回复 20% 最大生命（gdd §3.2） */
+  private applyRequiem(now: number): void {
+    const cfg = ACTIVE_SKILLS.hero_violet;
+    const enemies: Enemy[] = [];
+    this.enemyPool.eachActive((e) => enemies.push(e));
+    applySlowInRadius(
+      enemies,
+      { x: this.player.x, y: this.player.y },
+      cfg.radius ?? 300,
+      cfg.slowDuration ?? 0,
+      cfg.slowPct ?? 0,
+      now,
+    );
+    healFractionOfMax(this.player.stats, cfg.healPct ?? 0);
+    GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+  }
+
+  /** E4-S2 血月狂化：8s 移速 +30% / 倍率 +0.40 / 接触光环 / 击杀回 1 HP（gdd §3.2） */
+  private applyRage(now: number): void {
+    const cfg = ACTIVE_SKILLS.hero_galvan;
+    this.rage.apply(now, cfg.duration ?? 8);
+    this.player.stats.setRageBonus(rageMultiplierAdd()); // 加法叠加 +0.40（口径 1）
+    this.player.stats.rageSpeedPct = rageMoveSpeedPct(); // 移速 +30%
+  }
+
+  /** E4-S2 血月狂化：buff 生效/失效同步 + 接触光环 tick（不打断移动；死亡清除见 finishGame） */
+  private updateRage(dt: number, now: number): void {
+    const active = this.rage.active(now);
+    const stats = this.player.stats;
+    if (active && stats.rageBonusMultiplier === 0) {
+      stats.setRageBonus(rageMultiplierAdd());
+      stats.rageSpeedPct = rageMoveSpeedPct();
+    } else if (!active && stats.rageBonusMultiplier !== 0) {
+      stats.setRageBonus(0);
+      stats.rageSpeedPct = 0;
+    }
+    if (!active) return;
+    // 接触光环：接触半径内任一敌人在场即全额 tick，不按敌数叠加（25 伤/s × 0.5× 总倍率，口径 3）
+    const enemies: Enemy[] = [];
+    this.enemyPool.eachActive((e) => enemies.push(e));
+    contactAuraTick(
+      enemies,
+      { x: this.player.x, y: this.player.y },
+      ACTIVE_SKILL_RULES.CONTACT_AURA_RADIUS,
+      dt,
+      ACTIVE_SKILL_RULES.CONTACT_AURA_FLAT_DPS,
+      0.5 * stats.totalDamageMultiplier,
+    );
+  }
+
+  /** 提灯闪耀效果结算：240px 内敌人眩晕 2.5s + 自身无敌 1.5s（content §2.2）；返回被眩晕数 */
+  private applyLanternFlash(now: number): number {
+    const enemies: Enemy[] = [];
+    this.enemyPool.eachActive((e) => enemies.push(e));
+    const stunned = stunEnemiesInRadius(
+      enemies,
+      { x: this.player.x, y: this.player.y },
+      ACTIVE_SKILL.RADIUS,
+      ACTIVE_SKILL.STUN_DURATION,
+      now,
+    );
+    this.player.grantInvulnerability(ACTIVE_SKILL.INVULN_DURATION, now);
+    return stunned;
   }
 
   /**
@@ -469,9 +851,18 @@ export class PlayScene extends Phaser.Scene {
     this.player.stats.levelUp(); // E3-S2 自动成长（+8HP/+4%/每5级+4px/s）
     // E4-S1 HUD：升级回血（+8）后 HP 变化
     GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-    const options = rollThree(this.upgradeState, undefined, { forceWeaponFirst: this.firstUpgradeRoll });
-    this.firstUpgradeRoll = false; // 首级强制武器已消费（TASK-39 E2）
-    this.lastOptions = options;
+    // E4-S4：v2 池抽取（标签过滤 + 抽取规则 5 条 + 回退；M3-DESIGN-1 阶段权重 + 保底席位）
+    const v2Ctx: UpgradePoolV2Context = {
+      heroId: this.heroId,
+      ownedWeaponIds: [...this.ownedWeaponIds],
+      isEvolved: (w) => this.weaponSystem.evolution.isEvolved(w),
+      // M3-DESIGN-1 节奏：由局时秒驱动 STAGE_WEIGHT_MULT（upgrade-experience-v2 §2.2 / §4.2）
+      runTimeSeconds: this.spawner.elapsedSeconds,
+    };
+    const options = rollThreeV2(this.upgradeState, v2Ctx);
+    this.lastOptionsV2 = options;
+    // M3 真机埋点：一次三选一出现（offersPerRun + related 卡统计，upgrade-experience-v2 §4.4）
+    this.stats.recordUpgradeOffered(options);
     // E4-S1 升级时间戳埋点（后期升级间隔 / Lv47 预警数据源，供文策渊评审）
     this.stats.recordLevelUp(payload.level, this.spawner.elapsedSeconds);
     GameEvents.emit(GameEvent.UpgradeOffered, { options });
@@ -479,29 +870,108 @@ export class PlayScene extends Phaser.Scene {
     this.fx.levelUpBurst(this.player.x, this.player.y);
     if (this.isBench) {
       // 基准模式：自动选第 1 张，跳过 LEVEL_UP 暂停（保持 20× 时缩放连续）
-      this.onUpgradeChosen({ optionId: options[0]?.id ?? 10, index: 0, dwellSeconds: 0 });
+      const first = options[0];
+      this.onUpgradeChosen({ optionId: first?.upgradeId ?? first?.evoId ?? 'up_g_1', index: 0, dwellSeconds: 0 });
       return;
     }
-    this.overlay.show(options);
+    this.overlay.showV2(options);
     this.state.set(GamePhase.LEVEL_UP); // 世界冻结（applyPhase）
   }
 
   /** 三选一完成 → 写回 → 回 RUNNING（CM §3.3）；有挂起升级则链式再升 */
   private onUpgradeChosen(args: unknown): void {
     const payload = args as UpgradeChosenPayload;
-    const item = UPGRADE_BY_ID[payload.optionId];
-    applyUpgrade(this.upgradeState, this.upgradeTargets, payload.optionId);
-    this.upgradeState.lastPickId = payload.optionId; // 抽取权重 ×0.5（upgrade-pool §③）
-    // E4-S1 埋点：Build 记录 + 纠结时刻（停留>3s 或选项强度接近）
-    if (item) this.stats.recordUpgradeChosen(payload.optionId, item.name, this.spawner.elapsedSeconds);
-    this.stats.recordHesitation(payload.dwellSeconds ?? 0, this.lastOptions);
-    // E4-S1 HUD：武器解锁（1=守夜之环 / 2=月蚀脉冲）
-    if (payload.optionId === 1 || payload.optionId === 2) {
-      GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: payload.optionId, name: item?.name ?? '' });
+    if (typeof payload.optionId === 'string') {
+      // E4-S4：v2 池（内容 ID 字符串）
+      const optionId = payload.optionId;
+      if (optionId.startsWith('evo_')) {
+        // 超武进化卡：消费 WeaponSystem.evolve（不可逆；E2-S6 引擎已就绪）
+        const evo = EVOLUTIONS.find((e) => e.evoId === optionId);
+        if (evo && this.weaponSystem.evolve(evo.wpnId, this, this.cfg)) {
+          if (this.codex.recordEvolve(evo.evoId)) this.codexToastPending = true; // E4-S6 图鉴：首进化幂等
+          GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: evo.evoId, name: evo.name });
+          // M3 真机埋点：一次进化完成（evolutionComplete 数据源，upgrade-experience-v2 §4.4）
+          this.stats.recordEvolutionComplete();
+        }
+        this.upgradeState.lastPickId = optionId;
+        this.stats.recordHesitationV2(payload.dwellSeconds ?? 0, this.lastOptionsV2);
+      } else {
+        const upId = optionId as UpgradeId;
+        const result = applyUpgradeByIdV2(this.upgradeState, this.upgradeV2Targets, upId, {
+          ownedWeaponIds: [...this.ownedWeaponIds],
+          random: Math.random,
+        });
+        this.upgradeState.lastPickId = upId; // 抽取权重 ×0.5（gdd §3.6.4）
+        const item = poolItemById(upId);
+        if (item) this.stats.recordUpgradeChosen(0, item.name, this.spawner.elapsedSeconds);
+        this.stats.recordHesitationV2(payload.dwellSeconds ?? 0, this.lastOptionsV2);
+        // E4-S5 解锁变体：onWeaponUnlocked 已由 unlockWeapon 目标处理（unlockVariant 仅返回）
+        void result;
+        // E4-S1 HUD：武器解锁（全局 1/2 号兼容 + 解锁变体已由 onWeaponUnlocked emit）
+        if (item?.id === 'up_g_1') {
+          GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: 0, name: item.name });
+        }
+      }
+    } else {
+      // legacy 数字 id（兼容/基准回退；v2 流程不产生）
+      const item = UPGRADE_BY_ID[payload.optionId];
+      applyUpgrade(this.upgradeState, this.upgradeTargets, payload.optionId);
+      this.upgradeState.lastPickId = payload.optionId;
+      if (item) this.stats.recordUpgradeChosen(payload.optionId, item.name, this.spawner.elapsedSeconds);
+      this.stats.recordHesitation(payload.dwellSeconds ?? 0, this.lastOptions);
+      if (payload.optionId === 1 || payload.optionId === 2) {
+        GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: payload.optionId, name: item?.name ?? '' });
+      }
     }
     // E4-S1 HUD：升级写回后 HP 变化（如 maxHp+20 同时回 20）
     GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
     this.state.set(GamePhase.RUNNING); // 恢复世界（applyPhase + 输入向量归零）
+  }
+
+  /** E4-S5/E4-S6：武器解锁（v2 目标 unlockWeapon / 初始武器 / 进化超武） */
+  private onWeaponUnlocked(weaponId: string): void {
+    const wid = weaponId as WeaponId;
+    if (WEAPON_CONFIGS[wid]) {
+      this.weaponSystem.unlockWeapon(wid);
+      if (!this.ownedWeaponIds.includes(wid)) this.ownedWeaponIds.push(wid);
+      if (this.codex.recordObtain(wid)) this.codexToastPending = true; // E4-S6 图鉴：首获幂等
+      GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: wid, name: WEAPON_CONFIGS[wid].name });
+    } else {
+      // 超武（evo_*）：仅登记 owned（无行为注册表项；行为由 evolve 切换）
+      this.weaponSystem.unlockWeapon(wid as Parameters<WeaponSystem['unlockWeapon']>[0]);
+      GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: wid, name: wid });
+    }
+  }
+
+  /** E4-S3：主动技强化分支（up_a_* 12 项）—— 改写运行时配置 + 同步控制器 */
+  private onActiveSkillUpgrade(upgradeId: UpgradeId): void {
+    this.skillRuntime.applyUpgrade(upgradeId);
+    this.activeSkill.setCooldown(this.skillRuntime.cd);
+    this.activeSkill.setChargeInterval(this.skillRuntime.chargeInterval ?? 0);
+    if (this.cfg.isMobile) {
+      const cdTotal = this.skillRuntime.charges
+        ? (this.skillRuntime.chargeInterval ?? this.skillRuntime.cd)
+        : this.skillRuntime.cd;
+      this.hud.setSkillCooldown(this.activeSkill.cooldown, cdTotal);
+      this.hud.setSkillCharges(this.activeSkill.chargeCount);
+    }
+  }
+
+  /** E4-S7：功绩加成开局生效（纯局内模式关闭全部；数据层记录 applied 状态） */
+  private applyMeritToStats(merit: MeritAppliedResult): void {
+    if (merit.pureInGame || merit.applied.length === 0) return;
+    const stats = this.player.stats;
+    if (merit.maxHpDelta > 0) {
+      stats.maxHp += merit.maxHpDelta;
+      stats.hp += merit.maxHpDelta;
+    }
+    if (merit.damageMultDelta > 0) stats.addDamageBonus(merit.damageMultDelta); // 初始伤害 +5%
+    if (merit.moveSpeedDelta > 0) stats.moveSpeed += merit.moveSpeedDelta; // 初始移速 +4%
+    if (merit.magnetRadiusDelta > 0) {
+      stats.magnetRadiusBonus += merit.magnetRadiusDelta; // 初始磁力 +40px
+      this.xp.setMagnetRadiusBonus(stats.magnetRadiusBonus);
+    }
+    GameEvents.emit(GameEvent.HpChanged, { hp: stats.hp, maxHp: stats.maxHp });
   }
 
   /** 暂停切换（Esc/P/移动暂停键；LEVEL_UP 期不响应，CM §5） */
@@ -566,6 +1036,10 @@ export class PlayScene extends Phaser.Scene {
     this.unbindAudioEvents = null;
     AudioManager.getInstance().stopGameplay();
     this.pauseOverlay.destroy();
+    // M3 轻叙事：解绑事件订阅 + 销毁 DOM 覆盖层（配合 resetGameEvents 防泄漏）
+    this.unbindNarratives?.();
+    this.unbindNarratives = null;
+    this.narratives?.destroy();
     resetGameEvents(); // 防泄漏（ARCH §3.4 约定）
     this.inputSource.destroy();
     this.overlay.destroy();
@@ -599,7 +1073,7 @@ export class PlayScene extends Phaser.Scene {
     if (bullets > this.benchPeakBullets) this.benchPeakBullets = bullets;
   }
 
-  /** 60s 峰值压力结束：聚合断言数据 → window.__BENCH_RESULT__（TASK-28：draw call 模型含 ambient/粒子组） */
+  /** 36s 峰值压力结束：聚合断言数据 → window.__BENCH_RESULT__（TASK-28：draw call 模型含 ambient/粒子组） */
   private finishBench(): void {
     const charactersActive =
       this.benchPeakEnemies +
@@ -622,7 +1096,8 @@ export class PlayScene extends Phaser.Scene {
       peakActiveEnemies: this.benchPeakEnemies,
       peakActiveBullets: this.benchPeakBullets,
       drawCallEstimate,
-      simulatedGameSeconds: 1200,
+      // TASK-31 收尾：36 真实秒 × 20× 时缩放 = 720 局时秒（2 局；6:00 Boss 收束覆盖）
+      simulatedGameSeconds: 720,
     });
   }
 }
