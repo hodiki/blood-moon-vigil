@@ -29,6 +29,9 @@ import {
   evolutionTriggerForPowerTag,
   bossEnterTriggerFor,
   newWeaponTriggerForPowerTag,
+  SHOW_OPEN_BANNER,
+  prologueScreensForMap,
+  splitPrologueLines,
 } from '@/narratives/narratives';
 import {
   NarrativeDispatcher,
@@ -232,6 +235,60 @@ describe('narratives 文本表（narratives-spec v1.0 §2~§9）', () => {
     expect(weaponPowerTag('wpn_a_2' as WeaponId)).toBe('SILVER');
     expect(weaponPowerTag('wpn_b_1' as WeaponId)).toBe('HALLOWED');
     expect(weaponPowerTag('wpn_a_1' as WeaponId)).toBe('MOON');
+  });
+});
+
+describe('序章屏（narratives-spec §3：每屏 ≤3 句 / 通用 + 地图序章 / C-1 开关）', () => {
+  it('show_open_banner 开关存在且默认开启（spec §12 C-1：两处保留按开关控制是否双弹）', () => {
+    expect(SHOW_OPEN_BANNER).toBe(true);
+  });
+
+  it('序章屏序列 = 通用 1 屏 + 地图序章（按 mapId 选句 n_prologue_<mapId>）；每屏 ≤3 句', () => {
+    // 通用序章 1 屏 + 地图序章（graveyard/cathedral/den 各 1 屏）
+    expect(prologueScreensForMap('map_graveyard').map((e) => e.key)).toEqual([
+      'n_prologue_common',
+      'n_prologue_map_graveyard',
+    ]);
+    expect(prologueScreensForMap('map_cathedral').map((e) => e.key)).toEqual([
+      'n_prologue_common',
+      'n_prologue_map_cathedral',
+    ]);
+    expect(prologueScreensForMap('map_den').map((e) => e.key)).toEqual([
+      'n_prologue_common',
+      'n_prologue_map_den',
+    ]);
+    // 未知 mapId → 仅通用序章（表驱动静默跳过）
+    expect(prologueScreensForMap('map_unknown').map((e) => e.key)).toEqual(['n_prologue_common']);
+    // 每屏 ≤3 句（spec §3 P1-5 红线）
+    for (const mapId of ['map_graveyard', 'map_cathedral', 'map_den']) {
+      for (const e of prologueScreensForMap(mapId)) {
+        expect(splitPrologueLines(e.text).length).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+
+  it('序章句按行拆分（spec §3 移动单行描述口径）：通用 3 行 ≤13 字 / 地图 2 行 ≤14 字', () => {
+    // 通用序章：3 句 → 3 行（血月升起，/ 死者自墓中爬出。/ 今夜，守夜人独守月光。）
+    expect(splitPrologueLines('血月升起，死者自墓中爬出。今夜，守夜人独守月光。')).toEqual([
+      '血月升起，',
+      '死者自墓中爬出。',
+      '今夜，守夜人独守月光。',
+    ]);
+    // 月下墓地：2 句无逗号 → 2 行
+    expect(splitPrologueLines('封印的石冢在月光下渗血。亡者认得这条路——它们要回家。')).toEqual([
+      '封印的石冢在月光下渗血。',
+      '亡者认得这条路——它们要回家。',
+    ]);
+    // 血教堂：第二句 18 字含逗号 → 折 2 行（与「第二句 18 字折行」一致）
+    expect(splitPrologueLines('钟声早已停了。彩窗映着血月，圣坛上淌着不是圣水的东西。')).toEqual([
+      '钟声早已停了。',
+      '彩窗映着血月，',
+      '圣坛上淌着不是圣水的东西。',
+    ]);
+    // 每行 ≤14 字（移动单行上限；狼穴各 ≤11）
+    for (const line of splitPrologueLines('山脊上的狼嚎越过血月。它们嗅到了血的气味。')) {
+      expect(line.length).toBeLessThanOrEqual(14);
+    }
   });
 });
 

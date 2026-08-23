@@ -77,6 +77,8 @@ import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
 import { NarrativeDispatcher } from '@/narratives/narrative-dispatcher';
 import { DEFAULT_NARRATIVE_BINDINGS } from '@/narratives/narrative-bindings';
+import { SHOW_OPEN_BANNER, prologueScreensForMap } from '@/narratives/narratives';
+import { PrologueOverlay, createPrologueOverlay } from '@/ui/prologue-overlay';
 
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
@@ -169,6 +171,10 @@ export class PlayScene extends Phaser.Scene {
   private unbindNarratives: (() => void) | null = null;
   /** M3 图鉴 toast：局内首次解锁任一条目 → 同帧合并 emit 1 条（narratives-spec §6 n_toast_codex） */
   private codexToastPending = false;
+  /** M3 序章屏（narratives-spec §3）：点击开始后进入战斗前展示（PROLOGUE 态；通用 + 地图序章） */
+  private prologue!: PrologueOverlay;
+  /** M3 结算日志条：本局开局图鉴已解锁数（结算 delta = 局终 snapshot − 开局数，codex-ui-spec §6） */
+  private codexUnlockedAtStart = 0;
 
   // 冒烟自检状态
   private smokeStartedAt = 0;
@@ -207,10 +213,16 @@ export class PlayScene extends Phaser.Scene {
     this.saveData = loadSave(window.localStorage, this.cfg.isMobile ? 'mobile' : 'desktop');
     this.codex = new CodexTracker(this.saveData.codexUnlocked);
     this.pureInGame = this.saveData.pureInGame;
+    // M3 结算日志条：记录开局已解锁数（局终 delta = snapshot − 开局数，codex-ui-spec §6）
+    this.codexUnlockedAtStart = this.saveData.codexUnlocked.length;
 
-    this.state = new GameState();
+    // M3 序章屏：初始相位 PROLOGUE（世界冻结、不开始计时/生成器；update() RUNNING 短路保证）
+    this.state = new GameState(GamePhase.PROLOGUE);
     // 副作用唯一入口（ADR-003）：物理/Tween/输入冻结集中在 applyPhase
     this.state.onChange((phase) => this.applyPhase(phase));
+    // 初始相位副作用立即生效（PROLOGUE 冻结世界：物理/Tween/动画/输入；
+    // create 内 inputSource 尚未装配，applyPhase 内对未初始化依赖做守卫）
+    this.applyPhase(this.state.get());
 
     const mapCfg = MAP_CONFIGS[this.mapId];
     this.mapSystem = new MapSystem(
@@ -315,15 +327,30 @@ export class PlayScene extends Phaser.Scene {
     this.state.onChange((phase) => this.hud.setSkillVisible(phase === GamePhase.RUNNING));
     this.results = createResultsOverlay();
 
-    // M3 轻叙事：装配分发器 + 默认事件绑定 + 开局序章句（§5 开局 5s；文本表占位，M3-DESIGN-2 终稿替换）
+    // M3 轻叙事：装配分发器 + 默认事件绑定（spec §6/§7 局内触发）
     this.narratives = new NarrativeDispatcher({
       host: getOverlayHost(),
       isMobile: () => this.cfg.isMobile,
     });
     this.narratives.resetRunState();
     this.unbindNarratives = this.narratives.bind(GameEvents, DEFAULT_NARRATIVE_BINDINGS);
-    // M3 开局横幅（spec §3 开局 5s）：按当前地图选序章句（TRIGGER_SELECTORS map-open）
-    this.narratives.show('map-open', { mapId: this.mapId });
+    // M3 序章屏（spec §3）：通用序章（n_prologue_common）+ 地图序章（按 mapId 选句），
+    // 每屏 ≤3 句、固定 3s 自动进入、可点击跳过；初始 PROLOGUE 态 → 序章期间不开始计时/生成器
+    // （update() RUNNING 短路保证 elapsedSeconds 恒 0）。完成后 → RUNNING + 开局横幅（C-1 开关）。
+    this.prologue = createPrologueOverlay({ isMobile: () => this.cfg.isMobile });
+    const prologueScreens = prologueScreensForMap(this.mapId);
+    if (this.isSmoke || this.isBench || prologueScreens.length === 0) {
+      // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）/ 无序章句：
+      // 跳过序章直接进战斗（与既有开局横幅行为一致）
+      this.state.set(GamePhase.RUNNING);
+      if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
+    } else {
+      this.prologue.show(prologueScreens, () => {
+        this.state.set(GamePhase.RUNNING); // 序章完成 → 世界恢复（applyPhase RUNNING）
+        // 开局横幅（spec §3 开局 5s；C-1 show_open_banner 开关：与序章屏同文案时按开关控制是否双弹）
+        if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
+      });
+    }
 
     // Phase 6 音频：新一局 BGM 心跳重置回 60 + 事件接线（audio-bible §4）
     const audio = AudioManager.getInstance();
@@ -549,8 +576,9 @@ export class PlayScene extends Phaser.Scene {
     (globalThis as any).__BMV_LAST_RUN = result;
     // E4-S7 功绩结算：存活/击杀/通关/首杀/化身 → 累计到局外存档（纯局内模式仍结算点数，
     // 但加成不生效；gdd-codex §3.4 数据层记录）
+    let earned = 0;
     if (this.saveData) {
-      const earned = calculateMeritPoints({
+      earned = calculateMeritPoints({
         survivalSeconds: result.survivalSeconds,
         kills: result.kills,
         victory: result.victory,
@@ -562,11 +590,17 @@ export class PlayScene extends Phaser.Scene {
       this.saveData.codexUnlocked = this.codex.snapshot();
       writeSave(window.localStorage, this.saveData, this.cfg.isMobile ? 'mobile' : 'desktop');
     }
+    // M3 结算日志条：本局新解锁图鉴条数（codex-ui-spec §6「日志 +N」；snapshot − 开局数）
+    const codexUnlockedDelta = Math.max(0, this.codex.snapshot().length - this.codexUnlockedAtStart);
     this.state.set(GamePhase.GAMEOVER); // CM §5 联动
     // TASK-21 P1：game:over payload 增补 session 级累计重开次数（concept §9 重开率数据源）
+    // M3：增补功绩条/日志条数据（merit-ui-spec §7 / codex-ui-spec §6）
     GameEvents.emit(GameEvent.GameOver, {
       stats: result,
       sessionRestartCount: readRestartCount(window.localStorage),
+      meritEarned: earned,
+      meritTotal: this.saveData?.meritPoints ?? 0,
+      codexUnlockedDelta,
     });
   }
 
@@ -990,21 +1024,23 @@ export class PlayScene extends Phaser.Scene {
     this.scene.start('Boot'); // ux-spec §1：返回启动（重载 BootScene → Play）
   }
 
-  /** 状态副作用集中处理（ADR-003 / CM §5）；TASK-28：LEVEL_UP/PAUSED 同时暂停角色动画 */
+  /** 状态副作用集中处理（ADR-003 / CM §5）；TASK-28：LEVEL_UP/PAUSED 同时暂停角色动画；M3 序章 PROLOGUE 同冻结 */
   private applyPhase(phase: GamePhase): void {
     switch (phase) {
+      case GamePhase.PROLOGUE:
       case GamePhase.LEVEL_UP:
       case GamePhase.PAUSED:
         this.physics.pause();
         this.tweens.pauseAll();
         this.anims.pauseAll(); // TASK-28：动画随世界冻结
-        this.inputSource.setEnabled(false); // 冻结移动输入 + 摇杆隐藏（CM M10）
+        if (this.inputSource) this.inputSource.setEnabled(false); // 冻结移动输入 + 摇杆隐藏（create 早期未装配时守卫）
         break;
       case GamePhase.RUNNING:
         this.physics.resume();
         this.tweens.resumeAll();
         this.anims.resumeAll(); // TASK-28：恢复动画
-        this.inputSource.setEnabled(true); // 恢复；移动向量归零由适配器处理（ux-spec §3 ②④）
+        // 输入源默认 enabled=true；守卫防 create 早期同步转 RUNNING（smoke/bench 直接进战斗）时未装配
+        if (this.inputSource) this.inputSource.setEnabled(true); // 恢复；移动向量归零由适配器处理（ux-spec §3 ②④）
         break;
       case GamePhase.GAMEOVER:
         // 结算页由 ResultsOverlay 接管（E4-S4）；此处先冻结输入（ADR-003 / CM §5）
@@ -1040,6 +1076,7 @@ export class PlayScene extends Phaser.Scene {
     this.unbindNarratives?.();
     this.unbindNarratives = null;
     this.narratives?.destroy();
+    this.prologue?.destroy();
     resetGameEvents(); // 防泄漏（ARCH §3.4 约定）
     this.inputSource.destroy();
     this.overlay.destroy();

@@ -169,3 +169,31 @@ export function computeMeritApplication(
 export function meritMagnetBase(): number {
   return GEM.MAGNET_RADIUS;
 }
+
+/** 结算页功绩条进度（merit-ui-spec §7：距下个加成解锁还需 X 点 + 进度条） */
+export interface MeritProgressInfo {
+  /** 下个未解锁加成成本；全部解锁 → null */
+  nextCost: number | null;
+  /** 下个未解锁加成名称；全部解锁 → null */
+  nextName: string | null;
+  /** 距下个加成解锁还差点数；全部解锁 → 0 */
+  remaining: number;
+  /** 进度条填充比例 0..1（已解锁成本 → 下个成本区间内）；全部解锁 → 1 */
+  fraction: number;
+}
+
+/**
+ * 功绩累计进度（按成本升序取第一个未解锁加成）。
+ * fraction = (points - 上一个已解锁成本) / (下个成本 - 上一个成本)，clamp 0..1；
+ * 全部解锁 → nextCost null / remaining 0 / fraction 1（merit-ui-spec §7 进度条数据源）。
+ */
+export function meritProgress(points: number): MeritProgressInfo {
+  const sorted = [...MERIT_BONUSES].sort((a, b) => a.cost - b.cost);
+  const next = sorted.find((b) => points < b.cost);
+  if (!next) return { nextCost: null, nextName: null, remaining: 0, fraction: 1 };
+  let prevCost = 0;
+  for (const b of sorted) if (b.cost <= points) prevCost = Math.max(prevCost, b.cost);
+  const span = next.cost - prevCost;
+  const fraction = span <= 0 ? 1 : Math.min(1, Math.max(0, (points - prevCost) / span));
+  return { nextCost: next.cost, nextName: next.name, remaining: next.cost - points, fraction };
+}

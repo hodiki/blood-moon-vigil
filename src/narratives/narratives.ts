@@ -162,6 +162,13 @@ export const NP = {
 const MOBILE = { maxLineChars: 14, fontSize: 16 } as const;
 
 /**
+ * 开局横幅开关（narratives-spec §12 C-1 决策）：序章屏与开局横幅同文案（地图序章句展示 2 次）。
+ * 两处保留，由本开关控制是否双弹；真机若感重复则置 false 关闭开局横幅（防叠字/认知过载）。
+ * PlayScene 在序章完成后按本开关决定是否 `show('map-open')`（进入战斗 5s 内顶部渐隐）。
+ */
+export const SHOW_OPEN_BANNER = true;
+
+/**
  * 文本表 20 条（spec §9：台词 14 条表内 + 序章 4 + 结算 2；档案台词 16 条另计，
  * 文本条目合计 = 表内 20 + 角色台词 12 + Boss 击败 4 + 事件 6 = 42）。
  * durationSec 为 spec §1.2 权威值（与 spec 表逐条对齐）。
@@ -530,6 +537,56 @@ export function randomEntryForTrigger(
   const found = entries.filter((e) => e.trigger === trigger);
   if (found.length === 0) return null;
   return found[Math.min(found.length - 1, Math.floor(random() * found.length))]!;
+}
+
+// —— 序章屏（spec §3：每屏 ≤3 句；点击开始后进入战斗前展示）——
+
+/**
+ * 序章句按行拆分（spec §3 移动单行描述口径）。
+ * 规则：先按 。分句（保留句号）；句内按 ，再拆 —— 前置分句（逗号前内容）≥3 字时独立成行，
+ * 短时间状语（如「今夜，」2 字）保留与后句同行。复现 spec §3 逐条标注：
+ * - 通用序章 → 3 行（血月升起，/ 死者自墓中爬出。/ 今夜，守夜人独守月光。，每行 ≤13 ✔）
+ * - 月下墓地 → 2 行（无逗号）；狼穴 → 2 行（各 ≤11 ✔）
+ * - 血教堂 → 3 行（「第二句 18 字折行」= 彩窗映着血月，/ 圣坛上淌着不是圣水的东西。）
+ */
+export function splitPrologueLines(text: string): string[] {
+  const lines: string[] = [];
+  const sentences = text
+    .split(/(?<=。)/u)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  for (const sentence of sentences) {
+    const clauses = sentence
+      .split(/(?<=，)/u)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    if (clauses.length <= 1) {
+      lines.push(sentence);
+      continue;
+    }
+    const firstContent = clauses[0]!.replace(/[，。]/g, '');
+    if (firstContent.length >= 3) {
+      lines.push(...clauses);
+    } else {
+      // 短前置状语（如「今夜，」）与后句合并为一行（语义单元）
+      lines.push(clauses.join(''));
+    }
+  }
+  return lines;
+}
+
+/**
+ * 序章屏序列（spec §3）：通用序章 1 屏 + 地图序章（按 mapId 选句）。
+ * mapId 映射 key `n_prologue_<mapId>`（与 TRIGGER_SELECTORS map-open 同 key 规则）。
+ * 缺条目时静默跳过（表驱动；返回空数组 = 调用方直接进入战斗）。
+ */
+export function prologueScreensForMap(mapId: string): NarrativeText[] {
+  const screens: NarrativeText[] = [];
+  const common = entryByKey(NARRATIVES, 'n_prologue_common');
+  if (common) screens.push(common);
+  const mapEntry = entryByKey(NARRATIVES, `n_prologue_${mapId}`);
+  if (mapEntry) screens.push(mapEntry);
+  return screens;
 }
 
 // —— 时长口径（spec §1.2）——

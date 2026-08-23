@@ -16,6 +16,7 @@ import { getOverlayHost } from '@/ui/overlay-host';
 import { incrementRestartCount } from '@/stats/session-stats';
 import type { RunResult } from '@/stats/run-stats';
 import { NARRATIVES, entryByKey } from '@/narratives/narratives';
+import { meritProgress } from '@/stats/merit';
 
 const ROLL_DURATION_MS = 800;
 
@@ -29,11 +30,41 @@ export function resultTitle(victory: boolean): string {
   return entry?.text ?? (victory ? '封印稳固·守夜完成' : '守夜失败。');
 }
 
+// —— 结算奖励条纯函数（merit-ui-spec §7 / codex-ui-spec §6；可脱离 DOM 单测） ——
+
+/** 功绩条数值：本局获得功绩点数（N = calculateMeritPoints；merit-ui-spec §7「守夜功绩 +N」） */
+export function meritRewardText(earned: number): string {
+  return `+${Math.max(0, Math.floor(earned))}`;
+}
+
+/** 日志条数值：图鉴新增条数（codex-ui-spec §6「日志 +N」）；无新增 →「守夜日志已更新」 */
+export function codexLogRewardText(delta: number): string {
+  return delta > 0 ? `+${Math.max(0, Math.floor(delta))}` : '守夜日志已更新';
+}
+
+/** 功绩条进度文案（merit-ui-spec §7：距下个加成解锁还需 X 点；全部解锁 → 全部加成已解锁） */
+export function resultsMeritProgressText(points: number): string {
+  const p = meritProgress(points);
+  if (p.nextCost === null) return '全部加成已解锁';
+  return `距「${p.nextName}」还差 ${p.remaining} 点`;
+}
+
+/** 功绩条进度填充比例（0..1；结算页进度条 width） */
+export function resultsMeritProgressRatio(points: number): number {
+  return meritProgress(points).fraction;
+}
+
 /** game:over 事件 payload（PlayScene.finishGame 构造；TASK-21 P1 增补 sessionRestartCount） */
 export interface GameOverPayload {
   stats: RunResult;
   /** session 级累计「再来一局」次数（concept §9 重开率数据源） */
   sessionRestartCount?: number;
+  /** M3 结算功绩条：本局获得功绩点数（merit-ui-spec §7；N = calculateMeritPoints） */
+  meritEarned?: number;
+  /** M3 结算功绩条：累计功绩点数（写回存档后；进度条距下个加成解锁） */
+  meritTotal?: number;
+  /** M3 结算日志条：本局新解锁图鉴条数（codex-ui-spec §6；delta>0 显示「日志 +N」） */
+  codexUnlockedDelta?: number;
 }
 
 export class ResultsOverlay {
@@ -44,6 +75,11 @@ export class ResultsOverlay {
   private readonly levelEl: HTMLElement;
   private readonly buildEl: HTMLElement;
   private readonly telEls: Record<'offers' | 'xp' | 'evolution' | 'related' | 'boss', HTMLElement>;
+  /** M3 结算奖励条：守夜功绩 +N / 日志 +N / 功绩进度（merit-ui-spec §7 / codex-ui-spec §6） */
+  private readonly rewardMeritEl: HTMLElement;
+  private readonly rewardCodexEl: HTMLElement;
+  private readonly rewardProgressFill: HTMLElement;
+  private readonly rewardProgressTextEl: HTMLElement;
   private readonly handlers: Array<{ event: string; fn: (...args: unknown[]) => void }> = [];
   private rollRaf = 0;
 
@@ -60,6 +96,15 @@ export class ResultsOverlay {
           <div class="bmv-results-row"><span class="bmv-results-label">存活时间</span><span class="bmv-results-value" data-roll="time">0:00</span></div>
           <div class="bmv-results-row"><span class="bmv-results-label">击杀数</span><span class="bmv-results-value" data-roll="kills">0</span></div>
           <div class="bmv-results-row"><span class="bmv-results-label">等级</span><span class="bmv-results-value" data-roll="level">1</span></div>
+        </div>
+        <div class="bmv-results-rewards">
+          <div class="bmv-results-rewards-title">本局收获</div>
+          <div class="bmv-results-row"><span class="bmv-results-label">守夜功绩</span><span class="bmv-results-value" data-reward="merit">+0</span></div>
+          <div class="bmv-results-progress">
+            <div class="bmv-results-progress-track"><div class="bmv-results-progress-fill"></div></div>
+            <div class="bmv-results-progress-text"></div>
+          </div>
+          <div class="bmv-results-row"><span class="bmv-results-label">守夜日志</span><span class="bmv-results-value" data-reward="codex">守夜日志已更新</span></div>
         </div>
         <div class="bmv-results-telemetry">
           <div class="bmv-results-telemetry-title">真机遥测（M3）</div>
@@ -93,6 +138,10 @@ export class ResultsOverlay {
       related: this.root.querySelector('[data-tel="related"]') as HTMLElement,
       boss: this.root.querySelector('[data-tel="boss"]') as HTMLElement,
     };
+    this.rewardMeritEl = this.root.querySelector('[data-reward="merit"]') as HTMLElement;
+    this.rewardCodexEl = this.root.querySelector('[data-reward="codex"]') as HTMLElement;
+    this.rewardProgressFill = this.root.querySelector('.bmv-results-progress-fill') as HTMLElement;
+    this.rewardProgressTextEl = this.root.querySelector('.bmv-results-progress-text') as HTMLElement;
 
     const restartBtn = this.root.querySelector('.bmv-results-restart') as HTMLElement;
     const menuBtn = this.root.querySelector('.bmv-results-menu') as HTMLElement;
@@ -104,22 +153,35 @@ export class ResultsOverlay {
     menuBtn.addEventListener('click', () => GameEvents.emit(GameEvent.ToMenuRequested));
 
     const onGameOver = (payload: unknown): void => {
-      // 修正（E4-S4 遗留）：payload 实为 { stats, sessionRestartCount }，解构 stats 再渲染
+      // 修正（E4-S4 遗留）：payload 实为 { stats, sessionRestartCount, meritEarned, meritTotal, codexUnlockedDelta }，
+      // 解构 stats 再渲染；奖励条数据随 payload 传入（缺省 = 0/未更新，兼容旧调用方）
       const p = payload as GameOverPayload;
-      this.show(p.stats);
+      this.show(p.stats, p);
     };
     GameEvents.on(GameEvent.GameOver, onGameOver);
     this.handlers.push({ event: GameEvent.GameOver, fn: onGameOver });
   }
 
-  /** 展示结算（game:over 自动触发；也可由 PlayScene 直接调用） */
-  show(stats: RunResult): void {
+  /** 展示结算（game:over 自动触发；也可由 PlayScene 直接调用；extras 供 M3 奖励条） */
+  show(stats: RunResult, extras?: GameOverPayload): void {
     this.root.style.display = 'flex';
     // C-5：标题文案来源 narratives.ts（封印稳固·守夜完成 / 守夜失败。）
     this.titleEl.textContent = resultTitle(stats.victory);
     this.renderBuild(stats.build);
     this.renderTelemetry(stats);
+    this.renderRewards(extras);
     this.rollNumbers(stats);
+  }
+
+  /** M3 结算奖励条：守夜功绩 +N（本局）+ 进度（累计）/ 守夜日志 +N（本局新解锁） */
+  private renderRewards(extras?: GameOverPayload): void {
+    const meritEarned = extras?.meritEarned ?? 0;
+    const meritTotal = extras?.meritTotal ?? 0;
+    const codexDelta = extras?.codexUnlockedDelta ?? 0;
+    this.rewardMeritEl.textContent = meritRewardText(meritEarned);
+    this.rewardCodexEl.textContent = codexLogRewardText(codexDelta);
+    this.rewardProgressFill.style.width = `${Math.round(resultsMeritProgressRatio(meritTotal) * 100)}%`;
+    this.rewardProgressTextEl.textContent = resultsMeritProgressText(meritTotal);
   }
 
   /** M3 真机埋点：结算页静态展示 5 项遥测（upgrade-experience-v2 §4.4；真机验证直接读结算页） */
@@ -231,6 +293,29 @@ export class ResultsOverlay {
         font-size: 28px; color: #F2F5F9;
         padding: 6px 0;
       }
+      /* M3 结算奖励条（merit-ui-spec §7 / codex-ui-spec §6）：与统计行同布局，独立小节 */
+      .bmv-results-rewards {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .bmv-results-rewards-title {
+        font-size: 14px; font-weight: 700;
+        color: #54E6C9; margin-bottom: 4px;
+        letter-spacing: 1px;
+      }
+      .bmv-results-rewards .bmv-results-row { font-size: 22px; padding: 4px 0; }
+      .bmv-results-progress { margin: 2px 0 8px; }
+      .bmv-results-progress-track {
+        height: 8px; border-radius: 999px;
+        background: #0B0E14; border: 1px solid #2A3346;
+        overflow: hidden;
+      }
+      .bmv-results-progress-fill {
+        height: 100%; border-radius: 999px;
+        background: #54E6C9;
+        transition: width 0.3s ease-out;
+      }
+      .bmv-results-progress-text { margin-top: 3px; font-size: 13px; color: #A9B4C4; }
       .bmv-results-telemetry {
         width: 100%;
         margin-bottom: 16px;
@@ -300,6 +385,8 @@ export class ResultsOverlay {
         .bmv-results-panel { width: 92vw; max-width: 100%; max-height: 88vh; max-height: 88dvh; padding: 20px; }
         .bmv-results-title { font-size: 26px; }
         .bmv-results-row { font-size: 22px; }
+        .bmv-results-rewards .bmv-results-row { font-size: 18px; }
+        .bmv-results-progress-text { font-size: 14px; }
         .bmv-results-build-list { max-height: 220px; height: auto; }
         .bmv-results-restart { width: 100%; height: 64px; }
         .bmv-results-menu { width: 100%; height: 48px; }

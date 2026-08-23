@@ -8,7 +8,18 @@ describe('GameState 状态机（ARCH §3.1 / ADR-003 / CM §5）', () => {
     state = new GameState();
   });
 
-  it('初始为 RUNNING', () => {
+  it('初始为 RUNNING（无参构造保持既有语义）', () => {
+    expect(state.get()).toBe(GamePhase.RUNNING);
+  });
+
+  it('M3 序章：可指定初始 PROLOGUE（序章屏期间冻结世界，narratives-spec §3）', () => {
+    const prologue = new GameState(GamePhase.PROLOGUE);
+    expect(prologue.get()).toBe(GamePhase.PROLOGUE);
+    // PROLOGUE → RUNNING 合法（序章完成/跳过 → 进入战斗）
+    expect(prologue.set(GamePhase.RUNNING)).toBe(true);
+    expect(prologue.get()).toBe(GamePhase.RUNNING);
+    // RUNNING 不可回退 PROLOGUE（序章仅开局一次）
+    expect(state.set(GamePhase.PROLOGUE)).toBe(false);
     expect(state.get()).toBe(GamePhase.RUNNING);
   });
 
@@ -44,6 +55,11 @@ describe('GameState 状态机（ARCH §3.1 / ADR-003 / CM §5）', () => {
   });
 
   it('canTransition 纯函数矩阵与 CM §5 联动表一致', () => {
+    // M3 序章：PROLOGUE → RUNNING；RUNNING 不可回退 PROLOGUE
+    expect(canTransition(GamePhase.PROLOGUE, GamePhase.RUNNING)).toBe(true);
+    expect(canTransition(GamePhase.PROLOGUE, GamePhase.PAUSED)).toBe(false);
+    expect(canTransition(GamePhase.PROLOGUE, GamePhase.GAMEOVER)).toBe(false);
+    expect(canTransition(GamePhase.RUNNING, GamePhase.PROLOGUE)).toBe(false);
     expect(canTransition(GamePhase.RUNNING, GamePhase.LEVEL_UP)).toBe(true);
     expect(canTransition(GamePhase.RUNNING, GamePhase.PAUSED)).toBe(true);
     expect(canTransition(GamePhase.RUNNING, GamePhase.GAMEOVER)).toBe(true);

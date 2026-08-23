@@ -9,6 +9,7 @@ import {
   canEquipMerit,
   toggleMeritEquipped,
   computeMeritApplication,
+  meritProgress,
 } from '@/stats/merit';
 import { HEROES } from '@/config/balance';
 
@@ -91,5 +92,50 @@ describe('E4-S7 功绩加成 4（≤10% 红线 + 同时最多装 2）', () => {
   it('移速加成按角色基线：血猎手 245 × 4% = 9.8', () => {
     const app = computeMeritApplication(['merit_speed'], false, HEROES.hero_cassandra);
     expect(app.moveSpeedDelta).toBeCloseTo(245 * 0.04, 6);
+  });
+});
+
+describe('E4-S7 功绩累计进度（merit-ui-spec §7 结算页进度条数据源）', () => {
+  it('按成本升序取第一个未解锁加成（成本 20/30/40/30 → 升序 20/30/30/40）', () => {
+    // 0 点：下个 = 20（初始 +20 HP），还差 20
+    const p0 = meritProgress(0);
+    expect(p0.nextCost).toBe(20);
+    expect(p0.nextName).toBe('初始 +20 HP');
+    expect(p0.remaining).toBe(20);
+    // 15 点：还差 5
+    expect(meritProgress(15).remaining).toBe(5);
+    // 20 点：已解锁 hp，下个 = 30（dmg 或 speed，成本同为 30）
+    const p20 = meritProgress(20);
+    expect(p20.nextCost).toBe(30);
+    expect(p20.remaining).toBe(10);
+    // 30 点：两个 30 成本加成均已解锁，下个 = 40（merit_magnet），还差 10
+    const p30 = meritProgress(30);
+    expect(p30.nextCost).toBe(40);
+    expect(p30.remaining).toBe(10);
+  });
+
+  it('全部解锁（≥120）→ nextCost null / remaining 0 / fraction 1', () => {
+    const p = meritProgress(120);
+    expect(p.nextCost).toBeNull();
+    expect(p.nextName).toBeNull();
+    expect(p.remaining).toBe(0);
+    expect(p.fraction).toBe(1);
+  });
+
+  it('进度填充比例 fraction：已解锁成本 → 下个成本区间内 0..1', () => {
+    // 0 点 → 区间 [0,20]：0
+    expect(meritProgress(0).fraction).toBe(0);
+    // 10 点 → 区间 [0,20]：0.5
+    expect(meritProgress(10).fraction).toBe(0.5);
+    // 20 点 → 区间 [20,30]：0
+    expect(meritProgress(20).fraction).toBe(0);
+    // 25 点 → 区间 [20,30]：0.5
+    expect(meritProgress(25).fraction).toBe(0.5);
+    // 30 点 → 两个 30 成本解锁，区间 [30,40]：0
+    expect(meritProgress(30).fraction).toBe(0);
+    // 35 点 → 区间 [30,40]：0.5
+    expect(meritProgress(35).fraction).toBe(0.5);
+    // 全部解锁 → 1
+    expect(meritProgress(120).fraction).toBe(1);
   });
 });
