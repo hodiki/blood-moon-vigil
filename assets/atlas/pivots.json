@@ -1,0 +1,237 @@
+{
+  "note": "脚底归一化原点。不要写入 TexturePacker frames[].pivot（Phaser 会自动 setOrigin）。引擎接入时与碰撞圆心做 offset。",
+  "pivots": {
+    "enemy-gravekeeper-v": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-gravekeeper": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "player-v": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "tile-grave-soil": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "player-skill-a": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player-skill-b": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "boss-cardinal-entrance": {
+      "x": 0.5,
+      "y": 0.9473
+    },
+    "boss-cardinal-v": {
+      "x": 0.5,
+      "y": 0.9473
+    },
+    "boss-cardinal": {
+      "x": 0.5,
+      "y": 0.9473
+    },
+    "boss-fenrir-entrance": {
+      "x": 0.5,
+      "y": 0.9473
+    },
+    "boss-fenrir-v": {
+      "x": 0.5,
+      "y": 0.9473
+    },
+    "boss-fenrir": {
+      "x": 0.5,
+      "y": 0.9473
+    },
+    "boss-moonavatar-entrance": {
+      "x": 0.5,
+      "y": 0.9434
+    },
+    "boss-moonavatar-v": {
+      "x": 0.5,
+      "y": 0.9434
+    },
+    "boss-moonavatar": {
+      "x": 0.5,
+      "y": 0.9434
+    },
+    "enemy-acolyte-v": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-acolyte": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-bat-v": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-bat": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-beetle-v": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-beetle": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-boss-v": {
+      "x": 0.5,
+      "y": 0.9479
+    },
+    "enemy-boss": {
+      "x": 0.5,
+      "y": 0.9479
+    },
+    "enemy-cupbearer-v": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "enemy-cupbearer": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "enemy-fleshmass-v": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-fleshmass": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-greywolf-v": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-greywolf": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-hound-v": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "enemy-hound": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "enemy-necro-v": {
+      "x": 0.5,
+      "y": 0.9338
+    },
+    "enemy-necro": {
+      "x": 0.5,
+      "y": 0.9338
+    },
+    "enemy-penitent-v": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-penitent": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-shadowwolf-v": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "enemy-shadowwolf": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "enemy-stonewolf-v": {
+      "x": 0.5,
+      "y": 0.9323
+    },
+    "enemy-stonewolf": {
+      "x": 0.5,
+      "y": 0.9323
+    },
+    "enemy-wolfhunter-v": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "enemy-wolfhunter": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "enemy-wraith-v": {
+      "x": 0.5,
+      "y": 0.9196
+    },
+    "enemy-wraith": {
+      "x": 0.5,
+      "y": 0.9196
+    },
+    "enemy-zombie-v": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "enemy-zombie": {
+      "x": 0.5,
+      "y": 0.9375
+    },
+    "hero-cassandra-skill-a": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-skill-b": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-v": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-galvan-skill-a": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-galvan-skill-b": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-galvan-v": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-galvan": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-violet-skill-a": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "hero-violet-skill-b": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "hero-violet-v": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "hero-violet": {
+      "x": 0.5,
+      "y": 0.9141
+    }
+  }
+}

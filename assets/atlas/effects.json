@@ -1,0 +1,42 @@
+{
+  "frames": [
+    {
+      "filename": "tile-grave-soil",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    }
+  ],
+  "meta": {
+    "app": "bmv-asset-pipeline",
+    "version": "1.1",
+    "image": "effects.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 256,
+      "h": 256
+    },
+    "scale": 1,
+    "framePivots": {
+      "tile-grave-soil": {
+        "x": 0.5,
+        "y": 0.9922
+      }
+    }
+  }
+}

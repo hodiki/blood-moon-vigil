@@ -1,0 +1,1442 @@
+{
+  "frames": [
+    {
+      "filename": "boss-cardinal-entrance",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-cardinal-v",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-cardinal",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-fenrir-entrance",
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-fenrir-v",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-fenrir",
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-moonavatar-entrance",
+      "frame": {
+        "x": 512,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-moonavatar-v",
+      "frame": {
+        "x": 768,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-moonavatar",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "enemy-boss-v",
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 240,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 240,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 240,
+        "h": 240
+      }
+    },
+    {
+      "filename": "enemy-boss",
+      "frame": {
+        "x": 496,
+        "y": 512,
+        "w": 240,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 240,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 240,
+        "h": 240
+      }
+    },
+    {
+      "filename": "enemy-fleshmass-v",
+      "frame": {
+        "x": 736,
+        "y": 512,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-fleshmass",
+      "frame": {
+        "x": 832,
+        "y": 512,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-gravekeeper-v",
+      "frame": {
+        "x": 928,
+        "y": 512,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-gravekeeper",
+      "frame": {
+        "x": 0,
+        "y": 768,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-stonewolf-v",
+      "frame": {
+        "x": 96,
+        "y": 768,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-stonewolf",
+      "frame": {
+        "x": 192,
+        "y": 768,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-necro-v",
+      "frame": {
+        "x": 288,
+        "y": 768,
+        "w": 68,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 68,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 68,
+        "h": 68
+      }
+    },
+    {
+      "filename": "enemy-necro",
+      "frame": {
+        "x": 356,
+        "y": 768,
+        "w": 68,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 68,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 68,
+        "h": 68
+      }
+    },
+    {
+      "filename": "enemy-cupbearer-v",
+      "frame": {
+        "x": 424,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-cupbearer",
+      "frame": {
+        "x": 488,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-wolfhunter-v",
+      "frame": {
+        "x": 552,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-wolfhunter",
+      "frame": {
+        "x": 616,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-cassandra-skill-a",
+      "frame": {
+        "x": 680,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-cassandra-skill-b",
+      "frame": {
+        "x": 744,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-cassandra-v",
+      "frame": {
+        "x": 808,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-cassandra",
+      "frame": {
+        "x": 872,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-skill-a",
+      "frame": {
+        "x": 936,
+        "y": 768,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-skill-b",
+      "frame": {
+        "x": 0,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-v",
+      "frame": {
+        "x": 64,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan",
+      "frame": {
+        "x": 128,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-violet-skill-a",
+      "frame": {
+        "x": 192,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-violet-skill-b",
+      "frame": {
+        "x": 256,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-violet-v",
+      "frame": {
+        "x": 320,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-violet",
+      "frame": {
+        "x": 384,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-skill-a",
+      "frame": {
+        "x": 448,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-skill-b",
+      "frame": {
+        "x": 512,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-v",
+      "frame": {
+        "x": 576,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player",
+      "frame": {
+        "x": 640,
+        "y": 864,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-acolyte-v",
+      "frame": {
+        "x": 704,
+        "y": 864,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-acolyte",
+      "frame": {
+        "x": 760,
+        "y": 864,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-greywolf-v",
+      "frame": {
+        "x": 816,
+        "y": 864,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-greywolf",
+      "frame": {
+        "x": 872,
+        "y": 864,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-penitent-v",
+      "frame": {
+        "x": 928,
+        "y": 864,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-penitent",
+      "frame": {
+        "x": 0,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-wraith-v",
+      "frame": {
+        "x": 56,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-wraith",
+      "frame": {
+        "x": 112,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-zombie-v",
+      "frame": {
+        "x": 168,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-zombie",
+      "frame": {
+        "x": 224,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-hound-v",
+      "frame": {
+        "x": 280,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-hound",
+      "frame": {
+        "x": 328,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-shadowwolf-v",
+      "frame": {
+        "x": 376,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-shadowwolf",
+      "frame": {
+        "x": 424,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-bat-v",
+      "frame": {
+        "x": 984,
+        "y": 864,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "enemy-bat",
+      "frame": {
+        "x": 472,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "enemy-beetle-v",
+      "frame": {
+        "x": 512,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "enemy-beetle",
+      "frame": {
+        "x": 552,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    }
+  ],
+  "meta": {
+    "app": "bmv-asset-pipeline",
+    "version": "1.1",
+    "image": "characters.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1024,
+      "h": 1024
+    },
+    "scale": 1,
+    "framePivots": {
+      "boss-cardinal-entrance": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-cardinal-v": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-cardinal": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-fenrir-entrance": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-fenrir-v": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-fenrir": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-moonavatar-entrance": {
+        "x": 0.5,
+        "y": 0.9434
+      },
+      "boss-moonavatar-v": {
+        "x": 0.5,
+        "y": 0.9434
+      },
+      "boss-moonavatar": {
+        "x": 0.5,
+        "y": 0.9434
+      },
+      "enemy-boss-v": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "enemy-boss": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "enemy-fleshmass-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-fleshmass": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-gravekeeper-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-gravekeeper": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-stonewolf-v": {
+        "x": 0.5,
+        "y": 0.9323
+      },
+      "enemy-stonewolf": {
+        "x": 0.5,
+        "y": 0.9323
+      },
+      "enemy-necro-v": {
+        "x": 0.5,
+        "y": 0.9338
+      },
+      "enemy-necro": {
+        "x": 0.5,
+        "y": 0.9338
+      },
+      "enemy-cupbearer-v": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "enemy-cupbearer": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "enemy-wolfhunter-v": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "enemy-wolfhunter": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-cassandra-skill-a": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-cassandra-skill-b": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-cassandra-v": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-cassandra": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-galvan-skill-a": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-galvan-skill-b": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-galvan-v": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-galvan": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-violet-skill-a": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "hero-violet-skill-b": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "hero-violet-v": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "hero-violet": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "player-skill-a": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-skill-b": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-v": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "enemy-acolyte-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-acolyte": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-greywolf-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-greywolf": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-penitent-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-penitent": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-wraith-v": {
+        "x": 0.5,
+        "y": 0.9196
+      },
+      "enemy-wraith": {
+        "x": 0.5,
+        "y": 0.9196
+      },
+      "enemy-zombie-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-zombie": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-hound-v": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-hound": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-shadowwolf-v": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-shadowwolf": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-bat-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-bat": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-beetle-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-beetle": {
+        "x": 0.5,
+        "y": 0.9375
+      }
+    }
+  }
+}

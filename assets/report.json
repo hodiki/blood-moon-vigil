@@ -1,0 +1,5813 @@
+{
+  "frames": {
+    "enemy-gravekeeper-v": {
+      "frameName": "enemy-gravekeeper-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "96x96",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "96x96",
+          "want": "96x96"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 2136
+        },
+        "margin": {
+          "ok": true,
+          "bw": 72,
+          "bh": 86,
+          "w": 96,
+          "h": 96,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "14.3",
+          "brightRatio": "0.1%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.69,
+          "dCx": 0.97,
+          "dCy": 1.39,
+          "dFoot": 0,
+          "dAreaPct": 5.7,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-gravekeeper-v.png",
+      "layout": {
+        "family": "enemy-gravekeeper",
+        "sharedScale": 0.10058479532163743,
+        "fillMax": {
+          "w": 86,
+          "h": 86
+        },
+        "crop": {
+          "left": 127,
+          "top": 74,
+          "width": 716,
+          "height": 855
+        },
+        "placed": {
+          "w": 72,
+          "h": 86,
+          "ox": 12,
+          "oy": 5
+        }
+      },
+      "metrics": {
+        "minX": 12,
+        "minY": 5,
+        "maxX": 83,
+        "maxY": 90,
+        "bw": 72,
+        "bh": 86,
+        "cx": 52.32,
+        "cy": 49.56,
+        "footY": 90,
+        "topY": 5,
+        "n": 2136
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "updatedAt": "2026-08-25T15:13:18.525Z"
+    },
+    "enemy-gravekeeper": {
+      "frameName": "enemy-gravekeeper",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "96x96",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "96x96",
+          "want": "96x96"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 2021
+        },
+        "margin": {
+          "ok": true,
+          "bw": 69,
+          "bh": 82,
+          "w": 96,
+          "h": 96,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "15.7",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-gravekeeper.png",
+      "layout": {
+        "family": "enemy-gravekeeper",
+        "sharedScale": 0.10058479532163743,
+        "fillMax": {
+          "w": 86,
+          "h": 86
+        },
+        "crop": {
+          "left": 131,
+          "top": 91,
+          "width": 686,
+          "height": 814
+        },
+        "placed": {
+          "w": 69,
+          "h": 82,
+          "ox": 13,
+          "oy": 9
+        }
+      },
+      "metrics": {
+        "minX": 13,
+        "minY": 9,
+        "maxX": 81,
+        "maxY": 90,
+        "bw": 69,
+        "bh": 82,
+        "cx": 53.29,
+        "cy": 50.95,
+        "footY": 90,
+        "topY": 9,
+        "n": 2021
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "updatedAt": "2026-08-25T15:13:18.530Z"
+    },
+    "player-v": {
+      "frameName": "player-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 723
+        },
+        "margin": {
+          "ok": true,
+          "bw": 31,
+          "bh": 54,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "41.8",
+          "brightRatio": "24.5%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 1.91,
+          "dCx": 1.8,
+          "dCy": 0.65,
+          "dFoot": 0,
+          "dAreaPct": 0,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-v.png",
+      "layout": {
+        "family": "player",
+        "sharedScale": 0.05907172995780591,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 205,
+          "top": 54,
+          "width": 559,
+          "height": 920
+        },
+        "placed": {
+          "w": 33,
+          "h": 54,
+          "ox": 15,
+          "oy": 6
+        }
+      },
+      "metrics": {
+        "minX": 16,
+        "minY": 6,
+        "maxX": 46,
+        "maxY": 59,
+        "bw": 31,
+        "bh": 54,
+        "cx": 31.91,
+        "cy": 34.11,
+        "footY": 59,
+        "topY": 6,
+        "n": 723
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.601Z"
+    },
+    "player": {
+      "frameName": "player",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 723
+        },
+        "margin": {
+          "ok": true,
+          "bw": 31,
+          "bh": 53,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "43.0",
+          "brightRatio": "26.1%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player.png",
+      "layout": {
+        "family": "player",
+        "sharedScale": 0.05907172995780591,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 198,
+          "top": 62,
+          "width": 556,
+          "height": 917
+        },
+        "placed": {
+          "w": 33,
+          "h": 54,
+          "ox": 16,
+          "oy": 6
+        }
+      },
+      "metrics": {
+        "minX": 17,
+        "minY": 7,
+        "maxX": 47,
+        "maxY": 59,
+        "bw": 31,
+        "bh": 53,
+        "cx": 33.71,
+        "cy": 34.76,
+        "footY": 59,
+        "topY": 7,
+        "n": 723
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.603Z"
+    },
+    "tile-grave-soil": {
+      "frameName": "tile-grave-soil",
+      "ok": true,
+      "atlas": "effects",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 4096
+        },
+        "margin": {
+          "ok": true,
+          "note": "全幅贴图类帧跳过安全边距"
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "note": "背景类帧跳过剪影 L* 断言"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\tile-grave-soil.png",
+      "layout": null,
+      "metrics": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 63,
+        "maxY": 63,
+        "bw": 64,
+        "bh": 64,
+        "cx": 31.5,
+        "cy": 31.5,
+        "footY": 63,
+        "topY": 0,
+        "n": 4096
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "updatedAt": "2026-08-25T15:13:18.604Z"
+    },
+    "player-skill-a": {
+      "frameName": "player-skill-a",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 702
+        },
+        "margin": {
+          "ok": true,
+          "bw": 37,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "37.5",
+          "brightRatio": "14.8%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 2.51,
+          "dCx": 2.25,
+          "dCy": 1.12,
+          "dFoot": 0,
+          "dAreaPct": 2.9,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-skill-a.png",
+      "layout": {
+        "family": "player",
+        "sharedScale": 0.05907172995780591,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 192,
+          "top": 15,
+          "width": 664,
+          "height": 948
+        },
+        "placed": {
+          "w": 39,
+          "h": 56,
+          "ox": 12,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 13,
+        "minY": 4,
+        "maxX": 49,
+        "maxY": 59,
+        "bw": 37,
+        "bh": 56,
+        "cx": 31.46,
+        "cy": 33.64,
+        "footY": 59,
+        "topY": 4,
+        "n": 702
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.596Z"
+    },
+    "player-skill-b": {
+      "frameName": "player-skill-b",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 691
+        },
+        "margin": {
+          "ok": true,
+          "bw": 39,
+          "bh": 51,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "40.4",
+          "brightRatio": "19.8%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 0.49,
+          "dCx": 0.28,
+          "dCy": 0.4,
+          "dFoot": 0,
+          "dAreaPct": 4.4,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-skill-b.png",
+      "layout": {
+        "family": "player",
+        "sharedScale": 0.05907172995780591,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 116,
+          "top": 71,
+          "width": 686,
+          "height": 869
+        },
+        "placed": {
+          "w": 41,
+          "h": 51,
+          "ox": 11,
+          "oy": 9
+        }
+      },
+      "metrics": {
+        "minX": 12,
+        "minY": 9,
+        "maxX": 50,
+        "maxY": 59,
+        "bw": 39,
+        "bh": 51,
+        "cx": 33.99,
+        "cy": 34.36,
+        "footY": 59,
+        "topY": 9,
+        "n": 691
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.598Z"
+    },
+    "boss-cardinal-entrance": {
+      "frameName": "boss-cardinal-entrance",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 16904
+        },
+        "margin": {
+          "ok": true,
+          "bw": 200,
+          "bh": 225,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "20.3",
+          "brightRatio": "0.7%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 11.07,
+          "dCx": 8.57,
+          "dCy": 7.01,
+          "dFoot": 0,
+          "dAreaPct": 5.3,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-cardinal-entrance.png",
+      "layout": {
+        "family": "boss-cardinal",
+        "sharedScale": 0.24008350730688935,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 101,
+          "top": 38,
+          "width": 831,
+          "height": 939
+        },
+        "placed": {
+          "w": 200,
+          "h": 225,
+          "ox": 28,
+          "oy": 18
+        }
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 18,
+        "maxX": 227,
+        "maxY": 242,
+        "bw": 200,
+        "bh": 225,
+        "cx": 125.34,
+        "cy": 156.82,
+        "footY": 242,
+        "topY": 18,
+        "n": 16904
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "updatedAt": "2026-08-25T15:13:18.376Z"
+    },
+    "boss-cardinal-v": {
+      "frameName": "boss-cardinal-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 15780
+        },
+        "margin": {
+          "ok": true,
+          "bw": 159,
+          "bh": 224,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "16.7",
+          "brightRatio": "0.6%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 7.23,
+          "dCx": 6.6,
+          "dCy": 2.94,
+          "dFoot": 0,
+          "dAreaPct": 1.7,
+          "ok": false,
+          "issues": [
+            "重心 hypot 7.2px > 4"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs boss-cardinal: 重心 hypot 7.2px > 4"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-cardinal-v.png",
+      "layout": {
+        "family": "boss-cardinal",
+        "sharedScale": 0.24008350730688935,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 194,
+          "top": 43,
+          "width": 665,
+          "height": 932
+        },
+        "placed": {
+          "w": 160,
+          "h": 224,
+          "ox": 48,
+          "oy": 19
+        }
+      },
+      "metrics": {
+        "minX": 48,
+        "minY": 19,
+        "maxX": 206,
+        "maxY": 242,
+        "bw": 159,
+        "bh": 224,
+        "cx": 123.37,
+        "cy": 152.75,
+        "footY": 242,
+        "topY": 19,
+        "n": 15780
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "updatedAt": "2026-08-25T15:13:18.392Z"
+    },
+    "boss-cardinal": {
+      "frameName": "boss-cardinal",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 16050
+        },
+        "margin": {
+          "ok": true,
+          "bw": 148,
+          "bh": 230,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "18.2",
+          "brightRatio": "0.8%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-cardinal.png",
+      "layout": {
+        "family": "boss-cardinal",
+        "sharedScale": 0.24008350730688935,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 223,
+          "top": 32,
+          "width": 620,
+          "height": 958
+        },
+        "placed": {
+          "w": 149,
+          "h": 230,
+          "ox": 53,
+          "oy": 13
+        }
+      },
+      "metrics": {
+        "minX": 54,
+        "minY": 13,
+        "maxX": 201,
+        "maxY": 242,
+        "bw": 148,
+        "bh": 230,
+        "cx": 116.77,
+        "cy": 149.81,
+        "footY": 242,
+        "topY": 13,
+        "n": 16050
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "updatedAt": "2026-08-25T15:13:18.407Z"
+    },
+    "boss-fenrir-entrance": {
+      "frameName": "boss-fenrir-entrance",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 13556
+        },
+        "margin": {
+          "ok": true,
+          "bw": 207,
+          "bh": 204,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "12.5",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 23.46,
+          "dCx": 7.78,
+          "dCy": 22.13,
+          "dFoot": 0,
+          "dAreaPct": 7.5,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-fenrir-entrance.png",
+      "layout": {
+        "family": "boss-fenrir",
+        "sharedScale": 0.24185068349106204,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 125,
+          "top": 75,
+          "width": 864,
+          "height": 849
+        },
+        "placed": {
+          "w": 209,
+          "h": 205,
+          "ox": 23,
+          "oy": 38
+        }
+      },
+      "metrics": {
+        "minX": 24,
+        "minY": 39,
+        "maxX": 230,
+        "maxY": 242,
+        "bw": 207,
+        "bh": 204,
+        "cx": 112.19,
+        "cy": 134.77,
+        "footY": 242,
+        "topY": 39,
+        "n": 13556
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "updatedAt": "2026-08-25T15:13:18.421Z"
+    },
+    "boss-fenrir-v": {
+      "frameName": "boss-fenrir-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 11970
+        },
+        "margin": {
+          "ok": true,
+          "bw": 213,
+          "bh": 199,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "13.8",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 12.19,
+          "dCx": 5.23,
+          "dCy": 11.01,
+          "dFoot": 1,
+          "dAreaPct": 18.4,
+          "ok": false,
+          "issues": [
+            "重心 hypot 12.2px > 4"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs boss-fenrir: 重心 hypot 12.2px > 4"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-fenrir-v.png",
+      "layout": {
+        "family": "boss-fenrir",
+        "sharedScale": 0.24185068349106204,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 80,
+          "top": 73,
+          "width": 885,
+          "height": 831
+        },
+        "placed": {
+          "w": 214,
+          "h": 201,
+          "ox": 21,
+          "oy": 42
+        }
+      },
+      "metrics": {
+        "minX": 22,
+        "minY": 43,
+        "maxX": 234,
+        "maxY": 241,
+        "bw": 213,
+        "bh": 199,
+        "cx": 125.2,
+        "cy": 145.89,
+        "footY": 241,
+        "topY": 43,
+        "n": 11970
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "updatedAt": "2026-08-25T15:13:18.433Z"
+    },
+    "boss-fenrir": {
+      "frameName": "boss-fenrir",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 14663
+        },
+        "margin": {
+          "ok": true,
+          "bw": 230,
+          "bh": 170,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "13.0",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-fenrir.png",
+      "layout": {
+        "family": "boss-fenrir",
+        "sharedScale": 0.24185068349106204,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 43,
+          "top": 175,
+          "width": 951,
+          "height": 703
+        },
+        "placed": {
+          "w": 230,
+          "h": 170,
+          "ox": 13,
+          "oy": 73
+        }
+      },
+      "metrics": {
+        "minX": 13,
+        "minY": 73,
+        "maxX": 242,
+        "maxY": 242,
+        "bw": 230,
+        "bh": 170,
+        "cx": 119.97,
+        "cy": 156.9,
+        "footY": 242,
+        "topY": 73,
+        "n": 14663
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "updatedAt": "2026-08-25T15:13:18.446Z"
+    },
+    "boss-moonavatar-entrance": {
+      "frameName": "boss-moonavatar-entrance",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 8727
+        },
+        "margin": {
+          "ok": true,
+          "bw": 111,
+          "bh": 224,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "58.2",
+          "brightRatio": "39.1%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 15.41,
+          "dCx": 1.47,
+          "dCy": 15.34,
+          "dFoot": 2,
+          "dAreaPct": 4.4,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-moonavatar-entrance.png",
+      "layout": {
+        "family": "boss-moonavatar",
+        "sharedScale": 0.28858218318695106,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 318,
+          "top": 139,
+          "width": 388,
+          "height": 786
+        },
+        "placed": {
+          "w": 112,
+          "h": 227,
+          "ox": 72,
+          "oy": 16
+        }
+      },
+      "metrics": {
+        "minX": 72,
+        "minY": 16,
+        "maxX": 182,
+        "maxY": 239,
+        "bw": 111,
+        "bh": 224,
+        "cx": 126.74,
+        "cy": 112.95,
+        "footY": 239,
+        "topY": 16,
+        "n": 8727
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9434
+      },
+      "updatedAt": "2026-08-25T15:13:18.456Z"
+    },
+    "boss-moonavatar-v": {
+      "frameName": "boss-moonavatar-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 9221
+        },
+        "margin": {
+          "ok": true,
+          "bw": 100,
+          "bh": 224,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "58.3",
+          "brightRatio": "45.2%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 11.03,
+          "dCx": 0.66,
+          "dCy": 11.01,
+          "dFoot": 1,
+          "dAreaPct": 1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 11.0px > 4",
+            "脚底 ΔY 1px > 0"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs boss-moonavatar: 重心 hypot 11.0px > 4",
+        "时间轴 vs boss-moonavatar: 脚底 ΔY 1px > 0"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-moonavatar-v.png",
+      "layout": {
+        "family": "boss-moonavatar",
+        "sharedScale": 0.28858218318695106,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 331,
+          "top": 106,
+          "width": 358,
+          "height": 797
+        },
+        "placed": {
+          "w": 103,
+          "h": 230,
+          "ox": 76,
+          "oy": 15
+        }
+      },
+      "metrics": {
+        "minX": 78,
+        "minY": 17,
+        "maxX": 177,
+        "maxY": 240,
+        "bw": 100,
+        "bh": 224,
+        "cx": 124.61,
+        "cy": 117.28,
+        "footY": 240,
+        "topY": 17,
+        "n": 9221
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9434
+      },
+      "updatedAt": "2026-08-25T15:13:18.464Z"
+    },
+    "boss-moonavatar": {
+      "frameName": "boss-moonavatar",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "256x256",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "256x256",
+          "want": "256x256"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 9126
+        },
+        "margin": {
+          "ok": true,
+          "bw": 96,
+          "bh": 209,
+          "w": 256,
+          "h": 256,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "61.5",
+          "brightRatio": "44.1%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\boss-moonavatar.png",
+      "layout": {
+        "family": "boss-moonavatar",
+        "sharedScale": 0.28858218318695106,
+        "fillMax": {
+          "w": 230,
+          "h": 230
+        },
+        "crop": {
+          "left": 341,
+          "top": 138,
+          "width": 342,
+          "height": 739
+        },
+        "placed": {
+          "w": 99,
+          "h": 213,
+          "ox": 78,
+          "oy": 32
+        }
+      },
+      "metrics": {
+        "minX": 79,
+        "minY": 33,
+        "maxX": 174,
+        "maxY": 241,
+        "bw": 96,
+        "bh": 209,
+        "cx": 125.27,
+        "cy": 128.29,
+        "footY": 241,
+        "topY": 33,
+        "n": 9126
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9434
+      },
+      "updatedAt": "2026-08-25T15:13:18.474Z"
+    },
+    "enemy-acolyte-v": {
+      "frameName": "enemy-acolyte-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 709
+        },
+        "margin": {
+          "ok": true,
+          "bw": 33,
+          "bh": 50,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "18.6",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.75,
+          "dCx": 0.1,
+          "dCy": 1.75,
+          "dFoot": 0,
+          "dAreaPct": 13.3,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-acolyte-v.png",
+      "layout": {
+        "family": "enemy-acolyte",
+        "sharedScale": 0.08431703204047218,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 297,
+          "top": 230,
+          "width": 407,
+          "height": 593
+        },
+        "placed": {
+          "w": 34,
+          "h": 50,
+          "ox": 11,
+          "oy": 3
+        }
+      },
+      "metrics": {
+        "minX": 12,
+        "minY": 3,
+        "maxX": 44,
+        "maxY": 52,
+        "bw": 33,
+        "bh": 50,
+        "cx": 29.88,
+        "cy": 27.54,
+        "footY": 52,
+        "topY": 3,
+        "n": 709
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.476Z"
+    },
+    "enemy-acolyte": {
+      "frameName": "enemy-acolyte",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 626
+        },
+        "margin": {
+          "ok": true,
+          "bw": 33,
+          "bh": 44,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "20.4",
+          "brightRatio": "0.2%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-acolyte.png",
+      "layout": {
+        "family": "enemy-acolyte",
+        "sharedScale": 0.08431703204047218,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 280,
+          "top": 260,
+          "width": 403,
+          "height": 521
+        },
+        "placed": {
+          "w": 34,
+          "h": 44,
+          "ox": 10,
+          "oy": 9
+        }
+      },
+      "metrics": {
+        "minX": 11,
+        "minY": 9,
+        "maxX": 43,
+        "maxY": 52,
+        "bw": 33,
+        "bh": 44,
+        "cx": 29.98,
+        "cy": 29.29,
+        "footY": 52,
+        "topY": 9,
+        "n": 626
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.479Z"
+    },
+    "enemy-bat-v": {
+      "frameName": "enemy-bat-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "40x40",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "40x40",
+          "want": "40x40"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 250
+        },
+        "margin": {
+          "ok": true,
+          "bw": 29,
+          "bh": 22,
+          "w": 40,
+          "h": 40,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "26.5",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 4.54,
+          "dCx": 2.3,
+          "dCy": 3.91,
+          "dFoot": 1,
+          "dAreaPct": 30,
+          "ok": false,
+          "issues": [
+            "重心 hypot 4.5px > 2",
+            "面积 Δ 30.0% > 15%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-bat: 重心 hypot 4.5px > 2",
+        "时间轴 vs enemy-bat: 面积 Δ 30.0% > 15%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-bat-v.png",
+      "layout": {
+        "family": "enemy-bat",
+        "sharedScale": 0.05157593123209169,
+        "fillMax": {
+          "w": 36,
+          "h": 36
+        },
+        "crop": {
+          "left": 239,
+          "top": 279,
+          "width": 561,
+          "height": 449
+        },
+        "placed": {
+          "w": 29,
+          "h": 23,
+          "ox": 5,
+          "oy": 15
+        }
+      },
+      "metrics": {
+        "minX": 5,
+        "minY": 15,
+        "maxX": 33,
+        "maxY": 36,
+        "bw": 29,
+        "bh": 22,
+        "cx": 19.67,
+        "cy": 25.9,
+        "footY": 36,
+        "topY": 15,
+        "n": 250
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.481Z"
+    },
+    "enemy-bat": {
+      "frameName": "enemy-bat",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "40x40",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "40x40",
+          "want": "40x40"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 357
+        },
+        "margin": {
+          "ok": true,
+          "bw": 33,
+          "bh": 33,
+          "w": 40,
+          "h": 40,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "27.0",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-bat.png",
+      "layout": {
+        "family": "enemy-bat",
+        "sharedScale": 0.05157593123209169,
+        "fillMax": {
+          "w": 36,
+          "h": 36
+        },
+        "crop": {
+          "left": 145,
+          "top": 105,
+          "width": 698,
+          "height": 642
+        },
+        "placed": {
+          "w": 36,
+          "h": 33,
+          "ox": 2,
+          "oy": 5
+        }
+      },
+      "metrics": {
+        "minX": 4,
+        "minY": 5,
+        "maxX": 36,
+        "maxY": 37,
+        "bw": 33,
+        "bh": 33,
+        "cx": 21.97,
+        "cy": 21.99,
+        "footY": 37,
+        "topY": 5,
+        "n": 357
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.482Z"
+    },
+    "enemy-beetle-v": {
+      "frameName": "enemy-beetle-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "40x40",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "40x40",
+          "want": "40x40"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 353
+        },
+        "margin": {
+          "ok": true,
+          "bw": 29,
+          "bh": 23,
+          "w": 40,
+          "h": 40,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "22.0",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.37,
+          "dCx": 0.05,
+          "dCy": 1.37,
+          "dFoot": 0,
+          "dAreaPct": 6.4,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-beetle-v.png",
+      "layout": {
+        "family": "enemy-beetle",
+        "sharedScale": 0.05240174672489083,
+        "fillMax": {
+          "w": 36,
+          "h": 36
+        },
+        "crop": {
+          "left": 187,
+          "top": 283,
+          "width": 581,
+          "height": 462
+        },
+        "placed": {
+          "w": 30,
+          "h": 24,
+          "ox": 4,
+          "oy": 15
+        }
+      },
+      "metrics": {
+        "minX": 5,
+        "minY": 15,
+        "maxX": 33,
+        "maxY": 37,
+        "bw": 29,
+        "bh": 23,
+        "cx": 19.99,
+        "cy": 24.9,
+        "footY": 37,
+        "topY": 15,
+        "n": 353
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.484Z"
+    },
+    "enemy-beetle": {
+      "frameName": "enemy-beetle",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "40x40",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "40x40",
+          "want": "40x40"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 377
+        },
+        "margin": {
+          "ok": true,
+          "bw": 34,
+          "bh": 25,
+          "w": 40,
+          "h": 40,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "19.6",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-beetle.png",
+      "layout": {
+        "family": "enemy-beetle",
+        "sharedScale": 0.05240174672489083,
+        "fillMax": {
+          "w": 36,
+          "h": 36
+        },
+        "crop": {
+          "left": 163,
+          "top": 258,
+          "width": 687,
+          "height": 492
+        },
+        "placed": {
+          "w": 36,
+          "h": 26,
+          "ox": 2,
+          "oy": 13
+        }
+      },
+      "metrics": {
+        "minX": 3,
+        "minY": 13,
+        "maxX": 36,
+        "maxY": 37,
+        "bw": 34,
+        "bh": 25,
+        "cx": 20.04,
+        "cy": 23.53,
+        "footY": 37,
+        "topY": 13,
+        "n": 377
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.486Z"
+    },
+    "enemy-boss-v": {
+      "frameName": "enemy-boss-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "240x240",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "240x240",
+          "want": "240x240"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 8706
+        },
+        "margin": {
+          "ok": true,
+          "bw": 118,
+          "bh": 213,
+          "w": 240,
+          "h": 240,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "12.4",
+          "brightRatio": "0.3%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        },
+        "temporal": {
+          "hypot": 6.89,
+          "dCx": 2.33,
+          "dCy": 6.48,
+          "dFoot": 0,
+          "dAreaPct": 5.6,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.9px > 4"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-boss: 重心 hypot 6.9px > 4"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-boss-v.png",
+      "layout": {
+        "family": "enemy-boss",
+        "sharedScale": 0.22832980972515857,
+        "fillMax": {
+          "w": 216,
+          "h": 216
+        },
+        "crop": {
+          "left": 256,
+          "top": 49,
+          "width": 526,
+          "height": 931
+        },
+        "placed": {
+          "w": 120,
+          "h": 213,
+          "ox": 60,
+          "oy": 15
+        }
+      },
+      "metrics": {
+        "minX": 60,
+        "minY": 15,
+        "maxX": 177,
+        "maxY": 227,
+        "bw": 118,
+        "bh": 213,
+        "cx": 120.33,
+        "cy": 108.7,
+        "footY": 227,
+        "topY": 15,
+        "n": 8706
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "updatedAt": "2026-08-25T15:13:18.495Z"
+    },
+    "enemy-boss": {
+      "frameName": "enemy-boss",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "240x240",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "240x240",
+          "want": "240x240"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 9223
+        },
+        "margin": {
+          "ok": true,
+          "bw": 117,
+          "bh": 216,
+          "w": 240,
+          "h": 240,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "14.5",
+          "brightRatio": "0.3%",
+          "outlineExempt": false,
+          "note": "精英/Boss 无描边：L* 不强制（体型 + 双角/独有剪影）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-boss.png",
+      "layout": {
+        "family": "enemy-boss",
+        "sharedScale": 0.22832980972515857,
+        "fillMax": {
+          "w": 216,
+          "h": 216
+        },
+        "crop": {
+          "left": 259,
+          "top": 39,
+          "width": 513,
+          "height": 946
+        },
+        "placed": {
+          "w": 117,
+          "h": 216,
+          "ox": 61,
+          "oy": 12
+        }
+      },
+      "metrics": {
+        "minX": 61,
+        "minY": 12,
+        "maxX": 177,
+        "maxY": 227,
+        "bw": 117,
+        "bh": 216,
+        "cx": 118,
+        "cy": 115.18,
+        "footY": 227,
+        "topY": 12,
+        "n": 9223
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "updatedAt": "2026-08-25T15:13:18.505Z"
+    },
+    "enemy-cupbearer-v": {
+      "frameName": "enemy-cupbearer-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 718
+        },
+        "margin": {
+          "ok": true,
+          "bw": 33,
+          "bh": 55,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "19.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 3.8,
+          "dCx": 2.1,
+          "dCy": 3.17,
+          "dFoot": 1,
+          "dAreaPct": 57.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.8px > 2",
+            "脚底 ΔY 1px > 0",
+            "面积 Δ 57.1% > 15%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-cupbearer: 重心 hypot 3.8px > 2",
+        "时间轴 vs enemy-cupbearer: 脚底 ΔY 1px > 0",
+        "时间轴 vs enemy-cupbearer: 面积 Δ 57.1% > 15%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-cupbearer-v.png",
+      "layout": {
+        "family": "enemy-cupbearer",
+        "sharedScale": 0.07909604519774012,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 292,
+          "top": 158,
+          "width": 432,
+          "height": 708
+        },
+        "placed": {
+          "w": 34,
+          "h": 56,
+          "ox": 15,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 15,
+        "minY": 5,
+        "maxX": 47,
+        "maxY": 59,
+        "bw": 33,
+        "bh": 55,
+        "cx": 32.72,
+        "cy": 37.08,
+        "footY": 59,
+        "topY": 5,
+        "n": 718
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "updatedAt": "2026-08-25T15:13:18.508Z"
+    },
+    "enemy-cupbearer": {
+      "frameName": "enemy-cupbearer",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 457
+        },
+        "margin": {
+          "ok": true,
+          "bw": 19,
+          "bh": 46,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "18.9",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-cupbearer.png",
+      "layout": {
+        "family": "enemy-cupbearer",
+        "sharedScale": 0.07909604519774012,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 392,
+          "top": 201,
+          "width": 258,
+          "height": 613
+        },
+        "placed": {
+          "w": 20,
+          "h": 48,
+          "ox": 22,
+          "oy": 12
+        }
+      },
+      "metrics": {
+        "minX": 22,
+        "minY": 13,
+        "maxX": 40,
+        "maxY": 58,
+        "bw": 19,
+        "bh": 46,
+        "cx": 30.62,
+        "cy": 40.25,
+        "footY": 58,
+        "topY": 13,
+        "n": 457
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "updatedAt": "2026-08-25T15:13:18.512Z"
+    },
+    "enemy-fleshmass-v": {
+      "frameName": "enemy-fleshmass-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "96x96",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "96x96",
+          "want": "96x96"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 4061
+        },
+        "margin": {
+          "ok": true,
+          "bw": 82,
+          "bh": 85,
+          "w": 96,
+          "h": 96,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "22.1",
+          "brightRatio": "0.5%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 3.81,
+          "dCx": 1.14,
+          "dCy": 3.64,
+          "dFoot": 0,
+          "dAreaPct": 8.3,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.8px > 3"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-fleshmass: 重心 hypot 3.8px > 3"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-fleshmass-v.png",
+      "layout": {
+        "family": "enemy-fleshmass",
+        "sharedScale": 0.11197916666666667,
+        "fillMax": {
+          "w": 86,
+          "h": 86
+        },
+        "crop": {
+          "left": 132,
+          "top": 101,
+          "width": 734,
+          "height": 768
+        },
+        "placed": {
+          "w": 82,
+          "h": 86,
+          "ox": 7,
+          "oy": 5
+        }
+      },
+      "metrics": {
+        "minX": 7,
+        "minY": 6,
+        "maxX": 88,
+        "maxY": 90,
+        "bw": 82,
+        "bh": 85,
+        "cx": 49.36,
+        "cy": 53.46,
+        "footY": 90,
+        "topY": 6,
+        "n": 4061
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "updatedAt": "2026-08-25T15:13:18.517Z"
+    },
+    "enemy-fleshmass": {
+      "frameName": "enemy-fleshmass",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "96x96",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "96x96",
+          "want": "96x96"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 3750
+        },
+        "margin": {
+          "ok": true,
+          "bw": 82,
+          "bh": 80,
+          "w": 96,
+          "h": 96,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "20.3",
+          "brightRatio": "0.6%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-fleshmass.png",
+      "layout": {
+        "family": "enemy-fleshmass",
+        "sharedScale": 0.11197916666666667,
+        "fillMax": {
+          "w": 86,
+          "h": 86
+        },
+        "crop": {
+          "left": 160,
+          "top": 99,
+          "width": 730,
+          "height": 735
+        },
+        "placed": {
+          "w": 82,
+          "h": 82,
+          "ox": 7,
+          "oy": 10
+        }
+      },
+      "metrics": {
+        "minX": 7,
+        "minY": 11,
+        "maxX": 88,
+        "maxY": 90,
+        "bw": 82,
+        "bh": 80,
+        "cx": 48.22,
+        "cy": 57.1,
+        "footY": 90,
+        "topY": 11,
+        "n": 3750
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "updatedAt": "2026-08-25T15:13:18.522Z"
+    },
+    "enemy-greywolf-v": {
+      "frameName": "enemy-greywolf-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 964
+        },
+        "margin": {
+          "ok": true,
+          "bw": 45,
+          "bh": 48,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "22.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.57,
+          "dCx": 1.56,
+          "dCy": 0.15,
+          "dFoot": 0,
+          "dAreaPct": 21.1,
+          "ok": false,
+          "issues": [
+            "面积 Δ 21.1% > 20%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-greywolf: 面积 Δ 21.1% > 20%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-greywolf-v.png",
+      "layout": {
+        "family": "enemy-greywolf",
+        "sharedScale": 0.12690355329949238,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 343,
+          "top": 279,
+          "width": 358,
+          "height": 386
+        },
+        "placed": {
+          "w": 45,
+          "h": 49,
+          "ox": 5,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 5,
+        "minY": 5,
+        "maxX": 49,
+        "maxY": 52,
+        "bw": 45,
+        "bh": 48,
+        "cx": 25.74,
+        "cy": 29.19,
+        "footY": 52,
+        "topY": 5,
+        "n": 964
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.533Z"
+    },
+    "enemy-greywolf": {
+      "frameName": "enemy-greywolf",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 796
+        },
+        "margin": {
+          "ok": true,
+          "bw": 48,
+          "bh": 37,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "21.2",
+          "brightRatio": "0.1%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-greywolf.png",
+      "layout": {
+        "family": "enemy-greywolf",
+        "sharedScale": 0.12690355329949238,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 339,
+          "top": 347,
+          "width": 394,
+          "height": 294
+        },
+        "placed": {
+          "w": 50,
+          "h": 37,
+          "ox": 3,
+          "oy": 16
+        }
+      },
+      "metrics": {
+        "minX": 4,
+        "minY": 16,
+        "maxX": 51,
+        "maxY": 52,
+        "bw": 48,
+        "bh": 37,
+        "cx": 24.18,
+        "cy": 29.04,
+        "footY": 52,
+        "topY": 16,
+        "n": 796
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.536Z"
+    },
+    "enemy-hound-v": {
+      "frameName": "enemy-hound-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "48x48",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "48x48",
+          "want": "48x48"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 240
+        },
+        "margin": {
+          "ok": true,
+          "bw": 24,
+          "bh": 18,
+          "w": 48,
+          "h": 48,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "26.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.9,
+          "dCx": 1.87,
+          "dCy": 0.35,
+          "dFoot": 0,
+          "dAreaPct": 22.8,
+          "ok": false,
+          "issues": [
+            "面积 Δ 22.8% > 20%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-hound: 面积 Δ 22.8% > 20%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-hound-v.png",
+      "layout": {
+        "family": "enemy-hound",
+        "sharedScale": 0.057931034482758624,
+        "fillMax": {
+          "w": 42,
+          "h": 42
+        },
+        "crop": {
+          "left": 307,
+          "top": 334,
+          "width": 406,
+          "height": 324
+        },
+        "placed": {
+          "w": 24,
+          "h": 19,
+          "ox": 12,
+          "oy": 26
+        }
+      },
+      "metrics": {
+        "minX": 12,
+        "minY": 27,
+        "maxX": 35,
+        "maxY": 44,
+        "bw": 24,
+        "bh": 18,
+        "cx": 23.4,
+        "cy": 34.58,
+        "footY": 44,
+        "topY": 27,
+        "n": 240
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "updatedAt": "2026-08-25T15:13:18.538Z"
+    },
+    "enemy-hound": {
+      "frameName": "enemy-hound",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "48x48",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "48x48",
+          "want": "48x48"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 311
+        },
+        "margin": {
+          "ok": true,
+          "bw": 42,
+          "bh": 17,
+          "w": 48,
+          "h": 48,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "23.9",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-hound.png",
+      "layout": {
+        "family": "enemy-hound",
+        "sharedScale": 0.057931034482758624,
+        "fillMax": {
+          "w": 42,
+          "h": 42
+        },
+        "crop": {
+          "left": 165,
+          "top": 371,
+          "width": 725,
+          "height": 315
+        },
+        "placed": {
+          "w": 42,
+          "h": 18,
+          "ox": 3,
+          "oy": 27
+        }
+      },
+      "metrics": {
+        "minX": 3,
+        "minY": 28,
+        "maxX": 44,
+        "maxY": 44,
+        "bw": 42,
+        "bh": 17,
+        "cx": 21.53,
+        "cy": 34.93,
+        "footY": 44,
+        "topY": 28,
+        "n": 311
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "updatedAt": "2026-08-25T15:13:18.541Z"
+    },
+    "enemy-necro-v": {
+      "frameName": "enemy-necro-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "68x68",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "68x68",
+          "want": "68x68"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 524
+        },
+        "margin": {
+          "ok": true,
+          "bw": 30,
+          "bh": 57,
+          "w": 68,
+          "h": 68,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "17.9",
+          "brightRatio": "0.4%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 2.77,
+          "dCx": 1.81,
+          "dCy": 2.1,
+          "dFoot": 1,
+          "dAreaPct": 23.6,
+          "ok": false,
+          "issues": [
+            "重心 hypot 2.8px > 2",
+            "脚底 ΔY 1px > 0",
+            "面积 Δ 23.6% > 15%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-necro: 重心 hypot 2.8px > 2",
+        "时间轴 vs enemy-necro: 脚底 ΔY 1px > 0",
+        "时间轴 vs enemy-necro: 面积 Δ 23.6% > 15%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-necro-v.png",
+      "layout": {
+        "family": "enemy-necro",
+        "sharedScale": 0.07058823529411765,
+        "fillMax": {
+          "w": 60,
+          "h": 60
+        },
+        "crop": {
+          "left": 263,
+          "top": 39,
+          "width": 466,
+          "height": 850
+        },
+        "placed": {
+          "w": 33,
+          "h": 60,
+          "ox": 17,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 19,
+        "minY": 6,
+        "maxX": 48,
+        "maxY": 62,
+        "bw": 30,
+        "bh": 57,
+        "cx": 33.86,
+        "cy": 40.06,
+        "footY": 62,
+        "topY": 6,
+        "n": 524
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9338
+      },
+      "updatedAt": "2026-08-25T15:13:18.543Z"
+    },
+    "enemy-necro": {
+      "frameName": "enemy-necro",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "68x68",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "68x68",
+          "want": "68x68"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 424
+        },
+        "margin": {
+          "ok": true,
+          "bw": 31,
+          "bh": 46,
+          "w": 68,
+          "h": 68,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "17.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-necro.png",
+      "layout": {
+        "family": "enemy-necro",
+        "sharedScale": 0.07058823529411765,
+        "fillMax": {
+          "w": 60,
+          "h": 60
+        },
+        "crop": {
+          "left": 267,
+          "top": 150,
+          "width": 490,
+          "height": 675
+        },
+        "placed": {
+          "w": 35,
+          "h": 48,
+          "ox": 15,
+          "oy": 16
+        }
+      },
+      "metrics": {
+        "minX": 18,
+        "minY": 18,
+        "maxX": 48,
+        "maxY": 63,
+        "bw": 31,
+        "bh": 46,
+        "cx": 32.05,
+        "cy": 42.16,
+        "footY": 63,
+        "topY": 18,
+        "n": 424
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9338
+      },
+      "updatedAt": "2026-08-25T15:13:18.545Z"
+    },
+    "enemy-penitent-v": {
+      "frameName": "enemy-penitent-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 638
+        },
+        "margin": {
+          "ok": true,
+          "bw": 32,
+          "bh": 50,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "17.7",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 4.07,
+          "dCx": 0.18,
+          "dCy": 4.07,
+          "dFoot": 0,
+          "dAreaPct": 11.7,
+          "ok": false,
+          "issues": [
+            "重心 hypot 4.1px > 2"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-penitent: 重心 hypot 4.1px > 2"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-penitent-v.png",
+      "layout": {
+        "family": "enemy-penitent",
+        "sharedScale": 0.0794912559618442,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 338,
+          "top": 185,
+          "width": 405,
+          "height": 629
+        },
+        "placed": {
+          "w": 32,
+          "h": 50,
+          "ox": 12,
+          "oy": 3
+        }
+      },
+      "metrics": {
+        "minX": 12,
+        "minY": 3,
+        "maxX": 43,
+        "maxY": 52,
+        "bw": 32,
+        "bh": 50,
+        "cx": 27.03,
+        "cy": 29.04,
+        "footY": 52,
+        "topY": 3,
+        "n": 638
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.548Z"
+    },
+    "enemy-penitent": {
+      "frameName": "enemy-penitent",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 571
+        },
+        "margin": {
+          "ok": true,
+          "bw": 29,
+          "bh": 39,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "16.6",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-penitent.png",
+      "layout": {
+        "family": "enemy-penitent",
+        "sharedScale": 0.0794912559618442,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 338,
+          "top": 267,
+          "width": 381,
+          "height": 485
+        },
+        "placed": {
+          "w": 30,
+          "h": 39,
+          "ox": 13,
+          "oy": 14
+        }
+      },
+      "metrics": {
+        "minX": 13,
+        "minY": 14,
+        "maxX": 41,
+        "maxY": 52,
+        "bw": 29,
+        "bh": 39,
+        "cx": 26.85,
+        "cy": 33.11,
+        "footY": 52,
+        "topY": 14,
+        "n": 571
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.549Z"
+    },
+    "enemy-shadowwolf-v": {
+      "frameName": "enemy-shadowwolf-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "48x48",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "48x48",
+          "want": "48x48"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 222
+        },
+        "margin": {
+          "ok": true,
+          "bw": 34,
+          "bh": 18,
+          "w": 48,
+          "h": 48,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "15.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.97,
+          "dCx": 1.94,
+          "dCy": 0.35,
+          "dFoot": 0,
+          "dAreaPct": 2.8,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-shadowwolf-v.png",
+      "layout": {
+        "family": "enemy-shadowwolf",
+        "sharedScale": 0.04640883977900553,
+        "fillMax": {
+          "w": 42,
+          "h": 42
+        },
+        "crop": {
+          "left": 81,
+          "top": 271,
+          "width": 764,
+          "height": 434
+        },
+        "placed": {
+          "w": 35,
+          "h": 20,
+          "ox": 6,
+          "oy": 25
+        }
+      },
+      "metrics": {
+        "minX": 7,
+        "minY": 27,
+        "maxX": 40,
+        "maxY": 44,
+        "bw": 34,
+        "bh": 18,
+        "cx": 26.65,
+        "cy": 35.09,
+        "footY": 44,
+        "topY": 27,
+        "n": 222
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "updatedAt": "2026-08-25T15:13:18.551Z"
+    },
+    "enemy-shadowwolf": {
+      "frameName": "enemy-shadowwolf",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "48x48",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "48x48",
+          "want": "48x48"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 216
+        },
+        "margin": {
+          "ok": true,
+          "bw": 40,
+          "bh": 16,
+          "w": 48,
+          "h": 48,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "13.8",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-shadowwolf.png",
+      "layout": {
+        "family": "enemy-shadowwolf",
+        "sharedScale": 0.04640883977900553,
+        "fillMax": {
+          "w": 42,
+          "h": 42
+        },
+        "crop": {
+          "left": 54,
+          "top": 348,
+          "width": 905,
+          "height": 398
+        },
+        "placed": {
+          "w": 42,
+          "h": 18,
+          "ox": 2,
+          "oy": 27
+        }
+      },
+      "metrics": {
+        "minX": 3,
+        "minY": 29,
+        "maxX": 42,
+        "maxY": 44,
+        "bw": 40,
+        "bh": 16,
+        "cx": 24.71,
+        "cy": 35.44,
+        "footY": 44,
+        "topY": 29,
+        "n": 216
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "updatedAt": "2026-08-25T15:13:18.553Z"
+    },
+    "enemy-stonewolf-v": {
+      "frameName": "enemy-stonewolf-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "96x96",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "96x96",
+          "want": "96x96"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 1560
+        },
+        "margin": {
+          "ok": true,
+          "bw": 86,
+          "bh": 57,
+          "w": 96,
+          "h": 96,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "14.1",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 5.86,
+          "dCx": 4.92,
+          "dCy": 3.18,
+          "dFoot": 1,
+          "dAreaPct": 16.9,
+          "ok": false,
+          "issues": [
+            "重心 hypot 5.9px > 3"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-stonewolf: 重心 hypot 5.9px > 3"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-stonewolf-v.png",
+      "layout": {
+        "family": "enemy-stonewolf",
+        "sharedScale": 0.08847736625514403,
+        "fillMax": {
+          "w": 86,
+          "h": 86
+        },
+        "crop": {
+          "left": 25,
+          "top": 227,
+          "width": 972,
+          "height": 657
+        },
+        "placed": {
+          "w": 86,
+          "h": 58,
+          "ox": 5,
+          "oy": 34
+        }
+      },
+      "metrics": {
+        "minX": 5,
+        "minY": 34,
+        "maxX": 90,
+        "maxY": 90,
+        "bw": 86,
+        "bh": 57,
+        "cx": 46.99,
+        "cy": 59.08,
+        "footY": 90,
+        "topY": 34,
+        "n": 1560
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9323
+      },
+      "updatedAt": "2026-08-25T15:13:18.556Z"
+    },
+    "enemy-stonewolf": {
+      "frameName": "enemy-stonewolf",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "96x96",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "96x96",
+          "want": "96x96"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 1878
+        },
+        "margin": {
+          "ok": true,
+          "bw": 80,
+          "bh": 66,
+          "w": 96,
+          "h": 96,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "13.4",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-stonewolf.png",
+      "layout": {
+        "family": "enemy-stonewolf",
+        "sharedScale": 0.08847736625514403,
+        "fillMax": {
+          "w": 86,
+          "h": 86
+        },
+        "crop": {
+          "left": 71,
+          "top": 105,
+          "width": 907,
+          "height": 770
+        },
+        "placed": {
+          "w": 80,
+          "h": 68,
+          "ox": 8,
+          "oy": 23
+        }
+      },
+      "metrics": {
+        "minX": 8,
+        "minY": 24,
+        "maxX": 87,
+        "maxY": 89,
+        "bw": 80,
+        "bh": 66,
+        "cx": 42.07,
+        "cy": 55.9,
+        "footY": 89,
+        "topY": 24,
+        "n": 1878
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9323
+      },
+      "updatedAt": "2026-08-25T15:13:18.559Z"
+    },
+    "enemy-wolfhunter-v": {
+      "frameName": "enemy-wolfhunter-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 635
+        },
+        "margin": {
+          "ok": true,
+          "bw": 56,
+          "bh": 40,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "21.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 8.36,
+          "dCx": 7.8,
+          "dCy": 3.02,
+          "dFoot": 0,
+          "dAreaPct": 28.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 8.4px > 2",
+            "面积 Δ 28.5% > 15%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-wolfhunter: 重心 hypot 8.4px > 2",
+        "时间轴 vs enemy-wolfhunter: 面积 Δ 28.5% > 15%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-wolfhunter-v.png",
+      "layout": {
+        "family": "enemy-wolfhunter",
+        "sharedScale": 0.08874801901743265,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 162,
+          "top": 274,
+          "width": 631,
+          "height": 453
+        },
+        "placed": {
+          "w": 56,
+          "h": 40,
+          "ox": 4,
+          "oy": 20
+        }
+      },
+      "metrics": {
+        "minX": 4,
+        "minY": 20,
+        "maxX": 59,
+        "maxY": 59,
+        "bw": 56,
+        "bh": 40,
+        "cx": 37.11,
+        "cy": 40.59,
+        "footY": 59,
+        "topY": 20,
+        "n": 635
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.561Z"
+    },
+    "enemy-wolfhunter": {
+      "frameName": "enemy-wolfhunter",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 494
+        },
+        "margin": {
+          "ok": true,
+          "bw": 35,
+          "bh": 30,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "18.3",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-wolfhunter.png",
+      "layout": {
+        "family": "enemy-wolfhunter",
+        "sharedScale": 0.08874801901743265,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 314,
+          "top": 337,
+          "width": 413,
+          "height": 344
+        },
+        "placed": {
+          "w": 37,
+          "h": 31,
+          "ox": 13,
+          "oy": 30
+        }
+      },
+      "metrics": {
+        "minX": 14,
+        "minY": 30,
+        "maxX": 48,
+        "maxY": 59,
+        "bw": 35,
+        "bh": 30,
+        "cx": 29.31,
+        "cy": 43.61,
+        "footY": 59,
+        "topY": 30,
+        "n": 494
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.562Z"
+    },
+    "enemy-wraith-v": {
+      "frameName": "enemy-wraith-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 826
+        },
+        "margin": {
+          "ok": true,
+          "bw": 40,
+          "bh": 46,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "39.5",
+          "brightRatio": "28.5%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 1.06,
+          "dCx": 0.73,
+          "dCy": 0.77,
+          "dFoot": 1,
+          "dAreaPct": 9,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-wraith-v.png",
+      "layout": {
+        "family": "enemy-wraith",
+        "sharedScale": 0.06666666666666667,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 186,
+          "top": 166,
+          "width": 680,
+          "height": 703
+        },
+        "placed": {
+          "w": 45,
+          "h": 47,
+          "ox": 6,
+          "oy": 7
+        }
+      },
+      "metrics": {
+        "minX": 8,
+        "minY": 7,
+        "maxX": 47,
+        "maxY": 52,
+        "bw": 40,
+        "bh": 46,
+        "cx": 28.59,
+        "cy": 27.17,
+        "footY": 52,
+        "topY": 7,
+        "n": 826
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9196
+      },
+      "updatedAt": "2026-08-25T15:13:18.565Z"
+    },
+    "enemy-wraith": {
+      "frameName": "enemy-wraith",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 758
+        },
+        "margin": {
+          "ok": true,
+          "bw": 35,
+          "bh": 47,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "40.9",
+          "brightRatio": "32.1%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-wraith.png",
+      "layout": {
+        "family": "enemy-wraith",
+        "sharedScale": 0.06666666666666667,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 232,
+          "top": 144,
+          "width": 576,
+          "height": 750
+        },
+        "placed": {
+          "w": 38,
+          "h": 50,
+          "ox": 10,
+          "oy": 5
+        }
+      },
+      "metrics": {
+        "minX": 11,
+        "minY": 5,
+        "maxX": 45,
+        "maxY": 51,
+        "bw": 35,
+        "bh": 47,
+        "cx": 29.32,
+        "cy": 26.4,
+        "footY": 51,
+        "topY": 5,
+        "n": 758
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9196
+      },
+      "updatedAt": "2026-08-25T15:13:18.567Z"
+    },
+    "enemy-zombie-v": {
+      "frameName": "enemy-zombie-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 426
+        },
+        "margin": {
+          "ok": true,
+          "bw": 32,
+          "bh": 50,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "17.1",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        },
+        "temporal": {
+          "hypot": 2.14,
+          "dCx": 0.41,
+          "dCy": 2.1,
+          "dFoot": 0,
+          "dAreaPct": 14.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 2.1px > 2"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs enemy-zombie: 重心 hypot 2.1px > 2"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-zombie-v.png",
+      "layout": {
+        "family": "enemy-zombie",
+        "sharedScale": 0.08025682182985554,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 274,
+          "top": 196,
+          "width": 394,
+          "height": 623
+        },
+        "placed": {
+          "w": 32,
+          "h": 50,
+          "ox": 12,
+          "oy": 3
+        }
+      },
+      "metrics": {
+        "minX": 12,
+        "minY": 3,
+        "maxX": 43,
+        "maxY": 52,
+        "bw": 32,
+        "bh": 50,
+        "cx": 32.01,
+        "cy": 24.73,
+        "footY": 52,
+        "topY": 3,
+        "n": 426
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.568Z"
+    },
+    "enemy-zombie": {
+      "frameName": "enemy-zombie",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "56x56",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "56x56",
+          "want": "56x56"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 496
+        },
+        "margin": {
+          "ok": true,
+          "bw": 34,
+          "bh": 47,
+          "w": 56,
+          "h": 56,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "14.9",
+          "brightRatio": "0.0%",
+          "outlineExempt": false,
+          "note": "暗红普通敌 L*豁免（靠剪影形状）"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\enemy-zombie.png",
+      "layout": {
+        "family": "enemy-zombie",
+        "sharedScale": 0.08025682182985554,
+        "fillMax": {
+          "w": 50,
+          "h": 50
+        },
+        "crop": {
+          "left": 244,
+          "top": 192,
+          "width": 425,
+          "height": 583
+        },
+        "placed": {
+          "w": 34,
+          "h": 47,
+          "ox": 11,
+          "oy": 6
+        }
+      },
+      "metrics": {
+        "minX": 11,
+        "minY": 6,
+        "maxX": 44,
+        "maxY": 52,
+        "bw": 34,
+        "bh": 47,
+        "cx": 31.6,
+        "cy": 26.83,
+        "footY": 52,
+        "topY": 6,
+        "n": 496
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "updatedAt": "2026-08-25T15:13:18.570Z"
+    },
+    "hero-cassandra-skill-a": {
+      "frameName": "hero-cassandra-skill-a",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 570
+        },
+        "margin": {
+          "ok": true,
+          "bw": 38,
+          "bh": 52,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "37.0",
+          "brightRatio": "26.1%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 0.7,
+          "dCx": 0.65,
+          "dCy": 0.27,
+          "dFoot": 0,
+          "dAreaPct": 12.3,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-skill-a.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06796116504854369,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 235,
+          "top": 152,
+          "width": 564,
+          "height": 758
+        },
+        "placed": {
+          "w": 38,
+          "h": 52,
+          "ox": 13,
+          "oy": 8
+        }
+      },
+      "metrics": {
+        "minX": 13,
+        "minY": 8,
+        "maxX": 50,
+        "maxY": 59,
+        "bw": 38,
+        "bh": 52,
+        "cx": 31.45,
+        "cy": 31.34,
+        "footY": 59,
+        "topY": 8,
+        "n": 570
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.572Z"
+    },
+    "hero-cassandra-skill-b": {
+      "frameName": "hero-cassandra-skill-b",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 538
+        },
+        "margin": {
+          "ok": true,
+          "bw": 38,
+          "bh": 47,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "38.8",
+          "brightRatio": "27.1%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 5.57,
+          "dCx": 5.18,
+          "dCy": 2.06,
+          "dFoot": 0,
+          "dAreaPct": 17.2,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-skill-b.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06796116504854369,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 231,
+          "top": 173,
+          "width": 689,
+          "height": 711
+        },
+        "placed": {
+          "w": 47,
+          "h": 48,
+          "ox": 8,
+          "oy": 12
+        }
+      },
+      "metrics": {
+        "minX": 9,
+        "minY": 13,
+        "maxX": 46,
+        "maxY": 59,
+        "bw": 38,
+        "bh": 47,
+        "cx": 25.62,
+        "cy": 33.13,
+        "footY": 59,
+        "topY": 13,
+        "n": 538
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.574Z"
+    },
+    "hero-cassandra-v": {
+      "frameName": "hero-cassandra-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 558
+        },
+        "margin": {
+          "ok": true,
+          "bw": 28,
+          "bh": 54,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "36.1",
+          "brightRatio": "22.2%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 0.53,
+          "dCx": 0.53,
+          "dCy": 0.06,
+          "dFoot": 0,
+          "dAreaPct": 14.2,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-v.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06796116504854369,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 325,
+          "top": 96,
+          "width": 407,
+          "height": 814
+        },
+        "placed": {
+          "w": 28,
+          "h": 55,
+          "ox": 18,
+          "oy": 5
+        }
+      },
+      "metrics": {
+        "minX": 18,
+        "minY": 6,
+        "maxX": 45,
+        "maxY": 59,
+        "bw": 28,
+        "bh": 54,
+        "cx": 31.33,
+        "cy": 31.13,
+        "footY": 59,
+        "topY": 6,
+        "n": 558
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.576Z"
+    },
+    "hero-cassandra": {
+      "frameName": "hero-cassandra",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 650
+        },
+        "margin": {
+          "ok": true,
+          "bw": 31,
+          "bh": 55,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "34.7",
+          "brightRatio": "19.7%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06796116504854369,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 306,
+          "top": 88,
+          "width": 464,
+          "height": 824
+        },
+        "placed": {
+          "w": 32,
+          "h": 56,
+          "ox": 16,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 16,
+        "minY": 5,
+        "maxX": 46,
+        "maxY": 59,
+        "bw": 31,
+        "bh": 55,
+        "cx": 30.8,
+        "cy": 31.07,
+        "footY": 59,
+        "topY": 5,
+        "n": 650
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.578Z"
+    },
+    "hero-galvan-skill-a": {
+      "frameName": "hero-galvan-skill-a",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 771
+        },
+        "margin": {
+          "ok": true,
+          "bw": 36,
+          "bh": 43,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "29.4",
+          "brightRatio": "5.4%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 4.99,
+          "dCx": 1.6,
+          "dCy": 4.73,
+          "dFoot": 0,
+          "dAreaPct": 8.6,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-skill-a.png",
+      "layout": {
+        "family": "hero-galvan",
+        "sharedScale": 0.06549707602339182,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 261,
+          "top": 220,
+          "width": 583,
+          "height": 689
+        },
+        "placed": {
+          "w": 38,
+          "h": 45,
+          "ox": 13,
+          "oy": 16
+        }
+      },
+      "metrics": {
+        "minX": 14,
+        "minY": 17,
+        "maxX": 49,
+        "maxY": 59,
+        "bw": 36,
+        "bh": 43,
+        "cx": 29.49,
+        "cy": 37.76,
+        "footY": 59,
+        "topY": 17,
+        "n": 771
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.580Z"
+    },
+    "hero-galvan-skill-b": {
+      "frameName": "hero-galvan-skill-b",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 921
+        },
+        "margin": {
+          "ok": true,
+          "bw": 36,
+          "bh": 54,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "29.6",
+          "brightRatio": "4.0%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 2.14,
+          "dCx": 0.8,
+          "dCy": 1.98,
+          "dFoot": 0,
+          "dAreaPct": 29.7,
+          "ok": false,
+          "issues": [
+            "面积 Δ 29.7% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs hero-galvan: 面积 Δ 29.7% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-skill-b.png",
+      "layout": {
+        "family": "hero-galvan",
+        "sharedScale": 0.06549707602339182,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 239,
+          "top": 96,
+          "width": 567,
+          "height": 855
+        },
+        "placed": {
+          "w": 37,
+          "h": 56,
+          "ox": 13,
+          "oy": 5
+        }
+      },
+      "metrics": {
+        "minX": 13,
+        "minY": 6,
+        "maxX": 48,
+        "maxY": 59,
+        "bw": 36,
+        "bh": 54,
+        "cx": 31.89,
+        "cy": 31.05,
+        "footY": 59,
+        "topY": 6,
+        "n": 921
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.582Z"
+    },
+    "hero-galvan-v": {
+      "frameName": "hero-galvan-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 697
+        },
+        "margin": {
+          "ok": true,
+          "bw": 30,
+          "bh": 43,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "29.1",
+          "brightRatio": "4.3%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 3.04,
+          "dCx": 0.04,
+          "dCy": 3.04,
+          "dFoot": 0,
+          "dAreaPct": 1.8,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.0px > 2"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs hero-galvan: 重心 hypot 3.0px > 2"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-v.png",
+      "layout": {
+        "family": "hero-galvan",
+        "sharedScale": 0.06549707602339182,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 274,
+          "top": 179,
+          "width": 477,
+          "height": 690
+        },
+        "placed": {
+          "w": 31,
+          "h": 45,
+          "ox": 16,
+          "oy": 16
+        }
+      },
+      "metrics": {
+        "minX": 16,
+        "minY": 17,
+        "maxX": 45,
+        "maxY": 59,
+        "bw": 30,
+        "bh": 43,
+        "cx": 31.05,
+        "cy": 36.07,
+        "footY": 59,
+        "topY": 17,
+        "n": 697
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.584Z"
+    },
+    "hero-galvan": {
+      "frameName": "hero-galvan",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 710
+        },
+        "margin": {
+          "ok": true,
+          "bw": 25,
+          "bh": 50,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "30.1",
+          "brightRatio": "3.4%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan.png",
+      "layout": {
+        "family": "hero-galvan",
+        "sharedScale": 0.06549707602339182,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 326,
+          "top": 111,
+          "width": 403,
+          "height": 798
+        },
+        "placed": {
+          "w": 26,
+          "h": 52,
+          "ox": 19,
+          "oy": 9
+        }
+      },
+      "metrics": {
+        "minX": 19,
+        "minY": 10,
+        "maxX": 43,
+        "maxY": 59,
+        "bw": 25,
+        "bh": 50,
+        "cx": 31.09,
+        "cy": 33.03,
+        "footY": 59,
+        "topY": 10,
+        "n": 710
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-08-25T15:13:18.586Z"
+    },
+    "hero-violet-skill-a": {
+      "frameName": "hero-violet-skill-a",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 488
+        },
+        "margin": {
+          "ok": true,
+          "bw": 31,
+          "bh": 53,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "19.3",
+          "brightRatio": "6.8%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 4.41,
+          "dCx": 3.13,
+          "dCy": 3.1,
+          "dFoot": 0,
+          "dAreaPct": 24.5,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet-skill-a.png",
+      "layout": {
+        "family": "hero-violet",
+        "sharedScale": 0.06504065040650407,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 193,
+          "top": 91,
+          "width": 527,
+          "height": 861
+        },
+        "placed": {
+          "w": 34,
+          "h": 56,
+          "ox": 14,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 16,
+        "minY": 6,
+        "maxX": 46,
+        "maxY": 58,
+        "bw": 31,
+        "bh": 53,
+        "cx": 33.81,
+        "cy": 37.55,
+        "footY": 58,
+        "topY": 6,
+        "n": 488
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "updatedAt": "2026-08-25T15:13:18.588Z"
+    },
+    "hero-violet-skill-b": {
+      "frameName": "hero-violet-skill-b",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 632
+        },
+        "margin": {
+          "ok": true,
+          "bw": 36,
+          "bh": 51,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "21.2",
+          "brightRatio": "8.4%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 1.07,
+          "dCx": 0.04,
+          "dCy": 1.07,
+          "dFoot": 1,
+          "dAreaPct": 2.2,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet-skill-b.png",
+      "layout": {
+        "family": "hero-violet",
+        "sharedScale": 0.06504065040650407,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 227,
+          "top": 150,
+          "width": 571,
+          "height": 786
+        },
+        "placed": {
+          "w": 37,
+          "h": 51,
+          "ox": 13,
+          "oy": 9
+        }
+      },
+      "metrics": {
+        "minX": 14,
+        "minY": 9,
+        "maxX": 49,
+        "maxY": 59,
+        "bw": 36,
+        "bh": 51,
+        "cx": 30.64,
+        "cy": 33.38,
+        "footY": 59,
+        "topY": 9,
+        "n": 632
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "updatedAt": "2026-08-25T15:13:18.590Z"
+    },
+    "hero-violet-v": {
+      "frameName": "hero-violet-v",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 548
+        },
+        "margin": {
+          "ok": true,
+          "bw": 27,
+          "bh": 52,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "23.0",
+          "brightRatio": "8.9%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        },
+        "temporal": {
+          "hypot": 1.61,
+          "dCx": 1.54,
+          "dCy": 0.47,
+          "dFoot": 1,
+          "dAreaPct": 15.2,
+          "ok": false,
+          "issues": [
+            "脚底 ΔY 1px > 0",
+            "面积 Δ 15.2% > 15%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs hero-violet: 脚底 ΔY 1px > 0",
+        "时间轴 vs hero-violet: 面积 Δ 15.2% > 15%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet-v.png",
+      "layout": {
+        "family": "hero-violet",
+        "sharedScale": 0.06504065040650407,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 265,
+          "top": 155,
+          "width": 459,
+          "height": 798
+        },
+        "placed": {
+          "w": 30,
+          "h": 52,
+          "ox": 17,
+          "oy": 8
+        }
+      },
+      "metrics": {
+        "minX": 19,
+        "minY": 8,
+        "maxX": 45,
+        "maxY": 59,
+        "bw": 27,
+        "bh": 52,
+        "cx": 32.22,
+        "cy": 34.92,
+        "footY": 59,
+        "topY": 8,
+        "n": 548
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "updatedAt": "2026-08-25T15:13:18.592Z"
+    },
+    "hero-violet": {
+      "frameName": "hero-violet",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 646
+        },
+        "margin": {
+          "ok": true,
+          "bw": 28,
+          "bh": 53,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "21.6",
+          "brightRatio": "9.1%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet.png",
+      "layout": {
+        "family": "hero-violet",
+        "sharedScale": 0.06504065040650407,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 256,
+          "top": 127,
+          "width": 482,
+          "height": 826
+        },
+        "placed": {
+          "w": 31,
+          "h": 54,
+          "ox": 16,
+          "oy": 6
+        }
+      },
+      "metrics": {
+        "minX": 17,
+        "minY": 6,
+        "maxX": 44,
+        "maxY": 58,
+        "bw": 28,
+        "bh": 53,
+        "cx": 30.68,
+        "cy": 34.45,
+        "footY": 58,
+        "topY": 6,
+        "n": 646
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "updatedAt": "2026-08-25T15:13:18.594Z"
+    }
+  },
+  "updatedAt": "2026-08-25T15:13:18.622Z",
+  "families": {
+    "enemy-gravekeeper": {
+      "base": "enemy-gravekeeper",
+      "members": [
+        "enemy-gravekeeper",
+        "enemy-gravekeeper-v"
+      ],
+      "pairs": {
+        "enemy-gravekeeper-v": {
+          "vs": "enemy-gravekeeper",
+          "hypot": 1.69,
+          "dCx": 0.97,
+          "dCy": 1.39,
+          "dFoot": 0,
+          "dAreaPct": 5.7,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "player": {
+      "base": "player",
+      "members": [
+        "player",
+        "player-skill-a",
+        "player-skill-b",
+        "player-v"
+      ],
+      "pairs": {
+        "player-skill-a": {
+          "vs": "player",
+          "hypot": 2.51,
+          "dCx": 2.25,
+          "dCy": 1.12,
+          "dFoot": 0,
+          "dAreaPct": 2.9,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "player-skill-b": {
+          "vs": "player",
+          "hypot": 0.49,
+          "dCx": 0.28,
+          "dCy": 0.4,
+          "dFoot": 0,
+          "dAreaPct": 4.4,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "player-v": {
+          "vs": "player",
+          "hypot": 1.91,
+          "dCx": 1.8,
+          "dCy": 0.65,
+          "dFoot": 0,
+          "dAreaPct": 0,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "boss-cardinal": {
+      "base": "boss-cardinal",
+      "members": [
+        "boss-cardinal",
+        "boss-cardinal-entrance",
+        "boss-cardinal-v"
+      ],
+      "pairs": {
+        "boss-cardinal-entrance": {
+          "vs": "boss-cardinal",
+          "hypot": 11.07,
+          "dCx": 8.57,
+          "dCy": 7.01,
+          "dFoot": 0,
+          "dAreaPct": 5.3,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 24,
+            "footMax": 2,
+            "areaMax": 0.3,
+            "kind": "entrance"
+          }
+        },
+        "boss-cardinal-v": {
+          "vs": "boss-cardinal",
+          "hypot": 7.23,
+          "dCx": 6.6,
+          "dCy": 2.94,
+          "dFoot": 0,
+          "dAreaPct": 1.7,
+          "ok": false,
+          "issues": [
+            "重心 hypot 7.2px > 4"
+          ],
+          "limits": {
+            "hypotMax": 4,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "boss-fenrir": {
+      "base": "boss-fenrir",
+      "members": [
+        "boss-fenrir",
+        "boss-fenrir-entrance",
+        "boss-fenrir-v"
+      ],
+      "pairs": {
+        "boss-fenrir-entrance": {
+          "vs": "boss-fenrir",
+          "hypot": 23.46,
+          "dCx": 7.78,
+          "dCy": 22.13,
+          "dFoot": 0,
+          "dAreaPct": 7.5,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 24,
+            "footMax": 2,
+            "areaMax": 0.3,
+            "kind": "entrance"
+          }
+        },
+        "boss-fenrir-v": {
+          "vs": "boss-fenrir",
+          "hypot": 12.19,
+          "dCx": 5.23,
+          "dCy": 11.01,
+          "dFoot": 1,
+          "dAreaPct": 18.4,
+          "ok": false,
+          "issues": [
+            "重心 hypot 12.2px > 4"
+          ],
+          "limits": {
+            "hypotMax": 4,
+            "footMax": 1,
+            "areaMax": 0.2,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "boss-moonavatar": {
+      "base": "boss-moonavatar",
+      "members": [
+        "boss-moonavatar",
+        "boss-moonavatar-entrance",
+        "boss-moonavatar-v"
+      ],
+      "pairs": {
+        "boss-moonavatar-entrance": {
+          "vs": "boss-moonavatar",
+          "hypot": 15.41,
+          "dCx": 1.47,
+          "dCy": 15.34,
+          "dFoot": 2,
+          "dAreaPct": 4.4,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 24,
+            "footMax": 2,
+            "areaMax": 0.3,
+            "kind": "entrance"
+          }
+        },
+        "boss-moonavatar-v": {
+          "vs": "boss-moonavatar",
+          "hypot": 11.03,
+          "dCx": 0.66,
+          "dCy": 11.01,
+          "dFoot": 1,
+          "dAreaPct": 1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 11.0px > 4",
+            "脚底 ΔY 1px > 0"
+          ],
+          "limits": {
+            "hypotMax": 4,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-acolyte": {
+      "base": "enemy-acolyte",
+      "members": [
+        "enemy-acolyte",
+        "enemy-acolyte-v"
+      ],
+      "pairs": {
+        "enemy-acolyte-v": {
+          "vs": "enemy-acolyte",
+          "hypot": 1.75,
+          "dCx": 0.1,
+          "dCy": 1.75,
+          "dFoot": 0,
+          "dAreaPct": 13.3,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-bat": {
+      "base": "enemy-bat",
+      "members": [
+        "enemy-bat",
+        "enemy-bat-v"
+      ],
+      "pairs": {
+        "enemy-bat-v": {
+          "vs": "enemy-bat",
+          "hypot": 4.54,
+          "dCx": 2.3,
+          "dCy": 3.91,
+          "dFoot": 1,
+          "dAreaPct": 30,
+          "ok": false,
+          "issues": [
+            "重心 hypot 4.5px > 2",
+            "面积 Δ 30.0% > 15%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 1,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-beetle": {
+      "base": "enemy-beetle",
+      "members": [
+        "enemy-beetle",
+        "enemy-beetle-v"
+      ],
+      "pairs": {
+        "enemy-beetle-v": {
+          "vs": "enemy-beetle",
+          "hypot": 1.37,
+          "dCx": 0.05,
+          "dCy": 1.37,
+          "dFoot": 0,
+          "dAreaPct": 6.4,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 1,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-boss": {
+      "base": "enemy-boss",
+      "members": [
+        "enemy-boss",
+        "enemy-boss-v"
+      ],
+      "pairs": {
+        "enemy-boss-v": {
+          "vs": "enemy-boss",
+          "hypot": 6.89,
+          "dCx": 2.33,
+          "dCy": 6.48,
+          "dFoot": 0,
+          "dAreaPct": 5.6,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.9px > 4"
+          ],
+          "limits": {
+            "hypotMax": 4,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-cupbearer": {
+      "base": "enemy-cupbearer",
+      "members": [
+        "enemy-cupbearer",
+        "enemy-cupbearer-v"
+      ],
+      "pairs": {
+        "enemy-cupbearer-v": {
+          "vs": "enemy-cupbearer",
+          "hypot": 3.8,
+          "dCx": 2.1,
+          "dCy": 3.17,
+          "dFoot": 1,
+          "dAreaPct": 57.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.8px > 2",
+            "脚底 ΔY 1px > 0",
+            "面积 Δ 57.1% > 15%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-fleshmass": {
+      "base": "enemy-fleshmass",
+      "members": [
+        "enemy-fleshmass",
+        "enemy-fleshmass-v"
+      ],
+      "pairs": {
+        "enemy-fleshmass-v": {
+          "vs": "enemy-fleshmass",
+          "hypot": 3.81,
+          "dCx": 1.14,
+          "dCy": 3.64,
+          "dFoot": 0,
+          "dAreaPct": 8.3,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.8px > 3"
+          ],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 1,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-greywolf": {
+      "base": "enemy-greywolf",
+      "members": [
+        "enemy-greywolf",
+        "enemy-greywolf-v"
+      ],
+      "pairs": {
+        "enemy-greywolf-v": {
+          "vs": "enemy-greywolf",
+          "hypot": 1.57,
+          "dCx": 1.56,
+          "dCy": 0.15,
+          "dFoot": 0,
+          "dAreaPct": 21.1,
+          "ok": false,
+          "issues": [
+            "面积 Δ 21.1% > 20%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 1,
+            "areaMax": 0.2,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-hound": {
+      "base": "enemy-hound",
+      "members": [
+        "enemy-hound",
+        "enemy-hound-v"
+      ],
+      "pairs": {
+        "enemy-hound-v": {
+          "vs": "enemy-hound",
+          "hypot": 1.9,
+          "dCx": 1.87,
+          "dCy": 0.35,
+          "dFoot": 0,
+          "dAreaPct": 22.8,
+          "ok": false,
+          "issues": [
+            "面积 Δ 22.8% > 20%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 1,
+            "areaMax": 0.2,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-necro": {
+      "base": "enemy-necro",
+      "members": [
+        "enemy-necro",
+        "enemy-necro-v"
+      ],
+      "pairs": {
+        "enemy-necro-v": {
+          "vs": "enemy-necro",
+          "hypot": 2.77,
+          "dCx": 1.81,
+          "dCy": 2.1,
+          "dFoot": 1,
+          "dAreaPct": 23.6,
+          "ok": false,
+          "issues": [
+            "重心 hypot 2.8px > 2",
+            "脚底 ΔY 1px > 0",
+            "面积 Δ 23.6% > 15%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-penitent": {
+      "base": "enemy-penitent",
+      "members": [
+        "enemy-penitent",
+        "enemy-penitent-v"
+      ],
+      "pairs": {
+        "enemy-penitent-v": {
+          "vs": "enemy-penitent",
+          "hypot": 4.07,
+          "dCx": 0.18,
+          "dCy": 4.07,
+          "dFoot": 0,
+          "dAreaPct": 11.7,
+          "ok": false,
+          "issues": [
+            "重心 hypot 4.1px > 2"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-shadowwolf": {
+      "base": "enemy-shadowwolf",
+      "members": [
+        "enemy-shadowwolf",
+        "enemy-shadowwolf-v"
+      ],
+      "pairs": {
+        "enemy-shadowwolf-v": {
+          "vs": "enemy-shadowwolf",
+          "hypot": 1.97,
+          "dCx": 1.94,
+          "dCy": 0.35,
+          "dFoot": 0,
+          "dAreaPct": 2.8,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 1,
+            "areaMax": 0.2,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-stonewolf": {
+      "base": "enemy-stonewolf",
+      "members": [
+        "enemy-stonewolf",
+        "enemy-stonewolf-v"
+      ],
+      "pairs": {
+        "enemy-stonewolf-v": {
+          "vs": "enemy-stonewolf",
+          "hypot": 5.86,
+          "dCx": 4.92,
+          "dCy": 3.18,
+          "dFoot": 1,
+          "dAreaPct": 16.9,
+          "ok": false,
+          "issues": [
+            "重心 hypot 5.9px > 3"
+          ],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 1,
+            "areaMax": 0.2,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-wolfhunter": {
+      "base": "enemy-wolfhunter",
+      "members": [
+        "enemy-wolfhunter",
+        "enemy-wolfhunter-v"
+      ],
+      "pairs": {
+        "enemy-wolfhunter-v": {
+          "vs": "enemy-wolfhunter",
+          "hypot": 8.36,
+          "dCx": 7.8,
+          "dCy": 3.02,
+          "dFoot": 0,
+          "dAreaPct": 28.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 8.4px > 2",
+            "面积 Δ 28.5% > 15%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-wraith": {
+      "base": "enemy-wraith",
+      "members": [
+        "enemy-wraith",
+        "enemy-wraith-v"
+      ],
+      "pairs": {
+        "enemy-wraith-v": {
+          "vs": "enemy-wraith",
+          "hypot": 1.06,
+          "dCx": 0.73,
+          "dCy": 0.77,
+          "dFoot": 1,
+          "dAreaPct": 9,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 1,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "enemy-zombie": {
+      "base": "enemy-zombie",
+      "members": [
+        "enemy-zombie",
+        "enemy-zombie-v"
+      ],
+      "pairs": {
+        "enemy-zombie-v": {
+          "vs": "enemy-zombie",
+          "hypot": 2.14,
+          "dCx": 0.41,
+          "dCy": 2.1,
+          "dFoot": 0,
+          "dAreaPct": 14.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 2.1px > 2"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "hero-cassandra": {
+      "base": "hero-cassandra",
+      "members": [
+        "hero-cassandra",
+        "hero-cassandra-skill-a",
+        "hero-cassandra-skill-b",
+        "hero-cassandra-v"
+      ],
+      "pairs": {
+        "hero-cassandra-skill-a": {
+          "vs": "hero-cassandra",
+          "hypot": 0.7,
+          "dCx": 0.65,
+          "dCy": 0.27,
+          "dFoot": 0,
+          "dAreaPct": 12.3,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "hero-cassandra-skill-b": {
+          "vs": "hero-cassandra",
+          "hypot": 5.57,
+          "dCx": 5.18,
+          "dCy": 2.06,
+          "dFoot": 0,
+          "dAreaPct": 17.2,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "hero-cassandra-v": {
+          "vs": "hero-cassandra",
+          "hypot": 0.53,
+          "dCx": 0.53,
+          "dCy": 0.06,
+          "dFoot": 0,
+          "dAreaPct": 14.2,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "hero-galvan": {
+      "base": "hero-galvan",
+      "members": [
+        "hero-galvan",
+        "hero-galvan-skill-a",
+        "hero-galvan-skill-b",
+        "hero-galvan-v"
+      ],
+      "pairs": {
+        "hero-galvan-skill-a": {
+          "vs": "hero-galvan",
+          "hypot": 4.99,
+          "dCx": 1.6,
+          "dCy": 4.73,
+          "dFoot": 0,
+          "dAreaPct": 8.6,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "hero-galvan-skill-b": {
+          "vs": "hero-galvan",
+          "hypot": 2.14,
+          "dCx": 0.8,
+          "dCy": 1.98,
+          "dFoot": 0,
+          "dAreaPct": 29.7,
+          "ok": false,
+          "issues": [
+            "面积 Δ 29.7% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "hero-galvan-v": {
+          "vs": "hero-galvan",
+          "hypot": 3.04,
+          "dCx": 0.04,
+          "dCy": 3.04,
+          "dFoot": 0,
+          "dAreaPct": 1.8,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.0px > 2"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    },
+    "hero-violet": {
+      "base": "hero-violet",
+      "members": [
+        "hero-violet",
+        "hero-violet-skill-a",
+        "hero-violet-skill-b",
+        "hero-violet-v"
+      ],
+      "pairs": {
+        "hero-violet-skill-a": {
+          "vs": "hero-violet",
+          "hypot": 4.41,
+          "dCx": 3.13,
+          "dCy": 3.1,
+          "dFoot": 0,
+          "dAreaPct": 24.5,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "hero-violet-skill-b": {
+          "vs": "hero-violet",
+          "hypot": 1.07,
+          "dCx": 0.04,
+          "dCy": 1.07,
+          "dFoot": 1,
+          "dAreaPct": 2.2,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 1,
+            "areaMax": 0.25,
+            "kind": "skill"
+          }
+        },
+        "hero-violet-v": {
+          "vs": "hero-violet",
+          "hypot": 1.61,
+          "dCx": 1.54,
+          "dCy": 0.47,
+          "dFoot": 1,
+          "dAreaPct": 15.2,
+          "ok": false,
+          "issues": [
+            "脚底 ΔY 1px > 0",
+            "面积 Δ 15.2% > 15%"
+          ],
+          "limits": {
+            "hypotMax": 2,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle"
+          }
+        }
+      }
+    }
+  }
+}
