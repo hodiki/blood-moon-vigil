@@ -1,0 +1,14 @@
+{
+  "name": "bmv-asset-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "《血月守夜》AI 生图后处理管线：抠图→降采样→14-token 量化→契约校验→图集打包",
+  "scripts": {
+    "process": "node process.mjs",
+    "pack": "node pack.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
+}
