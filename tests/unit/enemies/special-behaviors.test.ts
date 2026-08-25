@@ -19,6 +19,8 @@ import {
   rangedDamageFor,
   chargePhaseFor,
   chargeSpeedFor,
+  chargeCycleElapsed,
+  warningLineAlpha,
   type ChargePhase,
 } from '@/enemies/enemy-behaviors';
 
@@ -191,5 +193,20 @@ describe('E3-S4 狼裔猎手冲锋（每 6s：0.5s 蓄力 → 0.15s 警告线 �
     expect(b.warning).toBe(0.15);
     expect(b.dashSpeed).toBe(500);
     expect(b.interval).toBe(6);
+  });
+
+  it('chargeCycleElapsed 对周期取模', () => {
+    expect(chargeCycleElapsed(10, 4, 6)).toBe(0);
+    expect(chargeCycleElapsed(10.5, 4, 6)).toBeCloseTo(0.5);
+    expect(chargeCycleElapsed(3, 4, 6)).toBe(0); // 尚未出生
+  });
+
+  it('警告线：idle 透明、蓄力淡入、warning 亮起', () => {
+    expect(warningLineAlpha(b, 0)).toBe(0);
+    expect(warningLineAlpha(b, 4.96)).toBeGreaterThanOrEqual(0.2);
+    expect(warningLineAlpha(b, 4.96)).toBeLessThan(0.4);
+    expect(warningLineAlpha(b, 5.45)).toBeCloseTo(0.9);
+    expect(warningLineAlpha(b, 5.5)).toBe(0.9);
+    expect(warningLineAlpha(b, 5.7)).toBe(0);
   });
 });

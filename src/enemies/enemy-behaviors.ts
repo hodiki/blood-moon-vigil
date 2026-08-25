@@ -133,6 +133,27 @@ export function chargePhaseFor(b: ChargeBehaviorConfig, cycleElapsed: number): C
   return 'dash';
 }
 
+/** 冲锋周期内已过秒数（对 interval 取模；供警告线与相位对齐） */
+export function chargeCycleElapsed(now: number, spawnedAt: number, interval: number): number {
+  if (interval <= 0) return 0;
+  const elapsed = now - spawnedAt;
+  if (elapsed < 0) return 0;
+  return elapsed % interval;
+}
+
+/**
+ * 警告线透明度（asset-spec §2.6）：蓄力 0.5s 由淡到亮（0.2→0.9），亮起 0.15s 后冲刺。
+ * 非 windup/warning 返回 0。
+ */
+export function warningLineAlpha(b: ChargeBehaviorConfig, cycleElapsed: number): number {
+  const phase = chargePhaseFor(b, cycleElapsed);
+  if (phase === 'warning') return 0.9;
+  if (phase !== 'windup') return 0;
+  const chargeStart = b.interval - b.windup - b.warning - b.dashDuration;
+  const t = b.windup > 0 ? (cycleElapsed - chargeStart) / b.windup : 1;
+  return 0.2 + 0.7 * Math.max(0, Math.min(1, t));
+}
+
 /** 冲锋期速度（dash 500px/s，其余 0） */
 export function chargeSpeedFor(b: ChargeBehaviorConfig, phase: ChargePhase): number {
   return phase === 'dash' ? b.dashSpeed : 0;

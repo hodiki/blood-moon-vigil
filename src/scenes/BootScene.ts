@@ -1,8 +1,8 @@
 /**
  * scenes/BootScene.ts —— 预加载最小资源 → 启动 PlayScene（ARCH §2 / §5）
  *
- * E1 无外部图集（全部程序生成贴图），preload 为空；资源策略见 ARCH §5
- * （characters/effects/ui 三图集在 E2+ 加入时在此预载）。
+ * M4：预载外部 `characters` 图集（`atlas/characters.png`）。Play 里程序剪影先建同名图集，
+ * 再覆盖已到货的实体帧；飞弹/环绕球等未到货帧仍走程序剪影。effects/ui 外部图集未开。
  *
  * Phase 6 音频接入（audio-bible §4 / ux-spec §1）：
  * - create 时用 Phaser WebAudio 后端初始化 AudioManager（压缩器总线/心跳/SFX 合成）
@@ -15,6 +15,7 @@ import { AudioManager } from '@/audio/audio-manager';
 import { createStartOverlay, unlockFromSave, type StartOverlay } from '@/ui/start-overlay';
 import { loadSave } from '@/stats/save';
 import { detectIsMobile } from '@/utils/device';
+import { EXTERNAL_CHARACTERS_KEY } from '@/fx/external-atlas';
 
 export class BootScene extends Phaser.Scene {
   private startOverlay: StartOverlay | null = null;
@@ -24,7 +25,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // E1：无外部资产（ARCH §5 图集在 E2+ 接入）
+    this.load.atlas(EXTERNAL_CHARACTERS_KEY, 'atlas/characters.png', 'atlas/characters.json');
   }
 
   create(): void {

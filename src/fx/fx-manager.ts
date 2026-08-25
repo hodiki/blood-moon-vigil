@@ -41,6 +41,7 @@ interface Particle extends Phaser.GameObjects.Image {
   vy: number;
   life: number;
   maxLife: number;
+  baseAlpha: number;
 }
 
 function pickColor(colors: readonly string[]): string {
@@ -79,6 +80,7 @@ export class FxManager {
       p.vy = 0;
       p.life = 0;
       p.maxLife = 1;
+      p.baseAlpha = 1;
       this.particles.push(p);
     }
 
@@ -141,7 +143,7 @@ export class FxManager {
       }
       p.x += p.vx * dt;
       p.y += p.vy * dt;
-      p.setAlpha(p.maxLife > 0 ? Math.max(0, p.life / p.maxLife) : 1);
+      p.setAlpha(p.maxLife > 0 ? Math.max(0, p.baseAlpha * (p.life / p.maxLife)) : p.baseAlpha);
     }
   }
 
@@ -268,6 +270,86 @@ export class FxManager {
     this.emitBurst('p-circle', x, y, [FX_COLORS.lanternFlashCore, FX_COLORS.lanternFlash], 10, 90, 2.5, 0.4);
   }
 
+  /** 提灯闪耀最大半径白闪（与 lanternFlash 成对；asset-spec §3.2 T1） */
+  lanternEdgeFlash(x: number, y: number, radius: number): void {
+    this.shockwaveEdgeFlash(x, y, radius);
+  }
+
+  /**
+   * 血影突袭：路径月银 p-streak + ghost ×3 + 沿线银火（T2；不画技能环）。
+   * dir 为单位向量；distance = 冲刺距离。
+   */
+  bloodDash(x: number, y: number, dirX: number, dirY: number, distance: number): void {
+    if (!this.cfg.fxBursts) return;
+    const ghosts = FX.SKILL_DASH_GHOST_COUNT;
+    for (let i = 1; i <= ghosts; i += 1) {
+      const t = i / (ghosts + 1);
+      this.spawnParticle(
+        'p-circle',
+        x + dirX * distance * t,
+        y + dirY * distance * t,
+        FX_COLORS.dash,
+        0,
+        0,
+        6,
+        0.28,
+        0.45,
+      );
+    }
+    const sparks = FX.SKILL_DASH_SPARK_COUNT;
+    for (let i = 0; i < sparks; i += 1) {
+      const t = (i + 1) / (sparks + 1);
+      this.spawnParticle(
+        'p-streak',
+        x + dirX * distance * t,
+        y + dirY * distance * t,
+        FX_COLORS.dash,
+        dirX * 80,
+        dirY * 80,
+        3,
+        0.22,
+      );
+    }
+  }
+
+  /** 冲刺途中补 1 条轨迹（节流由调用方负责） */
+  bloodDashTrail(x: number, y: number, dirX: number, dirY: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.spawnParticle('p-streak', x, y, FX_COLORS.dash, dirX * 40, dirY * 40, 2.5, 0.18);
+  }
+
+  /** 安魂曲：圣诗震荡环（双环由调用方隔 150ms 再调一次） */
+  requiemWave(x: number, y: number, radius: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitRing('p-ring', x, y, [FX_COLORS.lanternFlash], 12, radius, 50, 3, 0.45);
+  }
+
+  /** 安魂曲回血绿点 */
+  requiemHeal(x: number, y: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitBurst('p-circle', x, y, [FX_COLORS.heal], 6, 70, 2.4, 0.4);
+  }
+
+  /** 血月狂化：月银主体 + 暗红兽纹粒子（不翻红、不共用提灯环） */
+  rageBurst(x: number, y: number): void {
+    if (!this.cfg.fxBursts) return;
+    this.emitBurst('p-diamond', x, y, [FX_COLORS.dash, FX_COLORS.rageBeast], FX.SKILL_RAGE_PARTICLE_COUNT, 90, 3, 0.5);
+    for (let i = 1; i <= 3; i += 1) {
+      const a = (i / 3) * Math.PI * 2;
+      this.spawnParticle(
+        'p-circle',
+        x + Math.cos(a) * 18,
+        y + Math.sin(a) * 18,
+        FX_COLORS.dash,
+        0,
+        0,
+        5,
+        0.3,
+        0.4,
+      );
+    }
+  }
+
   /** TASK-36 冲击波最大半径白闪环：扩散到位的月蚀亮边（纸白短命） */
   shockwaveEdgeFlash(x: number, y: number, radius: number): void {
     if (!this.cfg.fxBursts) return;
@@ -362,6 +444,7 @@ export class FxManager {
     vy: number,
     size: number,
     life: number,
+    initialAlpha = 1,
   ): boolean {
     for (const p of this.particles) {
       if (p.active) continue;
@@ -374,7 +457,8 @@ export class FxManager {
       p.vy = vy;
       p.maxLife = life;
       p.life = life;
-      p.setAlpha(1);
+      p.baseAlpha = initialAlpha;
+      p.setAlpha(initialAlpha);
       p.setActive(true).setVisible(true);
       return true;
     }

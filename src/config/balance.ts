@@ -250,6 +250,24 @@ export const FX = {
   LEVELUP_COUNT: 16,
   /** 宝石拾取爆点：数量 */
   GEM_PICKUP_COUNT: 6,
+  /**
+   * 主动技姿态叠层（表现层，不挡移动、不延迟伤害；gdd-active-skill §3.1 无蓄力资源）。
+   * skill-a 前摇帧 → skill-b 施放帧 → 回 idle。
+   */
+  SKILL_POSE_A_MS: 300,
+  SKILL_POSE_B_MS: 150,
+  /** 安魂曲双环间隔 ms（asset-spec §3.2） */
+  SKILL_REQUIEM_RING_GAP_MS: 150,
+  /** 血月狂化体型倍率（asset-spec §3.2；主体仍月银白，不靠 PNG 放大） */
+  SKILL_RAGE_SCALE: 1.1,
+  /** 血影突袭残影数（asset-spec §3.2 ghost ×3） */
+  SKILL_DASH_GHOST_COUNT: 3,
+  /** 血影突袭沿线银火粒数 */
+  SKILL_DASH_SPARK_COUNT: 8,
+  /** 血月狂化兽纹粒子数 */
+  SKILL_RAGE_PARTICLE_COUNT: 10,
+  /** Boss 出场姿态时长 ms（有 `-entrance` 帧时切姿态；尊者无后缀仍闪红） */
+  BOSS_ENTRANCE_MS: 500,
 } as const;
 
 /** 纠结时刻埋点（upgrade-pool §⑧.3 / design-review-e3 交接项 2）：停留 >3s 记为纠结 */

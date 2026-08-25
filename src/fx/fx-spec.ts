@@ -57,6 +57,10 @@ export const FX_COLORS = {
   lanternFlashCore: PALETTE.uiPaper,
   /** M3 治疗道具拾取发光：治疗绿 #43D17C（art-bible 绿=治疗语义） */
   heal: PALETTE.heal,
+  /** 血影突袭轨迹：月银白（T2 银刃） */
+  dash: PALETTE.player,
+  /** 血月狂化兽纹 accent（暗红 token，主体仍走月银白） */
+  rageBeast: PALETTE.enemyZombie,
 } as const;
 
 /**

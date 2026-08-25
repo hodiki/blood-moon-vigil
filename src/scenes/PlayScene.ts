@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { PLAYER, BOSS, PALETTE, ACTIVE_SKILL, ACTIVE_SKILL_RULES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, EVOLUTIONS, WEAPON_CONFIGS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
+import { PLAYER, BOSS, BOSSES, PALETTE, ACTIVE_SKILL, ACTIVE_SKILL_RULES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, EVOLUTIONS, WEAPON_CONFIGS, FX, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
@@ -71,8 +71,10 @@ import { CodexTracker, MOON_AVATAR_ENTRY_ID, eventEntriesForMapCleared } from '@
 import { computeMeritApplication, calculateMeritPoints, type MeritAppliedResult } from '@/stats/merit';
 import { loadSave, writeSave, recordMapCleared, type SaveData } from '@/stats/save';
 import { createProceduralTextures } from '@/fx/procedural-textures';
-import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim } from '@/fx/anim';
+import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim, hasCharacterFrame } from '@/fx/anim';
 import { FxManager } from '@/fx/fx-manager';
+import { StatusMarkerLayer } from '@/fx/status-markers';
+import { bossEntranceFrameName } from '@/fx/skill-pose';
 import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
 import { NarrativeDispatcher } from '@/narratives/narrative-dispatcher';
@@ -134,6 +136,8 @@ export class PlayScene extends Phaser.Scene {
   private lastOptions: UpgradeOption[] = [];
   /** TASK-28 特效管理器（粒子池 ≤ cfg.maxParticles + 血月/渐晕常驻） */
   private fx!: FxManager;
+  /** 特殊行为标记（尸巫光环 / 猎手警告线 / 侍僧符文 / 状态小点） */
+  private markers!: StatusMarkerLayer;
   /** TASK-28 冲击波涟漪上升沿检测（active 从 false→true 时触发一次涟漪） */
   private shockwaveWasActive = false;
   /** TASK-39 E2 屠夫预警：血月印记精灵（保底厚血预约出生时显示，落地时销毁；null = 无） */
@@ -146,6 +150,10 @@ export class PlayScene extends Phaser.Scene {
   private mapId: MapId = 'map_graveyard';
   /** E4-S2 血影突袭冲刺状态（null = 非冲刺；dir=冲刺方向、remaining=剩余距离） */
   private dash: { dir: Vec2; remaining: number } | null = null;
+  /** 冲刺轨迹节流累计 s */
+  private dashTrailAccum = 0;
+  /** 安魂曲第二环 delayedCall（场景销毁时移除） */
+  private requiemRingTimer: Phaser.Time.TimerEvent | null = null;
   /** E4-S2 血月狂化 buff（8s 窗口；玩家死亡/重开清空） */
   private rage = new RageBuff();
   /** E4-S3 主动技运行时配置（升级分支改写；效果结算统一读本类） */
@@ -204,6 +212,7 @@ export class PlayScene extends Phaser.Scene {
     // TASK-28：角色 2 帧循环动画 + 特效管理器（粒子池/血月/渐晕），纹理就绪后装配
     createCharacterAnims(this);
     this.fx = new FxManager(this, this.cfg);
+    this.markers = new StatusMarkerLayer(this, this.cfg);
 
     // E4-S1/S9：开局角色 + 地图从 session-selection 读取（解锁门禁由保存数据层校验，
     // PlayScene 兜底非法选择回退默认，见 session-selection.selectHeroSafely/selectMapSafely）
@@ -499,6 +508,7 @@ export class PlayScene extends Phaser.Scene {
       e.updateMovement(dt, this.player, now);
       tickEnemyAnim(e);
     });
+    this.markers.sync(this.enemyPool, this.player, now);
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now);
     // 5) 经验宝石磁吸/拾取（E3-S1）
@@ -563,12 +573,16 @@ export class PlayScene extends Phaser.Scene {
     this.spawner.stop(); // S8 §⑥.2：立即停止生成
     this.weaponSystem.clearAll(); // W8 §⑥.5：清空子弹/环绕球 + 冲击波冷却重置
     this.fx.clearAll(); // TASK-28：清空粒子（结算页背景干净）
+    this.markers.hideAll();
     this.overlay.hide(); // 防止结算时残留选卡覆盖层
     // E4-S2 玩家死亡/终局：狂化 buff 立即清除（gdd §⑥.8）、冲刺中断、倍率/移速加成归零
     this.rage.clear();
     this.dash = null;
+    this.requiemRingTimer?.remove(false);
+    this.requiemRingTimer = null;
     this.player.stats.setRageBonus(0);
     this.player.stats.rageSpeedPct = 0;
+    this.player.setScale(1);
     // M3 真机埋点：局终汇入经验拾取总量（xpGainedPerRun；XpManager 为唯一经验入口，须在 finish 快照前）
     this.stats.recordXpGained(this.xp.xpGained);
     const result = this.stats.finish(victory, this.spawner.elapsedSeconds);
@@ -613,19 +627,30 @@ export class PlayScene extends Phaser.Scene {
     const bx = this.player.x + Math.cos(angle) * BOSS.SPAWN_DISTANCE;
     const by = this.player.y + Math.sin(angle) * BOSS.SPAWN_DISTANCE;
     boss.spawn('boss', bx, by);
+    const bossFrame = BOSSES[MAP_CONFIGS[this.mapId].boss].frame;
+    if (this.textures.get('characters').has(bossFrame)) {
+      boss.visualFrame = bossFrame;
+      boss.setTexture('characters', bossFrame);
+    }
     boss.beginGrace(now);
     this.boss = boss;
-    // 出场 0.5s 霸体闪红（art-bible §4 / enemies §⑥.5）：0.12s×3 次闪烁后恢复
-    this.tweens.add({
-      targets: boss,
-      alpha: 0.35,
-      duration: 120,
-      yoyo: true,
-      repeat: 2,
-      onComplete: () => {
-        if (boss.active) boss.setAlpha(1);
-      },
-    });
+    const entranceFrame = bossEntranceFrameName(bossFrame);
+    if (hasCharacterFrame(this, entranceFrame)) {
+      boss.entranceUntil = now + FX.BOSS_ENTRANCE_MS / 1000;
+      boss.setTexture('characters', entranceFrame);
+    } else {
+      // 尊者无 -entrance：出场 0.5s 霸体闪红（art-bible §4 / enemies §⑥.5）
+      this.tweens.add({
+        targets: boss,
+        alpha: 0.35,
+        duration: 120,
+        yoyo: true,
+        repeat: 2,
+        onComplete: () => {
+          if (boss.active) boss.setAlpha(1);
+        },
+      });
+    }
     // TASK-28：Boss 出场特效 —— 猩红金冲击环 + 金点爆发 + 屏幕震动（移动端震动关闭）
     this.fx.bossEntrance(bx, by);
     if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
@@ -713,7 +738,6 @@ export class PlayScene extends Phaser.Scene {
     if (this.state.get() !== GamePhase.RUNNING) return; // 非 RUNNING 冻结（含释放瞬间切 LEVEL_UP 的按下即结算：已生效则冻结后不追加）
     const now = this.time.now / 1000;
     if (!this.activeSkill.tryCast(now)) return; // CD / 充能 / 100ms 防抖
-    const cfg = ACTIVE_SKILLS[this.heroId];
     switch (this.heroId) {
       case 'hero_edmund':
         this.applyLanternFlash(now);
@@ -729,8 +753,44 @@ export class PlayScene extends Phaser.Scene {
         break;
     }
     this.stats.recordActiveSkillCast(); // 埋点 activeSkillCasts（每局次数）
-    // 视觉最小实现：通用冷青扩散环（复用 lanternFlash；角色专属特效 M3 扩展）
-    this.fx.lanternFlash(this.player.x, this.player.y, cfg.radius ?? ACTIVE_SKILL.RADIUS);
+    this.player.beginSkillPose(); // 表现叠层：skill-a 300ms → skill-b 150ms；不挡移动
+    this.playActiveSkillFx();
+  }
+
+  /** 四主动技分模板 VFX（asset-spec §3.2；不再共用 lanternFlash） */
+  private playActiveSkillFx(): void {
+    const cfg = ACTIVE_SKILLS[this.heroId];
+    const x = this.player.x;
+    const y = this.player.y;
+    switch (this.heroId) {
+      case 'hero_edmund': {
+        const radius = cfg.radius ?? ACTIVE_SKILL.RADIUS;
+        this.fx.lanternFlash(x, y, radius);
+        this.fx.lanternEdgeFlash(x, y, radius);
+        if (this.cfg.screenShake) this.cameras.main.shake(120, 0.003);
+        break;
+      }
+      case 'hero_cassandra':
+        // 轨迹在 startDash 里发（需要冲刺方向）
+        break;
+      case 'hero_violet': {
+        const radius = cfg.radius ?? 300;
+        this.fx.requiemWave(x, y, radius);
+        this.fx.requiemHeal(x, y);
+        this.requiemRingTimer?.remove(false);
+        this.requiemRingTimer = this.time.delayedCall(FX.SKILL_REQUIEM_RING_GAP_MS, () => {
+          this.requiemRingTimer = null;
+          if (this.state.get() !== GamePhase.RUNNING) return;
+          this.fx.requiemWave(x, y, radius);
+        });
+        break;
+      }
+      case 'hero_galvan':
+        this.fx.rageBurst(x, y);
+        this.player.setScale(FX.SKILL_RAGE_SCALE);
+        if (this.cfg.screenShake) this.cameras.main.shake(120, 0.003);
+        break;
+    }
   }
 
   /** E4-S2 血影突袭：开始冲刺（方向 = 当前输入方向；无输入默认右向） */
@@ -738,6 +798,8 @@ export class PlayScene extends Phaser.Scene {
     const cfg = ACTIVE_SKILLS.hero_cassandra;
     const move = this.inputSource.getMove();
     this.dash = { dir: dashDirection(move), remaining: cfg.dashDistance ?? 0 };
+    this.dashTrailAccum = 0;
+    this.fx.bloodDash(this.player.x, this.player.y, this.dash.dir.x, this.dash.dir.y, cfg.dashDistance ?? 0);
   }
 
   /** E4-S2 血影突袭：冲刺推进（每帧位移 + 路径伤害 + 标记；gdd §3.2 / §⑥.7） */
@@ -759,6 +821,11 @@ export class PlayScene extends Phaser.Scene {
     // clamp 到地图边界（E4-S9 尺寸联动；障碍碰撞由 physics collider 处理，gdd §⑥.7 障碍前停止）
     const clamped = clampToWorld(to, MAP_CONFIGS[this.mapId].width, MAP_CONFIGS[this.mapId].height);
     this.player.setPosition(clamped.x, clamped.y);
+    this.dashTrailAccum += dt;
+    if (this.dashTrailAccum >= 0.04) {
+      this.dashTrailAccum = 0;
+      this.fx.bloodDashTrail(this.player.x, this.player.y, this.dash.dir.x, this.dash.dir.y);
+    }
     // 路径伤害 + 标记：damage = 40 × 0.5 × 总倍率（伤害型主动技只吃 0.5× 总倍率，gdd §3.1）
     const damage =
       (cfg.dashDamage ?? 0) * (cfg.damageMultFactor ?? 0.5) * this.player.stats.totalDamageMultiplier;
@@ -809,9 +876,11 @@ export class PlayScene extends Phaser.Scene {
     if (active && stats.rageBonusMultiplier === 0) {
       stats.setRageBonus(rageMultiplierAdd());
       stats.rageSpeedPct = rageMoveSpeedPct();
+      this.player.setScale(FX.SKILL_RAGE_SCALE);
     } else if (!active && stats.rageBonusMultiplier !== 0) {
       stats.setRageBonus(0);
       stats.rageSpeedPct = 0;
+      this.player.setScale(1);
     }
     if (!active) return;
     // 接触光环：接触半径内任一敌人在场即全额 tick，不按敌数叠加（25 伤/s × 0.5× 总倍率，口径 3）
@@ -1077,6 +1146,9 @@ export class PlayScene extends Phaser.Scene {
     this.unbindNarratives = null;
     this.narratives?.destroy();
     this.prologue?.destroy();
+    this.requiemRingTimer?.remove(false);
+    this.requiemRingTimer = null;
+    this.markers?.destroy();
     resetGameEvents(); // 防泄漏（ARCH §3.4 约定）
     this.inputSource.destroy();
     this.overlay.destroy();

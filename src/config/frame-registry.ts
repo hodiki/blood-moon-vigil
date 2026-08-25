@@ -170,3 +170,8 @@ export const FRAME_REGISTRY: readonly AtlasFrameGroup[] = (() => {
     { atlas: 'ui', frames: collectFrames(UI_CONTENT_IDS, claimed) },
   ];
 })();
+
+/** 内容 ID 的待机帧（注册表第一帧）。M4：角色/Boss 换外观只换这一个名字。 */
+export function visualFrameForContent(contentId: string, fallback = 'player'): string {
+  return FRAME_BY_CONTENT_ID[contentId]?.[0] ?? fallback;
+}

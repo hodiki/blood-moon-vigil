@@ -14,10 +14,13 @@ import { enemyPanel, runtimeKindForEnemyId, type EnemyKindId } from '@/enemies/e
 import type { EnemyConfig, EnemyId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { slowedSpeed } from '@/active-skill/active-skill-effects';
+import { SPECIAL_MARKERS } from '@/fx/fx-spec';
 import type { Player } from '@/player/player';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   kind: EnemyKindId = 'zombie';
+  /** 当前外观帧（M4：tick 按此播 idle/move，避免 15 敌被播回 wolf/zombie 剪影） */
+  visualFrame = 'enemy-zombie';
   /** E3-S1 内容 ID（15 敌；旧 kind 三敌/Boss 为 null） */
   enemyId: EnemyId | null = null;
   maxHp = 0;
@@ -42,6 +45,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** E4-S2 主动技「血影突袭」：标记截止（秒时间戳）+ 标记武器伤害倍率（+20% = 1.2） */
   markUntil = 0;
   markDamageMult = 1;
+  /** 入场时刻（秒）：冲锋周期 / 警告线对齐用 */
+  spawnedAt = 0;
+  /** Boss 出场姿态截止（秒）：期内切 `-entrance`，尊者无该帧则为 0 */
+  entranceUntil = 0;
 
   /**
    * 构造器：池契约 acquire(x,y,texture?,frame?) —— 由调用方显式传 'characters' + 帧名
@@ -78,9 +85,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.slowPct = 0;
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;
-    this.setTexture('characters', `enemy-${kind}`);
+    this.visualFrame = `enemy-${kind}`;
+    this.setTexture('characters', this.visualFrame);
     this.setPosition(x, y);
     this.setActive(true).setVisible(true);
+    this.resetVisualState();
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
     body.setCircle(panel.radius);
@@ -110,9 +119,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.slowPct = 0;
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;
+    this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
     this.setPosition(x, y);
     this.setActive(true).setVisible(true);
+    this.resetVisualState();
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
     body.setCircle(cfg.radius);
@@ -140,6 +151,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // E4-S2 安魂曲：减速期内移速 ×(1-slowPct)（slowUntil 截止后自然恢复）
     const currentSpeed = slowedSpeed(this.speed, this, now);
     body.setVelocity((dx / len) * currentSpeed, (dy / len) * currentSpeed);
+  }
+
+  /** 池复用时重置半透明 / 出场姿态，避免亡魂 α 或 Boss entrance 残留 */
+  private resetVisualState(): void {
+    this.spawnedAt = this.scene.time.now / 1000;
+    this.entranceUntil = 0;
+    this.setAlpha(this.enemyId === 'enemy_g1_4' ? SPECIAL_MARKERS.phase.bodyAlpha : 1);
   }
 
   /**

@@ -12,6 +12,8 @@
 import Phaser from 'phaser';
 import { PLAYER, DEATH_SHIELD, type HeroConfig, type MapId } from '@/config/balance';
 import { MAP_CONFIGS } from '@/config/balance';
+import { visualFrameForContent } from '@/config/frame-registry';
+import { resolveCharacterFrame } from '@/fx/external-atlas';
 import { PlayerStats } from '@/player/player-stats';
 import { isInvulnerable, applyDamage, extendInvulnerabilityUntil } from '@/combat/damage';
 import { GameEvents, GameEvent } from '@/core/events';
@@ -19,14 +21,20 @@ import { clampToWorld, type Vec2 } from '@/utils/math';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   readonly stats: PlayerStats;
+  /** 当前角色待机帧（M4：卡珊德拉等用 hero-*，缺图回退 player） */
+  readonly visualFrame: string;
   /** 无敌帧截止（秒时间戳）：0.5s（enemies §⑥.3 / RV-C7） */
   private invulnerableUntil = 0;
   /** 当前世界尺寸（E4-S9：按 MAP_CONFIGS 尺寸联动；默认墓地 3000） */
   private worldW: number;
   private worldH: number;
+  /** 主动技姿态叠层起点（ms；<0 = 未在播）。伤害已瞬发，本字段只驱动 skill-a/b 帧。 */
+  private skillPoseStartedAtMs = -1;
 
   constructor(scene: Phaser.Scene, x: number, y: number, hero?: HeroConfig, mapId: MapId = 'map_graveyard') {
-    super(scene, x, y, 'characters', 'player');
+    const visual = resolveCharacterFrame(scene, visualFrameForContent(hero?.id ?? 'hero_edmund'));
+    super(scene, x, y, 'characters', visual);
+    this.visualFrame = visual;
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.stats = new PlayerStats(hero);
@@ -98,5 +106,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    */
   grantInvulnerability(durationSeconds: number, nowSeconds: number): void {
     this.invulnerableUntil = extendInvulnerabilityUntil(this.invulnerableUntil, nowSeconds, durationSeconds);
+  }
+
+  /** 开始姿态叠层（不冻结移动；缺帧时 tick 自动跳过） */
+  beginSkillPose(): void {
+    this.skillPoseStartedAtMs = this.scene.time.now;
+  }
+
+  /** 距姿态起点的毫秒；未开始为 -1 */
+  skillPoseElapsedMs(): number {
+    if (this.skillPoseStartedAtMs < 0) return -1;
+    return this.scene.time.now - this.skillPoseStartedAtMs;
   }
 }

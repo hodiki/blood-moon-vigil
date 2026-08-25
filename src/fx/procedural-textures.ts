@@ -34,6 +34,7 @@ import Phaser from 'phaser';
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { TILE, PALETTE, GEM, BOSS, JOYSTICK } from '@/config/balance';
 import { mulberry32, hexToRgba } from '@/utils/math';
+import { applyExternalCharacterFrames } from '@/fx/external-atlas';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -910,6 +911,7 @@ export function createProceduralTextures(scene: Phaser.Scene, cfg: RuntimeConfig
   createDenTiles(scene);
   createBlockerTile(scene);
   createCharactersAtlas(scene, cfg);
+  applyExternalCharacterFrames(scene);
   createEffectsAtlas(scene);
   createAmbientAtlas(scene);
 }

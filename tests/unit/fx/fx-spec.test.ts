@@ -49,6 +49,11 @@ describe('fx-spec 武器特效 P0 常量（TASK-36，参数全收敛位）', () 
     expect(FX_COLORS.paper).toBe(PALETTE.uiPaper);
   });
 
+  it('主动技分模板色：轨迹月银 / 兽纹暗红 token（无新色相）', () => {
+    expect(FX_COLORS.dash).toBe(PALETTE.player);
+    expect(FX_COLORS.rageBeast).toBe(PALETTE.enemyZombie);
+  });
+
   it('飞弹拖尾帧为合法粒子帧（点→彗尾 p-streak）', () => {
     expect(FX.TRAIL_FRAME).toBe('p-streak');
   });
@@ -83,6 +88,15 @@ describe('fx-spec 武器特效 P0 常量（TASK-36，参数全收敛位）', () 
     expect(FX.ORBIT_TRAIL_INTERVAL_MS).toBeGreaterThan(0);
     expect(FX.ORBIT_HIT_THROTTLE_MS).toBeGreaterThan(0);
     expect(FX.ORBIT_HIT_SPARK_COUNT).toBeGreaterThan(0);
+  });
+
+  it('主动技分模板常量（姿态叠层 / 安魂曲间隔 / 狂化体型）', () => {
+    expect(FX.SKILL_POSE_A_MS).toBe(300);
+    expect(FX.SKILL_POSE_B_MS).toBe(150);
+    expect(FX.SKILL_REQUIEM_RING_GAP_MS).toBe(150);
+    expect(FX.SKILL_RAGE_SCALE).toBe(1.1);
+    expect(FX.SKILL_DASH_GHOST_COUNT).toBe(3);
+    expect(FX.BOSS_ENTRANCE_MS).toBe(500);
   });
 });
 

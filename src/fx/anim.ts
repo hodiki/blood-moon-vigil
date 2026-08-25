@@ -1,47 +1,95 @@
 /**
- * fx/anim.ts —— 角色程序动画（TASK-28 美术表现力专项 · 2 帧循环）
+ * fx/anim.ts —— 角色 2 帧循环（TASK-28 + M4 按实际帧名播）
  *
- * 原则：不加资源、不加贴图批次 —— 基准帧与变体帧（`*-v`）同处 'characters' 图集，
- * 用 Phaser anims 在「基准 ↔ 变体」间切换，仅节奏不同：
- * - idle：慢速（1.4fps yoyo）＝ 呼吸/披风微动
- * - move：快速（9fps yoyo）＝ 移动摆动/脚步节奏
- * 同一变体帧复用于 idle 与 move，帧数省半（5 变体帧覆盖 5 实体）。
- * 纪律：普通敌移动用 move、Boss 恒用 idle（慢速巨体不做快速 bob）；
- * 实体零逻辑改动 —— PlayScene 在 update 转发时调用 tick，只读 body.velocity 判断移动态。
+ * 原则：基准帧与变体帧（`*-v`）同处 'characters' 图集。
+ * `-v` 只承担 idle 呼吸（1.4fps yoyo）。没有 `-walk-a/b` 时不要用 idle 变体当 9fps 走路。
+ * 方向：asset-spec 只出一朝向，横移用 flipX（默认帧朝右，vx<0 镜像）。
  */
 
 import Phaser from 'phaser';
 import type { Player } from '@/player/player';
 import type { Enemy } from '@/enemies/enemy';
+import { bossEntranceFrameName, skillPoseFrameName, skillPosePhase } from '@/fx/skill-pose';
 
-const ENTITY_KINDS = ['player', 'zombie', 'wolf', 'tank', 'boss'] as const;
+/** 小于此水平速度（px/s）保持上一朝向，避免原地抖动翻面 */
+export const FACING_DEADZONE = 8;
 
-/** 创建 5 实体 × 2 动画（idle/move）；幂等（scene.restart 兼容） */
+export function idleAnimKey(frame: string): string {
+  return `${frame}-idle`;
+}
+
+export function moveAnimKey(frame: string): string {
+  return `${frame}-move`;
+}
+
+/** 有正式步态帧才建 move；否则 tick 回落到 idle。 */
+export function walkCycleFrames(base: string, hasFrame: (name: string) => boolean): string[] | null {
+  const a = `${base}-walk-a`;
+  const b = `${base}-walk-b`;
+  if (hasFrame(a) && hasFrame(b)) return [a, b];
+  return null;
+}
+
+/** 帧朝右：vx>deadzone → 不翻转；vx<-deadzone → 翻转。竖移保持 current。 */
+export function facingFlipX(vx: number, current: boolean, deadzone = FACING_DEADZONE): boolean {
+  if (vx > deadzone) return false;
+  if (vx < -deadzone) return true;
+  return current;
+}
+
+/**
+ * 原图默认是否朝右。批次 1 朝向不统一（犬/尸多朝左，守夜人偏右），
+ * 未登记的实体不翻转，避免月步。美术统一朝右后把表扩全。
+ */
+export function defaultFacesRight(visualFrame: string): boolean | null {
+  const base = visualFrame.replace(/-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b)$/, '');
+  if (base === 'player') return true;
+  return null;
+}
+
+function addIdleMovePair(scene: Phaser.Scene, key: string, variant: string, hasFrame: (name: string) => boolean): void {
+  const idle = idleAnimKey(key);
+  if (scene.anims.exists(idle)) return;
+  scene.anims.create({
+    key: idle,
+    frames: [
+      { key: 'characters', frame: key },
+      { key: 'characters', frame: variant },
+    ],
+    frameRate: 1.4,
+    yoyo: true,
+    repeat: -1,
+  });
+  const walk = walkCycleFrames(key, hasFrame);
+  if (!walk) return;
+  scene.anims.create({
+    key: moveAnimKey(key),
+    frames: walk.map((frame) => ({ key: 'characters', frame })),
+    frameRate: 6,
+    yoyo: false,
+    repeat: -1,
+  });
+}
+
+/** 为图集里所有「基帧 + -v」建 idle/move；幂等（scene.restart 兼容） */
 export function createCharacterAnims(scene: Phaser.Scene): void {
-  if (scene.anims.exists('player-idle')) return;
-  for (const kind of ENTITY_KINDS) {
-    const key = kind === 'player' ? 'player' : `enemy-${kind}`;
+  if (!scene.textures.exists('characters')) return;
+  const tex = scene.textures.get('characters');
+  for (const key of tex.getFrameNames()) {
+    if (
+      key.endsWith('-v') ||
+      key.endsWith('-skill-a') ||
+      key.endsWith('-skill-b') ||
+      key.endsWith('-skill-c') ||
+      key.endsWith('-entrance') ||
+      key.endsWith('-walk-a') ||
+      key.endsWith('-walk-b')
+    ) {
+      continue;
+    }
     const variant = `${key}-v`;
-    scene.anims.create({
-      key: `${key}-idle`,
-      frames: [
-        { key: 'characters', frame: key },
-        { key: 'characters', frame: variant },
-      ],
-      frameRate: 1.4,
-      yoyo: true,
-      repeat: -1,
-    });
-    scene.anims.create({
-      key: `${key}-move`,
-      frames: [
-        { key: 'characters', frame: key },
-        { key: 'characters', frame: variant },
-      ],
-      frameRate: 9,
-      yoyo: true,
-      repeat: -1,
-    });
+    if (!tex.has(variant)) continue;
+    addIdleMovePair(scene, key, variant, (name) => tex.has(name));
   }
 }
 
@@ -58,16 +106,57 @@ function playEntity(sprite: Phaser.GameObjects.Sprite, key: string): void {
   if (!sprite.anims.isPlaying || cur !== key) sprite.play(key, true);
 }
 
-/** 玩家：移动态 → player-move，否则 player-idle */
-export function tickPlayer(player: Player): void {
-  playEntity(player, isMoving(player) ? 'player-move' : 'player-idle');
+export function hasCharacterFrame(scene: Phaser.Scene, name: string): boolean {
+  return scene.textures.exists('characters') && scene.textures.get('characters').has(name);
 }
 
-/** 敌人：普通 3 敌按移动态切换；Boss 恒 idle（慢速披风摆动） */
-export function tickEnemy(enemy: Enemy): void {
-  if (enemy.kind === 'boss') {
-    playEntity(enemy, 'enemy-boss-idle');
+function applyFacing(sprite: Phaser.Physics.Arcade.Sprite, visualFrame: string): void {
+  if (defaultFacesRight(visualFrame) !== true) return;
+  const body = sprite.body as Phaser.Physics.Arcade.Body | null;
+  if (!body) return;
+  sprite.setFlipX(facingFlipX(body.velocity.x, sprite.flipX));
+}
+
+function holdFrame(sprite: Phaser.GameObjects.Sprite, frame: string): void {
+  if (sprite.anims.isPlaying) sprite.anims.stop();
+  if (sprite.frame?.name !== frame) sprite.setTexture('characters', frame);
+}
+
+function playVisual(sprite: Phaser.GameObjects.Sprite, base: string, moving: boolean, boss = false): void {
+  const idle = idleAnimKey(base);
+  const move = moveAnimKey(base);
+  const scene = sprite.scene;
+  if (boss || !scene.anims.exists(move)) {
+    if (scene.anims.exists(idle)) playEntity(sprite, idle);
     return;
   }
-  playEntity(enemy, isMoving(enemy) ? `enemy-${enemy.kind}-move` : `enemy-${enemy.kind}-idle`);
+  playEntity(sprite, moving ? move : idle);
+}
+
+/** 玩家：技能姿态叠层优先（不挡移动）；否则 idle（无 walk 帧时移动也播 idle）+ flipX */
+export function tickPlayer(player: Player): void {
+  applyFacing(player, player.visualFrame);
+  const phase = skillPosePhase(player.skillPoseElapsedMs());
+  if (phase) {
+    const frame = skillPoseFrameName(player.visualFrame, phase);
+    if (hasCharacterFrame(player.scene, frame)) {
+      holdFrame(player, frame);
+      return;
+    }
+  }
+  playVisual(player, player.visualFrame, isMoving(player));
+}
+
+/** 敌人：Boss 出场切 `-entrance` 再回 idle；朝向未统一前不翻转。 */
+export function tickEnemy(enemy: Enemy): void {
+  applyFacing(enemy, enemy.visualFrame);
+  const now = enemy.scene.time.now / 1000;
+  if (enemy.kind === 'boss' && now < enemy.entranceUntil) {
+    const frame = bossEntranceFrameName(enemy.visualFrame);
+    if (hasCharacterFrame(enemy.scene, frame)) {
+      holdFrame(enemy, frame);
+      return;
+    }
+  }
+  playVisual(enemy, enemy.visualFrame, isMoving(enemy), enemy.kind === 'boss');
 }

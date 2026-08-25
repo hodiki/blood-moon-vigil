@@ -23,6 +23,9 @@ export const runtimeConfig = cfg;
 
 // eslint-disable-next-line no-new
 const game = new Phaser.Game(createGameConfig(cfg));
+if (import.meta.env.DEV) {
+  (window as unknown as { __BMV_GAME__?: Phaser.Game }).__BMV_GAME__ = game;
+}
 
 // TASK-43 P0：DOM 覆盖层（HUD/升级卡/结算页）与 Scale.FIT 画布对齐 —— 底部 HUD（HP 条）
 // 在视口高度 < 设计高（1080）时不再落到可视区外；首次 + 画布/窗口尺寸变化时同步。
