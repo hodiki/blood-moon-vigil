@@ -42,6 +42,7 @@ import {
 import type { SaveData } from '@/stats/save';
 import { preferFrameImg } from '@/ui/frame-img';
 import { codexIconFrame } from '@/codex/codex-icon-frame';
+import { bindPanelA11y } from '@/ui/panel-a11y';
 
 // —— 纯函数（可单测）——
 
@@ -136,6 +137,8 @@ export class CodexOverlay {
   private readonly unlocked: ReadonlySet<string>;
   private readonly onCloseCb: (() => void) | null;
   private readonly handlers: Array<{ el: HTMLElement; onClick: () => void }> = [];
+  /** QA-BUG-2：Esc 关闭 + Tab 焦点陷阱（bindPanelA11y 返回的解绑函数） */
+  private unbindA11y: (() => void) | null = null;
   private currentCategory: CodexCategory = 'hero';
 
   constructor(host: HTMLElement, opts: CodexOverlayOptions) {
@@ -186,6 +189,18 @@ export class CodexOverlay {
 
     this.renderTabs();
     this.renderCategory(this.currentCategory);
+    // QA-BUG-2 ②③：Esc 关面板（抽屉开着先关抽屉）+ Tab 焦点陷阱锁面板内
+    this.unbindA11y = bindPanelA11y({
+      root: this.root,
+      onEscape: () => {
+        if (this.drawer.classList.contains('open')) {
+          this.hideDrawer();
+          return true;
+        }
+        this.close();
+        return true;
+      },
+    });
   }
 
   private bindClick(el: HTMLElement, onClick: () => void): void {
@@ -194,6 +209,8 @@ export class CodexOverlay {
   }
 
   private close(): void {
+    this.unbindA11y?.();
+    this.unbindA11y = null;
     for (const h of this.handlers) h.el.removeEventListener('click', h.onClick);
     this.root.remove();
     this.onCloseCb?.();
@@ -318,6 +335,8 @@ export class CodexOverlay {
   }
 
   destroy(): void {
+    this.unbindA11y?.();
+    this.unbindA11y = null;
     for (const h of this.handlers) h.el.removeEventListener('click', h.onClick);
     this.root.remove();
   }
@@ -331,6 +350,9 @@ export class CodexOverlay {
       .bmv-codex {
         position: absolute; inset: 0;
         z-index: 75;
+        /* QA-BUG-2 ①：#ui-overlay 宿主 pointer-events:none，本层必须自启可点击，
+           否则整层对点击透明、命中穿透到下方 .bmv-start-mask（面板全点不到的根因） */
+        pointer-events: auto;
         font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
                  env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);

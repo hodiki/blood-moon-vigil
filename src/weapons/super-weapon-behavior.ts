@@ -14,7 +14,7 @@ import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { nearestEnemy, circlesOverlap } from '@/weapons/weapon-math';
-import { superWeaponSpec } from '@/weapons/super-weapons';
+import { superWeaponSpec, type SuperWeaponSpec } from '@/weapons/super-weapons';
 import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { FxManager } from '@/fx/fx-manager';
@@ -84,7 +84,14 @@ class SuperHomingProjectile extends Phaser.Physics.Arcade.Sprite {
  */
 export class SuperWeaponBehavior implements WeaponBehavior {
   readonly weaponClass = 'A' as const; // 超武独立类目，不吃类强化（weaponClass 仅供结构）
-  private readonly spec = superWeaponSpec(this.evoId);
+  /**
+   * QA-BUG-1（2026-08-27）根因修复：spec 必须在构造体内赋值，不得用字段初始化器引用
+   * 构造参数属性。useDefineForClassFields 下字段初始化先于构造体（参数属性绑定）执行，
+   * 原 `private readonly spec = superWeaponSpec(this.evoId)` 实际拿到 undefined →
+   * 进化选卡瞬间 SuperWeaponBehavior 构造抛 TypeError → onUpgradeChosen 中断在
+   * state.set(RUNNING) 之前 → 世界停在 LEVEL_UP 且选卡层已隐藏 = 整局隐形卡死。
+   */
+  private readonly spec: SuperWeaponSpec;
   private enabled = false;
   private readonly pool: ArcadePoolLike<SuperHomingProjectile>;
   private cooldown = 0;
@@ -103,6 +110,7 @@ export class SuperWeaponBehavior implements WeaponBehavior {
     readonly evoId: EvoId,
     private readonly fx: FxManager,
   ) {
+    this.spec = superWeaponSpec(evoId); // 构造体内赋值（依赖参数属性；见类字段注释）
     this.pool = createArcadePool(this.scene, cfg, 'bullets', SuperHomingProjectile, 12);
     const vis = sceneWeaponVisual(this.scene, this.spec.frame, this.spec.fallbackFrame);
     this.visual = vis;

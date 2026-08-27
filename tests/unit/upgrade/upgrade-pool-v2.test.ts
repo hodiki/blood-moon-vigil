@@ -401,3 +401,75 @@ describe('M3 真机埋点 related 标记（upgrade-experience-v2 §2.1 / §4.4�
     expect(opt.related).toBeUndefined(); // 单测直调 optionFromCandidate 不写 related；rollThreeV2 才标记
   });
 });
+
+// ============================================================================
+// QA-BUG-1 回归（2026-08-27 外测报告）：进化幂等
+// 「已消费进化卡 → 同名进化卡不得再次入池」；多把武器各满足条件可分别出现。
+// ============================================================================
+
+describe('QA-BUG-1 进化幂等（已进化武器不再出同名进化卡）', () => {
+  /** 守夜人 A 类成型 2 + 持鹰眼镜片（进化条件满足的最小 state） */
+  function evoEligibleState(): UpgradeState {
+    const s = new UpgradeState();
+    s.addStack('up_w_a1', 2);
+    s.addStack('up_w_a1', 2); // A 类累计 2（EVOLUTION_MIN_CLASS_STACKS）
+    s.addStack('key_scope', 1);
+    return s;
+  }
+
+  it('未进化：条件满足 → evo_moonwrath 入池且 P1 保底必占一席（复现基线语义）', () => {
+    const state = evoEligibleState();
+    const pool = buildV2Candidates(state, ctx());
+    expect(pool.some((c) => c.kind === 'evolution' && c.evoId === 'evo_moonwrath')).toBe(true);
+    const g = pickGuaranteeCandidate(state, ctx(), pool, () => 0.99);
+    expect(g?.kind).toBe('evolution');
+    expect(g?.evoId).toBe('evo_moonwrath');
+    const opts = rollThreeV2(state, ctx(), () => 0.5);
+    expect(opts.some((o) => o.kind === 'evolution' && o.evoId === 'evo_moonwrath')).toBe(true);
+  });
+
+  it('已进化 wpn_a_1：同名「进化：血月天罚」不再入池，P1 保底不再返回它，rollThreeV2 不再出现', () => {
+    const state = evoEligibleState();
+    const evolvedCtx = ctx({ isEvolved: (w) => w === 'wpn_a_1' });
+    const pool = buildV2Candidates(state, evolvedCtx);
+    // 幂等排除：候选池无该武器进化卡（即便类强化 ≥2 且仍持钥——钥/类强化不可逆持有）
+    expect(pool.some((c) => c.kind === 'evolution' && c.evoId === 'evo_moonwrath')).toBe(false);
+    expect(pool.some((c) => c.kind === 'evolution')).toBe(false);
+    // P1 保底退位：guarantee 不再是任何进化卡
+    const g = pickGuaranteeCandidate(state, evolvedCtx, pool, () => 0.99);
+    expect(g?.kind).not.toBe('evolution');
+    // 渲染层三选一不出现「进化：血月天罚」（QA 复现主路径断言）
+    for (let i = 0; i < 20; i += 1) {
+      const opts = rollThreeV2(state, evolvedCtx);
+      expect(opts.some((o) => o.name.includes('血月天罚'))).toBe(false);
+      expect(opts.some((o) => o.kind === 'evolution')).toBe(false);
+    }
+  });
+
+  it('多把武器各满足条件：各自的进化卡分别出现；仅进化其一只排除其同名卡', () => {
+    const twoWeapons = ctx({
+      ownedWeaponIds: ['wpn_a_1', 'wpn_b_1'],
+      isEvolved: () => false,
+    });
+    const s = new UpgradeState();
+    s.addStack('up_w_a1', 2);
+    s.addStack('up_w_a1', 2); // A 类 2
+    s.addStack('key_scope', 1);
+    s.addStack('up_w_b1', 2);
+    s.addStack('up_w_b1', 2); // B 类 2
+    s.addStack('key_holy', 1);
+
+    let pool = buildV2Candidates(s, twoWeapons);
+    const evoIds = pool.filter((c) => c.kind === 'evolution').map((c) => c.evoId).sort();
+    expect(evoIds).toEqual(['evo_moonwrath', 'evo_seraphring']); // 两把各自出现
+
+    // 仅进化 A1（wpn_a_1）：只排除血月天罚，炽天使之环仍在
+    const aOnly = ctx({
+      ownedWeaponIds: ['wpn_a_1', 'wpn_b_1'],
+      isEvolved: (w) => w === 'wpn_a_1',
+    });
+    pool = buildV2Candidates(s, aOnly);
+    const afterIds = pool.filter((c) => c.kind === 'evolution').map((c) => c.evoId);
+    expect(afterIds).toEqual(['evo_seraphring']);
+  });
+});

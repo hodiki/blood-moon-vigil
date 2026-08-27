@@ -32,6 +32,8 @@ export class LevelUpOverlay {
   /** E4-S4：v2 池（内容 ID）选项；非空时本层按 v2 渲染/派发 */
   private optionsV2: UpgradeV2Option[] | null = null;
   private timeoutId: number | null = null;
+  /** QA-BUG-1：选卡确认（100ms）延迟句柄——同一轮只允许排程一次，hide/show 时撤销，杜绝跨局残留 choose */
+  private chooseTimerId: number | null = null;
   /** 本次展示时间戳（纠结埋点 dwell 计算，E4-S1） */
   private shownAt = 0;
   private readonly timeoutSeconds: number;
@@ -68,7 +70,7 @@ export class LevelUpOverlay {
     this.options = options;
     this.shownAt = Date.now(); // 纠结埋点：展示时刻
     this.render();
-    this.root.style.display = 'flex';
+    this.showRoot();
     this.clearTimeout();
     this.timeoutId = window.setTimeout(() => this.choose(0), this.timeoutSeconds * 1000);
   }
@@ -79,13 +81,24 @@ export class LevelUpOverlay {
     this.optionsV2 = options;
     this.shownAt = Date.now();
     this.renderV2();
-    this.root.style.display = 'flex';
+    this.showRoot();
     this.clearTimeout();
     this.timeoutId = window.setTimeout(() => this.choose(0), this.timeoutSeconds * 1000);
   }
 
+  /**
+   * QA-BUG-1 显隐配对：唯一的「置可见」出口——强制 display:flex + opacity:1，
+   * 与 hide() 一一配对；显示前先撤销遗留 choose 延迟句柄（防跨轮串卡）。
+   */
+  private showRoot(): void {
+    this.clearChooseTimer();
+    this.root.style.opacity = '1';
+    this.root.style.display = 'flex';
+  }
+
   /** 隐藏（选卡完成 / 场景关闭） */
   hide(): void {
+    this.clearChooseTimer(); // 撤销未确认的选中（QA-BUG-1：防残留 choose 在下一轮误触发）
     this.root.style.display = 'none';
     this.clearTimeout();
   }
@@ -180,11 +193,16 @@ export class LevelUpOverlay {
 
   /** 选中反馈（冷青描边 + 缩放 1.03，0.1s）后 emit upgrade:chosen */
   private select(index: number): void {
+    if (this.root.style.display === 'none') return; // 未展示不响应（QA-BUG-1 键盘/连点保底）
+    if (this.chooseTimerId !== null) return; // 已有待确认选中：忽略本次（连点 / 键盘重复不再叠加 choose）
     const card = this.cards[index];
     if (!card) return;
     card.classList.add('bmv-selected');
     this.clearTimeout();
-    window.setTimeout(() => this.choose(index), 100);
+    this.chooseTimerId = window.setTimeout(() => {
+      this.chooseTimerId = null;
+      this.choose(index);
+    }, 100);
   }
 
   private choose(index: number): void {
@@ -205,6 +223,13 @@ export class LevelUpOverlay {
     if (this.timeoutId !== null) {
       window.clearTimeout(this.timeoutId);
       this.timeoutId = null;
+    }
+  }
+
+  private clearChooseTimer(): void {
+    if (this.chooseTimerId !== null) {
+      window.clearTimeout(this.chooseTimerId);
+      this.chooseTimerId = null;
     }
   }
 

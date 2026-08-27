@@ -976,6 +976,12 @@ export class PlayScene extends Phaser.Scene {
     };
     const options = rollThreeV2(this.upgradeState, v2Ctx);
     this.lastOptionsV2 = options;
+    // QA-BUG-1 兜底：无可选选项不进入 LEVEL_UP（rollThreeV2 回退机制下理论不可达，
+    // 防御「暂停无 UI」死锁）——照常 RUNNING（升级回血 HpChanged 已在上方 emit）
+    if (options.length === 0) {
+      console.warn('[upgrade] 三选一为空：跳过 LEVEL_UP（保持 RUNNING，不死锁）');
+      return;
+    }
     // M3 真机埋点：一次三选一出现（offersPerRun + related 卡统计，upgrade-experience-v2 §4.4）
     this.stats.recordUpgradeOffered(options);
     // E4-S1 升级时间戳埋点（后期升级间隔 / Lv47 预警数据源，供文策渊评审）
@@ -993,9 +999,24 @@ export class PlayScene extends Phaser.Scene {
     this.state.set(GamePhase.LEVEL_UP); // 世界冻结（applyPhase）
   }
 
-  /** 三选一完成 → 写回 → 回 RUNNING（CM §3.3）；有挂起升级则链式再升 */
+  /** 三选一完成 → 写回 → 回 RUNNING（CM §3.3）；有挂起升级则链式再升。
+   *  QA-BUG-1 兜底：写回阶段任何异常都必须回 RUNNING——选卡层在 emit 前已隐藏，
+   *  若此处中断，世界将永久停在 LEVEL_UP（玩家视角整局隐形卡死、进度丢失）。 */
   private onUpgradeChosen(args: unknown): void {
     const payload = args as UpgradeChosenPayload;
+    try {
+      this.consumeUpgradeChoice(payload);
+    } catch (err) {
+      console.error('[upgrade] 选卡写回异常（已强制回 RUNNING 保活）', err);
+    } finally {
+      // E4-S1 HUD：升级写回后 HP 变化（如 maxHp+20 同时回 20）
+      GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      this.state.set(GamePhase.RUNNING); // 恢复世界（applyPhase + 输入向量归零）
+    }
+  }
+
+  /** QA-BUG-1 拆分：选卡消费主体（异常由 onUpgradeChosen 捕获保活） */
+  private consumeUpgradeChoice(payload: UpgradeChosenPayload): void {
     if (typeof payload.optionId === 'string') {
       // E4-S4：v2 池（内容 ID 字符串）
       const optionId = payload.optionId;
@@ -1038,9 +1059,6 @@ export class PlayScene extends Phaser.Scene {
         GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: payload.optionId, name: item?.name ?? '' });
       }
     }
-    // E4-S1 HUD：升级写回后 HP 变化（如 maxHp+20 同时回 20）
-    GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-    this.state.set(GamePhase.RUNNING); // 恢复世界（applyPhase + 输入向量归零）
   }
 
   /** E4-S5/E4-S6：武器解锁（v2 目标 unlockWeapon / 初始武器 / 进化超武） */

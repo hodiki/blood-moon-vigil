@@ -58,15 +58,41 @@ export function createStartOverlay(
   host.appendChild(root);
 
   // M3 图鉴/功绩入口：从当前存档打开覆盖层（返回回主菜单；本层保持可见被盖在下方）
+  // QA-BUG-2 ①③：面板打开期间 .bmv-start-mask 让位（pointer-events:none，关闭恢复），
+  // 关闭后焦点还给「点击开始」；两面板互斥打开（蒙层归属管理保持简单）
   let codexOverlay: CodexOverlay | null = null;
   let meritOverlay: MeritOverlay | null = null;
+  const startMask = root.querySelector('.bmv-start-mask') as HTMLElement;
+  const holdStartUiForPanel = (): void => {
+    startMask.style.pointerEvents = 'none';
+  };
+  const releaseStartUiFromPanel = (): void => {
+    startMask.style.pointerEvents = '';
+    btn.focus(); // QA-BUG-2 ③：焦点归还「点击开始」，Tab 不再盲开局
+  };
   const openCodex = (): void => {
-    if (!opts.save || codexOverlay) return;
-    codexOverlay = createCodexOverlay({ save: opts.save, isMobile: detectIsMobile(), onClose: () => { codexOverlay = null; } });
+    if (!opts.save || codexOverlay || meritOverlay) return;
+    holdStartUiForPanel();
+    codexOverlay = createCodexOverlay({
+      save: opts.save,
+      isMobile: detectIsMobile(),
+      onClose: () => {
+        codexOverlay = null;
+        releaseStartUiFromPanel();
+      },
+    });
   };
   const openMerit = (): void => {
-    if (!opts.save || meritOverlay) return;
-    meritOverlay = createMeritOverlay({ save: opts.save, isMobile: detectIsMobile(), onClose: () => { meritOverlay = null; } });
+    if (!opts.save || meritOverlay || codexOverlay) return;
+    holdStartUiForPanel();
+    meritOverlay = createMeritOverlay({
+      save: opts.save,
+      isMobile: detectIsMobile(),
+      onClose: () => {
+        meritOverlay = null;
+        releaseStartUiFromPanel();
+      },
+    });
   };
 
   const mapRow = root.querySelector('.bmv-map-row') as HTMLElement;

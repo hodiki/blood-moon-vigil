@@ -25,6 +25,7 @@ import {
   type MeritId,
 } from '@/stats/merit';
 import { loadSave, writeSave, type SaveData, type SaveStorage } from '@/stats/save';
+import { bindPanelA11y } from '@/ui/panel-a11y';
 
 // —— 纯函数（可单测）——
 
@@ -84,6 +85,8 @@ export class MeritOverlay {
   private readonly onCloseCb: (() => void) | null;
   private readonly handlers: Array<{ el: HTMLElement; onClick: () => void }> = [];
   private readonly pureChangeHandler: () => void;
+  /** QA-BUG-2：Esc 关闭 + Tab 焦点陷阱（bindPanelA11y 返回的解绑函数） */
+  private unbindA11y: (() => void) | null = null;
 
   constructor(host: HTMLElement, opts: MeritOverlayOptions) {
     this.save = opts.save;
@@ -148,6 +151,23 @@ export class MeritOverlay {
     this.pureToggle.addEventListener('change', this.pureChangeHandler);
 
     this.renderCards();
+    // QA-BUG-2 ②③：Esc 关面板 + Tab 焦点陷阱锁面板内
+    this.unbindA11y = bindPanelA11y({
+      root: this.root,
+      onEscape: () => {
+        if (this.replaceEl?.classList.contains('open')) {
+          this.hideReplace();
+          return true;
+        }
+        this.close();
+        return true;
+      },
+    });
+  }
+
+  /** 替换加成弹层根（QA-BUG-2：Esc 先关它再关面板；无则 null） */
+  private get replaceEl(): HTMLElement | null {
+    return this.root.querySelector('.bmv-merit-replace');
   }
 
   private bindClick(el: HTMLElement, onClick: () => void): void {
@@ -250,6 +270,8 @@ export class MeritOverlay {
   }
 
   destroy(): void {
+    this.unbindA11y?.();
+    this.unbindA11y = null;
     for (const h of this.handlers) h.el.removeEventListener('click', h.onClick);
     this.pureToggle.removeEventListener('change', this.pureChangeHandler);
     this.root.remove();
@@ -264,6 +286,9 @@ export class MeritOverlay {
       .bmv-merit {
         position: absolute; inset: 0;
         z-index: 75;
+        /* QA-BUG-2 ①：#ui-overlay 宿主 pointer-events:none，本层必须自启可点击
+           （否则命中穿透到下方 .bmv-start-mask，面板全点不到） */
+        pointer-events: auto;
         font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
                  env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
