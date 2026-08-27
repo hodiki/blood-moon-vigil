@@ -3,10 +3,12 @@
  *
  * Web 音频策略硬前提：AudioContext 需用户手势解锁。本层是唯一解锁点——
  * 点击回调内调 AudioManager.unlock()，随后进入 PlayScene（ux-spec §1 屏幕流）。
- * E4-S1 角色选择（QA-FIX-2 补齐遗漏 UI）：四角色卡（守夜人/血猎手/夜祷修女/狼裔），
- * 未解锁剪影灰 + 🔒 +「通关地图 N 解锁」文案（canSelectHero 门禁）；选中 2px 冷青描边
- * （art-bible §2 选中态规范，与地图卡同款）；点击走 selectHeroSafely（非法回退默认）。
- * E4-S9 地图选择最小实现：三图卡（墓地默认 / 教堂 / 狼穴），未解锁显示 🔒 + 解锁条件；
+ * E4-S1 角色选择（QA-FIX-2 补齐遗漏 UI）：四角色卡（守夜人/血猎手/夜祷修女/狼裔）。
+ * QA-FIX-3 追加①：0.2.x 当前阵容全开放——canSelectHero/canSelectMap 对四角色三图一律 true，
+ * 锁定渲染分支（灰剪影/🔒/「通关地图 N 解锁」）随之休眠不再出现；门禁渲染机制保留给
+ * 未来新增内容（unlock 记录照常传入）。选中 2px 冷青描边（art-bible §2 选中态规范，
+ * 与地图卡同款）；点击走 selectHeroSafely（非法 id 防御回退默认）。
+ * E4-S9 地图选择最小实现：三图卡（墓地默认 / 教堂 / 狼穴），全开放；
  * 选中即 setSelectedMap（session-selection），PlayScene 开局消费。
  * M3 功能行（codex-ui-spec §1 / merit-ui-spec §1）：地图行与开始按钮之间插入
  * `[守夜日志] [守夜功绩]` 两个入口（z-index 75 覆盖层，盖本层 70 之上；返回回主菜单不进入战斗）。

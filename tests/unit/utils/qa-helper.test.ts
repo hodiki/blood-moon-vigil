@@ -43,12 +43,12 @@ describe('QA-FIX-2 B ?qa=1 控制台测试辅助', () => {
     });
   });
 
-  it('② status/setHero/setMap：未解锁时切高级角色回退默认守夜人（门禁校验生效）', () => {
+  it('② status/setHero/setMap：0.2.x 全开放——空存档下切任意角色/地图直接生效（门禁休眠）', () => {
     const qa = installQaHelper(storage, 'desktop');
-    expect(qa.setHero('hero_cassandra')).toBe('hero_edmund'); // 未通关地图 1 → 回退
-    expect(getSelectedHero()).toBe('hero_edmund');
+    expect(qa.setHero('hero_cassandra')).toBe('hero_cassandra'); // 全开放，无需解锁
+    expect(getSelectedHero()).toBe('hero_cassandra');
     const snap = qa.status();
-    expect(snap.hero).toBe('hero_edmund');
+    expect(snap.hero).toBe('hero_cassandra');
     expect(snap.map).toBe('map_graveyard');
     expect(snap.unlocks).toEqual({ clearedGraveyard: false, clearedCathedral: false, clearedDen: false });
   });

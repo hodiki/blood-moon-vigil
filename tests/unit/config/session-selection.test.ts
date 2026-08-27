@@ -34,41 +34,42 @@ describe('session-selection（E4-S1 角色 / E4-S9 地图 会话选择）', () =
     expect(getSelectedMap()).toBe('map_graveyard');
   });
 
-  it('角色解锁流：守夜人默认；血猎手需通关墓地；修女需通关教堂；狼裔需击败芬里厄（通关狼穴）', () => {
+  it('QA-FIX-3 追加① 0.2.x 全开放：四角色任意解锁状态一律可选（门禁机制保留给未来新增）', () => {
     const none = { clearedGraveyard: false, clearedCathedral: false, clearedDen: false };
-    const g1 = { clearedGraveyard: true, clearedCathedral: false, clearedDen: false };
-    const g2 = { clearedGraveyard: true, clearedCathedral: true, clearedDen: false };
-    const g3 = { clearedGraveyard: true, clearedCathedral: true, clearedDen: true };
-    expect(canSelectHero('hero_edmund', none)).toBe(true);
-    expect(canSelectHero('hero_cassandra', none)).toBe(false);
-    expect(canSelectHero('hero_cassandra', g1)).toBe(true);
-    expect(canSelectHero('hero_violet', g1)).toBe(false);
-    expect(canSelectHero('hero_violet', g2)).toBe(true);
-    expect(canSelectHero('hero_galvan', g2)).toBe(false);
-    expect(canSelectHero('hero_galvan', g3)).toBe(true);
+    const all = { clearedGraveyard: true, clearedCathedral: true, clearedDen: true };
+    const heroes: HeroId[] = ['hero_edmund', 'hero_cassandra', 'hero_violet', 'hero_galvan'];
+    for (const hero of heroes) {
+      expect(canSelectHero(hero, none)).toBe(true);
+      expect(canSelectHero(hero, all)).toBe(true);
+    }
   });
 
-  it('地图解锁流：墓地默认；教堂需通关墓地；狼穴需通关教堂', () => {
+  it('QA-FIX-3 追加① 0.2.x 全开放：三图任意解锁状态一律可选', () => {
     const none = { clearedGraveyard: false, clearedCathedral: false, clearedDen: false };
-    const g1 = { clearedGraveyard: true, clearedCathedral: false, clearedDen: false };
-    const g2 = { clearedGraveyard: true, clearedCathedral: true, clearedDen: false };
-    expect(canSelectMap('map_graveyard', none)).toBe(true);
-    expect(canSelectMap('map_cathedral', none)).toBe(false);
-    expect(canSelectMap('map_cathedral', g1)).toBe(true);
-    expect(canSelectMap('map_den', g1)).toBe(false);
-    expect(canSelectMap('map_den', g2)).toBe(true);
+    const maps: MapId[] = ['map_graveyard', 'map_cathedral', 'map_den'];
+    for (const map of maps) {
+      expect(canSelectMap(map, none)).toBe(true);
+      expect(canSelectMap(map, { clearedGraveyard: true, clearedCathedral: true, clearedDen: true })).toBe(true);
+    }
   });
 
-  it('selectSafely 兜底：非法选择回退默认（防数据层/UI 越权）', () => {
+  it('API 形状保留：unlock 参数签名不变（未来新增角色/地图按 unlock 记录恢复门禁）', () => {
+    // 编译期保证：canSelectHero/canSelectMap 仍接受 { clearedGraveyard, clearedCathedral, clearedDen }
+    const unlock = { clearedGraveyard: false, clearedCathedral: false, clearedDen: false };
+    expect(typeof canSelectHero('hero_edmund', unlock)).toBe('boolean');
+    expect(typeof canSelectMap('map_graveyard', unlock)).toBe('boolean');
+  });
+
+  it('selectSafely 兜底（API 保留）：已知 id 全开放下不回退；未知 id 防御回退默认', () => {
     const none = { clearedGraveyard: false, clearedCathedral: false, clearedDen: false };
-    expect(selectHeroSafely('hero_galvan', none)).toBe('hero_edmund');
-    expect(getSelectedHero()).toBe('hero_edmund');
-    expect(selectMapSafely('map_den', none)).toBe('map_graveyard');
-    expect(getSelectedMap()).toBe('map_graveyard');
-    // 合法选择不回退
-    const g3 = { clearedGraveyard: true, clearedCathedral: true, clearedDen: true };
-    expect(selectHeroSafely('hero_galvan', g3)).toBe('hero_galvan');
-    expect(selectMapSafely('map_den', g3)).toBe('map_den');
+    // 全开放：任意已知角色/地图直接生效
+    expect(selectHeroSafely('hero_galvan', none)).toBe('hero_galvan');
+    expect(getSelectedHero()).toBe('hero_galvan');
+    expect(selectMapSafely('map_den', none)).toBe('map_den');
+    expect(getSelectedMap()).toBe('map_den');
+    // 防御分支（当前联合类型下不可达，保留防数据层/UI 越权）
+    expect(selectHeroSafely('hero_not_exist' as HeroId, none)).toBe('hero_edmund');
+    expect(selectMapSafely('bad_map' as MapId, none)).toBe('map_graveyard');
   });
 });
 

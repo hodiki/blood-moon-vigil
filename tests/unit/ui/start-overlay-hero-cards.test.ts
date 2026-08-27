@@ -9,40 +9,39 @@ import { getSelectedHero, setSelectedHero, selectHeroSafely, resetSessionSelecti
 
 /**
  * QA-FIX-2 A-2：启动页角色选择栏逻辑态单测（E4-S1 遗漏 UI 补齐）。
- * DOM 渲染由 createStartOverlay 消费 buildHeroCardStates（纯函数共用），本文件断言：
- * - 默认只有守夜人可选，其余三卡锁定文案与 canSelectHero 门禁一一匹配；
- * - 全解锁后四卡可选；powerTag 标识齐全；
- * - 点击语义（selectHeroSafely）：选中已解锁卡生效、点击未解锁卡不改变当前选择。
+ * QA-FIX-3 追加①：0.2.x 当前阵容全开放——四角色/三图一开始即可自由选择：
+ * - 任意解锁状态下四卡全部可选（locked 恒 false，灰剪影/🔒/解锁文案不再出现）；
+ * - desc 一律展示配置副标题位（主动技能名），锁定文案仅保留 dormant 分支给未来新增；
+ * - 点击语义（selectHeroSafely）：任意已知角色直接生效。
+ * 解锁门禁数据层（save.ts unlockStatusFromSave）保留，供未来新增内容复用。
  */
 
 const ALL_LOCKED_UNLOCK = { clearedGraveyard: false, clearedCathedral: false, clearedDen: false };
 const GRAVEYARD_CLEARED = { clearedGraveyard: true, clearedCathedral: false, clearedDen: false };
 const ALL_CLEARED = { clearedGraveyard: true, clearedCathedral: true, clearedDen: true };
 
-describe('QA-FIX-2 A 启动页角色选择栏（卡片逻辑态）', () => {
+describe('QA-FIX-2 A 启动页角色选择栏（卡片逻辑态；QA-FIX-3 追加① 全开放）', () => {
   beforeEach(() => {
     resetSessionSelection();
   });
 
-  it('① 默认解锁状态：仅 hero_edmund 可选，其余三卡 locked', () => {
+  it('① 0.2.x 全开放：任意解锁状态（含全未通关）四卡全部可选', () => {
     const states = buildHeroCardStates(ALL_LOCKED_UNLOCK);
     expect(states.map((s) => s.id)).toEqual(HERO_CARD_ORDER);
-    expect(states.map((s) => s.locked)).toEqual([false, true, true, true]);
-  });
-
-  it('② 锁定文案与门禁匹配：cassandra/violet/galvan 分别对应通关地图 1/2/3 解锁', () => {
-    const states = buildHeroCardStates(ALL_LOCKED_UNLOCK);
-    expect(states.find((s) => s.id === 'hero_cassandra')!.desc).toBe('通关地图 1 解锁');
-    expect(states.find((s) => s.id === 'hero_violet')!.desc).toBe('通关地图 2 解锁');
-    expect(states.find((s) => s.id === 'hero_galvan')!.desc).toBe('通关地图 3 解锁');
-  });
-
-  it('③ 门禁逐级递进：通关墓地只解 cassandra；全解锁四卡全开', () => {
-    expect(buildHeroCardStates(GRAVEYARD_CLEARED).map((s) => s.locked)).toEqual([false, false, true, true]);
+    expect(states.map((s) => s.locked)).toEqual([false, false, false, false]);
+    expect(buildHeroCardStates(GRAVEYARD_CLEARED).map((s) => s.locked)).toEqual([false, false, false, false]);
     expect(buildHeroCardStates(ALL_CLEARED).map((s) => s.locked)).toEqual([false, false, false, false]);
   });
 
-  it('④ powerTag 标识齐全且为色板内 token 色（HALLOWED=圣辉/SILVER=银器/BEAST=兽血）', () => {
+  it('② 锁定文案不再出现：desc 一律为配置副标题位（主动技能名）', () => {
+    const states = buildHeroCardStates(ALL_LOCKED_UNLOCK);
+    for (const s of states) {
+      expect(s.desc).toBe(HEROES[s.id].activeSkillName);
+      expect(s.desc).not.toContain('解锁');
+    }
+  });
+
+  it('③ powerTag 标识齐全且为色板内 token 色（HALLOWED=圣辉/SILVER=银器/BEAST=兽血）', () => {
     const states = buildHeroCardStates(ALL_CLEARED);
     for (const s of states) {
       expect(s.powerTagLabel.length).toBeGreaterThan(0);
@@ -54,25 +53,17 @@ describe('QA-FIX-2 A 启动页角色选择栏（卡片逻辑态）', () => {
     expect(states.find((s) => s.id === 'hero_cassandra')!.name).toBe(HEROES.hero_cassandra.name);
   });
 
-  it('⑤ 未锁定卡 desc 展示配置副标题位（主动技能名），如 edmund 提灯闪耀', () => {
-    const states = buildHeroCardStates(ALL_CLEARED);
-    expect(states.find((s) => s.id === 'hero_edmund')!.desc).toBe(HEROES.hero_edmund.activeSkillName);
-  });
-
-  it('⑥ 点击未解锁卡不改变 selectedHero（selectHeroSafely 非法回退默认并保持锁定观感）', () => {
-    setSelectedHero('hero_edmund'); // 默认守夜人已选中
-    const applied = selectHeroSafely('hero_cassandra', ALL_LOCKED_UNLOCK); // 锁定卡点击
-    expect(applied).toBe('hero_edmund');
+  it('④ 点击任意角色卡直接生效（selectHeroSafely 全开放；API 兜底保留）', () => {
+    expect(selectHeroSafely('hero_cassandra', ALL_LOCKED_UNLOCK)).toBe('hero_cassandra');
+    expect(getSelectedHero()).toBe('hero_cassandra');
+    expect(selectHeroSafely('hero_galvan', ALL_CLEARED)).toBe('hero_galvan');
+    expect(getSelectedHero()).toBe('hero_galvan');
+    // 默认选中态数据源仍为 getSelectedHero
+    setSelectedHero('hero_edmund');
     expect(getSelectedHero()).toBe('hero_edmund');
   });
 
-  it('⑦ 选中描边态数据源：点击已解锁卡 → selectedHero 生效（DOM 高亮消费 getSelectedHero）', () => {
-    const applied = selectHeroSafely('hero_galvan', ALL_CLEARED);
-    expect(applied).toBe('hero_galvan');
-    expect(getSelectedHero()).toBe('hero_galvan');
-  });
-
-  it('⑧ 解锁数据源联动：unlockStatusFromSave 空存档 → 三门禁全关（save.ts 正式 API 路径）', () => {
+  it('⑤ 解锁数据源兼容：unlockStatusFromSave 空存档语义不变（未来门禁复用）', () => {
     const save: SaveData = emptySave();
     expect(unlockStatusFromSave(save)).toEqual(ALL_LOCKED_UNLOCK);
   });

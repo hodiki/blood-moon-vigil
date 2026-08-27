@@ -3,9 +3,10 @@
  *
  * 纯数据层（可脱离 Phaser 单测）：本轮开局选哪个角色、哪张图。
  * - 默认：守夜人 hero_edmund + 墓地 map_graveyard（gdd-codex §3.5 默认解锁）。
- * - 解锁门禁（E4-S9）：非默认角色/地图须先满足解锁记录（save.ts 数据层在 M2-S4 段2 落地），
- *   本模块只提供选择读写；解锁校验由 `canSelectHero/canSelectMap`（依赖解锁记录）完成。
- * - UI（主菜单角色卡/地图选择）归 M3 最小实现；PlayScene 开局读本模块。
+ * - 0.2.x 全开放（QA-FIX-3 追加①用户决策）：当前四角色/三图一开始即可自由选择；
+ *   解锁门禁机制（save.ts 记录 + selectSafely 兜底）保留给未来新增内容。
+ * - 本模块只提供选择读写与门禁查询；UI（主菜单角色卡/地图选择）按门禁结果渲染，
+ *   PlayScene 开局读本模块。
  * - 会话级（非持久）：scene.restart 保留选择；返回主菜单重进 Play 仍保留（用户回到
  *   开始界面重新选择才更新）——与「再来一局」同会话语义一致。
  */
@@ -45,48 +46,43 @@ export function resetSessionSelection(): void {
 }
 
 /**
- * 角色是否可选（E4-S9 解锁流；unlock 记录由 save.ts 数据层提供）。
- * - hero_edmund 默认可选；
- * - hero_cassandra 需通关地图 1（graveyard）；
- * - hero_violet 需通关地图 2（cathedral）；
- * - hero_galvan 需击败狼王·芬里厄（通关地图 3，gdd-codex §3.5 情感闭环）。
- * unlock 参数：{ clearedGraveyard?, clearedCathedral?, clearedDen? } —— 缺省全部 false（未解锁）。
+ * 角色是否可选（QA-FIX-3 追加①：0.2.x 当前阵容全开放——用户决策，
+ * 四角色一开始即可自由选择，R3 外测锁定门禁观感移除）。
+ * unlock 门禁机制保留给未来新增角色：届时按 unlock 记录恢复分支（API 签名不变）；
+ * unlock 参数当前仅作签名占位（未来门禁复用），不影响结果。
+ * - hero_edmund / hero_cassandra / hero_violet / hero_galvan 一律返回 true；
+ * - 未知 id 防御返回 false（selectHeroSafely 兜底回退默认仍保留）。
  */
 export function canSelectHero(
   hero: HeroId,
   unlock: { clearedGraveyard: boolean; clearedCathedral: boolean; clearedDen: boolean },
 ): boolean {
+  void unlock; // 0.2.x 全开放；未来新增角色按 unlock 记录门禁（E4-S9 原条件见 git 历史）
   switch (hero) {
     case 'hero_edmund':
-      return true;
     case 'hero_cassandra':
-      return unlock.clearedGraveyard;
     case 'hero_violet':
-      return unlock.clearedCathedral;
     case 'hero_galvan':
-      return unlock.clearedDen;
+      return true;
     default:
       return false;
   }
 }
 
 /**
- * 地图是否可选（E4-S9 解锁流）。
- * - map_graveyard 默认；
- * - map_cathedral 需通关墓地；
- * - map_den 需通关教堂。
+ * 地图是否可选（QA-FIX-3 追加①：0.2.x 三图全开放，同 canSelectHero——
+ * 门禁机制保留给未来新增地图，API 签名不变；未知 id 防御返回 false）。
  */
 export function canSelectMap(
   map: MapId,
   unlock: { clearedGraveyard: boolean; clearedCathedral: boolean; clearedDen: boolean },
 ): boolean {
+  void unlock; // 0.2.x 全开放；未来新增地图按 unlock 记录门禁
   switch (map) {
     case 'map_graveyard':
-      return true;
     case 'map_cathedral':
-      return unlock.clearedGraveyard;
     case 'map_den':
-      return unlock.clearedCathedral;
+      return true;
     default:
       return false;
   }
