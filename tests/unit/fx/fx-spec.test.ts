@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEATH_BURST, FX_COLORS, SPECIAL_MARKERS } from '@/fx/fx-spec';
+import { DEATH_BURST, FX_COLORS, SPECIAL_MARKERS, SKILL_RING_FRAMES, pickFxAtlas, pickWeaponVisual } from '@/fx/fx-spec';
 import { FX, PALETTE, type EnemyKindId } from '@/config/balance';
 import { FRAME_BY_CONTENT_ID } from '@/config/frame-registry';
 
@@ -97,6 +97,8 @@ describe('fx-spec 武器特效 P0 常量（TASK-36，参数全收敛位）', () 
     expect(FX.SKILL_RAGE_SCALE).toBe(1.1);
     expect(FX.SKILL_DASH_GHOST_COUNT).toBe(3);
     expect(FX.BOSS_ENTRANCE_MS).toBe(500);
+    expect(FX.SKILL_RING_LIFE).toBe(0.35);
+    expect(FX.SKILL_RAGE_RING_RADIUS).toBe(56);
   });
 });
 
@@ -155,5 +157,73 @@ describe('E3-S9 特殊行为标记 5 类规格（gdd-enemies §4.2 / asset-spec 
     const specJson = JSON.stringify(SPECIAL_MARKERS);
     expect(specJson.includes('particleCount')).toBe(false);
     expect(specJson.includes('"count"')).toBe(false);
+  });
+});
+
+describe('主动技专属环帧名', () => {
+  it('4 英雄 ↔ skill-ring-* 且在注册表', () => {
+    const rings = new Set(FRAME_BY_CONTENT_ID.skill_rings ?? []);
+    expect(SKILL_RING_FRAMES.hero_edmund).toBe('skill-ring-edmund');
+    expect(SKILL_RING_FRAMES.hero_cassandra).toBe('skill-ring-cassandra');
+    expect(SKILL_RING_FRAMES.hero_violet).toBe('skill-ring-violet');
+    expect(SKILL_RING_FRAMES.hero_galvan).toBe('skill-ring-galvan');
+    for (const frame of Object.values(SKILL_RING_FRAMES)) {
+      expect(rings.has(frame)).toBe(true);
+    }
+  });
+});
+
+describe('pickFxAtlas', () => {
+  it('优先 fx-ambient，其次 effects', () => {
+    const has = (atlas: string, frame: string) =>
+      (atlas === 'fx-ambient' || atlas === 'effects') && frame === 'marker-aura';
+    expect(pickFxAtlas(has, 'marker-aura', 'p-ring')).toEqual({
+      atlas: 'fx-ambient',
+      frame: 'marker-aura',
+    });
+  });
+
+  it('ambient 没有时用 effects', () => {
+    const has = (atlas: string, frame: string) => atlas === 'effects' && frame === 'marker-stun';
+    expect(pickFxAtlas(has, 'marker-stun', 'p-circle')).toEqual({
+      atlas: 'effects',
+      frame: 'marker-stun',
+    });
+  });
+
+  it('都没有则回退程序粒子帧', () => {
+    expect(pickFxAtlas(() => false, 'marker-aura', 'p-ring')).toEqual({
+      atlas: 'fx-ambient',
+      frame: 'p-ring',
+    });
+  });
+});
+
+describe('pickWeaponVisual', () => {
+  it('characters 有契约帧则 dedicated', () => {
+    const has = (atlas: string, frame: string) => atlas === 'characters' && frame === 'proj-crossbow';
+    expect(pickWeaponVisual(has, 'proj-crossbow', 'missile')).toEqual({
+      atlas: 'characters',
+      frame: 'proj-crossbow',
+      dedicated: true,
+    });
+  });
+
+  it('characters 没有时用 effects 上的同名帧', () => {
+    const has = (atlas: string, frame: string) => atlas === 'effects' && frame === 'ring-holyfire';
+    expect(pickWeaponVisual(has, 'ring-holyfire', 'shockwave')).toEqual({
+      atlas: 'effects',
+      frame: 'ring-holyfire',
+      dedicated: true,
+    });
+  });
+
+  it('契约帧全缺则回退 fallback', () => {
+    const has = (atlas: string, frame: string) => atlas === 'characters' && frame === 'missile';
+    expect(pickWeaponVisual(has, 'proj-javelin', 'missile')).toEqual({
+      atlas: 'characters',
+      frame: 'missile',
+      dedicated: false,
+    });
   });
 });

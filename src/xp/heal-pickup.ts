@@ -20,8 +20,8 @@ export class HealPickup extends Phaser.Physics.Arcade.Sprite {
     body.setAllowGravity(false);
     body.enable = false;
     this.setActive(false).setVisible(false);
-    // 治疗绿（拾取语义 = 治疗，art-bible 绿=安全/治疗；帧内十字形状负责色盲双编码）
-    this.setTint(0x43d17c);
+    // 治疗绿画在帧内（asset-spec §1.5）；外部素材已着色时不再乘 tint
+    this.clearTint();
   }
 
   /** 从池取出：重置年龄、呼吸发光 + 激活（merit-ui-spec §11：呼吸发光 1s） */

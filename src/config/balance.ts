@@ -266,6 +266,10 @@ export const FX = {
   SKILL_DASH_SPARK_COUNT: 8,
   /** 血月狂化兽纹粒子数 */
   SKILL_RAGE_PARTICLE_COUNT: 10,
+  /** 可选 skill-ring-* 扩散叠层寿命（秒）；缺帧则 no-op，粒子环仍在 */
+  SKILL_RING_LIFE: 0.35,
+  /** 血月狂化周身环半径（非清屏半径；asset-spec 兽影形态） */
+  SKILL_RAGE_RING_RADIUS: 56,
   /** Boss 出场姿态时长 ms（有 `-entrance` 帧时切姿态；尊者无后缀仍闪红） */
   BOSS_ENTRANCE_MS: 500,
 } as const;

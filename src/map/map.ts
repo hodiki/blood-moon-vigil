@@ -33,6 +33,43 @@ export const SPAWN_SAFE_RADIUS = 120;
 export const DECAL_SEED = 20260828;
 export const DECAL_COUNT_DESKTOP = 28;
 export const DECAL_COUNT_MOBILE = 14;
+/** 装饰散布（纯视觉，无碰撞；与贴花错开种子） */
+export const DECOR_SEED = 20260829;
+export const DECOR_COUNT_DESKTOP = 18;
+export const DECOR_COUNT_MOBILE = 10;
+
+export interface DecorSprite {
+  x: number;
+  y: number;
+  frame: string;
+  angle: number;
+}
+
+/** 确定性装饰点：避开出生安全区；帧从 MAP_CONFIGS.decor 轮询 */
+export function buildDecorLayout(
+  worldW: number,
+  worldH: number,
+  seed: number,
+  count: number,
+  frames: readonly string[],
+): DecorSprite[] {
+  if (frames.length === 0 || count <= 0) return [];
+  const rng = mulberry32(seed);
+  const out: DecorSprite[] = [];
+  const margin = TILE.SIZE * 2;
+  const cx = worldW / 2;
+  const cy = worldH / 2;
+  let guard = 0;
+  while (out.length < count && guard < 400) {
+    guard += 1;
+    const x = margin + rng() * (worldW - margin * 2);
+    const y = margin + rng() * (worldH - margin * 2);
+    if (overlapsSpawnSafe({ x, y, w: 1, h: 1 }, cx, cy)) continue;
+    const frame = frames[Math.floor(rng() * frames.length)] ?? frames[0]!;
+    out.push({ x, y, frame, angle: rng() * 360 });
+  }
+  return out;
+}
 
 /**
  * 确定性障碍布局（纯函数，可单测）：
@@ -80,6 +117,8 @@ export class MapSystem {
   readonly grass: Phaser.GameObjects.TileSprite;
   /** TASK-28 地面贴花：碎石/草叶/血迹（静态精灵，depth -98，随 effects 组批次；graveyard 基准） */
   readonly decals: Phaser.GameObjects.Image[];
+  /** 批次 3：地图装饰（枯树/烛/骨/彩玻光斑等，无碰撞） */
+  readonly decor: Phaser.GameObjects.Image[];
   readonly blockers: Phaser.Physics.Arcade.StaticGroup;
   readonly bounds: Phaser.GameObjects.Graphics;
 
@@ -97,8 +136,13 @@ export class MapSystem {
     const mapCfg = MAP_CONFIGS[mapId];
     const w = mapCfg.width;
     const h = mapCfg.height;
+    // 墓地：有独立土砖时用 tile-grave-soil 作地面（石板仍作共享兜底）
+    const groundKey =
+      mapId === 'map_graveyard' && scene.textures.exists('tile-grave-soil')
+        ? 'tile-grave-soil'
+        : (mapCfg.tiles[0] ?? 'tile-ground');
     this.ground = scene.add
-      .tileSprite(w / 2, h / 2, w, h, mapCfg.tiles[0] ?? 'tile-ground')
+      .tileSprite(w / 2, h / 2, w, h, groundKey)
       .setDepth(-100);
     this.grass = scene.add
       .tileSprite(w / 2, h / 2, GRASS_ZONE_SIZE, GRASS_ZONE_SIZE, mapCfg.tiles[1] ?? 'tile-grass')
@@ -119,6 +163,23 @@ export class MapSystem {
       img.setAlpha(frame === 'decal-blood' ? 0.35 + decalRng() * 0.2 : 0.6 + decalRng() * 0.35);
       img.setAngle(decalRng() * 360);
       this.decals.push(img);
+    }
+
+    const baseDecor = decalCount >= DECAL_COUNT_DESKTOP ? DECOR_COUNT_DESKTOP : DECOR_COUNT_MOBILE;
+    const decorCount = mapId === 'map_cathedral' ? Math.max(6, Math.round(baseDecor * 0.4)) : baseDecor;
+    this.decor = [];
+    const effectsTex = scene.textures.exists('effects') ? scene.textures.get('effects') : null;
+    for (const d of buildDecorLayout(w, h, DECOR_SEED, decorCount, mapCfg.decor)) {
+      if (!effectsTex?.has(d.frame)) continue;
+      const img = scene.add.image(d.x, d.y, 'effects', d.frame).setDepth(d.frame === 'decor-church-glasslight' ? -96 : -90);
+      if (d.frame === 'decor-church-glasslight') {
+        img.setAlpha(0.42);
+        img.setDisplaySize(96, 96);
+        img.setAngle(d.angle);
+      } else {
+        img.setAngle(d.frame.includes('tree') || d.frame.includes('pillar') ? 0 : d.angle);
+      }
+      this.decor.push(img);
     }
 
     // 障碍 StaticGroup：graveyard AABB（既有）；教堂/狼穴 圆形碰撞体（E3-S8 生成器）

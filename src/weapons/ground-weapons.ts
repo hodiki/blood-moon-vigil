@@ -30,6 +30,7 @@ import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
 import type { KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { FxManager } from '@/fx/fx-manager';
+import { sceneHasFrame, sceneWeaponVisual } from '@/fx/external-atlas';
 
 /** C 类地面池行为（c2/c3；c1 用既有 ShockwaveWeapon） */
 export class GroundPoolWeaponBehavior implements WeaponBehavior {
@@ -42,6 +43,7 @@ export class GroundPoolWeaponBehavior implements WeaponBehavior {
   private params: GroundAreaDerivedParams;
   private readonly pools: GroundPoolInstance[] = [];
   private readonly poolSprites: Phaser.GameObjects.Sprite[] = [];
+  private readonly decalSprites: Phaser.GameObjects.Sprite[] = [];
   private poolSeq = 0;
   /** 最近一次类强化堆叠（钥被动派生用；初始空） */
   private currentClassStacks: ClassUpgradeStacks = {
@@ -55,16 +57,29 @@ export class GroundPoolWeaponBehavior implements WeaponBehavior {
   ) {
     this.config = WEAPON_CONFIGS[weaponId];
     this.params = deriveGroundAreaParams(this.config, { a1: 0, a2: 0, a3: 0, b1: 0, b2: 0, b3: 0, c1: 0, c2: 0, c3: 0, d1: 0, d2: 0, d3: 0 });
-    // 复用 effects 冲击波环帧作地面池圈（M2 程序剪影兜底；M4 按 frame-registry 换 ring-* 帧）
+    const vis = sceneWeaponVisual(scene, this.config.frame, 'shockwave');
+    const useDecal = this.config.id === 'wpn_c_2' && sceneHasFrame(scene, 'effects', 'decal-bloodpool');
     for (let i = 0; i < 8; i += 1) {
       const s = scene.add
-        .sprite(0, 0, 'effects', 'shockwave')
+        .sprite(0, 0, vis.atlas, vis.frame)
         .setActive(false)
         .setVisible(false)
         .setDepth(75)
-        .setAlpha(0.4);
-      s.setTint(this.config.id === 'wpn_c_2' ? 0xc05252 : 0xffc93c); // 血池红 / 圣火金
+        .setAlpha(0.45);
+      if (!vis.dedicated) {
+        // 缺帧：血池暗红 / 圣火冷青（禁金）
+        s.setTint(this.config.id === 'wpn_c_2' ? 0x7e1e1e : 0x54e6c9);
+      }
       this.poolSprites.push(s);
+      if (useDecal) {
+        const d = scene.add
+          .sprite(0, 0, 'effects', 'decal-bloodpool')
+          .setActive(false)
+          .setVisible(false)
+          .setDepth(74)
+          .setAlpha(0.55);
+        this.decalSprites.push(d);
+      }
     }
   }
 
@@ -90,6 +105,7 @@ export class GroundPoolWeaponBehavior implements WeaponBehavior {
   clearAll(): void {
     this.pools.length = 0;
     for (const s of this.poolSprites) s.setActive(false).setVisible(false);
+    for (const d of this.decalSprites) d.setActive(false).setVisible(false);
     this.cooldown = 0;
   }
 
@@ -146,14 +162,21 @@ export class GroundPoolWeaponBehavior implements WeaponBehavior {
       const s = this.poolSprites[i];
       if (!s) continue;
       const p = this.pools[i];
+      const d = this.decalSprites[i];
       if (p) {
+        const pulse = 0.3 + 0.15 * Math.sin(this.poolSeq * 0.7);
         s.setPosition(p.x, p.y).setActive(true).setVisible(true);
         s.setDisplaySize(p.radius * 2, p.radius * 2);
-        // 血池/圣火闪烁降频（移动端 LOD：gdd-weapons-v2 §⑦ 地面领域贴花保留、闪烁降频）
-        s.setAlpha(0.3 + 0.15 * Math.sin(this.poolSeq * 0.7));
+        s.setAlpha(pulse);
+        if (d) {
+          d.setPosition(p.x, p.y).setActive(true).setVisible(true);
+          d.setDisplaySize(p.radius * 1.7, p.radius * 1.7);
+          d.setAlpha(pulse * 0.9);
+        }
         this.poolSeq += 1;
       } else {
         s.setActive(false).setVisible(false);
+        d?.setActive(false).setVisible(false);
       }
     }
   }

@@ -28,8 +28,15 @@ import {
   type HudState,
 } from '@/ui/hud-state';
 import { renderIconSvg, weaponIconKeyForId } from '@/ui/icons';
+import { FRAME_IMG_BASE, preferFrameImg } from '@/ui/frame-img';
 
 const ESC_HINT_SECONDS = 5;
+
+const WSLOT_FRAMES: Record<'missile' | 'orbit' | 'shockwave', string> = {
+  missile: 'wslot-missile',
+  orbit: 'wslot-orb',
+  shockwave: 'wslot-shockwave',
+};
 
 interface HudOptions {
   cfg: RuntimeConfig;
@@ -38,6 +45,8 @@ interface HudOptions {
   onActiveSkill?: () => void;
   /** E4-S2 主动技名（移动端技能按钮 aria-label；缺省提灯闪耀） */
   skillName?: string;
+  /** 批次 3：主动技图标帧（skill-edmund 等）；缺省不换图 */
+  skillIconFrame?: string;
 }
 
 export class Hud {
@@ -99,6 +108,9 @@ export class Hud {
       orbit: weaponsRow.querySelector('[data-weapon="orbit"]') as HTMLElement,
       shockwave: weaponsRow.querySelector('[data-weapon="shockwave"]') as HTMLElement,
     };
+    preferFrameImg(this.weaponEls.missile, WSLOT_FRAMES.missile);
+    preferFrameImg(this.weaponEls.orbit, WSLOT_FRAMES.orbit);
+    preferFrameImg(this.weaponEls.shockwave, WSLOT_FRAMES.shockwave);
 
     // 暂停键（仅移动端，ux-spec §2：右上 44×44，热区=视觉）
     if (opts.cfg.isMobile) {
@@ -117,6 +129,11 @@ export class Hud {
         <div class="bmv-hud-skill-icon">✦</div>
         <div class="bmv-hud-skill-charges" hidden>1</div>
       `;
+      this.skillEl.style.backgroundImage = `url(${FRAME_IMG_BASE}/hud-skillbtn.png)`;
+      this.skillEl.style.backgroundSize = 'cover';
+      this.skillEl.style.backgroundPosition = 'center';
+      const skillIconHost = this.skillEl.querySelector('.bmv-hud-skill-icon') as HTMLElement | null;
+      if (skillIconHost && opts.skillIconFrame) preferFrameImg(skillIconHost, opts.skillIconFrame);
       if (this.skillHandler) this.skillEl.addEventListener('click', this.skillHandler);
       this.root.appendChild(this.skillEl);
       this.skillCdEl = this.skillEl.querySelector('.bmv-hud-skill-cd') as HTMLElement | null;
@@ -268,7 +285,16 @@ export class Hud {
         opacity: 0.45;
         filter: saturate(0.35) brightness(0.75);
       }
-      .bmv-hud-weapon.active svg {
+      .bmv-hud-weapon img.bmv-frame-img {
+        display: block;
+        width: 100%; height: 100%;
+        image-rendering: pixelated;
+      }
+      .bmv-hud-weapon:not(.active) img.bmv-frame-img {
+        opacity: 0.45;
+        filter: saturate(0.35) brightness(0.75);
+      }
+      .bmv-hud-weapon.active img.bmv-frame-img {
         filter: none;
       }
       .bmv-hud-pause {
@@ -296,6 +322,11 @@ export class Hud {
         font-size: 36px; color: #E8F0FA;
         text-shadow: 0 0 8px rgba(84, 230, 201, 0.6);
         pointer-events: none;
+      }
+      .bmv-hud-skill-icon img.bmv-frame-img {
+        display: block;
+        width: 56px; height: 56px;
+        image-rendering: pixelated;
       }
       .bmv-hud-skill-cd {
         position: absolute; inset: 0; border-radius: 10px;

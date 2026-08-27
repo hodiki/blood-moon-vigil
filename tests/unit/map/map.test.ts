@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildObstacleLayout, SPAWN_SAFE_RADIUS, OBSTACLE_LAYOUT_SEED } from '@/map/map';
+import { buildObstacleLayout, SPAWN_SAFE_RADIUS, OBSTACLE_LAYOUT_SEED, buildDecorLayout, DECOR_SEED } from '@/map/map';
 import { WORLD, TILE, MAP_CONFIGS, type MapId } from '@/config/balance';
 import {
   mapRenderSpec,
@@ -186,5 +186,26 @@ describe('E3-S8 障碍/血池生成器（gdd-maps §3.0/§⑥；确定性种子�
     expect(isOnBloodPool(p.x, p.y, pools)).toBe(true);
     expect(isOnBloodPool(p.x + p.radius - 1, p.y, pools)).toBe(true);
     expect(isOnBloodPool(p.x + p.radius + 50, p.y, pools)).toBe(false);
+  });
+});
+
+describe('批次 3 装饰散布（纯视觉，无碰撞）', () => {
+  it('空帧表返回空', () => {
+    expect(buildDecorLayout(WORLD.WIDTH, WORLD.HEIGHT, DECOR_SEED, 18, [])).toEqual([]);
+  });
+
+  it('同种子确定性 + 避开出生安全区 + 帧来自传入表', () => {
+    const frames = MAP_CONFIGS.map_graveyard.decor;
+    const a = buildDecorLayout(WORLD.WIDTH, WORLD.HEIGHT, DECOR_SEED, 18, frames);
+    const b = buildDecorLayout(WORLD.WIDTH, WORLD.HEIGHT, DECOR_SEED, 18, frames);
+    expect(a).toEqual(b);
+    expect(a).toHaveLength(18);
+    const cx = WORLD.WIDTH / 2;
+    const cy = WORLD.HEIGHT / 2;
+    for (const d of a) {
+      expect(frames).toContain(d.frame);
+      const dist = Math.hypot(d.x - cx, d.y - cy);
+      expect(dist).toBeGreaterThan(SPAWN_SAFE_RADIUS);
+    }
   });
 });

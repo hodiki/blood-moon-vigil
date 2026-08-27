@@ -5,34 +5,60 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const atlasDir = fileURLToPath(new URL('./assets/atlas', import.meta.url));
+const framesDir = fileURLToPath(new URL('./assets/frames', import.meta.url));
 
-/** 把管线打好的 `assets/atlas` 挂到 /atlas，供 BootScene.load.atlas 使用 */
+/** 把管线打好的 `assets/atlas` 挂到 /atlas，把处理后的单帧挂到 /frames（HUD / 地图卡 DOM 用） */
 function servePackedAtlas(): Plugin {
+  const sendFile = (file: string, url: string, res: import('http').ServerResponse, next: () => void): void => {
+    if (!fs.existsSync(file)) return next();
+    res.setHeader('Content-Type', url.endsWith('.json') ? 'application/json' : 'image/png');
+    fs.createReadStream(file).pipe(res);
+  };
   return {
     name: 'serve-packed-atlas',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0] ?? '';
-        if (!url.startsWith('/atlas/')) return next();
-        const name = decodeURIComponent(url.slice('/atlas/'.length));
-        if (!name || name.includes('..') || name.includes('/') || name.includes('\\')) {
-          res.statusCode = 404;
-          res.end();
+        if (url.startsWith('/atlas/')) {
+          const name = decodeURIComponent(url.slice('/atlas/'.length));
+          if (!name || name.includes('..') || name.includes('/') || name.includes('\\')) {
+            res.statusCode = 404;
+            res.end();
+            return;
+          }
+          sendFile(path.join(atlasDir, name), url, res, next);
           return;
         }
-        const file = path.join(atlasDir, name);
-        if (!fs.existsSync(file)) return next();
-        res.setHeader('Content-Type', name.endsWith('.json') ? 'application/json' : 'image/png');
-        fs.createReadStream(file).pipe(res);
+        if (url.startsWith('/frames/')) {
+          const name = decodeURIComponent(url.slice('/frames/'.length));
+          if (!name || name.includes('..') || name.includes('/') || name.includes('\\') || !name.endsWith('.png')) {
+            res.statusCode = 404;
+            res.end();
+            return;
+          }
+          sendFile(path.join(framesDir, name), url, res, next);
+          return;
+        }
+        next();
       });
     },
     writeBundle(options) {
-      if (!fs.existsSync(atlasDir)) return;
-      const dest = path.join(options.dir ?? 'dist', 'atlas');
-      fs.mkdirSync(dest, { recursive: true });
-      for (const f of fs.readdirSync(atlasDir)) {
-        if (f.endsWith('.png') || f.endsWith('.json')) {
-          fs.copyFileSync(path.join(atlasDir, f), path.join(dest, f));
+      if (fs.existsSync(atlasDir)) {
+        const dest = path.join(options.dir ?? 'dist', 'atlas');
+        fs.mkdirSync(dest, { recursive: true });
+        for (const f of fs.readdirSync(atlasDir)) {
+          if (f.endsWith('.png') || f.endsWith('.json')) {
+            fs.copyFileSync(path.join(atlasDir, f), path.join(dest, f));
+          }
+        }
+      }
+      if (fs.existsSync(framesDir)) {
+        const dest = path.join(options.dir ?? 'dist', 'frames');
+        fs.mkdirSync(dest, { recursive: true });
+        for (const f of fs.readdirSync(framesDir)) {
+          if (f.endsWith('.png')) {
+            fs.copyFileSync(path.join(framesDir, f), path.join(dest, f));
+          }
         }
       }
     },

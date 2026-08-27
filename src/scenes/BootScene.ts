@@ -1,8 +1,8 @@
 /**
  * scenes/BootScene.ts —— 预加载最小资源 → 启动 PlayScene（ARCH §2 / §5）
  *
- * M4：预载外部 `characters` 图集（`atlas/characters.png`）。Play 里程序剪影先建同名图集，
- * 再覆盖已到货的实体帧；飞弹/环绕球等未到货帧仍走程序剪影。effects/ui 外部图集未开。
+ * M4：预载外部 `characters` / `effects` 图集。Play 里程序剪影先建同名图集，
+ * 再覆盖已到货的实体/特效帧；未到货帧仍走程序剪影。
  *
  * Phase 6 音频接入（audio-bible §4 / ux-spec §1）：
  * - create 时用 Phaser WebAudio 后端初始化 AudioManager（压缩器总线/心跳/SFX 合成）
@@ -15,7 +15,7 @@ import { AudioManager } from '@/audio/audio-manager';
 import { createStartOverlay, unlockFromSave, type StartOverlay } from '@/ui/start-overlay';
 import { loadSave } from '@/stats/save';
 import { detectIsMobile } from '@/utils/device';
-import { EXTERNAL_CHARACTERS_KEY } from '@/fx/external-atlas';
+import { EXTERNAL_CHARACTERS_KEY, EXTERNAL_EFFECTS_KEY } from '@/fx/external-atlas';
 
 export class BootScene extends Phaser.Scene {
   private startOverlay: StartOverlay | null = null;
@@ -26,6 +26,7 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     this.load.atlas(EXTERNAL_CHARACTERS_KEY, 'atlas/characters.png', 'atlas/characters.json');
+    this.load.atlas(EXTERNAL_EFFECTS_KEY, 'atlas/effects.png', 'atlas/effects.json');
   }
 
   create(): void {

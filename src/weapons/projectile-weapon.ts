@@ -29,6 +29,7 @@ import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
 import type { KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { FxManager } from '@/fx/fx-manager';
+import { sceneWeaponVisual } from '@/fx/external-atlas';
 import type { Enemy } from '@/enemies/enemy';
 
 /** A 类直线/扇形弹体（池化，Arcade.Sprite；扫掠命中由 behavior 用上一帧位置判定） */
@@ -120,14 +121,14 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
   private readonly boomerangs = new Map<StraightProjectile, { angle: number; phase: 'out' | 'back' }>();
 
   constructor(
-    _scene: Phaser.Scene,
+    private readonly scene: Phaser.Scene,
     cfg: RuntimeConfig,
     readonly weaponId: WeaponId,
     private readonly fx: FxManager,
   ) {
     this.config = WEAPON_CONFIGS[weaponId];
     // 弹道上限按武器配置（maxActive：银针 6 / 火铳 15 / 飞刃 4 / 标枪 3），不一律走 RuntimeConfig
-    this.pool = createArcadePool(_scene, cfg, 'bullets', StraightProjectile, this.config.maxActive ?? 8);
+    this.pool = createArcadePool(this.scene, cfg, 'bullets', StraightProjectile, this.config.maxActive ?? 8);
   }
 
   setEnabled(enabled: boolean): void {
@@ -232,13 +233,15 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
     pierce: number,
     c: WeaponConfig,
   ): void {
-    const p = this.pool.acquire(ctx.player.x, ctx.player.y, 'characters', 'missile');
+    const vis = sceneWeaponVisual(this.scene, c.frame, 'missile');
+    const p = this.pool.acquire(ctx.player.x, ctx.player.y, vis.atlas, vis.frame);
     if (!p) return;
     // 飞行寿命 × key_scope（射程 = 速度 × 寿命，A 类直线弹的射程口径）
     p.launch(ctx.player.x, ctx.player.y, angle, speed, damage, pierce, (c.lifetime ?? 1.2) * this.keyRangeMult);
     if (c.id === 'wpn_a_4') this.boomerangs.set(p, { angle, phase: 'out' });
-    // 渲染：按 powerTag 染色（M2 程序剪影兜底；帧名仍用注册表 missile）
-    p.setTint(this.tintFor(c.powerTag));
+    // 契约帧到货后不再套 powerTag 染色（会脏 14 token）；缺帧才染程序剪影
+    if (vis.dedicated) p.clearTint();
+    else p.setTint(this.tintFor(c.powerTag));
   }
 
   private checkProjectileHits(
@@ -266,8 +269,13 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
       }
       // 分裂（A1）：命中后生成次级弹 ×0.6（同屏上限内）
       for (let i = 0; i < this.split; i += 1) {
-        const sub = this.pool.acquire(p.x, p.y, 'characters', 'missile');
-        if (sub) sub.launch(p.x, p.y, Math.random() * Math.PI * 2, 320, damage * 0.6, 0, 0.8);
+        const vis = sceneWeaponVisual(this.scene, c.frame, 'missile');
+        const sub = this.pool.acquire(p.x, p.y, vis.atlas, vis.frame);
+        if (sub) {
+          sub.launch(p.x, p.y, Math.random() * Math.PI * 2, 320, damage * 0.6, 0, 0.8);
+          if (vis.dedicated) sub.clearTint();
+          else sub.setTint(this.tintFor(c.powerTag));
+        }
       }
       p.dissipate();
       break;

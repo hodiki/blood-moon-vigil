@@ -32,9 +32,9 @@
 
 import Phaser from 'phaser';
 import type { RuntimeConfig } from '@/config/runtime-config';
-import { TILE, PALETTE, GEM, BOSS, JOYSTICK } from '@/config/balance';
+import { TILE, PALETTE, GEM, BOSS, JOYSTICK, HEAL } from '@/config/balance';
 import { mulberry32, hexToRgba } from '@/utils/math';
-import { applyExternalCharacterFrames } from '@/fx/external-atlas';
+import { applyExternalCharacterFrames, applyExternalEffectsFrames } from '@/fx/external-atlas';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -907,6 +907,8 @@ const ENEMY_SHAPE_FALLBACK: Record<
 export function createProceduralTextures(scene: Phaser.Scene, cfg: RuntimeConfig): void {
   createGroundTile(scene);
   createGrassTile(scene);
+  createGraveSoilTile(scene);
+  createTrapTile(scene);
   createChurchTiles(scene);
   createDenTiles(scene);
   createBlockerTile(scene);
@@ -914,6 +916,7 @@ export function createProceduralTextures(scene: Phaser.Scene, cfg: RuntimeConfig
   applyExternalCharacterFrames(scene);
   createEffectsAtlas(scene);
   createAmbientAtlas(scene);
+  applyExternalEffectsFrames(scene);
 }
 
 /** 背景地砖·石板：暗紫灰 + 3×3 石缝 + 确定性石斑（art-bible §5 石板材质） */
@@ -987,6 +990,52 @@ function createGrassTile(scene: Phaser.Scene): void {
     ctx.ellipse(x, y, 3 + rng() * 4, 2 + rng() * 3, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+  canvas.refresh();
+}
+
+/** 墓地土：比共享石板更「土」、更冷的灰褐（MapSystem 墓地 ground 优先此帧） */
+function createGraveSoilTile(scene: Phaser.Scene): void {
+  if (scene.textures.exists('tile-grave-soil')) return;
+  const size = TILE.SIZE;
+  const canvas = scene.textures.createCanvas('tile-grave-soil', size, size);
+  if (!canvas) return;
+  const ctx = canvas.getContext();
+  ctx.fillStyle = '#1A1614';
+  ctx.fillRect(0, 0, size, size);
+  const rng = mulberry32(20260826);
+  for (let i = 0; i < 28; i += 1) {
+    ctx.fillStyle = rng() > 0.5 ? '#241F1C' : '#131722';
+    ctx.beginPath();
+    ctx.ellipse(rng() * size, rng() * size, 2 + rng() * 5, 1.5 + rng() * 3, rng() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(42,51,70,0.45)';
+  for (let i = 0; i < 10; i += 1) {
+    ctx.fillRect(Math.floor(rng() * size), Math.floor(rng() * size), 2, 2);
+  }
+  canvas.refresh();
+}
+
+/** 危险贴花地砖：暗红 + 斜纹（与地毯装饰语义区分） */
+function createTrapTile(scene: Phaser.Scene): void {
+  if (scene.textures.exists('tile-trap')) return;
+  const size = TILE.SIZE;
+  const canvas = scene.textures.createCanvas('tile-trap', size, size);
+  if (!canvas) return;
+  const ctx = canvas.getContext();
+  ctx.fillStyle = '#7E1E1E';
+  ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = PALETTE.danger;
+  ctx.lineWidth = 3;
+  for (let i = -size; i < size * 2; i += 10) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + size, size);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(242,245,249,0.35)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
   canvas.refresh();
 }
 
@@ -1320,6 +1369,14 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
   // E4-S4：障碍帧（40×40 @ y=128；实心灰蓝 + 高光/阴影，可阻挡物语义）
   drawObstacleFrames(ctx);
 
+  // 治疗十字（16×16 @ x=240；外部帧覆盖同名）
+  ctx.fillStyle = HEAL.COLOR;
+  ctx.fillRect(240 + 6, 2, 4, 12);
+  ctx.fillRect(240 + 2, 6, 12, 4);
+  ctx.strokeStyle = PAPER;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(240 + 5.5, 1.5, 5, 13);
+
   canvas.refresh();
 
   const tex = scene.textures.get('effects');
@@ -1327,6 +1384,7 @@ function createEffectsAtlas(scene: Phaser.Scene): void {
   tex.add('gem', 0, 40, 0, 20, 20); // v3：12×12 → 20×20（光晕留白）
   tex.add('joystick-base', 0, 60, 0, JOYSTICK.RADIUS * 2, JOYSTICK.RADIUS * 2);
   tex.add('joystick-thumb', 0, 164, 0, 44, 44);
+  tex.add('heal', 0, 240, 0, 16, 16);
   tex.add('decal-rock', 0, 0, 96, 16, 16);
   tex.add('decal-grass', 0, 16, 96, 16, 16);
   tex.add('decal-blood', 0, 32, 96, 16, 16);

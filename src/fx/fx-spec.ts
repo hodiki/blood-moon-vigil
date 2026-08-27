@@ -5,7 +5,7 @@
  * 时长/数量为视觉参数，不动 GDD 数值（GDD 数值在 balance.ts 各表）。
  */
 
-import { PALETTE, BOSS, GEM, type EnemyKindId } from '@/config/balance';
+import { PALETTE, BOSS, GEM, type EnemyKindId, type HeroId } from '@/config/balance';
 
 /** 粒子形状帧（fx-ambient 图集内，白底可 tint；p-ring 为轨道残影/升级环） */
 export type ParticleFrameName = 'p-circle' | 'p-square' | 'p-streak' | 'p-diamond' | 'p-ring';
@@ -106,3 +106,43 @@ export const SPECIAL_MARKERS = {
     haloAlpha: 0.25,
   },
 } as const;
+
+/** 主动技专属环（可选 PNG；缺帧走粒子 p-ring） */
+export const SKILL_RING_FRAMES: Record<HeroId, string> = {
+  hero_edmund: 'skill-ring-edmund',
+  hero_cassandra: 'skill-ring-cassandra',
+  hero_violet: 'skill-ring-violet',
+  hero_galvan: 'skill-ring-galvan',
+};
+
+type AtlasHas = (atlas: string, frame: string) => boolean;
+
+/** fx-ambient 优先，其次 effects；都没有则回退程序粒子帧 */
+export function pickFxAtlas(
+  has: AtlasHas,
+  preferred: string,
+  fallback: string,
+): { atlas: string; frame: string } {
+  for (const atlas of ['fx-ambient', 'effects'] as const) {
+    if (has(atlas, preferred)) return { atlas, frame: preferred };
+  }
+  return { atlas: 'fx-ambient', frame: fallback };
+}
+
+/**
+ * 武器/超武视觉：characters 优先，其次 effects。
+ * dedicated=true 表示契约帧已到货（不要再套 powerTag 染色）。
+ */
+export function pickWeaponVisual(
+  has: AtlasHas,
+  preferred: string,
+  fallback: string,
+): { atlas: string; frame: string; dedicated: boolean } {
+  for (const atlas of ['characters', 'effects'] as const) {
+    if (has(atlas, preferred)) return { atlas, frame: preferred, dedicated: true };
+  }
+  for (const atlas of ['characters', 'effects'] as const) {
+    if (has(atlas, fallback)) return { atlas, frame: fallback, dedicated: false };
+  }
+  return { atlas: 'characters', frame: fallback, dedicated: false };
+}

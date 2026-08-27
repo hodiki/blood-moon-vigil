@@ -83,6 +83,12 @@ export function createStartOverlay(
     const locked = !canSelectMap(mapId, opts.unlock);
     card.dataset.map = mapId;
     card.dataset.locked = String(locked);
+    const thumb =
+      mapId === 'map_graveyard' ? 'tile-grave-soil'
+        : mapId === 'map_cathedral' ? 'tile-church-stone'
+          : 'tile-den-earth';
+    card.style.backgroundImage = `linear-gradient(rgba(11,14,20,0.45), rgba(11,14,20,0.72)), url(./frames/${thumb}.png)`;
+    card.style.backgroundSize = 'cover';
     card.innerHTML = `
       <div class="bmv-map-name">${locked ? '🔒 ' : ''}${cfg.name}</div>
       <div class="bmv-map-desc">${locked ? unlockHint(mapId) : `${cfg.width}×${cfg.height} · Boss: ${cfg.boss}`}</div>
@@ -242,6 +248,7 @@ function ensureStyles(host: HTMLElement): void {
     }
     .bmv-map-name {
       font-size: 16px; font-weight: 700;
+      text-shadow: 0 1px 3px rgba(11,14,20,0.95);
     }
     .bmv-map-desc {
       font-size: 11px; color: #A9B4C4;

@@ -56,6 +56,8 @@ describe('E2-S7 超武 7 质变 DPS 与粒子预算（gdd-weapons-v2 §5.2 / ass
       expect(spec.baseDps).toBeGreaterThan(0);
       expect(spec.particleBudget).toBeLessThanOrEqual(SUPER_WEAPON_PARTICLE_BUDGET);
       expect(spec.particleBudget).toBe(60);
+      expect(spec.frame.startsWith('super-')).toBe(true);
+      expect(spec.fallbackFrame.length).toBeGreaterThan(0);
     }
   });
 
@@ -70,6 +72,12 @@ describe('E2-S7 超武 7 质变 DPS 与粒子预算（gdd-weapons-v2 §5.2 / ass
     expect(SUPER_WEAPON_SPECS.evo_batstorm.params.lifestealPerKill).toBe(0.5);
     expect(SUPER_WEAPON_SPECS.evo_packleader.params.count).toBe(3);
     expect(SUPER_WEAPON_SPECS.evo_packleader.params.slowPct).toBe(0.3);
+  });
+
+  it('超武契约帧与 EVOLUTIONS.frame 一致', () => {
+    for (const evo of EVOLUTIONS) {
+      expect(SUPER_WEAPON_SPECS[evo.evoId].frame).toBe(evo.frame);
+    }
   });
 });
 

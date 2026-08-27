@@ -18,6 +18,7 @@ import { superWeaponSpec } from '@/weapons/super-weapons';
 import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { FxManager } from '@/fx/fx-manager';
+import { sceneWeaponVisual } from '@/fx/external-atlas';
 
 /** 超武追踪弹（复用 HomingMissile 池化模式：追踪最近敌、命中分裂） */
 class SuperHomingProjectile extends Phaser.Physics.Arcade.Sprite {
@@ -34,7 +35,6 @@ class SuperHomingProjectile extends Phaser.Physics.Arcade.Sprite {
     body.setAllowGravity(false);
     body.enable = false;
     this.setActive(false).setVisible(false);
-    this.setTint(0xb06af0); // 进化卡幽紫（gdd-weapons-v2 §5.1 R-B 裁定）
   }
 
   launch(x: number, y: number, damage: number, lifetime: number, splitPerHit: number, subDamageMult: number): void {
@@ -92,24 +92,45 @@ export class SuperWeaponBehavior implements WeaponBehavior {
   private focusedCooldownMultiplier = 1;
   private readonly orbs: Phaser.GameObjects.Sprite[] = [];
   private angleRad = 0;
+  private readonly visual: { atlas: string; frame: string; dedicated: boolean };
+  private readonly pulseRing: Phaser.GameObjects.Sprite;
+  private readonly sea: Phaser.GameObjects.Sprite;
 
   constructor(
-    _scene: Phaser.Scene,
+    private readonly scene: Phaser.Scene,
     cfg: RuntimeConfig,
     readonly weaponId: WeaponId,
     readonly evoId: EvoId,
     private readonly fx: FxManager,
   ) {
-    this.pool = createArcadePool(_scene, cfg, 'bullets', SuperHomingProjectile, 12);
+    this.pool = createArcadePool(this.scene, cfg, 'bullets', SuperHomingProjectile, 12);
+    const vis = sceneWeaponVisual(this.scene, this.spec.frame, this.spec.fallbackFrame);
+    this.visual = vis;
     for (let i = 0; i < 6; i += 1) {
-      const orb = _scene.add
-        .sprite(0, 0, 'characters', 'orb')
+      const orb = this.scene.add
+        .sprite(0, 0, vis.atlas, vis.frame)
         .setActive(false)
         .setVisible(false)
         .setDepth(90)
-        .setTint(0xb06af0)
-        .setScale(1.6);
+        .setScale(vis.dedicated ? 1.15 : 1.6);
+      if (!vis.dedicated) orb.setTint(0xb06af0);
       this.orbs.push(orb);
+    }
+    this.pulseRing = this.scene.add
+      .sprite(0, 0, vis.atlas, vis.frame)
+      .setDepth(84)
+      .setActive(false)
+      .setVisible(false)
+      .setAlpha(0.55);
+    this.sea = this.scene.add
+      .sprite(0, 0, vis.atlas, vis.frame)
+      .setDepth(74)
+      .setActive(false)
+      .setVisible(false)
+      .setAlpha(0.45);
+    if (!vis.dedicated) {
+      this.pulseRing.setTint(0xb06af0);
+      this.sea.setTint(0x7e1e1e);
     }
   }
 
@@ -131,6 +152,8 @@ export class SuperWeaponBehavior implements WeaponBehavior {
   clearAll(): void {
     this.pool.eachActive((p) => p.dissipate());
     for (const o of this.orbs) o.setActive(false).setVisible(false);
+    this.pulseRing.setActive(false).setVisible(false);
+    this.sea.setActive(false).setVisible(false);
     this.cooldown = 0;
   }
 
@@ -168,9 +191,10 @@ export class SuperWeaponBehavior implements WeaponBehavior {
     const salvos = p.salvos ?? 3;
     const damage = computeHitDamage(p.damage ?? 12, ctx.damageMultiplier);
     for (let i = 0; i < salvos; i += 1) {
-      const proj = this.pool.acquire(ctx.player.x, ctx.player.y, 'characters', 'missile');
+      const proj = this.pool.acquire(ctx.player.x, ctx.player.y, this.visual.atlas, this.visual.frame);
       if (!proj) break;
       proj.launch(ctx.player.x, ctx.player.y, damage, 3, p.splitPerHit ?? 1, p.subDamageMult ?? 0.6);
+      this.applySuperTint(proj);
     }
     GameEvents.emit(GameEvent.WeaponFired, { x: ctx.player.x, y: ctx.player.y });
     // 命中：分裂 + 次级弹（与 A1 分裂同语义）
@@ -182,8 +206,11 @@ export class SuperWeaponBehavior implements WeaponBehavior {
         if (!circlesOverlap(proj.x, proj.y, 6, e.x, e.y, e.radius)) continue;
         hitEnemy(e, proj.damage);
         for (let s = 0; s < proj.splitPerHit; s += 1) {
-          const sub = this.pool.acquire(proj.x, proj.y, 'characters', 'missile');
-          if (sub) sub.launch(proj.x, proj.y, proj.damage * proj.subDamageMult, 1.5, 0, 0.6);
+          const sub = this.pool.acquire(proj.x, proj.y, this.visual.atlas, this.visual.frame);
+          if (sub) {
+            sub.launch(proj.x, proj.y, proj.damage * proj.subDamageMult, 1.5, 0, 0.6);
+            this.applySuperTint(sub);
+          }
         }
         this.fx.missileImpact(proj.x, proj.y);
         proj.dissipate();
@@ -205,14 +232,14 @@ export class SuperWeaponBehavior implements WeaponBehavior {
     const damage = computeHitDamage(p.damage ?? 10, ctx.damageMultiplier);
     const speed = 420;
     for (let i = 0; i < pellets; i += 1) {
-      const proj = this.pool.acquire(ctx.player.x, ctx.player.y, 'characters', 'missile');
+      const proj = this.pool.acquire(ctx.player.x, ctx.player.y, this.visual.atlas, this.visual.frame);
       if (!proj) break;
       const angle = baseAngle + (i - (pellets - 1) / 2) * (spread / pellets);
       proj.launch(ctx.player.x, ctx.player.y, damage, 0.8, 0, 0.6);
       const body = proj.body as Phaser.Physics.Arcade.Body;
       body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
       proj.setRotation(angle);
-      proj.setTint(0xb06af0);
+      this.applySuperTint(proj);
     }
     GameEvents.emit(GameEvent.WeaponFired, { x: ctx.player.x, y: ctx.player.y });
     // 命中：爆炸 60px 溅射
@@ -291,12 +318,24 @@ export class SuperWeaponBehavior implements WeaponBehavior {
       if (stunSeconds > 0) e.stunnedUntil = Math.max(e.stunnedUntil, ctx.now + stunSeconds);
     }
     this.fx.shockwaveEdgeFlash(ctx.player.x, ctx.player.y, radius);
+    this.pulseRing
+      .setPosition(ctx.player.x, ctx.player.y)
+      .setDisplaySize(Math.max(48, radius * 2 * 0.35), Math.max(48, radius * 2 * 0.35))
+      .setAlpha(0.7)
+      .setActive(true)
+      .setVisible(true);
+    ctx.player.scene.time.delayedCall(180, () => {
+      this.pulseRing.setActive(false).setVisible(false);
+    });
   }
 
   private updateGroundPool(ctx: WeaponUpdateContext): void {
     // 已有池 tick 伤害（血海：300px / 5s / 减速 40%）
     if (this.groundPoolRemaining > 0) {
       this.groundPoolRemaining -= ctx.dt;
+      if (this.groundPoolRemaining <= 0) {
+        this.sea.setActive(false).setVisible(false);
+      }
       const damage = computeHitDamage(this.groundPoolDamage, ctx.damageMultiplier) * ctx.dt;
       for (const e of ctx.enemies) {
         if (!e.active) continue;
@@ -320,6 +359,11 @@ export class SuperWeaponBehavior implements WeaponBehavior {
     this.groundPoolSlow = p.slowPct ?? 0.4;
     GameEvents.emit(GameEvent.WeaponFired, { x: ctx.player.x, y: ctx.player.y });
     this.fx.shockwaveEdgeFlash(ctx.player.x, ctx.player.y, this.groundPoolRadius);
+    this.sea
+      .setPosition(this.groundPoolX, this.groundPoolY)
+      .setDisplaySize(this.groundPoolRadius * 2, this.groundPoolRadius * 2)
+      .setActive(true)
+      .setVisible(true);
   }
 
   private groundPoolRemaining = 0;
@@ -331,6 +375,21 @@ export class SuperWeaponBehavior implements WeaponBehavior {
 
   private updateSummon(ctx: WeaponUpdateContext): void {
     const p = this.spec.params;
+    const count = p.count ?? (this.spec.mode === 'summon-slow' ? 3 : 6);
+    this.angleRad += 2.2 * ctx.dt;
+    for (let i = 0; i < this.orbs.length; i += 1) {
+      const spr = this.orbs[i];
+      if (!spr) continue;
+      if (i >= count) {
+        spr.setActive(false).setVisible(false);
+        continue;
+      }
+      const a = this.angleRad + (i * 2 * Math.PI) / count;
+      spr
+        .setPosition(ctx.player.x + Math.cos(a) * 42, ctx.player.y + Math.sin(a) * 42)
+        .setActive(true)
+        .setVisible(true);
+    }
     // 血蝠风暴/狼群领袖：简化装配为「自动攻击最近敌 + 击杀吸血/减速」（E4 深化动画）
     this.attackTimer -= ctx.dt;
     if (this.attackTimer <= 0) {
@@ -358,4 +417,9 @@ export class SuperWeaponBehavior implements WeaponBehavior {
   }
 
   private attackTimer = 0;
+
+  private applySuperTint(proj: SuperHomingProjectile): void {
+    if (this.visual.dedicated) proj.clearTint();
+    else proj.setTint(0xb06af0);
+  }
 }

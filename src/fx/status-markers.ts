@@ -13,17 +13,17 @@ import { ENEMY_BEHAVIORS, PALETTE, type ChargeBehaviorConfig } from '@/config/ba
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { chargeCycleElapsed, warningLineAlpha } from '@/enemies/enemy-behaviors';
 import type { Enemy } from '@/enemies/enemy';
-import { SPECIAL_MARKERS } from '@/fx/fx-spec';
+import { SPECIAL_MARKERS, pickFxAtlas } from '@/fx/fx-spec';
 import type { Player } from '@/player/player';
+import { sceneHasFrame } from '@/fx/external-atlas';
 import { hexToRgbInt } from '@/utils/math';
 
 const DEPTH_AURA = 40;
 const DEPTH_LINE = 85;
 const DEPTH_HEAD = 92;
 
-function fxFrame(scene: Phaser.Scene, preferred: string, fallback: string): string {
-  if (!scene.textures.exists('fx-ambient')) return fallback;
-  return scene.textures.get('fx-ambient').has(preferred) ? preferred : fallback;
+function fxSlot(scene: Phaser.Scene, preferred: string, fallback: string): { atlas: string; frame: string } {
+  return pickFxAtlas((atlas, frame) => sceneHasFrame(scene, atlas, frame), preferred, fallback);
 }
 
 class ImagePool {
@@ -133,7 +133,8 @@ export class StatusMarkerLayer {
     const img = this.aura.take();
     const size = spec.radius * 2;
     const breath = spec.alpha + Math.sin((now * Math.PI * 2) / spec.breatheSeconds) * 0.08;
-    img.setTexture('fx-ambient', fxFrame(this.scene, spec.frame, 'p-ring'));
+    const slot = fxSlot(this.scene, spec.frame, 'p-ring');
+    img.setTexture(slot.atlas, slot.frame);
     img.setPosition(e.x, e.y + e.radius * 0.35);
     img.setDisplaySize(size, size);
     img.setTint(hexToRgbInt(spec.color));
@@ -144,7 +145,8 @@ export class StatusMarkerLayer {
     const spec = SPECIAL_MARKERS.rune;
     const img = this.rune.take();
     const breath = 0.75 + Math.sin((now * Math.PI * 2) / spec.breatheSeconds) * 0.2;
-    img.setTexture('fx-ambient', fxFrame(this.scene, spec.frame, 'p-circle'));
+    const slot = fxSlot(this.scene, spec.frame, 'p-circle');
+    img.setTexture(slot.atlas, slot.frame);
     img.setPosition(e.x, e.y - e.radius - 10);
     img.setDisplaySize(spec.size, spec.size);
     img.setTint(hexToRgbInt(spec.color));
@@ -187,7 +189,8 @@ export class StatusMarkerLayer {
       if (!spec) continue;
       const img = this.dots.take();
       const dx = (i - (n - 1) / 2) * 7;
-      img.setTexture('fx-ambient', fxFrame(this.scene, spec.frame, 'p-circle'));
+      const slot = fxSlot(this.scene, spec.frame, 'p-circle');
+      img.setTexture(slot.atlas, slot.frame);
       img.setPosition(e.x + dx, y);
       img.setDisplaySize(8, 8);
       img.setTint(hexToRgbInt(spec.color));

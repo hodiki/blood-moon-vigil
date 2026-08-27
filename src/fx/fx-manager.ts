@@ -17,7 +17,8 @@ import Phaser from 'phaser';
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { WEAPONS, FX, type EnemyKindId } from '@/config/balance';
 import { hexToRgbInt } from '@/utils/math';
-import { DEATH_BURST, FX_COLORS, type ParticleFrameName } from '@/fx/fx-spec';
+import { DEATH_BURST, FX_COLORS, pickFxAtlas, type ParticleFrameName } from '@/fx/fx-spec';
+import { sceneHasFrame } from '@/fx/external-atlas';
 
 /** 最小池接口（ArcadePoolLike<Missile>/<Gem> 结构性满足） */
 export interface FxPoolLike<T> {
@@ -44,13 +45,23 @@ interface Particle extends Phaser.GameObjects.Image {
   baseAlpha: number;
 }
 
+interface SkillRingImg extends Phaser.GameObjects.Image {
+  ringLife: number;
+  ringMaxLife: number;
+  ringStart: number;
+  ringTarget: number;
+  ringAlpha: number;
+}
+
 function pickColor(colors: readonly string[]): string {
   return colors[Math.floor(Math.random() * colors.length)] ?? colors[0] ?? '#FFFFFF';
 }
 
 export class FxManager {
+  private readonly scene: Phaser.Scene;
   private readonly cfg: RuntimeConfig;
   private readonly particles: Particle[] = [];
+  private readonly skillRings: SkillRingImg[] = [];
   private readonly orbitRing: Phaser.GameObjects.Image;
   /** TASK-36 双层轨道环：内环（细暗反向慢旋，同 fx-ambient 批次 +0 draw call） */
   private readonly orbitRingSecondary: Phaser.GameObjects.Image;
@@ -70,7 +81,19 @@ export class FxManager {
   private chargePulsePhase = 0;
 
   constructor(scene: Phaser.Scene, cfg: RuntimeConfig) {
+    this.scene = scene;
     this.cfg = cfg;
+
+    for (let i = 0; i < 2; i += 1) {
+      const img = scene.add.image(0, 0, 'fx-ambient', 'p-ring') as SkillRingImg;
+      img.setActive(false).setVisible(false).setDepth(81);
+      img.ringLife = 0;
+      img.ringMaxLife = FX.SKILL_RING_LIFE;
+      img.ringStart = 32;
+      img.ringTarget = 64;
+      img.ringAlpha = 0.72;
+      this.skillRings.push(img);
+    }
 
     // 粒子池（容量 = cfg.maxParticles；预创建全部实例，池满 reject）
     for (let i = 0; i < cfg.maxParticles; i += 1) {
@@ -144,6 +167,18 @@ export class FxManager {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.setAlpha(p.maxLife > 0 ? Math.max(0, p.baseAlpha * (p.life / p.maxLife)) : p.baseAlpha);
+    }
+    for (const img of this.skillRings) {
+      if (!img.active) continue;
+      img.ringLife -= dt;
+      if (img.ringLife <= 0) {
+        img.setActive(false).setVisible(false);
+        continue;
+      }
+      const t = 1 - img.ringLife / img.ringMaxLife;
+      const size = img.ringStart + (img.ringTarget - img.ringStart) * t;
+      img.setDisplaySize(size, size);
+      img.setAlpha(img.ringAlpha * (1 - t));
     }
   }
 
@@ -270,6 +305,26 @@ export class FxManager {
     this.emitBurst('p-circle', x, y, [FX_COLORS.lanternFlashCore, FX_COLORS.lanternFlash], 10, 90, 2.5, 0.4);
   }
 
+  /** 可选 skill-ring-* 扩散叠层（缺帧 no-op；不占用粒子池） */
+  playSkillRing(x: number, y: number, radius: number, frame: string): void {
+    if (!this.cfg.fxBursts) return;
+    const slot = pickFxAtlas((atlas, name) => sceneHasFrame(this.scene, atlas, name), frame, '');
+    if (slot.frame !== frame) return;
+    const img = this.skillRings.find((s) => !s.active) ?? this.skillRings[0];
+    if (!img) return;
+    img.setTexture(slot.atlas, slot.frame);
+    img.clearTint();
+    img.setPosition(x, y);
+    img.ringMaxLife = FX.SKILL_RING_LIFE;
+    img.ringLife = FX.SKILL_RING_LIFE;
+    img.ringStart = Math.max(16, radius * 2 * 0.22);
+    img.ringTarget = radius * 2;
+    img.ringAlpha = 0.72;
+    img.setDisplaySize(img.ringStart, img.ringStart);
+    img.setAlpha(img.ringAlpha);
+    img.setActive(true).setVisible(true);
+  }
+
   /** 提灯闪耀最大半径白闪（与 lanternFlash 成对；asset-spec §3.2 T1） */
   lanternEdgeFlash(x: number, y: number, radius: number): void {
     this.shockwaveEdgeFlash(x, y, radius);
@@ -383,6 +438,9 @@ export class FxManager {
   clearAll(): void {
     for (const p of this.particles) {
       if (p.active) p.setActive(false).setVisible(false);
+    }
+    for (const img of this.skillRings) {
+      img.setActive(false).setVisible(false);
     }
   }
 

@@ -23,6 +23,7 @@ import type { KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { FxManager } from '@/fx/fx-manager';
+import { sceneWeaponVisual } from '@/fx/external-atlas';
 import type { Enemy } from '@/enemies/enemy';
 
 /** 召唤物实体（独立 Sprite，不叠加在玩家身上；玩家侧月银白） */
@@ -85,6 +86,7 @@ export class SummonWeaponBehavior implements WeaponBehavior {
   /** 重召唤倒计时（d3 为定向冷却） */
   private respawnTimer = 0;
   private d3Cooldown = 0;
+  private readonly chain: Phaser.GameObjects.Sprite;
   /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0） */
   private focusedCooldownMultiplier = 1;
   /** E4-S4 钥被动（D3 锁链独立字段；召唤群走 params） */
@@ -99,11 +101,22 @@ export class SummonWeaponBehavior implements WeaponBehavior {
   ) {
     this.config = WEAPON_CONFIGS[weaponId];
     this.params = deriveSummonParams(this.config, { a1: 0, a2: 0, a3: 0, b1: 0, b2: 0, b3: 0, c1: 0, c2: 0, c3: 0, d1: 0, d2: 0, d3: 0 });
+    const fallback = this.config.frame === 'summon-bat' ? 'orb' : 'missile';
+    const vis = sceneWeaponVisual(scene, this.config.frame, fallback);
     // 召唤物上限 6（gdd-upgrade-pool-v2 §3.3 D1 注：上限 6）
     for (let i = 0; i < 6; i += 1) {
-      const s = new SummonSprite(scene, 0, 0, 'characters', this.config.frame === 'summon-bat' ? 'orb' : 'missile');
+      const s = new SummonSprite(scene, 0, 0, vis.atlas, vis.frame);
+      if (vis.dedicated) s.clearTint();
       this.summons.push(s);
     }
+    const chainVis = sceneWeaponVisual(scene, 'beam-chain', 'missile');
+    this.chain = scene.add
+      .sprite(0, 0, chainVis.atlas, chainVis.frame)
+      .setOrigin(0.5, 0)
+      .setDepth(88)
+      .setActive(false)
+      .setVisible(false);
+    this.chain.setData('dedicated', chainVis.dedicated);
   }
 
   setEnabled(enabled: boolean): void {
@@ -138,6 +151,7 @@ export class SummonWeaponBehavior implements WeaponBehavior {
 
   clearAll(): void {
     for (const s of this.summons) s.deactivate();
+    this.chain.setActive(false).setVisible(false);
     this.respawnTimer = 0;
     this.d3Cooldown = 0;
   }
@@ -248,6 +262,15 @@ export class SummonWeaponBehavior implements WeaponBehavior {
     }
     GameEvents.emit(GameEvent.WeaponFired, { x: ctx.player.x, y: ctx.player.y });
     this.fx.missileImpact(endX, endY);
+    if (this.chain.getData('dedicated')) {
+      this.chain.setPosition(ctx.player.x, ctx.player.y);
+      this.chain.setRotation(angle - Math.PI / 2);
+      this.chain.setDisplaySize(28, range);
+      this.chain.setAlpha(0.9).setActive(true).setVisible(true);
+      ctx.player.scene.time.delayedCall(180, () => {
+        this.chain.setActive(false).setVisible(false);
+      });
+    }
   }
 }
 

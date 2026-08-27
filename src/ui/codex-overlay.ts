@@ -40,6 +40,8 @@ import {
   type EvoId,
 } from '@/config/balance';
 import type { SaveData } from '@/stats/save';
+import { preferFrameImg } from '@/ui/frame-img';
+import { codexIconFrame } from '@/codex/codex-icon-frame';
 
 // —— 纯函数（可单测）——
 
@@ -234,6 +236,11 @@ export class CodexOverlay {
       } else {
         card.innerHTML = `<div class="bmv-codex-card-glyph">${codexGlyphSvg(category)}</div><div class="bmv-codex-card-name">${entry.name}</div><div class="bmv-codex-card-tag">${this.tagText(entry)}</div>`;
       }
+      const glyph = card.querySelector('.bmv-codex-card-glyph') as HTMLElement | null;
+      const frame = state === 'hidden' ? null : codexIconFrame(entry);
+      if (glyph && frame) {
+        preferFrameImg(glyph, frame, state === 'locked' ? { keep: '.bmv-codex-q' } : undefined);
+      }
       if (state === 'unlocked') {
         this.bindClick(card, () => this.showDetail(entry));
       } else {
@@ -381,7 +388,12 @@ export class CodexOverlay {
       .bmv-codex-card[data-state="hidden"] { opacity: 0.85; border-style: dashed; }
       .bmv-codex-card-glyph { position: relative; width: 64px; height: 64px; }
       .bmv-codex-card-glyph svg { width: 64px; height: 64px; display: block; }
-      .bmv-codex-card[data-state="locked"] .bmv-codex-card-glyph svg {
+      .bmv-codex-card-glyph img.bmv-frame-img {
+        width: 64px; height: 64px; object-fit: contain;
+        image-rendering: pixelated; display: block;
+      }
+      .bmv-codex-card[data-state="locked"] .bmv-codex-card-glyph svg,
+      .bmv-codex-card[data-state="locked"] .bmv-codex-card-glyph img.bmv-frame-img {
         filter: grayscale(1) brightness(0.55);
         opacity: 0.4;
       }
@@ -442,7 +454,7 @@ export class CodexOverlay {
         .bmv-codex-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
         .bmv-codex-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .bmv-codex-card { min-height: 96px; }
-        .bmv-codex-card-glyph, .bmv-codex-card-glyph svg { width: 48px; height: 48px; }
+        .bmv-codex-card-glyph, .bmv-codex-card-glyph svg, .bmv-codex-card-glyph img.bmv-frame-img { width: 48px; height: 48px; }
         .bmv-codex-card-name { font-size: 13px; }
         .bmv-codex-card-condition { font-size: 10px; }
         .bmv-codex-footer { font-size: 16px; }

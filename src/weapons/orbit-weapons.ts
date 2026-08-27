@@ -24,6 +24,7 @@ import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
 import type { KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { FxManager } from '@/fx/fx-manager';
+import { sceneWeaponVisual } from '@/fx/external-atlas';
 
 /** B 类环绕/光环行为（b1/b2 环绕球；b3 光环常驻） */
 export class OrbitWeaponBehavior implements WeaponBehavior {
@@ -46,14 +47,18 @@ export class OrbitWeaponBehavior implements WeaponBehavior {
     this.config = WEAPON_CONFIGS[weaponId];
     this.params = deriveOrbitParams(this.config, { a1: 0, a2: 0, a3: 0, b1: 0, b2: 0, b3: 0, c1: 0, c2: 0, c3: 0, d1: 0, d2: 0, d3: 0 });
     const maxSprites = this.config.maxCount ?? 6;
+    const fallback = this.config.id === 'wpn_b_3' ? 'shockwave' : 'orb';
+    const vis = sceneWeaponVisual(scene, this.config.frame, fallback);
     for (let i = 0; i < maxSprites; i += 1) {
       const orb = scene.add
-        .sprite(0, 0, 'characters', this.config.id === 'wpn_b_3' ? 'shockwave' : 'orb')
+        .sprite(0, 0, vis.atlas, vis.frame)
         .setActive(false)
         .setVisible(false)
         .setDepth(90);
-      // B3 光环 = 半透明领域圈（复用 shockwave 环帧）；环绕球 = 冷青
-      if (this.config.id === 'wpn_b_3') orb.setTint(0x4fc3f7).setAlpha(0.35);
+      if (this.config.id === 'wpn_b_3') {
+        orb.setAlpha(0.35);
+        if (!vis.dedicated) orb.setTint(0x54e6c9);
+      }
       this.orbs.push(orb);
     }
   }

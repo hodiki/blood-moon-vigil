@@ -71,9 +71,11 @@ import { CodexTracker, MOON_AVATAR_ENTRY_ID, eventEntriesForMapCleared } from '@
 import { computeMeritApplication, calculateMeritPoints, type MeritAppliedResult } from '@/stats/merit';
 import { loadSave, writeSave, recordMapCleared, type SaveData } from '@/stats/save';
 import { createProceduralTextures } from '@/fx/procedural-textures';
+import { sceneHasFrame } from '@/fx/external-atlas';
 import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim, hasCharacterFrame } from '@/fx/anim';
 import { FxManager } from '@/fx/fx-manager';
 import { StatusMarkerLayer } from '@/fx/status-markers';
+import { SKILL_RING_FRAMES } from '@/fx/fx-spec';
 import { bossEntranceFrameName } from '@/fx/skill-pose';
 import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
@@ -174,6 +176,8 @@ export class PlayScene extends Phaser.Scene {
   private firstBossKillsThisRun = 0;
   /** E4-S7 本局血月化身击杀（功绩 +5） */
   private avatarKillsThisRun = 0;
+  /** 批次 4：血月化身稀有宝箱（本局最多 1） */
+  private rareChest: Phaser.Physics.Arcade.Image | null = null;
   /** M3 轻叙事：局内事件 → 文本表 → DOM 覆盖层（narrative-framework §5/§7；宿主 #ui-overlay） */
   private narratives!: NarrativeDispatcher;
   private unbindNarratives: (() => void) | null = null;
@@ -327,6 +331,7 @@ export class PlayScene extends Phaser.Scene {
     this.hud = createHud({
       cfg: this.cfg,
       skillName: this.skillRuntime.name ?? ACTIVE_SKILLS[this.heroId].name,
+      skillIconFrame: `skill-${this.heroId.replace('hero_', '')}`,
       onPauseToggle: () => this.togglePause(),
       onActiveSkill: () => this.tryCastActiveSkill(), // 移动端技能按钮 → 同一释放入口
     });
@@ -515,6 +520,7 @@ export class PlayScene extends Phaser.Scene {
     this.xp.update(dt);
     // 5b) M3 治疗道具拾取（精英/Boss 保底；拾取即治疗 + emit）
     this.healManager.update(dt);
+    this.updateRareChestPickup();
     // 5c) M3 图鉴 toast：局内首次解锁任一条目 → 同帧合并 emit 1 条（spec §6 n_toast_codex「多条目同帧合并 1 条」）
     if (this.codexToastPending) {
       this.codexToastPending = false;
@@ -678,7 +684,9 @@ export class PlayScene extends Phaser.Scene {
         // 血月化身（boss_4）：任意图稀有月坠 → 图鉴隐藏条目 + 功绩 +5（gdd-codex §3.2/§3.4）
         if (payload.enemyId === 'boss_4') {
           this.codex.recordTrigger(MOON_AVATAR_ENTRY_ID);
+          if (this.codex.recordProgress('codex_event_6')) this.codexToastPending = true;
           this.avatarKillsThisRun += 1;
+          this.dropRareChest(payload.x, payload.y);
         }
       }
     }
@@ -767,26 +775,30 @@ export class PlayScene extends Phaser.Scene {
         const radius = cfg.radius ?? ACTIVE_SKILL.RADIUS;
         this.fx.lanternFlash(x, y, radius);
         this.fx.lanternEdgeFlash(x, y, radius);
+        this.fx.playSkillRing(x, y, radius, SKILL_RING_FRAMES.hero_edmund);
         if (this.cfg.screenShake) this.cameras.main.shake(120, 0.003);
         break;
       }
       case 'hero_cassandra':
-        // 轨迹在 startDash 里发（需要冲刺方向）
+        // 轨迹在 startDash 里发（需要冲刺方向）；skill-ring PNG 入库但不叠冲刺
         break;
       case 'hero_violet': {
         const radius = cfg.radius ?? 300;
         this.fx.requiemWave(x, y, radius);
+        this.fx.playSkillRing(x, y, radius, SKILL_RING_FRAMES.hero_violet);
         this.fx.requiemHeal(x, y);
         this.requiemRingTimer?.remove(false);
         this.requiemRingTimer = this.time.delayedCall(FX.SKILL_REQUIEM_RING_GAP_MS, () => {
           this.requiemRingTimer = null;
           if (this.state.get() !== GamePhase.RUNNING) return;
           this.fx.requiemWave(x, y, radius);
+          this.fx.playSkillRing(x, y, radius, SKILL_RING_FRAMES.hero_violet);
         });
         break;
       }
       case 'hero_galvan':
         this.fx.rageBurst(x, y);
+        this.fx.playSkillRing(x, y, FX.SKILL_RAGE_RING_RADIUS, SKILL_RING_FRAMES.hero_galvan);
         this.player.setScale(FX.SKILL_RAGE_SCALE);
         if (this.cfg.screenShake) this.cameras.main.shake(120, 0.003);
         break;
@@ -1128,6 +1140,26 @@ export class PlayScene extends Phaser.Scene {
     });
   }
 
+  private dropRareChest(x: number, y: number): void {
+    if (this.rareChest) return;
+    if (!sceneHasFrame(this, 'effects', 'chest')) return;
+    const img = this.physics.add.image(x, y, 'effects', 'chest');
+    img.setDepth(25);
+    this.rareChest = img;
+  }
+
+  private updateRareChestPickup(): void {
+    const chest = this.rareChest;
+    if (!chest?.active) return;
+    const r = 28;
+    const dx = chest.x - this.player.x;
+    const dy = chest.y - this.player.y;
+    if (dx * dx + dy * dy > r * r) return;
+    chest.destroy();
+    this.rareChest = null;
+    this.codexToastPending = true;
+  }
+
   /** 玩家 HP 比例（0..1；基准模式免死 maxHp 极大 → 视为满血，避免濒死音频误触发） */
   private playerHpFraction(): number {
     const maxHp = this.player.stats.maxHp;
@@ -1146,6 +1178,8 @@ export class PlayScene extends Phaser.Scene {
     this.unbindNarratives = null;
     this.narratives?.destroy();
     this.prologue?.destroy();
+    this.rareChest?.destroy();
+    this.rareChest = null;
     this.requiemRingTimer?.remove(false);
     this.requiemRingTimer = null;
     this.markers?.destroy();
