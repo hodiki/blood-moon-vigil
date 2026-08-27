@@ -1,7 +1,7 @@
 {
   "frames": [
     {
-      "filename": "tile-grave-soil",
+      "filename": "decal-blood",
       "frame": {
         "x": 0,
         "y": 0,
@@ -20,6 +20,825 @@
         "w": 64,
         "h": 64
       }
+    },
+    {
+      "filename": "decal-bloodpool",
+      "frame": {
+        "x": 64,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decal-grass",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decal-rock",
+      "frame": {
+        "x": 192,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-church-glasslight",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-den-bone",
+      "frame": {
+        "x": 320,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-den-fire",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-den-spike",
+      "frame": {
+        "x": 448,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-grave-bone",
+      "frame": {
+        "x": 0,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-grave-candle",
+      "frame": {
+        "x": 64,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "decor-grave-tree",
+      "frame": {
+        "x": 128,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-church-altar",
+      "frame": {
+        "x": 192,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-church-bench",
+      "frame": {
+        "x": 256,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-church-pillar",
+      "frame": {
+        "x": 320,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-den-log",
+      "frame": {
+        "x": 384,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-den-rock",
+      "frame": {
+        "x": 448,
+        "y": 64,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-grave-fence",
+      "frame": {
+        "x": 0,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "obst-grave-tomb",
+      "frame": {
+        "x": 64,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "skill-ring-cassandra",
+      "frame": {
+        "x": 128,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "skill-ring-edmund",
+      "frame": {
+        "x": 192,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "skill-ring-galvan",
+      "frame": {
+        "x": 256,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "skill-ring-violet",
+      "frame": {
+        "x": 320,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-church-carpet",
+      "frame": {
+        "x": 384,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-church-stone",
+      "frame": {
+        "x": 448,
+        "y": 128,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-den-earth",
+      "frame": {
+        "x": 0,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-den-grass",
+      "frame": {
+        "x": 64,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-grass",
+      "frame": {
+        "x": 128,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-grave-soil",
+      "frame": {
+        "x": 192,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-ground",
+      "frame": {
+        "x": 256,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-obstacle",
+      "frame": {
+        "x": 320,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "tile-trap",
+      "frame": {
+        "x": 384,
+        "y": 192,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "marker-aura",
+      "frame": {
+        "x": 448,
+        "y": 192,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "chest",
+      "frame": {
+        "x": 480,
+        "y": 192,
+        "w": 24,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 24,
+        "h": 24
+      }
+    },
+    {
+      "filename": "gem",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "heal",
+      "frame": {
+        "x": 16,
+        "y": 256,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "marker-rune",
+      "frame": {
+        "x": 32,
+        "y": 256,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "marker-warningline",
+      "frame": {
+        "x": 48,
+        "y": 256,
+        "w": 32,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 8
+      }
+    },
+    {
+      "filename": "marker-mark",
+      "frame": {
+        "x": 504,
+        "y": 192,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "filename": "marker-slow",
+      "frame": {
+        "x": 80,
+        "y": 256,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "filename": "marker-stun",
+      "frame": {
+        "x": 88,
+        "y": 256,
+        "w": 8,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 8,
+        "h": 8
+      }
     }
   ],
   "meta": {
@@ -28,14 +847,170 @@
     "image": "effects.png",
     "format": "RGBA8888",
     "size": {
-      "w": 256,
-      "h": 256
+      "w": 512,
+      "h": 512
     },
     "scale": 1,
     "framePivots": {
+      "decal-blood": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "decal-bloodpool": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "decal-grass": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "decal-rock": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "decor-church-glasslight": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "decor-den-bone": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "decor-den-fire": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "decor-den-spike": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "decor-grave-bone": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "decor-grave-candle": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "decor-grave-tree": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-church-altar": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-church-bench": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-church-pillar": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-den-log": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-den-rock": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-grave-fence": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "obst-grave-tomb": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "skill-ring-cassandra": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "skill-ring-edmund": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "skill-ring-galvan": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "skill-ring-violet": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "tile-church-carpet": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "tile-church-stone": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "tile-den-earth": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "tile-den-grass": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "tile-grass": {
+        "x": 0.5,
+        "y": 0.9922
+      },
       "tile-grave-soil": {
         "x": 0.5,
         "y": 0.9922
+      },
+      "tile-ground": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "tile-obstacle": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "tile-trap": {
+        "x": 0.5,
+        "y": 0.9922
+      },
+      "marker-aura": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "chest": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "gem": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "heal": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "marker-rune": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "marker-warningline": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "marker-mark": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "marker-slow": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "marker-stun": {
+        "x": 0.5,
+        "y": 0.5
       }
     }
   }

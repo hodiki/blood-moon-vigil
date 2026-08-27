@@ -55,15 +55,15 @@
     },
     "boss-moonavatar-entrance": {
       "x": 0.5,
-      "y": 0.9434
+      "y": 0.9473
     },
     "boss-moonavatar-v": {
       "x": 0.5,
-      "y": 0.9434
+      "y": 0.9473
     },
     "boss-moonavatar": {
       "x": 0.5,
-      "y": 0.9434
+      "y": 0.9473
     },
     "enemy-acolyte-v": {
       "x": 0.5,
@@ -75,11 +75,11 @@
     },
     "enemy-bat-v": {
       "x": 0.5,
-      "y": 0.9375
+      "y": 0.9125
     },
     "enemy-bat": {
       "x": 0.5,
-      "y": 0.9375
+      "y": 0.9125
     },
     "enemy-beetle-v": {
       "x": 0.5,
@@ -99,11 +99,11 @@
     },
     "enemy-cupbearer-v": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9297
     },
     "enemy-cupbearer": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9297
     },
     "enemy-fleshmass-v": {
       "x": 0.5,
@@ -155,11 +155,11 @@
     },
     "enemy-stonewolf-v": {
       "x": 0.5,
-      "y": 0.9323
+      "y": 0.9427
     },
     "enemy-stonewolf": {
       "x": 0.5,
-      "y": 0.9323
+      "y": 0.9427
     },
     "enemy-wolfhunter-v": {
       "x": 0.5,
@@ -232,6 +232,302 @@
     "hero-violet": {
       "x": 0.5,
       "y": 0.9141
+    },
+    "marker-aura": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "marker-rune": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "marker-warningline": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "marker-stun": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "marker-slow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "marker-mark": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-ring-edmund": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-ring-cassandra": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-ring-violet": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-ring-galvan": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "missile": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "orb": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "shockwave": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "proj-crossbow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "proj-blunderbuss": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "proj-boomerang": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "proj-javelin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "orb-thorn": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "aura-barrier": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "ring-bloodpool": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "decal-bloodpool": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "ring-holyfire": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "summon-bat": {
+      "x": 0.5,
+      "y": 0.9063
+    },
+    "summon-hound": {
+      "x": 0.5,
+      "y": 0.9219
+    },
+    "beam-chain": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-moonwrath": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-silverblast": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-seraphring": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-totaleclipse": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-bloodsea": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-batstorm": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "super-packleader": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tile-ground": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-grass": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-church-stone": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-church-carpet": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-den-earth": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-den-grass": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-obstacle": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "tile-trap": {
+      "x": 0.5,
+      "y": 0.9922
+    },
+    "obst-grave-tomb": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "obst-grave-fence": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "obst-church-pillar": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "obst-church-bench": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "obst-church-altar": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "obst-den-rock": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "obst-den-log": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decor-grave-tree": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decor-grave-candle": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decor-grave-bone": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decor-church-glasslight": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "decor-den-bone": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decor-den-fire": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decor-den-spike": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "decal-rock": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "decal-grass": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "decal-blood": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "gem": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "heal": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-missile": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-orb": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-shockwave": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-edmund": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-cassandra": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-violet": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "skill-galvan": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "hud-skillbtn": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "codex-event-1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "codex-event-2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "codex-event-3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "codex-event-4": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "codex-event-5": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "codex-event-6": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "chest": {
+      "x": 0.5,
+      "y": 0.5
     }
   }
 }
