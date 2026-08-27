@@ -93,6 +93,8 @@ tools/asset-pipeline/
 
 2026-08-25 v0.5.1：时间轴按变体分档（idle 严 / skill·walk·entrance 宽）；幽灵脚底 1px；`--check` 不再双打印。批次 1 重校验 **PASS 41 / FAIL 17**（FAIL 全是姿态内容）。
 
+2026-08-26：批次 2 环/弹体/标记走 `isCenteredFxFrame`（画布正中，不套角色脚底对齐）。
+
 修复记录：
 - tile 类帧误抠成空 → `isFullBleedFrame` 跳过抠图
 - 暗红精英 L* → 现按 P-4 分治（普通敌豁免，精英可用描边豁免）

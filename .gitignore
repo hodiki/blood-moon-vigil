@@ -22,6 +22,9 @@ Thumbs.db
 .git.broken-*/
 .tmp-analysis/
 
+# TA 预览 / 临时工作目录（不入库）
+tmp/
+
 # 编辑器
 .vscode/
 .idea/

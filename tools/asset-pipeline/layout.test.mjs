@@ -7,6 +7,8 @@ import {
   temporalLimits,
   computeSharedScale,
   alignOffsets,
+  alignOffsetsCentered,
+  isCenteredFxFrame,
 } from './layout.mjs';
 
 function assert(cond, msg) {
@@ -29,7 +31,7 @@ const skill64 = temporalLimits('player', 64, 'player-skill-a');
 assert(skill64.hypotMax === 6 && skill64.footMax === 1 && skill64.areaMax === 0.25, 'skill 64');
 
 const entranceBoss = temporalLimits('boss-fenrir', 240, 'boss-fenrir-entrance');
-assert(entranceBoss.hypotMax === 24 && entranceBoss.footMax === 2, 'entrance boss');
+assert(entranceBoss.hypotMax === 24 && entranceBoss.footMax === 3, 'entrance boss');
 
 const wraith = temporalLimits('enemy-wraith', 64, 'enemy-wraith-v');
 assert(wraith.footMax === 1, 'wraith floating foot');
@@ -48,5 +50,14 @@ const { ox, oy, footTarget } = alignOffsets(bb, 64, 64, 4, 4);
 assert(footTarget === 64 - 4 - 1, 'foot target');
 assert(oy + 40 === footTarget, `foot glued, oy=${oy}`);
 assert(ox === Math.floor((64 - 20) / 2) - 2, 'horizontal center');
+
+assert(isCenteredFxFrame('skill-ring-edmund') && isCenteredFxFrame('missile') && isCenteredFxFrame('marker-stun'), 'centered fx');
+assert(isCenteredFxFrame('proj-javelin') && isCenteredFxFrame('super-bloodsea') && isCenteredFxFrame('decal-bloodpool'), 'weapon fx centered');
+assert(isCenteredFxFrame('skill-edmund') && isCenteredFxFrame('wslot-missile') && isCenteredFxFrame('decor-church-glasslight'), 'ui and glasslight centered');
+assert(!isCenteredFxFrame('player') && !isCenteredFxFrame('summon-hound'), 'characters still foot-aligned');
+assert(!isCenteredFxFrame('obst-grave-tomb') && !isCenteredFxFrame('decor-grave-tree'), 'map objects foot-aligned');
+const c = alignOffsetsCentered(bb, 64, 64);
+assert(c.ox === Math.floor((64 - 20) / 2) - 2, 'centered ox');
+assert(c.oy === Math.floor((64 - 37) / 2) - 4, 'centered oy');
 
 console.log('layout.test.mjs: PASS');

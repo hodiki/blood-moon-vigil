@@ -151,7 +151,7 @@ const EXPLICIT = {
 // UI 图标默认（桌面 2x 出档）
 const UI_DEFAULT = { w: 128, h: 128, atlas: 'ui' }; // upg-*
 const SLOT_DEFAULT = { w: 64, h: 64, atlas: 'ui' }; // wslot-*/skill-*/codex-*
-const CHEST_SPEC = { w: 24, h: 24, atlas: 'ui' };   // chest（注册表归 ui）
+const CHEST_SPEC = { w: 24, h: 24, atlas: 'effects' }; // 局内掉落走 effects；DOM 仍可读 /frames/chest.png
 
 // 动态解析：未显式列出的帧按前缀规则
 export function resolveFrameSpec(frameName) {

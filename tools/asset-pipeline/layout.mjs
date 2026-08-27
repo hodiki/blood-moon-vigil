@@ -7,6 +7,26 @@ export function familyKey(frameName) {
   return frameName.replace(VARIANT_RE, '');
 }
 
+/**
+ * 环 / 弹体 / 标记：视觉中心 = 画布中心。禁止套角色「脚底贴边」——
+ * 否则空心环会被掀到画布下沿，冲击波/技能环缩放原点错位。
+ */
+export function isCenteredFxFrame(frameName) {
+  if (frameName.startsWith('marker-')) return true;
+  if (frameName.startsWith('skill-')) return true; // skill-ring-* 与 UI skill-*
+  if (frameName.startsWith('proj-')) return true;
+  if (frameName.startsWith('orb')) return true;
+  if (frameName.startsWith('aura-')) return true;
+  if (frameName.startsWith('ring-')) return true;
+  if (frameName.startsWith('super-')) return true;
+  if (frameName.startsWith('beam-')) return true;
+  if (frameName.startsWith('p-')) return true;
+  if (frameName.startsWith('decal-')) return true;
+  if (frameName.startsWith('wslot-') || frameName.startsWith('hud-') || frameName.startsWith('upg-') || frameName.startsWith('codex-')) return true;
+  if (frameName === 'decor-church-glasslight' || frameName === 'chest') return true;
+  return frameName === 'missile' || frameName === 'shockwave' || frameName === 'gem' || frameName === 'heal';
+}
+
 export function isAnimationVariant(frameName) {
   return VARIANT_RE.test(frameName);
 }
@@ -55,7 +75,8 @@ export function temporalLimits(family, specW, variantName = '') {
     areaMax = Math.max(areaMax, 0.2);
   } else if (kind === 'entrance') {
     hypotMax = specW >= 240 ? 24 : specW >= 96 ? 16 : 12;
-    footMax = Math.max(footMax, 2);
+    // 256 档出场顶边顶满时脚底无法与 idle 同钉；允许 3px（量化 + 顶边夹）
+    footMax = Math.max(footMax, specW >= 240 ? 3 : 2);
     areaMax = 0.3;
   }
 
@@ -155,4 +176,17 @@ export function alignOffsets(scaledBb, specW, specH, marginX, marginY) {
   if (oy + scaledBb.maxY >= specH) oy = specH - 1 - scaledBb.maxY;
   if (oy + scaledBb.minY < 0) oy = -scaledBb.minY;
   return { ox, oy, footTarget };
+}
+
+/** 包围盒在画布正中（环/弹体/标记） */
+export function alignOffsetsCentered(scaledBb, specW, specH) {
+  const bw = scaledBb.maxX - scaledBb.minX + 1;
+  const bh = scaledBb.maxY - scaledBb.minY + 1;
+  let ox = Math.floor((specW - bw) / 2) - scaledBb.minX;
+  let oy = Math.floor((specH - bh) / 2) - scaledBb.minY;
+  if (ox + scaledBb.minX < 0) ox = -scaledBb.minX;
+  if (oy + scaledBb.minY < 0) oy = -scaledBb.minY;
+  if (ox + scaledBb.maxX >= specW) ox = specW - 1 - scaledBb.maxX;
+  if (oy + scaledBb.maxY >= specH) oy = specH - 1 - scaledBb.maxY;
+  return { ox, oy };
 }

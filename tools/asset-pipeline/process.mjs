@@ -34,6 +34,8 @@ import {
   pivotFromFoot,
   computeSharedScale,
   alignOffsets,
+  alignOffsetsCentered,
+  isCenteredFxFrame,
 } from './layout.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,11 +56,16 @@ function saveReport(report) {
   fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2));
 }
 
-// 是否为「全幅贴图类」帧（tile/背景/装饰/贴花）：不抠主体，直接缩放铺满
+// 是否为「全幅贴图类」帧：不抠主体，直接缩放铺满。
+// obst-/decor- 是落地物件（要抠图）；decal-bloodpool 是危险区铺满；其余 decal 是小贴花要抠。
+// UI 卡面（wslot/skill 图标/hud/upg/codex）原图已画满底，走全幅。
 function isFullBleedFrame(frameName) {
-  return frameName.startsWith('tile-') || frameName.startsWith('decor-') ||
-         frameName.startsWith('decal-') || frameName.startsWith('obst-') ||
-         frameName === 'moon' || frameName === 'vignette' || frameName === 'marker-warningline';
+  if (frameName.startsWith('tile-')) return true;
+  if (frameName === 'decal-bloodpool' || frameName === 'moon' || frameName === 'vignette') return true;
+  if (frameName === 'marker-warningline') return true;
+  if (frameName.startsWith('wslot-') || frameName.startsWith('hud-') || frameName.startsWith('upg-') || frameName.startsWith('codex-')) return true;
+  if (frameName.startsWith('skill-') && !frameName.startsWith('skill-ring-')) return true;
+  return false;
 }
 
 function rgbDist(p, q) {
@@ -369,7 +376,9 @@ async function rasterEntity(prep, sharedScale) {
     .toBuffer({ resolveWithObject: true });
   const scaledBb = boundingBox(fitted.data, fitted.info.width, fitted.info.height);
   if (!scaledBb) return { error: 'EMPTY（缩放后无主体）' };
-  const { ox, oy } = alignOffsets(scaledBb, spec.w, spec.h, mx, my);
+  const { ox, oy } = isCenteredFxFrame(frameName)
+    ? alignOffsetsCentered(scaledBb, spec.w, spec.h)
+    : alignOffsets(scaledBb, spec.w, spec.h, mx, my);
   const canvas = Buffer.alloc(spec.w * spec.h * 4);
   blit(fitted.data, fitted.info.width, fitted.info.height, canvas, spec.w, spec.h, ox, oy);
   return {
@@ -421,7 +430,9 @@ async function processPrepared(prep, sharedScale) {
   await writeFramePng(frameName, spec, scaled.data);
   const result = validate(frameName, scaled.data, { width: spec.w, height: spec.h }, spec, { method });
   const metrics = roundMetrics(silhouetteMetrics(scaled.data, spec.w, spec.h));
-  const pivot = metrics ? pivotFromFoot(metrics.footY, spec.h) : { x: 0.5, y: 0.5 };
+  const pivot = isCenteredFxFrame(frameName)
+    ? { x: 0.5, y: 0.5 }
+    : (metrics ? pivotFromFoot(metrics.footY, spec.h) : { x: 0.5, y: 0.5 });
   return { ...result, raw: prep.rawPath, layout, metrics, pivot };
 }
 
@@ -515,7 +526,9 @@ async function checkExisting(frameName) {
   const { data, info } = await sharp(frameOut).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const result = validate(frameName, data, info, spec, {});
   const metrics = roundMetrics(silhouetteMetrics(data, spec.w, spec.h));
-  const pivot = metrics ? pivotFromFoot(metrics.footY, spec.h) : { x: 0.5, y: 0.5 };
+  const pivot = isCenteredFxFrame(frameName)
+    ? { x: 0.5, y: 0.5 }
+    : (metrics ? pivotFromFoot(metrics.footY, spec.h) : { x: 0.5, y: 0.5 });
   return { ...result, metrics, pivot };
 }
 
