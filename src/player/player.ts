@@ -18,6 +18,7 @@ import { PlayerStats } from '@/player/player-stats';
 import { isInvulnerable, applyDamage, extendInvulnerabilityUntil } from '@/combat/damage';
 import { GameEvents, GameEvent } from '@/core/events';
 import { clampToWorld, type Vec2 } from '@/utils/math';
+import { SkillPoseClock } from '@/fx/skill-pose';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   readonly stats: PlayerStats;
@@ -28,8 +29,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** 当前世界尺寸（E4-S9：按 MAP_CONFIGS 尺寸联动；默认墓地 3000） */
   private worldW: number;
   private worldH: number;
-  /** 主动技姿态叠层起点（ms；<0 = 未在播）。伤害已瞬发，本字段只驱动 skill-a/b 帧。 */
-  private skillPoseStartedAtMs = -1;
+  /** 主动技姿态计时（fx/skill-pose.ts 纯类；<0 = 未在播。伤害已瞬发，本字段只驱动 skill-a/b 帧） */
+  private skillPose = new SkillPoseClock();
 
   constructor(scene: Phaser.Scene, x: number, y: number, hero?: HeroConfig, mapId: MapId = 'map_graveyard') {
     const visual = resolveCharacterFrame(scene, visualFrameForContent(hero?.id ?? 'hero_edmund'));
@@ -110,12 +111,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   /** 开始姿态叠层（不冻结移动；缺帧时 tick 自动跳过） */
   beginSkillPose(): void {
-    this.skillPoseStartedAtMs = this.scene.time.now;
+    this.skillPose.start(this.scene.time.now);
   }
 
   /** 距姿态起点的毫秒；未开始为 -1 */
   skillPoseElapsedMs(): number {
-    if (this.skillPoseStartedAtMs < 0) return -1;
-    return this.scene.time.now - this.skillPoseStartedAtMs;
+    return this.skillPose.elapsedMs(this.scene.time.now);
   }
 }

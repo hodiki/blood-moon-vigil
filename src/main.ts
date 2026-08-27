@@ -30,8 +30,10 @@ if (import.meta.env.DEV) {
 }
 
 // QA-FIX-2 B：仅 `?qa=1` 时暴露控制台测试辅助（unlockAll/setHero/setMap/status）
+// QA-FIX-3 修复 1：全局名统一为 `__BMV_QA`（曾误写 `__BMV_QA__` 多两个下划线，
+// 导致 R3 外测 `typeof window.__BMV_QA` === undefined，测试计划/文档全用 `__BMV_QA`）。
 if (params.has('qa')) {
-  (window as unknown as { __BMV_QA__?: QaHelper }).__BMV_QA__ = installQaHelper(
+  (window as unknown as { __BMV_QA?: QaHelper }).__BMV_QA = installQaHelper(
     window.localStorage,
     detectIsMobile() ? 'mobile' : 'desktop',
   );

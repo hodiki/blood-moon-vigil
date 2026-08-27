@@ -4,6 +4,8 @@
  * 仅当 URL 带 `?qa=1` 时由 main.ts 安装到 window.__BMV_QA（生产玩家不可见作弊入口）。
  * 全部走 save.ts / session-selection.ts 正式 API，不裸写 localStorage：
  * - unlockAll(): 三个 clearedMaps 标记置 true 并持久化 → 刷新/返回主菜单即全解锁。
+ *   （QA-FIX-3 追加①：0.2.x 阵容全开放后对当前内容是幂等空操作，保留——未来门禁内容
+ *   恢复后自动重新有意义。）
  * - setHero(id)/setMap(id): selectHeroSafely/selectMapSafely（带当前存档解锁校验，
  *   非法回退默认并返回实际生效值）——免刷新切角色/地图。
  * - status(): 当前 { hero, map, unlocks } JSON 快照。

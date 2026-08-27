@@ -161,6 +161,27 @@ export class RunStats {
   /** M3 真机埋点：三选一总卡数（relatedCardShare 分母；= offersPerRun × 每轮卡数） */
   totalOfferCards = 0;
 
+  /**
+   * 每局开始重置全部 per-run 字段（R3 外测 §6「再来一局」__BMV_LAST_RUN 串号修复）。
+   * PlayScene 复用同一场景实例（scene.restart 不重建实例、类字段不重初始化），
+   * 累积数组（build/upgradeTimestamps）与累计计数（offersPerRun/xpGained/...）跨局存活；
+   * 本方法在每局开始（PlayScene.create，含 restart 路径）调用，第二局 JSON 只含第二局数据。
+   */
+  reset(): void {
+    this.kills = 0;
+    this.level = 1;
+    this.hesitationCount = 0;
+    this.upgradeTimestamps = [];
+    this.upgrades = [];
+    this.boss = null;
+    this.activeSkillCasts = 0;
+    this.offersPerRun = 0;
+    this.xpGainedPerRun = 0;
+    this.evolutionCompleteCount = 0;
+    this.relatedOfferCards = 0;
+    this.totalOfferCards = 0;
+  }
+
   /** M1b 主动技：成功释放一次（PlayScene 在 ActiveSkill.tryCast 返回 true 后调用） */
   recordActiveSkillCast(): void {
     this.activeSkillCasts += 1;

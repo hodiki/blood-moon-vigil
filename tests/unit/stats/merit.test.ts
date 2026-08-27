@@ -12,6 +12,7 @@ import {
   meritProgress,
 } from '@/stats/merit';
 import { HEROES } from '@/config/balance';
+import { PlayerStats } from '@/player/player-stats';
 
 describe('E4-S7 功绩点数结算（gdd-codex §3.4）', () => {
   it('单局典型 28~32：存活 12 + 击杀 8 + 通关 10 + 首杀 2 = 32', () => {
@@ -137,5 +138,48 @@ describe('E4-S7 功绩累计进度（merit-ui-spec §7 结算页进度条数据�
     expect(meritProgress(35).fraction).toBe(0.5);
     // 全部解锁 → 1
     expect(meritProgress(120).fraction).toBe(1);
+  });
+});
+
+// —— QA-FIX-3 修复 3：开局属性接线（R3 T-F40「装备 +20 HP 开局仍 100」回归锚点） ——
+
+describe('功绩加成 → PlayerStats 开局接线（PlayScene.applyMeritToStats 消费契约）', () => {
+  it('装备 merit_hp：开局 PlayerStats maxHp/hp = 120/120（PlayerStats 消费 delta 的标准写法）', () => {
+    const stats = new PlayerStats(HEROES.hero_edmund);
+    const merit = computeMeritApplication(['merit_hp'], false, HEROES.hero_edmund);
+    // PlayScene.applyMeritToStats 的写回语义：maxHp += delta 且 hp += delta（满血起步）
+    stats.maxHp += merit.maxHpDelta;
+    stats.hp += merit.maxHpDelta;
+    expect(stats.maxHp).toBe(120);
+    expect(stats.hp).toBe(120);
+  });
+
+  it('纯局内模式开启：applied 为空 → delta 全 0，不写 PlayerStats（开局仍 100/100）', () => {
+    const stats = new PlayerStats(HEROES.hero_edmund);
+    const merit = computeMeritApplication(['merit_hp', 'merit_dmg', 'merit_magnet', 'merit_speed'], true, HEROES.hero_edmund);
+    expect(merit.applied).toEqual([]);
+    if (!merit.pureInGame) {
+      stats.maxHp += merit.maxHpDelta;
+      stats.addDamageBonus(merit.damageMultDelta);
+      stats.moveSpeed += merit.moveSpeedDelta;
+      stats.magnetRadiusBonus += merit.magnetRadiusDelta;
+    }
+    expect(stats.maxHp).toBe(100);
+    expect(stats.hp).toBe(100);
+    expect(stats.magnetRadiusBonus).toBe(20); // 守夜人专属被动 +20px，与功绩无关
+  });
+
+  it('四加成全装备：HP +20 / 伤害倍率 1.05 / 磁力 +40 / 移速 244.4（数值对齐 merit-ui-spec）', () => {
+    const stats = new PlayerStats(HEROES.hero_edmund);
+    const merit = computeMeritApplication(['merit_hp', 'merit_dmg', 'merit_magnet', 'merit_speed'], false, HEROES.hero_edmund);
+    stats.maxHp += merit.maxHpDelta;
+    stats.hp += merit.maxHpDelta;
+    stats.addDamageBonus(merit.damageMultDelta);
+    stats.moveSpeed += merit.moveSpeedDelta;
+    stats.magnetRadiusBonus += merit.magnetRadiusDelta;
+    expect(stats.maxHp).toBe(120);
+    expect(stats.totalDamageMultiplier).toBeCloseTo(1.05, 6);
+    expect(stats.magnetRadiusBonus).toBe(60); // 守夜人被动 20 + 功绩 40
+    expect(stats.moveSpeed).toBeCloseTo(244.4, 6); // 235 × 1.04
   });
 });

@@ -231,3 +231,70 @@ describe('M3 真机埋点（upgrade-experience-v2 §4.4）', () => {
     expect(r.bossFightSeconds).toBe(70); // Boss HP 4000 不改，仅时长埋点
   });
 });
+
+// —— QA-FIX-3 修复 2：per-run reset（R3 外测 §6「再来一局」__BMV_LAST_RUN 串号） ——
+
+describe('RunStats.reset()（R3 §6 Run2/3 串号修复：scene.restart 复用实例）', () => {
+  it('连续两局：第二局 JSON 不含第一局数据（build 不前置 / 时间戳单调 / 累计量不叠加）', () => {
+    const stats = new RunStats();
+    // 第一局（对齐 R3 §6 Run1：34.6s LV4，3 升级 / 3 轮 offer / 360 xp）
+    stats.recordKill();
+    stats.recordKill();
+    stats.recordLevelUp(2, 13.8);
+    stats.recordLevelUp(3, 19.7);
+    stats.recordLevelUp(4, 26.6);
+    stats.recordUpgradeChosen(0, 'A3 弹幕弹速 +20%', 13.8);
+    stats.recordUpgradeChosen(0, '鹰眼镜片', 19.7);
+    stats.recordUpgradeOffered([v2Opt('up_w_a1', true), v2Opt('up_g_1', false), v2Opt('up_a_cd_edmund', true)]);
+    stats.recordXpGained(360);
+    stats.recordHesitationV2(0.5, [v2Opt('up_a_x', true), v2Opt('up_a_y', true)]); // 全机制卡 → 记 1 次
+    stats.recordActiveSkillCast();
+    const r1 = stats.finish(false, 34.6);
+    expect(r1.build).toEqual(['A3 弹幕弹速 +20%', '鹰眼镜片']);
+
+    // —— reset（PlayScene.create 每局开始调用）→ 第二局 ——
+    stats.reset();
+    stats.recordKill();
+    stats.recordLevelUp(2, 10.0);
+    stats.recordUpgradeChosen(0, '兽骨图腾', 10.0);
+    stats.recordUpgradeOffered([v2Opt('up_g_2', false), v2Opt('up_w_b1', true), v2Opt('up_g_3', false)]);
+    stats.recordXpGained(120);
+    const r2 = stats.finish(false, 25.0);
+
+    expect(r2.build).toEqual(['兽骨图腾']); // 不前置第一局卡（R3 §6 Run2/3 build 串号案例）
+    expect(r2.upgradeTimestamps).toEqual([10.0]); // 单调、不含第一局时间戳
+    expect(r2.kills).toBe(1);
+    expect(r2.level).toBe(2);
+    expect(r2.hesitationCount).toBe(0); // 纠结计数归零
+    expect(r2.activeSkillCasts).toBe(0); // 主动技计数归零
+    expect(r2.offersPerRun).toBe(1); // 不累加（R3：15 = 跨局累加）
+    expect(r2.xpGainedPerRun).toBe(120); // 不累加（R3：1155）
+    expect(r2.evolutionComplete).toBe(false);
+    expect(r2.bossFightSeconds).toBeNull();
+    // 整段 JSON 不含第一局痕迹
+    expect(JSON.stringify(r2)).not.toContain('A3 弹幕弹速');
+    expect(JSON.stringify(r2)).not.toContain('13.8');
+  });
+
+  it('reset 后 boss 埋点不残留：上一局 Boss 战时长不进第二局', () => {
+    const stats = new RunStats();
+    stats.recordBossSpawn(360, 4000);
+    stats.recordBossDefeated(430);
+    expect(stats.finish(true, 430).bossFightSeconds).toBe(70);
+    stats.reset();
+    const r2 = stats.finish(false, 30);
+    expect(r2.bossFightSeconds).toBeNull();
+    expect(r2.bossDpsEstimate).toBeNull();
+    expect(r2.bossInTargetWindow).toBe(false);
+    expect(r2.victory).toBe(false);
+  });
+
+  it('relatedOfferCards/totalOfferCards 归零：reset 后无 offer → relatedCardShare null（R3 T-F35）', () => {
+    const stats = new RunStats();
+    stats.recordUpgradeOffered([v2Opt('up_w_a1', true), v2Opt('up_g_1', false), v2Opt('up_a_cd_edmund', true)]);
+    stats.reset();
+    const r2 = stats.finish(true, 60);
+    expect(r2.relatedCardShare).toBeNull();
+    expect(r2.offersPerRun).toBe(0);
+  });
+});

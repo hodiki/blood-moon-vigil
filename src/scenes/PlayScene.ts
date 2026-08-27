@@ -229,6 +229,15 @@ export class PlayScene extends Phaser.Scene {
     // M3 结算日志条：记录开局已解锁数（局终 delta = snapshot − 开局数，codex-ui-spec §6）
     this.codexUnlockedAtStart = this.saveData.codexUnlocked.length;
 
+    // QA-FIX-3 修复 2（R3 §6「再来一局」__BMV_LAST_RUN 串号）：scene.restart 复用同一场景实例，
+    // RunStats 类字段累积数组（build/upgradeTimestamps）与累计埋点（offersPerRun/xpGained/...）
+    // 跨局存活 → 每局开始（create 即唯一入口，含 restart 路径）重置全部 per-run 字段。
+    this.stats.reset();
+    // 同族 per-run 计数：功绩首杀/化身击杀、图鉴 toast 挂起（同样跨局存活，一并归零）
+    this.firstBossKillsThisRun = 0;
+    this.avatarKillsThisRun = 0;
+    this.codexToastPending = false;
+
     // M3 序章屏：初始相位 PROLOGUE（世界冻结、不开始计时/生成器；update() RUNNING 短路保证）
     this.state = new GameState(GamePhase.PROLOGUE);
     // 副作用唯一入口（ADR-003）：物理/Tween/输入冻结集中在 applyPhase
@@ -337,6 +346,10 @@ export class PlayScene extends Phaser.Scene {
     });
     // E4-S2 充能制：技能按钮初始充能数角标（血猎手 2 段；其余隐藏）
     if (this.cfg.isMobile) this.hud.setSkillCharges(this.activeSkill.chargeCount);
+    // QA-FIX-3 修复 3（R3 T-F40「装备 +20 HP 开局仍显示 100」）：HUD 只消费 hp:changed 事件、
+    // 初始态硬编码 100/100，而功绩加成在 HUD 装配前已写入 PlayerStats —— 装配后立即同步一次
+    // 实际数值（装备 merit_hp 时 120/120 起步可见；无功绩时为幂等 100/100）。
+    GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
     // M1b 主动技：非 RUNNING 态技能按钮隐藏（CM §5 状态联动；桌面无按钮 no-op）
     this.state.onChange((phase) => this.hud.setSkillVisible(phase === GamePhase.RUNNING));
     this.results = createResultsOverlay();
@@ -1100,11 +1113,11 @@ export class PlayScene extends Phaser.Scene {
     }
     if (merit.damageMultDelta > 0) stats.addDamageBonus(merit.damageMultDelta); // 初始伤害 +5%
     if (merit.moveSpeedDelta > 0) stats.moveSpeed += merit.moveSpeedDelta; // 初始移速 +4%
-    if (merit.magnetRadiusDelta > 0) {
-      stats.magnetRadiusBonus += merit.magnetRadiusDelta; // 初始磁力 +40px
-      this.xp.setMagnetRadiusBonus(stats.magnetRadiusBonus);
-    }
-    GameEvents.emit(GameEvent.HpChanged, { hp: stats.hp, maxHp: stats.maxHp });
+    if (merit.magnetRadiusDelta > 0) stats.magnetRadiusBonus += merit.magnetRadiusDelta; // 初始磁力 +40px
+    // 磁力同步交给 create 后续的 xp.setMagnetRadiusBonus(stats.magnetRadiusBonus) 统一读取——
+    // 本方法在 XpManager 装配之前调用（QA-FIX-3：不得在此触碰 this.xp，装磁力功绩会崩）。
+    // HP 显示同步见 create 中 HUD 装配后的 hp:changed emit（R3 T-F40：HUD 初始态硬编码
+    // 100/100 且只消费 hp:changed 事件；本方法发出的早于 HUD 订阅，故同步必须在 HUD 后）。
   }
 
   /** 暂停切换（Esc/P/移动暂停键；LEVEL_UP 期不响应，CM §5） */
