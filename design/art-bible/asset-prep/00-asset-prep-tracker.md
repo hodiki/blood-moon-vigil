@@ -1,6 +1,6 @@
 # 《血月守夜》美术资产备料台账（asset-prep tracker）
 
-> 版本：v0.6（时间轴门禁 41/17）· 日期：2026-08-25 · 记录：主理人侧 AI（提示词工程）
+> 版本：v1.1（批次 4 图鉴事件 + chest 已入仓）· 日期：2026-08-27 · 记录：主理人侧 AI（提示词工程）
 > 定位：**资产准备全过程的记录/核对中枢**——任务解析、现状快照、契约差异、提示词交付批次、验收流转都在此追踪。
 > 权威基准（核对口径）：`content-id-frame-map.md` v1.1（帧名映射）+ `frame-registry.json`（工程注册表，验收 diff 基准）+ `asset-spec-v1.md` **v1.2**（尺寸/帧数/图集/色板契约）
 >
@@ -26,8 +26,8 @@
 
 | 轨道 | 状态 | 证据 |
 |---|---|---|
-| A · 外部素材 | 🟢 **批次 1 已入仓**：57 契约帧 + `tile-grave-soil`；**单帧契约（尺寸/边距/L\*）仍全过**；时间轴（idle/skill/entrance）**41 PASS / 17 FAIL**（2026-08-25）；`characters` 图集 57 帧 **1024²** | 2026-08-25 `process --check`；P-5 成品 + P-6 时间轴门禁 |
-| B · 程序剪影兜底 | 🟢 **仍在**：缺帧走 `procedural-textures.ts`；M4 已把批次 1 外部 `characters` 覆盖进局内 | Boot `characters-ext` + `applyExternalCharacterFrames` |
+| A · 外部素材 | 🟢 批次 1~3 在仓 + **批次 4** `codex-event-*` ×6 + `chest`（不下 40 upg） | 守夜日志复用实体帧；化身首杀掉 chest |
+| B · 程序剪影兜底 | 🟢 **仍在**：图鉴 PNG 404 回 SVG；chest 缺帧不掉 | Boot `characters-ext` / `effects-ext`；DOM `./frames/` |
 
 ### 1.2 帧名核对（frame-registry.json vs 契约）
 
@@ -53,7 +53,9 @@
 | 图集 | `pack.mjs`：`characters` 57 帧 **1024×1024**；`effects` 1 帧（tile）；ui 空（批次 3） |
 | 待主理人扫一眼 | 月之化身偏金橙肌肉发光体（非纤细月光人）；32px 仍会压掉风衣扣细节——原图质量优先 |
 
-**下一批**：武器 14 + 超武 7 + 特效/标记（批次 2）。未开。
+**下一批（未开）**：**不要开 40 个升级图标**除非单独排期；其余 `wslot-*` 可随武器槽扩展。
+
+提示词：`04-prompts-codex.md` v1.0（批次 4）；`03-prompts-tiles-ui.md` v1.0；`02-prompts-fx-weapons.md` v1.1；`01-prompts-core-entities.md` v1.3。
 
 ---
 
@@ -139,8 +141,10 @@
 - [x] P0 **主理人修订**：玩家/英雄**取消冷青身份描边**；守夜人原图改细致稿（不再 6 色块）
 - [x] P0 **守夜人风格锁通过**（细致原图、无青边）；`player-skill-a` 与 idle 同一件袍
 - [x] P0 批次 1 其余 53 帧已生成 + 入 raw + 图集；单帧契约全过；时间轴 **41 PASS / 17 FAIL**（2026-08-25，见 `ta-review-handoff.md`）
-- [x] P1 **M4 批次 1 入局**：Boot 预载外部 characters → 覆盖同名程序帧；武器/FX 仍程序剪影；动画按实际帧名播
-- [ ] P1 批次 2：武器 14 + 超武 7 + 特效/标记
+- [x] P1 **M4 批次 1 入局**：Boot 预载外部 characters → 覆盖同名程序帧；动画按实际帧名播
+- [x] P1 **批次 2 第一波**：标记 6 + 技能环 4 + Demo 武器 3；Boot `effects-ext`；冲击波拷到 effects
+- [x] P1 **批次 2 第二波**：武器 11 + `decal-bloodpool` + 超武 7；局内 `pickWeaponVisual` 换帧（缺帧回退 missile/orb/shockwave）
+- [x] P1 **批次 1 时间轴 17 FAIL**：idle 底板 img2img；4 张脚底/体量仍漂的用 `breathe-from-idle.mjs` 钉脚；`checks.temporal.ok` 全过
 - [ ] P2 批次 3：tiles + UI
 - [ ] P2 批次 4：图鉴 / 可选道具槽
 

@@ -1,6 +1,6 @@
 # 《血月守夜》AI 资产生成提示词 · 批次 1：核心实体（57 帧）
 
-> 版本：v1.2 · 日期：2026-08-25 · 修订：64 档语言 + 默认朝右 + 禁止 stretch-compress（TA 时间轴审查）  
+> 版本：v1.3 · 日期：2026-08-26 · 修订：时间轴 FAIL 17 帧按 idle 底板 img2img / 微量呼吸补绘  
 > 范围：4 角色（16 帧）+ 15 敌人（30 帧）+ 4 Boss（11 帧）= **57 帧**，与 `frame-registry.json` 对齐  
 > 契约：`asset-spec-v1.md` **v1.3.1**（英雄 64 / 小兵 40–68 / 精英 96 / Boss 240–256；无管线描边）  
 > 用法：**主提示词 + 帧变体**——只替换 `[FRAME]`。描边**不要**写进提示词（管线后置）。技能帧**只换姿态**，环/粒子走引擎 FX。  
@@ -105,6 +105,12 @@ assets/raw/<帧名>.png
 ```
 
 实现见 `tools/asset-pipeline/README.md`（P-1~P-4 已落地）。
+
+### 0.10 时间轴 FAIL 补绘（17 帧，2026-08-26）
+
+以 **idle / base raw 做底板**。`-v` 只许胸腔/披风/皮毛上扩 1–2px 语言，脚钉死。禁止 stretch-compress、禁止换服装/体型/道具。`hero-galvan-skill-b` 以 `skill-a` 为底板，同尺度跟枪姿态，禁止整帧放大。
+
+清单与门禁：`ta-review-handoff.md` §2。验收：`report.json` → `checks.temporal.ok === true`。
 
 ---
 
