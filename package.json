@@ -1,7 +1,7 @@
 {
   "name": "blood-moon-vigil",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "《血月守夜》vampire-survivors-like · Phaser 3 + TypeScript · 桌面+移动双端",
   "type": "module",
   "scripts": {
