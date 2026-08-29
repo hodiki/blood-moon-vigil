@@ -87,6 +87,8 @@ export class SummonWeaponBehavior implements WeaponBehavior {
   private respawnTimer = 0;
   private d3Cooldown = 0;
   private readonly chain: Phaser.GameObjects.Sprite;
+  /** B4-W2 R-7 葬仪断罪钩子（WeaponSystem 注入）：返回 true = 已拖拽（跳过击退）；未配置 = 击退原行为 */
+  onHitResonance?: (target: Enemy, now: number) => boolean;
   /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0） */
   private focusedCooldownMultiplier = 1;
   /** E4-S4 钥被动（D3 锁链独立字段；召唤群走 params） */
@@ -254,6 +256,12 @@ export class SummonWeaponBehavior implements WeaponBehavior {
     if (bestEnemy) {
       // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
       hitEnemy(bestEnemy, weaponDamageOnTarget(damage, bestEnemy, ctx.now));
+      // B4-W2 R-7 葬仪断罪：击退改拖拽（拉至巨斧弧心 = 玩家位；位移非状态不走 ICD）——钩子未配置 = 击退原行为
+      if (this.onHitResonance?.(bestEnemy, ctx.now) === true) {
+        const body = (bestEnemy as unknown as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body | null;
+        body?.reset(bestEnemy.x, bestEnemy.y);
+        return;
+      }
       // 击退 100px（沿锁链方向）
       bestEnemy.x += Math.cos(angle) * (c.knockback ?? 100);
       bestEnemy.y += Math.sin(angle) * (c.knockback ?? 100);

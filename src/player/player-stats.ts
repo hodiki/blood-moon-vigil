@@ -67,6 +67,8 @@ export class PlayerStats {
   /** 专属被动（content-design-outline §2.2~2.5；默认 0/1 无加成） */
   passiveLifestealPerKill = 0;
   healBoostMultiplier = 1;
+  /** B5 属性 A-10 拾取半径（XpManager 装配时读取；与磁力区分——拾取=接触判定） */
+  pickupRadiusBonus = 0;
   magnetRadiusBonus = 0;
   /** 血猎手受击加速：截止（秒时间戳）+ 加成比例 */
   private hitSpeedBoostUntil = 0;

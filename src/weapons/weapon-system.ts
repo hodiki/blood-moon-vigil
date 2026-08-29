@@ -52,6 +52,7 @@ import {
   createResonanceCrossState, stepResonanceResidues, onResonanceCrossExplode,
   createResonanceRevolverFeedState, onResonanceCrossbowHit,
   createResonanceTwinbladesMarkState, onResonanceBoomerangHit,
+  createResonanceDragState, onResonanceChainHit,
 } from '@/weapons/resonance/resonance-math';
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
 import type { RevolverState } from '@/weapons/exclusive/exclusive-math';
@@ -274,7 +275,6 @@ function registerNewWeaponBehaviors(
   fx: FxManager,
   onHitResonance?: (weaponId: WeaponId, target: Enemy, now: number) => void,
 ): void {
-  void onHitResonance;
   // A 类：银针连弩 / 圣银火铳 / 幽灵飞刃 / 骨钉标枪（血月猎手由 MissileWeaponBehavior 注册）
   for (const id of ['wpn_a_2', 'wpn_a_3', 'wpn_a_4', 'wpn_a_5'] as const) {
     const behavior = new ProjectileWeaponBehavior(scene, cfg, id, fx);
@@ -352,6 +352,19 @@ export class WeaponSystem {
       }
     };
     this.setNow = (now: number) => { lastNow = now; };
+    // B4-W2 R-7 葬仪断罪：锁链命中 → 拖拽（拉至巨斧弧心；×1.5 伤害段经 resonanceAxeDamageMult 结算口径）
+    const chainBehavior = this.registry.get('wpn_d_3') as unknown as { onHitResonance?: (t: Enemy, now: number) => boolean } | undefined;
+    if (chainBehavior) {
+      chainBehavior.onHitResonance = (target: Enemy, _now: number) => {
+        if (!this.resonance.isAchieved('R7')) return false;
+        return onResonanceChainHit(
+          this.resonanceDrag,
+          target as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget,
+          { x: this.player.x, y: this.player.y },
+          resonancePairByExclusive('xw_axe')!.machine,
+        ) !== null;
+      };
+    }
 
     // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲初始未解锁；
     // 其余新武器由 E4-S5 解锁流开启（本冲刺保持未启用，行为注册但不运行）
@@ -371,6 +384,7 @@ export class WeaponSystem {
   private readonly resonanceCross = createResonanceCrossState();
   private readonly resonanceFeed = createResonanceRevolverFeedState();
   private readonly resonanceMarks = createResonanceTwinbladesMarkState();
+  private readonly resonanceDrag = createResonanceDragState();
   /** R-6 落点时刻桥接（update 起始写；onExplode 读） */
   private setNow: (now: number) => void = () => {};
 
@@ -485,10 +499,11 @@ export class WeaponSystem {
     return SUPER_WEAPON_EVOLUTION[weaponId] !== undefined && classStacks >= 3 && hasKey;
   }
 
-  update(dt: number, now: number): void {
+  update(dt: number, now: number, windowDamageMult = 1): void {
     this.setNow(now);
     this.refreshEnemies(now);
-    const mult = this.player.stats.totalDamageMultiplier;
+    const mult = this.player.stats.totalDamageMultiplier * windowDamageMult; // B5-W3 Q-s1 窗口乘区（独立结算）
+
     const ctx: WeaponUpdateContext = {
       dt,
       now,

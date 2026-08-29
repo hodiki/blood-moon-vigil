@@ -53,27 +53,29 @@ function dealDamage(target: ExclusiveTarget, amount: number, result: DerivativeC
 
 /**
  * 施放衍生技（纯函数总入口；按 id 分派到各技结算）。
- * CD 计时/充能/占比遥测由 ActiveSkill 控制器骨架承载（DERIVATIVE_SKILLS[id].cd）。
+ * CD 计时/充能/占比遥测由 DerivativeSkillController 承载（DERIVATIVE_SKILLS[id].cd）。
+ * paramsOverride = P4 强化卡参数覆写（B5-W4 衍生技控制器消费；未传 = 基准参数）。
  */
-export function castDerivative(id: DerivativeSkillId, ctx: DerivativeCastContext): DerivativeCastResult {
+export function castDerivative(id: DerivativeSkillId, ctx: DerivativeCastContext, paramsOverride: Readonly<Record<string, number>> = {}): DerivativeCastResult {
   const cfg = DERIVATIVE_SKILLS[id];
+  const P = { ...cfg.params, ...paramsOverride } as Readonly<Record<string, number>>;
   switch (id) {
     case 'dv_revolver_burst':
-      return castRevolverBurst(cfg.params, ctx);
+      return castRevolverBurst(P, ctx);
     case 'dv_lantern_flash':
-      return castLanternFlash(cfg.params, ctx);
+      return castLanternFlash(P, ctx);
     case 'dv_blood_dash':
-      return castBloodDash(cfg.params, ctx);
+      return castBloodDash(P, ctx);
     case 'dv_moon_snipe':
-      return castMoonSnipe(cfg.params, ctx);
+      return castMoonSnipe(P, ctx);
     case 'dv_requiem':
-      return castRequiem(cfg.params, ctx);
+      return castRequiem(P, ctx);
     case 'dv_holy_judgment':
-      return castHolyJudgment(cfg.params, ctx);
+      return castHolyJudgment(P, ctx);
     case 'dv_blood_rage':
-      return castBloodRage(cfg.params, ctx);
+      return castBloodRage(P, ctx);
     case 'dv_wolf_charge':
-      return castWolfCharge(cfg.params, ctx);
+      return castWolfCharge(P, ctx);
   }
 }
 
@@ -122,14 +124,29 @@ function castBloodDash(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
   const result = emptyResult();
   // 即时近似：突进路径 = 玩家向敌群最密方向 200px；沿途目标 = 路径带内敌（本批按半径带近似）
   const targets = aliveByDistance(ctx.enemies, ctx.player.x, ctx.player.y).slice(0, 5);
+  let hits = 0;
   for (const t of targets) {
     dealDamage(t, p['damage']!, result);
+    hits += 1;
     if (t.cc) {
       t.cc = applyStatus(t.cc, { kind: 'vulnerable', value: p['vulnerable']!, durationSeconds: p['vulnerableDuration']!, source: 'dv_blood_dash' }, ctx.now).state;
       result.events.push('vulnerable');
     }
   }
   result.events.push('dash');
+  // up_d_dash 血宴：突进终点血爆（25 伤/120px）+ 每命中 1 敌回 1 HP（P4 形态，锚）
+  if ((p['burstDamage'] ?? 0) > 0) {
+    const rSq = (p['burstRadius'] ?? 120) ** 2;
+    for (const e of ctx.enemies) {
+      if (!e.active || e.hp <= 0) continue;
+      const dx = e.x - ctx.player.x;
+      const dy = e.y - ctx.player.y;
+      if (dx * dx + dy * dy > rSq) continue;
+      dealDamage(e, p['burstDamage']!, result);
+    }
+    ctx.healSink?.((p['healPerHit'] ?? 1) * hits);
+    result.events.push('bloodBurst');
+  }
   return result;
 }
 
