@@ -136,25 +136,23 @@ describe('B3-W2 P1~P5 保底序列（WD-13；验收判据 2）', () => {
     expect(p?.upgradeId).not.toBe('mc_lantern_1');
   });
 
-  it('P2：持可共鸣通武且未持钥 → 钥入席位；多项取通武强化累计最高；已持钥跳过', () => {
+  it('P2：正式 8 对映射（B4-W1 接管 B3 占位）——持配对专武未持钥 → 该对钥入席位；已持钥跳过', () => {
     const state = makeState();
-    state.addStack('up_w_b1', 2); // B 类强化 2 次
-    state.addStack('up_w_c1', 1); // C 类强化 1 次
     const ctx = makeCtx({ ownedWeaponIds: ['wpn_a_1', 'wpn_b_1', 'wpn_c_1'] });
     const pool = buildV3Candidates(state, ctx);
     const p2 = pickP2KeyCandidate(state, ctx, pool);
-    expect(p2?.upgradeId).toBe('key_holy'); // B 类累计 2 > C 类 1
-    // 取钥后 → 跳过（P3 兜底）
+    expect(p2?.upgradeId).toBe('key_holy'); // 当前专武 xw_lantern 配对钥 = 圣辉坠饰（R-1）
+    // 取钥后 → P2 跳过（每专武恰 1 对，单候选；WD-4）
     state.addStack('key_holy', 1);
-    const p2b = pickP2KeyCandidate(state, ctx, buildV3Candidates(state, ctx));
-    expect(p2b?.upgradeId).toBe('key_tome'); // C 类仍未持钥（占位表 C→月相秘典；B4 共鸣对映射接管）
+    expect(pickP2KeyCandidate(state, ctx, buildV3Candidates(state, ctx))).toBeNull();
   });
 
   it('P4：第 8~14 次升级窗口内席位命中当前衍生技强化卡；窗口外/已取不出现（错过不补 §⑧-2）', () => {
     const state = makeState();
     state.addStack('up_w_a1', 2); state.addStack('up_w_a1', 2); // P3 满（叠满 2 层剔除）→ 席位落到 P4
     state.addStack('up_w_a2', 2); state.addStack('up_w_a2', 2);
-    state.addStack('key_scope', 1); // P2 满（A 类钥已持）→ 不抢占席位
+    state.addStack('key_scope', 1); // P2 满（A 类钥已持）
+    state.addStack('key_holy', 1); // B4 正式映射：R-1 钥也持 → P2 完全跳过，席位落 P4
     const inWindow = makeCtx({ upgradeCount: 10, runTimeSeconds: 150 });
     const pool = buildV3Candidates(state, inWindow);
     const p4 = pickGuaranteeCandidateV3(state, inWindow, pool);

@@ -36,6 +36,8 @@ function argValue(flag: string, fallback: number): number {
 
 const seeds = Math.max(1, Math.floor(argValue('--seeds', 12)));
 const baseSeed = Math.floor(argValue('--seed', 20260829));
+/** B4-W4 共鸣对照模式：--resonance 输出 R-1/R-6 共鸣前后 DPS 对照 */
+const resonanceMode = process.argv.includes('--resonance');
 const WINDOW_END = 60;
 const BUCKET = 10;
 
@@ -56,6 +58,13 @@ function median(arr: number[]): number {
 }
 
 const result: Record<string, { bands: Band[]; deaths: number[]; note: string }> = {};
+const resonanceDelta: Record<string, { base: number; resonated: number; deltaPct: number }> | null = resonanceMode ? {} : null;
+
+/** 单配置聚合 60s 总 DPS（全桶中位均值） */
+function totalMedianBands(bands: Band[]): number {
+  if (bands.length === 0) return 0;
+  return bands.reduce((a, b) => a + b.median, 0) / bands.length;
+}
 
 for (const id of EXCLUSIVES) {
   const runsPerBucket: number[][] = Array.from({ length: WINDOW_END / BUCKET }, () => []);
@@ -68,6 +77,7 @@ for (const id of EXCLUSIVES) {
       maxSeconds: WINDOW_END,
       bucketSeconds: BUCKET,
       invincible: true, // 开局 DPS 平台带：隔离承伤/走位变量（玩家生存模型留沙盘校准批次）
+      resonance: resonanceMode && (id === 'xw_lantern' || id === 'xw_cross'),
     });
     run.dpsCurve.slice(0, WINDOW_END / BUCKET).forEach((p, i) => {
       runsPerBucket[i]!.push(p.dps);
@@ -85,6 +95,26 @@ for (const id of EXCLUSIVES) {
     deaths,
     note: 'exclusive-math 真实结算层 × 1D 径向敌模型；数值锚点待模拟验证（gdd-exclusive-weapons §⑤）',
   };
+  if (resonanceMode && (id === 'xw_lantern' || id === 'xw_cross')) {
+    // 共鸣对照：同种子重跑非共鸣版
+    const baseBands: number[][] = Array.from({ length: WINDOW_END / BUCKET }, () => []);
+    for (let s2 = 0; s2 < seeds; s2 += 1) {
+      const run = simulateRun({
+        seed: baseSeed + s2, mapId: WEAPON_MAP[id], exclusiveId: id,
+        maxSeconds: WINDOW_END, bucketSeconds: BUCKET, invincible: true,
+      });
+      run.dpsCurve.slice(0, WINDOW_END / BUCKET).forEach((p, i) => baseBands[i]!.push(p.dps));
+    }
+    const baseBandsOut: Band[] = baseBands.map((values, i) => ({
+      tSeconds: (i + 1) * BUCKET,
+      median: round2(median(values)),
+      min: round2(values.length > 0 ? Math.min(...values) : 0),
+      max: round2(values.length > 0 ? Math.max(...values) : 0),
+    }));
+    const base = round2(totalMedianBands(baseBandsOut));
+    const res = round2(totalMedianBands(bands));
+    if (resonanceDelta) resonanceDelta[id] = { base, resonated: res, deltaPct: base > 0 ? round2(((res - base) / base) * 100) : 0 };
+  }
   // eslint-disable-next-line no-console
   console.log(
     `[dps-baseline] ${id}: ` +
@@ -106,6 +136,7 @@ writeFileSync(
       windowSeconds: WINDOW_END,
       bucketSeconds: BUCKET,
       weapons: result,
+      resonanceDelta,
     },
     null,
     2,

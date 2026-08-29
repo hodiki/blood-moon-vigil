@@ -32,6 +32,10 @@ import {
   createAxeState, stepAxe,
   createHornState, stepHorn,
 } from '@/weapons/exclusive/exclusive-math';
+import {
+  createResonanceLanternState, stepResonanceLantern,
+  createResonanceCrossState, onResonanceCrossExplode, stepResonanceResidues,
+} from '@/weapons/resonance/resonance-math';
 
 /** 与 PlayScene 桌面同屏上限一致（runtime-config.maxEnemies 桌面档） */
 const MAX_ACTIVE_ENEMIES = 400;
@@ -68,6 +72,8 @@ export interface SimOptions {
   bucketSeconds?: number;
   /** 无敌模式（DPS 平台带口径：隔离承伤/走位变量，专测武器输出效率；dps-baseline 消费） */
   invincible?: boolean;
+  /** B4-W4 共鸣形态对照（R-1 环带 / R-6 余焰叠加采样；仅 lantern/cross 支持完整对照） */
+  resonance?: boolean;
 }
 
 const DT = 1 / 60;
@@ -158,6 +164,14 @@ export function simulateRun(opts: SimOptions): RunMetrics {
   const axe = createAxeState();
   const horn = createHornState();
   const emptyMachine: Readonly<Record<string, number>> = {};
+  // B4-W4 共鸣对照状态（R-1 环带 / R-6 余焰）
+  const resLantern = createResonanceLanternState();
+  const resCross = createResonanceCrossState();
+  const R = opts.resonance === true;
+  const RES_PAIRS = {
+    R1: { touchDamage: 6, touchInterval: 0.4, stunDuration: 0.5, stunIcd: 10, angularSpeedDeg: 240 },
+    R6: { residueRadius: 100, residueDps: 8, residueDuration: 3 },
+  };
 
   const dpsCurve: RunMetrics['dpsCurve'] = [];
   const levelUpOffers: RunMetrics['levelUpOffers'] = [];
@@ -296,6 +310,10 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       switch (exclusive) {
         case 'xw_lantern':
           stepDamage = stepLantern(lantern, DT, t, playerLike, targets, mul, emptyMachine).damageDealt;
+          if (R) {
+            // R-1 环带叠加（沿灯环边缘 90px 巡行；眩晕走状态层 10s ICD）
+            stepDamage += stepResonanceLantern(resLantern, DT, t, playerLike, targets, mul, RES_PAIRS.R1!, 90).damageDealt;
+          }
           break;
         case 'xw_revolver': {
           const r = stepRevolver(revolver, DT, t, playerLike, targets, mul, emptyMachine, mulberry);
@@ -312,7 +330,10 @@ export function simulateRun(opts: SimOptions): RunMetrics {
           stepDamage = stepBell(bell, DT, t, playerLike, targets, mul, emptyMachine, (h) => { playerHp = Math.min(100, playerHp + h); }).damageDealt;
           break;
         case 'xw_cross':
-          stepDamage = stepCross(cross, DT, t, playerLike, targets, mul, emptyMachine).damageDealt;
+          stepDamage = stepCross(cross, DT, t, playerLike, targets, mul, emptyMachine, R ? (x, y) => onResonanceCrossExplode(resCross, x, y, t, RES_PAIRS.R6!) : undefined).damageDealt;
+          if (R) {
+            stepDamage += stepResonanceResidues(resCross, DT, t, targets, mul, RES_PAIRS.R6!).damageDealt;
+          }
           break;
         case 'xw_axe':
           stepDamage = stepAxe(axe, DT, t, playerLike, targets, mul, emptyMachine, (c) => { playerHp = Math.max(1, playerHp - c); }, (h) => { playerHp = Math.min(100, playerHp + h); }).damageDealt;
