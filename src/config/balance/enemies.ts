@@ -1,0 +1,231 @@
+/**
+ * config/balance/enemies.ts —— 敌人面板（legacy 4 敌 + 15 敌配置 + Boss 4 + 特殊行为 + Boss 机制常量）
+ *
+ * balance.ts 域拆分（EG-1）纯搬移：数值与注释原样保留，不改任何行为。
+ * legacy ENEMIES 与 ENEMY_CONFIGS 双源现状原样搬移（双源收敛属后续批次，B1 不动语义）。
+ */
+
+import type { PowerTag, EnemyId, BossId, MapId } from './ids';
+
+/**
+ * 敌人面板（enemies §③ 数值表，与 GDD 逐项一致 —— E2-S2 / enemy-panel.test 埋点断言）。
+ * 字段含义：hp 生命 / speed 移速 px/s / damage 接触伤害 / attackInterval 攻击间隔 s /
+ * radius 碰撞半径 px / xp 经验掉落。
+ */
+export interface EnemyPanel {
+  hp: number;
+  speed: number;
+  damage: number;
+  attackInterval: number;
+  radius: number;
+  xp: number;
+}
+
+export const ENEMIES: Record<EnemyKindId, EnemyPanel> = {
+  zombie: { hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 },
+  wolf: { hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2 },
+  // TASK-39 R1 波次2：厚血经验 15→10（E3 预授权判据触发：R1 满局 Lv47 → 压后期经验通胀，目标 Lv42–45）
+  tank: { hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 10 },
+  // TASK-31 收尾节奏调整（rhythm-pace-adj §3）：Boss HP 6000→4000（-33%，匹配 6min 局成型强度；
+  // 中位 DPS 60–75 → 战 53–67s、保守 45–55 → 73–89s ≤ 90s 上限；60~90s 判据保持）
+  boss: { hp: 4000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100 },
+};
+
+/** 敌人类型 id（面板 key；普通 3 敌共用一池，Boss 由 E4 接入） */
+export type EnemyKindId = 'zombie' | 'wolf' | 'tank' | 'boss';
+
+/** 敌人层级（gdd-enemies-v2 §3.1~3.3） */
+export type EnemyTier = 'normal' | 'fast' | 'air' | 'elite' | 'special';
+
+/** 敌人配置（gdd-enemies-v2 §3.1~3.3；powerTag 敌人表未单列，按阵营语义赋值，见 ENEMY_CONFIGS 注释） */
+export interface EnemyConfig {
+  id: EnemyId;
+  name: string;
+  map: MapId;
+  tier: EnemyTier;
+  hp: number;
+  speed: number;
+  damage: number;
+  attackInterval: number;
+  radius: number;
+  xp: number;
+  powerTag: PowerTag;
+  frame: string;
+  /** 特殊行为（§3.1~3.3 特殊行为列；无 = 普通） */
+  special?: string;
+  /** 反制（§3.1~3.3 反制列） */
+  counter?: string;
+  /** 远程怪投射伤害（g2_5 忏悔者烛火弹 8） */
+  rangedDamage?: number;
+}
+
+/**
+ * 敌人表 15（gdd-enemies-v2 §3.1~3.3；R-C3-RULING 14→15 补墓地 elite 守墓者）。
+ * powerTag 说明：GDD 敌人表未单列 powerTag 列，按 world-bible §3 阵营语义赋值——
+ * 墓地/教堂亡者与血廷 = BLOOD（血月傀儡），狼穴兽群 = BEAST；仅 Boss 表由 GDD 明确。
+ */
+export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
+  enemy_g1_1: { id: 'enemy_g1_1', name: '行尸', map: 'map_graveyard', tier: 'normal', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-zombie', counter: '走位拉扯' },
+  enemy_g1_2: { id: 'enemy_g1_2', name: '血犬', map: 'map_graveyard', tier: 'fast', hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2, powerTag: 'BLOOD', frame: 'enemy-hound', counter: '优先处理/绕开' },
+  enemy_g1_3: { id: 'enemy_g1_3', name: '墓穴甲虫', map: 'map_graveyard', tier: 'normal', hp: 8, speed: 70, damage: 6, attackInterval: 0.8, radius: 10, xp: 1, powerTag: 'BLOOD', frame: 'enemy-beetle', counter: '范围清屏' },
+  enemy_g1_4: { id: 'enemy_g1_4', name: '亡魂', map: 'map_graveyard', tier: 'special', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, powerTag: 'BLOOD', frame: 'enemy-wraith', special: '可穿越障碍（相位）', counter: '走位拉扯（障碍无效化，改靠移速/范围）' },
+  enemy_g1_5: { id: 'enemy_g1_5', name: '尸巫', map: 'map_graveyard', tier: 'special', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, powerTag: 'BLOOD', frame: 'enemy-necro', special: '光环：120px 内亡者攻速 +20%（叠 3 层）', counter: '集火（优先击杀光环源）' },
+  // R-C3-RULING：墓地补 elite 守墓者（tank 槽只放 elite；无特殊行为，纯厚血精英）
+  enemy_g1_6: { id: 'enemy_g1_6', name: '守墓者', map: 'map_graveyard', tier: 'elite', hp: 350, speed: 40, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BLOOD', frame: 'enemy-gravekeeper', counter: '集火（高 XP 对价）' },
+  enemy_g2_1: { id: 'enemy_g2_1', name: '血信徒', map: 'map_cathedral', tier: 'normal', hp: 14, speed: 60, damage: 12, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-acolyte', counter: '走位拉扯' },
+  enemy_g2_2: { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat', counter: '范围清屏/绕开' },
+  enemy_g2_3: { id: 'enemy_g2_3', name: '圣杯侍僧', map: 'map_cathedral', tier: 'special', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, powerTag: 'BLOOD', frame: 'enemy-cupbearer', special: '每 5s 召唤 1 血信徒（上限 3）', counter: '集火打断（召唤源优先）' },
+  enemy_g2_4: { id: 'enemy_g2_4', name: '血肉畸体', map: 'map_cathedral', tier: 'elite', hp: 500, speed: 40, damage: 18, attackInterval: 1.8, radius: 24, xp: 12, powerTag: 'BLOOD', frame: 'enemy-fleshmass', counter: '集火（高 XP 对价）' },
+  enemy_g2_5: { id: 'enemy_g2_5', name: '忏悔者', map: 'map_cathedral', tier: 'special', hp: 14, speed: 55, damage: 10, attackInterval: 1.2, radius: 13, xp: 3, powerTag: 'BLOOD', frame: 'enemy-penitent', special: '每 3s 投掷烛火弹（慢速可躲）', counter: '走位（横向闪避投射）', rangedDamage: 8 },
+  enemy_g3_1: { id: 'enemy_g3_1', name: '灰狼', map: 'map_den', tier: 'fast', hp: 12, speed: 85, damage: 10, attackInterval: 0.8, radius: 13, xp: 1, powerTag: 'BEAST', frame: 'enemy-greywolf', counter: '走位拉扯' },
+  enemy_g3_2: { id: 'enemy_g3_2', name: '暗影狼', map: 'map_den', tier: 'fast', hp: 10, speed: 160, damage: 10, attackInterval: 0.7, radius: 11, xp: 2, powerTag: 'BEAST', frame: 'enemy-shadowwolf', counter: '优先处理/绕开' },
+  enemy_g3_3: { id: 'enemy_g3_3', name: '石甲狼', map: 'map_den', tier: 'elite', hp: 400, speed: 45, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BEAST', frame: 'enemy-stonewolf', counter: '集火（高 XP 对价）' },
+  enemy_g3_4: { id: 'enemy_g3_4', name: '狼裔猎手', map: 'map_den', tier: 'special', hp: 16, speed: 70, damage: 12, attackInterval: 1.2, radius: 14, xp: 3, powerTag: 'BEAST', frame: 'enemy-wolfhunter', special: '每 6s 蓄力冲锋（警告线后冲刺 500px/s）', counter: '横向走位（躲警告线方向）' },
+};
+
+/** Boss 配置（gdd-enemies-v2 §3.4；map='any' 表示任意地图稀有 Boss） */
+export interface BossConfig {
+  id: BossId;
+  name: string;
+  map: MapId | 'any';
+  hp: number;
+  speed: number;
+  damage: number;
+  attackInterval: number;
+  radius: number;
+  xp: number;
+  powerTag: PowerTag;
+  frame: string;
+  /** 阶段/机制（§3.4 阶段/机制列） */
+  phase2?: string;
+  /** 视觉编码（§3.4 视觉编码列） */
+  visual: string;
+}
+
+/** Boss 表 4（gdd-enemies-v2 §3.4 / content-design-outline §4.3） */
+export const BOSSES: Record<BossId, BossConfig> = {
+  boss_1: { id: 'boss_1', name: '血月尊者', map: 'map_graveyard', hp: 4000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100, powerTag: 'MOON', frame: 'enemy-boss', visual: '≥3x·猩红金 4px·残破守夜袍·手持锈蚀初代提灯（灯内血色光）' },
+  boss_2: { id: 'boss_2', name: '血主教·尼禄', map: 'map_cathedral', hp: 4500, speed: 30, damage: 32, attackInterval: 2.2, radius: 42, xp: 120, powerTag: 'BLOOD', frame: 'boss-cardinal', phase2: '阶段 2（HP<50%）：召唤 2 圣杯侍僧；脚下周期性血池（减速 30% + 持续伤）', visual: '≥3x·猩红金·主教冠冕+圣杯' },
+  boss_3: { id: 'boss_3', name: '狼王·芬里厄', map: 'map_den', hp: 4200, speed: 32, damage: 30, attackInterval: 2.0, radius: 42, xp: 120, powerTag: 'BEAST', frame: 'boss-fenrir', phase2: '阶段 2（HP<50%）：蓄力冲锋扑击（警告线，逼走位）；召唤 2 灰狼', visual: '≥3x·猩红金·狼鬃王冠' },
+  boss_4: { id: 'boss_4', name: '血月化身', map: 'any', hp: 3000, speed: 40, damage: 25, attackInterval: 1.8, radius: 40, xp: 150, powerTag: 'MOON', frame: 'boss-moonavatar', phase2: '4:30 后 5% 触发「月坠」（预警后降临）；不掉通关进度，掉稀有图鉴', visual: '半透明猩红金·月光人形·无角饰·边缘月白描边' },
+};
+
+/**
+ * 敌人特殊行为（gdd-enemies-v2 §3.1~3.3 特殊行为列结构化；每地图 ≤2 种 + 明确反制）。
+ * GDD 文本列保留在 ENEMY_CONFIGS.special（人读）；本表为机器读行为参数（唯一数据源）。
+ * 反制（counter）见 ENEMY_CONFIGS 各条目：集火/走位/打断（支柱 3 可检验含义③）。
+ */
+export interface PhaseBehaviorConfig {
+  kind: 'phase';
+}
+export interface AuraBehaviorConfig {
+  kind: 'aura';
+  /** 光环半径 px（尸巫 120，§3.1） */
+  radius: number;
+  /** 每层攻速加成（+20% = 0.2，§3.1） */
+  attackSpeedBonus: number;
+  /** 叠层上限（3 层，§3.1） */
+  maxStacks: number;
+}
+export interface SummonBehaviorConfig {
+  kind: 'summon';
+  /** 召唤间隔 s（圣杯侍僧每 5s，§3.2） */
+  interval: number;
+  /** 召唤目标（圣杯侍僧 → 血信徒） */
+  summonedId: EnemyId;
+  /** 场上召唤物上限（3，§⑥.7 达上限暂停） */
+  summonCap: number;
+}
+export interface RangedBehaviorConfig {
+  kind: 'ranged';
+  /** 投掷间隔 s（忏悔者每 3s，§3.2） */
+  interval: number;
+  /** 投射弹速 px/s（烛火弹 180 慢速可躲，§⑥.8） */
+  projectileSpeed: number;
+}
+export interface ChargeBehaviorConfig {
+  kind: 'charge';
+  /** 冲锋周期 s（狼裔猎手每 6s，§3.3） */
+  interval: number;
+  /** 蓄力时长 s（0.5，§3.3） */
+  windup: number;
+  /** 警告线亮起时长 s（0.15，§3.3） */
+  warning: number;
+  /** 冲刺速度 px/s（500，§3.3） */
+  dashSpeed: number;
+  /** 冲刺持续 s（工程常量：0.4s ≈ 200px 突进；GDD 未列，标记为工程参数） */
+  dashDuration: number;
+}
+export type EnemyBehaviorConfig =
+  | PhaseBehaviorConfig
+  | AuraBehaviorConfig
+  | SummonBehaviorConfig
+  | RangedBehaviorConfig
+  | ChargeBehaviorConfig;
+
+/** 特殊行为表（gdd-enemies-v2 §3.1~3.3；无条目 = 普通敌） */
+export const ENEMY_BEHAVIORS: Partial<Record<EnemyId, EnemyBehaviorConfig>> = {
+  enemy_g1_4: { kind: 'phase' }, // 亡魂：相位穿障碍
+  enemy_g1_5: { kind: 'aura', radius: 120, attackSpeedBonus: 0.2, maxStacks: 3 }, // 尸巫：光环
+  enemy_g2_3: { kind: 'summon', interval: 5, summonedId: 'enemy_g2_1', summonCap: 3 }, // 圣杯侍僧
+  enemy_g2_5: { kind: 'ranged', interval: 3, projectileSpeed: 180 }, // 忏悔者（投射伤害 8 见 ENEMY_CONFIGS.rangedDamage）
+  enemy_g3_4: { kind: 'charge', interval: 6, windup: 0.5, warning: 0.15, dashSpeed: 500, dashDuration: 0.4 }, // 狼裔猎手
+};
+
+/**
+ * Boss「血月尊者」机制与视觉（enemies §③/§⑥.5 / art-bible §4 / E4-S2）。
+ * 面板数值（4000HP/28px/s/30伤/2.0s/40px/100经验）见 ENEMIES.boss；本组为机制/视觉常量。
+ */
+export const BOSS = {
+  /** 出场 0.5s 霸体闪红：期内不承伤（enemies §⑥.5 / art-bible §4「出场 0.5s 霸体闪红」） */
+  GRACE_SECONDS: 0.5,
+  /** 体型：≥3x 玩家（玩家 32px 基准 → 120px），且 ≤ 屏高 1/4（桌面 270 / 移动 320） */
+  TEXTURE_SIZE: 120,
+  /** 出场位置距玩家距离 px（清场后登场，避免与玩家重叠，enemies §⑥.5） */
+  SPAWN_DISTANCE: 320,
+  /** 猩红金（art-bible §2/§4：主体 #FF3B3B + 金饰 #FFC93C） */
+  COLOR_MAIN: '#FF3B3B',
+  COLOR_GOLD: '#FFC93C',
+  /** 顶部 UI 血条宽度（屏宽比例）：桌面 60% / 移动 50%（E8 §⑦ / enemies §⑦） */
+  HP_BAR_WIDTH_DESKTOP: 0.6,
+  HP_BAR_WIDTH_MOBILE: 0.5,
+} as const;
+
+/** Boss 战时长判据与阶段机制（gdd-enemies-v2 §3.4 / §⑥.9；sim-verify §7） */
+export const BOSS_FIGHT = {
+  /** 实战折减：理论 DPS ×0.85（命中率/走位/阶段霸体，sim-verify §1 中位口径） */
+  PRACTICAL_FACTOR: 0.85,
+  /**
+   * R2 预案（sprint-m2-plan 风险表 R2）：保守口径尼禄 96.2s 超 90s → HP 4500→4300（单点）。
+   * 默认关闭 = GDD 值 4500 生效；真机复测（bossFightSeconds 埋点 >90）确认后由主理人批准开启。
+   */
+  NERO_HP_FALLBACK: 4300,
+  NERO_HP_FALLBACK_ENABLED: false,
+  /** 阶段切换霸体 1s（§⑥.9：转阶段不承伤，防「卡阶段秒杀」） */
+  PHASE_SWITCH_GRACE_SECONDS: 1,
+} as const;
+
+/** Boss 阶段 2 召唤（gdd-enemies-v2 §3.4：尼禄 2 圣杯侍僧 / 芬里厄 2 灰狼；基准 Boss 无） */
+export const BOSS_PHASE2_SUMMON: Partial<Record<BossId, { summonedId: EnemyId; count: number }>> = {
+  boss_2: { summonedId: 'enemy_g2_3', count: 2 },
+  boss_3: { summonedId: 'enemy_g3_1', count: 2 },
+};
+
+/** 血池危险（gdd-maps §3.2：教堂血池减速 30% + 持续伤 8/s；boss_2 阶段 2 脚下周期性血池 §3.4） */
+export const BLOOD_POOL = {
+  SLOW_PCT: 0.3,
+  DPS: 8,
+  /** 尼禄阶段 2 血池周期/持续 s（工程常量：每 3s 脚下生成 1 池，持续 3s；GDD 未列精确值） */
+  INTERVAL_SECONDS: 3,
+  DURATION_SECONDS: 3,
+} as const;
+
+/** 血月化身月坠（gdd-enemies-v2 §3.4 / §⑥.10：4:30 后 5%/次判定，已触发本局不再触发；稀有奖励非进度门） */
+export const MOON_AVATAR = {
+  /** 4:30（270s）后可判定 */
+  AFTER_SECONDS: 270,
+  /** 每次判定 5% 触发 */
+  TRIGGER_CHANCE: 0.05,
+  /** 月坠预警 2s（玩家可走位避开降临点，§⑥.10） */
+  WARNING_SECONDS: 2,
+} as const;
