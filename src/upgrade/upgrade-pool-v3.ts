@@ -24,6 +24,7 @@ import {
 } from '@/config/balance';
 import type { ExclusiveWeaponId, DerivativeSkillId } from '@/config/balance';
 import { stageOfRunTime, tagPasses, classOfItem, optionFromCandidate } from '@/upgrade/upgrade-pool-v2';
+import { resonancePairByExclusive, RESONANCE_RULES } from '@/config/balance';
 import type { UpgradeV2Candidate, UpgradeV2Option, UpgradePoolV2Context } from '@/upgrade/upgrade-pool-v2';
 import { WEAPON_CONFIGS } from '@/config/balance';
 import type { WeaponClass, WeaponId } from '@/config/balance';
@@ -75,7 +76,7 @@ function v3StageMult(id: UpgradeId, runTimeSeconds: number | undefined): number 
 
 /** 构造 v3 候选池（标签过滤 + 满层剔除 + 专武/衍生技过滤 + 权重修订） */
 export function buildV3Candidates(
-  state: { stackOf(id: string): number; lastPickId: string | number | null },
+  state: { stackOf(id: string): number; lastPickId: string | number | null; hasKey(keyId: string): boolean },
   ctx: UpgradePoolV3Context,
 ): UpgradeV2Candidate[] {
   const ownedClasses = new Set<WeaponClass>();
@@ -121,6 +122,13 @@ export function buildV3Candidates(
     if (!tagPasses(item.tags, ctx.heroId, ownedClasses, hasUnownedWeaponInClass)) continue;
     let weight = 1;
     let unlockVariant = false;
+    // B4-W1：共鸣条件达成（持配对专武未持钥）→ 该钥权重 ×5（§3.1 前置锚，替换 B3 类占位）
+    if (item.id.startsWith('key_')) {
+      const pair = resonancePairByExclusive(ctx.exclusiveId);
+      if (pair && pair.keyId === item.id && !state.hasKey(pair.keyId)) {
+        weight *= RESONANCE_RULES.WEIGHT_READY;
+      }
+    }
     if (item.tags.some((t) => t.startsWith('weapon_class_'))) {
       weight = classUpgradeWeightV3(item, ownedClasses, hasUnownedWeaponInClass);
       const cls = classOfItem(item);
@@ -166,34 +174,14 @@ export function pickP2KeyCandidate(
   ctx: UpgradePoolV3Context,
   pool: UpgradeV2Candidate[],
 ): UpgradeV2Candidate | null {
-  const ownedClasses = new Set<WeaponClass>();
-  for (const w of ctx.ownedWeaponIds) {
-    const cfg = WEAPON_CONFIGS[w];
-    if (cfg) ownedClasses.add(cfg.class);
-  }
-  const initialClass = ctx.ownedWeaponIds[0] ? WEAPON_CONFIGS[ctx.ownedWeaponIds[0]]?.class : undefined;
-  let best: { cls: WeaponClass; total: number } | null = null;
-  for (const cls of ownedClasses) {
-    if (!ctx.ownedWeaponIds.some((w) => WEAPON_CONFIGS[w].class === cls)) continue;
-    const total = state.classUpgradeTotalFor(cls);
-    if (total < 1) continue; // 通武强化累计 ≥1 才引导钥
-    const keyId = RESONANCE_KEY_BY_CLASS[cls];
-    if (!keyId || state.hasKey(keyId)) continue;
-    if (!pool.some((c) => c.upgradeId === keyId)) continue;
-    if (!best || total > best.total) best = { cls, total };
-    else if (total === best.total && cls === initialClass) best = { cls, total };
-  }
-  if (!best) return null;
-  return pool.find((c) => c.upgradeId === RESONANCE_KEY_BY_CLASS[best!.cls]) ?? null;
+  // B4-W1 正式映射：每专武恰 1 对（WD-4）→ 单局单候选；条件 = 持配对专武（ctx.exclusiveId 即是）且未持钥
+  const pair = resonancePairByExclusive(ctx.exclusiveId);
+  if (!pair) return null;
+  if (state.hasKey(pair.keyId)) return null; // 已持钥 → P2 跳过
+  return pool.find((c) => c.upgradeId === pair.keyId) ?? null;
 }
 
-/** 类 → 共鸣钥映射（§4.3 钥-类亲和；B4 共鸣对映射的占位表，本批仅 P2 引导用） */
-const RESONANCE_KEY_BY_CLASS: Record<WeaponClass, UpgradeId> = {
-  A: 'key_scope',
-  B: 'key_holy',
-  C: 'key_tome',
-  D: 'key_pact',
-};
+// B4-W1：类→钥占位映射退役——P2 走 RESONANCE_PAIRS 正式 8 对映射（见 pickP2KeyCandidate）
 
 /** P4 条件：当前衍生技强化卡未取 且 升级次数在第 8~14 次窗口（错过不补） */
 function p4Candidate(ctx: UpgradePoolV3Context, pool: UpgradeV2Candidate[]): UpgradeV2Candidate | null {

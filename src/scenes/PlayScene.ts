@@ -1054,6 +1054,14 @@ export class PlayScene extends Phaser.Scene {
       random: Math.random,
     });
     this.upgradeState.lastPickId = upId; // 防重复 ×0.5（沿袭）
+    // B4-W1 共鸣达成检查：取钥后双条件判定（持配对专武 ∧ 持钥）→ 原子形态切换
+    if (upId.startsWith('key_')) {
+      const pair = this.weaponSystem.tryResonance(this.currentExclusiveId, (k) => this.upgradeState.hasKey(k));
+      if (pair) {
+        // 共鸣达成遥测（达成率/各对选取分布，GDD §⑧-6；B6 结算口径）
+        GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: pair.commonWeaponId, name: `共鸣·${pair.name}` });
+      }
+    }
     // B3-W3 质变卡管线回调：卡 1 = P1 席位承载（含待发队列立即补发）；其余升级计入兜底 N
     if (upId === `mc_${this.currentExclusiveId.slice(3)}_1`) {
       const { card2Granted } = takeCard1(this.mutationPipeline, this.spawner.elapsedSeconds);

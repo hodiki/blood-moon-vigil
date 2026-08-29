@@ -15,6 +15,7 @@ import * as heroes from '@/config/balance/heroes';
 import * as maps from '@/config/balance/maps';
 import * as exclusive from '@/config/balance/exclusive';
 import * as upgradeV3 from '@/config/balance/upgrade-v3';
+import * as resonance from '@/config/balance/resonance';
 
 /**
  * EG-1 balance.ts 域拆分守卫：shim（@/config/balance）必须与各域文件 re-export 等价——
@@ -28,7 +29,7 @@ function keysOf(m: Record<string, unknown>): string[] {
 
 describe('EG-1 balance 域拆分 · re-export 等价守卫', () => {
   const domains = {
-    ids, world, player, weapons, enemies, spawner, fx, ui, activeSkill, xp, upgrade, heroes, maps, exclusive, upgradeV3,
+    ids, world, player, weapons, enemies, spawner, fx, ui, activeSkill, xp, upgrade, heroes, maps, exclusive, upgradeV3, resonance,
   } as const;
 
   it('shim 导出集合 = 各域文件导出集合的并集（无遗漏、无多余）', () => {

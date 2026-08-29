@@ -25,3 +25,4 @@ export * from './balance/heroes';
 export * from './balance/maps';
 export * from './balance/exclusive';
 export * from './balance/upgrade-v3';
+export * from './balance/resonance';
