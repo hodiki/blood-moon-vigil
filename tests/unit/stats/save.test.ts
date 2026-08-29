@@ -82,13 +82,13 @@ describe('E4-S8 存档数据层（gdd-codex §3.2/§6）', () => {
 
   it('parseSave 宽松：非法字段回退默认（meritEquipped 过滤非法 id；v2 新增字段缺省回退）', () => {
     const parsed = parseSave(
-      JSON.stringify({ version: 2, codexUnlocked: ['ok', 42], meritEquipped: ['merit_hp', 'bogus'], meritPoints: -5, pureInGame: 'yes', treeState: 'bad', preselectedWeapon: 42 }),
+      JSON.stringify({ version: 3, codexUnlocked: ['ok', 42], meritEquipped: ['merit_hp', 'bogus'], meritPoints: -5, pureInGame: 'yes', treeState: 'bad', preselectedWeapon: 42 }),
     );
     expect(parsed.codexUnlocked).toEqual(['ok']);
     expect(parsed.meritEquipped).toEqual(['merit_hp']);
     expect(parsed.meritPoints).toBe(0);
     expect(parsed.pureInGame).toBe(false);
-    expect(parsed.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(parsed.treeState).toEqual({ unlockedNodeIds: [], purchases: {}, pointsSpent: 0 });
     expect(parsed.preselectedWeapon).toBeNull();
   });
 
@@ -122,9 +122,9 @@ describe('B1 存档 v2 迁移骨架（EG 裁决：迁移函数先于版本号落
     storage = makeStorage();
   });
 
-  it('版本常量：SAVE_VERSION=2 / 迁移链上一版=1（先迁移后 bump 的落地顺序锚点）', () => {
-    expect(SAVE_VERSION).toBe(2);
-    expect(SAVE_VERSION_PREVIOUS).toBe(1);
+  it('版本常量：SAVE_VERSION=3 / 迁移链 v2→v3 / v1 直达链（先迁移后 bump 的落地顺序锚点）', () => {
+    expect(SAVE_VERSION).toBe(3);
+    expect(SAVE_VERSION_PREVIOUS).toBe(2);
   });
 
   it('矩阵 A · v1 标准档 → 迁移：逐字段保留 + meritPoints 1:1 + 新字段默认值', () => {
@@ -136,27 +136,38 @@ describe('B1 存档 v2 迁移骨架（EG 裁决：迁移函数先于版本号落
       clearedMaps: ['map_graveyard', 'map_cathedral'],
       pureInGame: false,
     };
-    const migrated = migrateSaveV1toV2(v1);
-    expect(migrated.version).toBe(2);
+    const migrated = migrateSaveV1toV2(v1); // B5：v1 → v2 → v3 合成迁移
+    expect(migrated.version).toBe(3);
     expect(migrated.codexUnlocked).toEqual(['codex_enemy_enemy_g1_1', 'codex_boss_boss_1']);
     expect(migrated.meritPoints).toBe(57); // 1:1 平移（功绩 → 余辉）
     expect(migrated.meritEquipped).toEqual(['merit_hp', 'merit_dmg']); // 迁移期保留（merit-overlay 兼容）
     expect(migrated.clearedMaps).toEqual(['map_graveyard', 'map_cathedral']);
     expect(migrated.pureInGame).toBe(false);
-    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 }); // 占位空树（B5 填语义）
+    // 旧 4 加成折算：装备的 merit_hp/merit_dmg → a_life/a_damage 各 1 层自动点亮（§⑩-11，差额不找零）
+    expect(migrated.treeState).toEqual({
+      unlockedNodeIds: ['a_life', 'a_damage'],
+      purchases: { a_life: 1, a_damage: 1 },
+      pointsSpent: 20,
+    });
     expect(migrated.preselectedWeapon).toBeNull(); // Q-d 占位（B5 接线）
   });
 
   it('矩阵 B · v1 空字段档（缺字段）→ 迁移：全部回退默认，不崩溃', () => {
     const migrated = migrateSaveV1toV2({ version: 1 });
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.codexUnlocked).toEqual([]);
     expect(migrated.meritPoints).toBe(0);
     expect(migrated.meritEquipped).toEqual([]);
     expect(migrated.clearedMaps).toEqual([]);
     expect(migrated.pureInGame).toBe(false);
-    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], purchases: {}, pointsSpent: 0 });
     expect(migrated.preselectedWeapon).toBeNull();
+  });
+
+  it('矩阵 A2 · 旧 4 加成折算（§⑩-11）：merit_hp/merit_dmg 装备 → a_life/a_damage 各 1 层自动点亮（差额不找零）', () => {
+    const m = migrateSaveV1toV2({ version: 1, meritEquipped: ['merit_hp', 'merit_dmg'] });
+    expect(m.treeState.purchases).toEqual({ a_life: 1, a_damage: 1 });
+    expect(m.treeState.pointsSpent).toBe(20);
   });
 
   it('矩阵 B2 · v1 非法字段档 → 迁移：非法过滤（与 v1 parseSave 同宽入口径）', () => {
@@ -177,14 +188,14 @@ describe('B1 存档 v2 迁移骨架（EG 裁决：迁移函数先于版本号落
 
   it('矩阵 C · parseSave 内嵌 v1 档 → 走迁移链（version=1 分派到 migrateSaveV1toV2）', () => {
     const migrated = parseSave(JSON.stringify({ version: 1, meritPoints: 30, meritEquipped: ['merit_speed'] }));
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.meritPoints).toBe(30);
     expect(migrated.meritEquipped).toEqual(['merit_speed']);
-    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(migrated.treeState.purchases).toEqual({ a_move_speed: 1 }); // 旧加成折算（§⑩-11）
   });
 
   it('矩阵 D · 未来版本档 → 空存档；旧数据保留不覆盖（原键不删 + .bak）', () => {
-    const future = JSON.stringify({ version: 3, codexUnlocked: ['x'], meritPoints: 99 });
+    const future = JSON.stringify({ version: 999, codexUnlocked: ['x'], meritPoints: 99 });
     storage.setItem(saveKey('desktop'), future);
     const data = loadSave(storage, 'desktop');
     expect(data).toEqual(emptySave());
@@ -203,12 +214,12 @@ describe('B1 存档 v2 迁移骨架（EG 裁决：迁移函数先于版本号落
     const v1 = { version: 1, codexUnlocked: ['codex_enemy_enemy_g1_1'], meritPoints: 42, meritEquipped: [], clearedMaps: ['map_den'], pureInGame: true };
     storage.setItem(saveKeyLegacy('desktop'), JSON.stringify(v1));
     const loaded = loadSave(storage, 'desktop');
-    expect(loaded.version).toBe(2);
+    expect(loaded.version).toBe(3);
     expect(loaded.meritPoints).toBe(42);
     expect(loaded.codexUnlocked).toEqual(['codex_enemy_enemy_g1_1']);
     expect(loaded.clearedMaps).toEqual(['map_den']);
     expect(loaded.pureInGame).toBe(true);
-    expect(loaded.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(loaded.treeState).toEqual({ unlockedNodeIds: [], purchases: {}, pointsSpent: 0 });
     expect(loaded.preselectedWeapon).toBeNull();
     // 旧键数据保留（只读迁移，不覆盖不删除）
     expect(storage.getItem(saveKeyLegacy('desktop'))).toBe(JSON.stringify(v1));
@@ -231,6 +242,14 @@ describe('B1 存档 v2 迁移骨架（EG 裁决：迁移函数先于版本号落
     storage.setItem(saveKeyLegacy('desktop'), JSON.stringify({ version: 1, codexUnlocked: [], meritPoints: 0, meritEquipped: [], clearedMaps: [], pureInGame: false }));
     const loaded = loadSave(storage, 'desktop');
     expect(loaded).toEqual(emptySave());
+  });
+
+  it('迁移链 · v2 占位档（B3）→ v3：merit 折算 + purchases 透传', () => {
+    storage.setItem(saveKeyLegacy('desktop'), JSON.stringify({ version: 2, meritPoints: 50, meritEquipped: ['merit_magnet'], treeState: { unlockedNodeIds: [], pointsSpent: 0 }, preselectedWeapon: 'wpn_b_1' }));
+    const loaded = loadSave(storage, 'desktop');
+    expect(loaded.version).toBe(3);
+    expect(loaded.treeState.purchases).toEqual({ a_magnet: 1 });
+    expect(loaded.preselectedWeapon).toBe('wpn_b_1');
   });
 
   it('多端独立迁移：desktop/mobile 旧键互不串档', () => {

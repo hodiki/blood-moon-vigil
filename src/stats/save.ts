@@ -19,9 +19,10 @@
 import type { MapId } from '@/config/balance';
 import type { MeritId } from '@/stats/merit';
 
-export const SAVE_VERSION = 2;
-/** 迁移链上一版本号（migrateSaveV1toV2 的输入版本；迁移函数先于 bump 落地，EG 裁决） */
-export const SAVE_VERSION_PREVIOUS = 1;
+export const SAVE_VERSION = 3;
+/** 迁移链版本号（v2 = B3 treeState 空占位档；v1 = 功绩旧档）；迁移函数先于 bump 落地，EG 裁决 */
+export const SAVE_VERSION_PREVIOUS = 2;
+export const SAVE_VERSION_V1 = 1;
 
 /** 存档键前缀（多端独立：桌面 '' / 移动 '-mobile'，gdd-codex §6.2） */
 export function saveKey(platform: 'desktop' | 'mobile' = 'desktop'): string {
@@ -33,12 +34,58 @@ export function saveKeyLegacy(platform: 'desktop' | 'mobile' = 'desktop'): strin
   return `bmv.save.v${SAVE_VERSION_PREVIOUS}${platform === 'mobile' ? '-mobile' : ''}`;
 }
 
-/** v2 新增：滤月余辉天赋树状态（gdd-talent-tree §⑩-11；B5 批次填充语义，本批为迁移骨架占位） */
+/** v3 起实结构：滤月余辉天赋树状态（gdd-talent-tree A-4） */
 export interface TreeStateSave {
-  /** 已点亮节点 id（树配置表主键；占位默认空树） */
+  /** 已点亮节点 id（树配置表主键；去重列表） */
   unlockedNodeIds: string[];
-  /** 已消耗余辉点数 */
+  /** 节点 → 已购层数（属性点位重复点亮） */
+  purchases: Record<string, number>;
+  /** 已消耗余辉点数（余额 = meritPoints − pointsSpent） */
   pointsSpent: number;
+}
+
+/**
+ * v2 → v3 迁移（gdd-talent-tree §⑩-11 验收判据）：
+ * - 余辉余额 1:1 平移（meritPoints 沿用）；
+ * - 旧 4 加成各折算对应属性节点 1 层自动点亮（merit_hp→a_life / merit_dmg→a_damage /
+ *   merit_magnet→a_magnet / merit_speed→a_move_speed；差额不找零，锚）；
+ * - meritEquipped 退役（字段保留兼容读，写不再消费）；
+ * - preselectedWeapon 透传（v2 占位 null）。
+ */
+export function migrateSaveV2toV3(v2: Record<string, unknown>): SaveData {
+  const common = parseCommonFields(v2);
+  // 旧 4 加成折算：meritEquipped（≤2）各点亮对应属性节点 1 层（ purchases 累计，防重复折算）
+  const purchases: Record<string, number> = {};
+  let pointsSpent = 0;
+  const meritToNode: Record<string, string> = {
+    merit_hp: 'a_life',
+    merit_dmg: 'a_damage',
+    merit_magnet: 'a_magnet',
+    merit_speed: 'a_move_speed',
+  };
+  for (const m of common.meritEquipped) {
+    const node = meritToNode[m];
+    if (!node) continue;
+    purchases[node] = (purchases[node] ?? 0) + 1;
+    pointsSpent += 10; // 属性单价锚（talent-tree cost 10/层；差额不找零）
+  }
+  return {
+    version: SAVE_VERSION,
+    ...common,
+    treeState: { unlockedNodeIds: Object.keys(purchases), purchases, pointsSpent },
+    preselectedWeapon: typeof v2.preselectedWeapon === 'string' ? v2.preselectedWeapon : null,
+  };
+}
+
+/** v1 → v2 迁移沿用（B3），v1 直达 v3 = 先 v2 迁移再 v3 迁移 */
+export function migrateSaveV1toV3(v1: Record<string, unknown>): SaveData {
+  return migrateSaveV2toV3(migrateSaveV1toV2Raw(v1));
+}
+
+/** v1 → v2（B3 原迁移逻辑内联保留，供 v1 直达链） */
+function migrateSaveV1toV2Raw(v1: Record<string, unknown>): Record<string, unknown> {
+  const common = parseCommonFields(v1);
+  return { version: SAVE_VERSION_PREVIOUS, ...common, treeState: { unlockedNodeIds: [], pointsSpent: 0 }, preselectedWeapon: null };
 }
 
 export interface SaveData {
@@ -67,7 +114,7 @@ export function emptySave(): SaveData {
     meritEquipped: [],
     clearedMaps: [],
     pureInGame: false,
-    treeState: { unlockedNodeIds: [], pointsSpent: 0 },
+    treeState: { unlockedNodeIds: [], purchases: {}, pointsSpent: 0 },
     preselectedWeapon: null,
   };
 }
@@ -103,15 +150,21 @@ function parseCommonFields(o: Record<string, unknown>): Pick<SaveData, 'codexUnl
 
 /** treeState 宽松校验（非法/缺失 → 空树占位；B5 接树配置表后收紧主键校验） */
 function parseTreeState(v: unknown): TreeStateSave {
-  if (typeof v !== 'object' || v === null) return { unlockedNodeIds: [], pointsSpent: 0 };
+  if (typeof v !== 'object' || v === null) return { unlockedNodeIds: [], purchases: {}, pointsSpent: 0 };
   const o = v as Record<string, unknown>;
   const unlockedNodeIds = Array.isArray(o.unlockedNodeIds)
     ? o.unlockedNodeIds.filter((n): n is string => typeof n === 'string')
     : [];
+  const purchases: Record<string, number> = {};
+  if (typeof o.purchases === 'object' && o.purchases !== null) {
+    for (const [k, n] of Object.entries(o.purchases as Record<string, unknown>)) {
+      if (typeof n === 'number' && Number.isFinite(n) && n > 0) purchases[k] = Math.floor(n);
+    }
+  }
   const pointsSpent = typeof o.pointsSpent === 'number' && Number.isFinite(o.pointsSpent) && o.pointsSpent >= 0
     ? Math.floor(o.pointsSpent)
     : 0;
-  return { unlockedNodeIds, pointsSpent };
+  return { unlockedNodeIds, purchases, pointsSpent };
 }
 
 /**
@@ -122,19 +175,16 @@ function parseTreeState(v: unknown): TreeStateSave {
  * 输入为已 JSON.parse 的 v1 对象（parseSave 迁移链调用；字段校验与 v1 parseSave 同宽入口径）。
  */
 export function migrateSaveV1toV2(v1: Record<string, unknown>): SaveData {
-  const common = parseCommonFields(v1);
-  return {
-    version: SAVE_VERSION,
-    ...common,
-    treeState: { unlockedNodeIds: [], pointsSpent: 0 },
-    preselectedWeapon: null,
-  };
+  return migrateSaveV2toV3(((): Record<string, unknown> => {
+    const common = parseCommonFields(v1);
+    return { version: SAVE_VERSION_PREVIOUS, ...common, treeState: { unlockedNodeIds: [], pointsSpent: 0 }, preselectedWeapon: null };
+  })());
 }
 
 /**
  * 解析存档 JSON（宽松：非法字段回退默认）。
  * 版本分派（迁移链）：
- * - version = SAVE_VERSION(2) → 按 v2 校验（含 treeState/preselectedWeapon）；
+ * - version = SAVE_VERSION(3) → 按 v3 校验（含 treeState purchases/preselectedWeapon）；
  * - version = 1（旧档）→ migrateSaveV1toV2 迁移；
  * - 未来版本 / 其他 → 回退空存档（口径延续：调用方 loadSave 负责备份 .bak，原数据保留不覆盖）。
  */
@@ -148,9 +198,8 @@ export function parseSave(raw: string): SaveData {
   }
   if (typeof obj !== 'object' || obj === null) return base;
   const o = obj as Record<string, unknown>;
-  if (o.version === SAVE_VERSION_PREVIOUS) {
-    return migrateSaveV1toV2(o);
-  }
+  if (o.version === 1) return migrateSaveV1toV3(o);
+  if (o.version === 2) return migrateSaveV2toV3(o);
   if (o.version !== SAVE_VERSION) return base;
   return {
     version: SAVE_VERSION,
@@ -166,13 +215,11 @@ export function loadSave(storage: SaveStorage, platform: 'desktop' | 'mobile' = 
   try {
     const raw = storage.getItem(key);
     if (raw === null) {
-      // v2 键缺失 → v1 旧键回读迁移（迁移链；旧键只读保留，不覆盖不删除）
-      const legacyRaw = storage.getItem(saveKeyLegacy(platform));
-      if (legacyRaw !== null) {
-        const migrated = parseSave(legacyRaw);
-        // v1 档经 parseSave 必为 v2 结构（损坏/未来版本例外 → 空存档口径延续）
-        return migrated;
-      }
+      // v3 键缺失 → 旧键回读迁移链（v2 → v3 / v1 → v3；旧键只读保留，不覆盖不删除）
+      const v2Raw = storage.getItem(saveKeyLegacy(platform));
+      if (v2Raw !== null) return parseSave(v2Raw);
+      const v1Raw = storage.getItem(`bmv.save.v${SAVE_VERSION_V1}${platform === 'mobile' ? '-mobile' : ''}`);
+      if (v1Raw !== null) return parseSave(v1Raw);
       return emptySave();
     }
     const data = parseSave(raw);
