@@ -94,6 +94,7 @@ export const GameEvent = {
   UpgradeChosen: 'upgrade:chosen',
   PlayerHurt: 'player:hurt',
   PlayerDied: 'player:died',
+  PlayerRevived: 'player:revived',
   BossSpawned: 'boss:spawned',
   BossDefeated: 'boss:defeated',
   GameOver: 'game:over',

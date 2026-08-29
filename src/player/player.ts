@@ -91,10 +91,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // E4-S1 HUD：HP 变化统一走 hp:changed（受击/升级回血/吸血/生命上限提升）
     GameEvents.emit(GameEvent.HpChanged, { hp: this.stats.hp, maxHp: this.stats.maxHp });
     if (this.stats.hp <= 0) {
+      // B5-W3 复活判定序挂钩（gdd-talent-tree §⑥-3：护盾→圣物→天赋复活→死亡）。
+      // revived=true：HP 恢复 + 无敌帧由 handler 设置；返回 null/false = 正常死亡分发。
+      const r = this.reviveHandler?.(nowSeconds);
+      if (r && r.revived) {
+        this.stats.hp = Math.max(1, Math.round(this.stats.maxHp * r.hpPct));
+        this.invulnerableUntil = nowSeconds + r.invulnSeconds;
+        GameEvents.emit(GameEvent.HpChanged, { hp: this.stats.hp, maxHp: this.stats.maxHp });
+        GameEvents.emit(GameEvent.PlayerRevived, { x: this.x, y: this.y, knockback: r.knockback });
+        return true;
+      }
       GameEvents.emit(GameEvent.PlayerDied);
     }
     return true;
   }
+
+  /**
+   * B5-W3 复活判定挂钩（PlayScene 注入；gdd-talent-tree §⑥-3 判定序）。
+   * 返回 { revived: true, hpPct, invulnSeconds, knockback } = 复活；null = 无复活来源。
+   */
+  reviveHandler?: (nowSeconds: number) => { revived: boolean; hpPct: number; invulnSeconds: number; knockback: number } | null;
 
   /** 当前是否处于无敌帧（测试/表现层查询） */
   isInvulnerableNow(nowSeconds: number): boolean {
