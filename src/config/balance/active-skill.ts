@@ -31,8 +31,14 @@ export const ACTIVE_SKILL = {
 
 /** 主动技平衡红线（pillars §5/§6.5 可检验含义；active-skill 模拟断言用） */
 export const ACTIVE_SKILL_RULES = {
-  /** 单局输出占比 ≤15%（6 分钟模拟，埋点 activeSkillDpsShare） */
+  /** 单局输出占比 ≤15%（旧 4 技口径；R2-6 旧 4 技退役后仅供 legacy 引擎断言，新口径见 EG-9 锚） */
   DPS_SHARE_MAX: 0.15,
+  /**
+   * EG-9（B2 修订落盘，R2-14）：衍生技占比硬线 ≤15% 放宽为 **12~18% 锚**（逐技标注），
+   * 「关技能可通 Boss」QA 红线保留不豁免。占位校验从硬断言改遥测口径。
+   */
+  DERIVATIVE_SHARE_ANCHOR_MIN: 0.12,
+  DERIVATIVE_SHARE_ANCHOR_MAX: 0.18,
   /** 平均每局触发 ≤18 次（CD 20s 理论 ~18 次，pillars §5-②） */
   MAX_CASTS_PER_RUN: 18,
   /** 目标中位 ~12 次（约每 30s 一次，pillars §5-②） */
