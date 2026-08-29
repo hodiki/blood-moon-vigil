@@ -2,7 +2,7 @@
  * ⚠ B3-W4 legacy 标注：本文件 v1 demo 抽取引擎（rollThree/pickWeight/stacksFor/isMaxed）运行时已退役
  * （PlayScene 单池 = v3；收档快照 src/_archived/upgrade-pool-v1-engine.ts，用例收档 tests/archived/）。
  * 保留部分：UpgradeState（全系统共享状态件）+ UPGRADE_BY_ID/mechanicRatio（测试/图鉴口径）+
- * formatUpgradeOption/UpgradeOption（levelup-overlay legacy 渲染路径依赖，B6 清偿）。
+ * formatUpgradeOption/UpgradeOption（B6-W3 已清偿：levelup-overlay legacy 渲染路径移除，导出保留仅供归档对映）。
  *
  * upgrade/upgrade-pool.ts —— 升级池 12 项 + 抽取规则（ARCH §2 / S7 / E3-S3）
  *

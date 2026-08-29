@@ -74,7 +74,7 @@ export class ResultsOverlay {
   private readonly killsEl: HTMLElement;
   private readonly levelEl: HTMLElement;
   private readonly buildEl: HTMLElement;
-  private readonly telEls: Record<'offers' | 'xp' | 'evolution' | 'related' | 'boss', HTMLElement>;
+  private readonly telEls: Record<'offers' | 'xp' | 'evolution' | 'related' | 'boss' | 'deriv' | 'mutbeat' | 'reson' | 'revive' | 'elite' | 'tree', HTMLElement>;
   /** M3 结算奖励条：守夜功绩 +N / 日志 +N / 功绩进度（merit-ui-spec §7 / codex-ui-spec §6） */
   private readonly rewardMeritEl: HTMLElement;
   private readonly rewardCodexEl: HTMLElement;
@@ -99,7 +99,7 @@ export class ResultsOverlay {
         </div>
         <div class="bmv-results-rewards">
           <div class="bmv-results-rewards-title">本局收获</div>
-          <div class="bmv-results-row"><span class="bmv-results-label">守夜功绩</span><span class="bmv-results-value" data-reward="merit">+0</span></div>
+          <div class="bmv-results-row"><span class="bmv-results-label">余辉</span><span class="bmv-results-value" data-reward="merit">+0</span></div>
           <div class="bmv-results-progress">
             <div class="bmv-results-progress-track"><div class="bmv-results-progress-fill"></div></div>
             <div class="bmv-results-progress-text"></div>
@@ -113,6 +113,13 @@ export class ResultsOverlay {
           <div class="bmv-results-trow"><span class="bmv-results-label">进化完成</span><span class="bmv-results-value" data-tel="evolution">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">build 相关卡占比</span><span class="bmv-results-value" data-tel="related">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">Boss 战时长</span><span class="bmv-results-value" data-tel="boss">–</span></div>
+          <div class="bmv-results-telemetry-title">B6 遥测（EG-9 口径）</div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">衍生技 DPS 占比</span><span class="bmv-results-value" data-tel="deriv">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">质变卡时点</span><span class="bmv-results-value" data-tel="mutbeat">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">共鸣达成</span><span class="bmv-results-value" data-tel="reson">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">复活触发</span><span class="bmv-results-value" data-tel="revive">0</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">精英抽卡</span><span class="bmv-results-value" data-tel="elite">0</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">树质变节点</span><span class="bmv-results-value" data-tel="tree">0</span></div>
         </div>
         <div class="bmv-results-build">
           <div class="bmv-results-build-title">Build 回顾</div>
@@ -132,6 +139,12 @@ export class ResultsOverlay {
     this.levelEl = this.root.querySelector('[data-roll="level"]') as HTMLElement;
     this.buildEl = this.root.querySelector('.bmv-results-build-list') as HTMLElement;
     this.telEls = {
+      deriv: this.root.querySelector('[data-tel="deriv"]') as HTMLElement,
+      mutbeat: this.root.querySelector('[data-tel="mutbeat"]') as HTMLElement,
+      reson: this.root.querySelector('[data-tel="reson"]') as HTMLElement,
+      revive: this.root.querySelector('[data-tel="revive"]') as HTMLElement,
+      elite: this.root.querySelector('[data-tel="elite"]') as HTMLElement,
+      tree: this.root.querySelector('[data-tel="tree"]') as HTMLElement,
       offers: this.root.querySelector('[data-tel="offers"]') as HTMLElement,
       xp: this.root.querySelector('[data-tel="xp"]') as HTMLElement,
       evolution: this.root.querySelector('[data-tel="evolution"]') as HTMLElement,
@@ -194,6 +207,20 @@ export class ResultsOverlay {
     this.telEls.related.textContent = stats.relatedCardShare === null
       ? '–'
       : `${Math.round(stats.relatedCardShare * 100)}%`;
+    // B6-W5 遥测块渲染（EG-9 口径；null → '–'）
+    this.telEls.deriv.textContent = stats.derivativeDpsShare === null
+      ? '–'
+      : `${Math.round(stats.derivativeDpsShare * 100)}%`;
+    this.telEls.mutbeat.textContent =
+      stats.mutationCard1AtSeconds === null && stats.mutationCard2AtSeconds === null
+        ? '–'
+        : `卡1 ${stats.mutationCard1AtSeconds ?? '–'}s / 卡2 ${stats.mutationCard2AtSeconds ?? '–'}s`;
+    this.telEls.reson.textContent = stats.resonanceAtSeconds === null
+      ? '–'
+      : `${stats.resonancePairId} @ ${stats.resonanceAtSeconds}s`;
+    this.telEls.revive.textContent = String(stats.talentReviveCount);
+    this.telEls.elite.textContent = String(stats.eliteOfferCount);
+    this.telEls.tree.textContent = String(stats.treeMutationCount);
     this.telEls.boss.textContent = stats.bossFightSeconds === null
       ? '–'
       : `${Math.round(stats.bossFightSeconds * 10) / 10}s`;
@@ -346,7 +373,8 @@ export class ResultsOverlay {
         color: #54E6C9; margin-bottom: 8px;
       }
       .bmv-results-build-list {
-        height: 240px; overflow-y: auto;
+        /* BUG-3 修复：固定高 240 在矮视口（656 横屏）撑破面板 → 弹性收缩 + 下限保底 */
+        flex: 1 1 auto; min-height: 96px; max-height: 240px; overflow-y: auto;
         background: #0B0E14; border-radius: 8px;
         padding: 8px;
         box-sizing: border-box;

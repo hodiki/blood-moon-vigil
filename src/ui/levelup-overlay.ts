@@ -12,9 +12,19 @@
  */
 
 import { GameEvents, GameEvent } from '@/core/events';
-import { formatUpgradeOption, type UpgradeOption } from '@/upgrade/upgrade-pool';
 import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
-import { renderIconSvg, iconKeyForUpgradeId } from '@/ui/icons';
+
+/** B6-W3 卡类徽记（gdd-talent-tree §⑧ / upgrade-pool-v3 §3.1）：按 id 前缀映射卡类名 */
+export function cardCategoryBadge(upgradeId: string | undefined): string {
+  if (!upgradeId) return '';
+  if (upgradeId.startsWith('mc_')) return '专武强化';
+  if (upgradeId.startsWith('key_')) return '共鸣钥';
+  if (upgradeId.startsWith('up_d_')) return '衍生技强化';
+  if (upgradeId.startsWith('up_w_g')) return '通武强化·通用';
+  if (upgradeId.startsWith('up_w_')) return '通武强化';
+  if (upgradeId.startsWith('up_g_')) return '全局';
+  return '';
+}
 
 const DEFAULT_TIMEOUT_SECONDS = 30;
 const CLICK_MAX_DURATION_MS = 500;
@@ -28,8 +38,7 @@ export class LevelUpOverlay {
   private readonly root: HTMLElement;
   private readonly cards: HTMLElement[] = [];
   private readonly cardHandlers: Array<{ down: (e: PointerEvent) => void; up: (e: PointerEvent) => void }> = [];
-  private options: UpgradeOption[] = [];
-  /** E4-S4：v2 池（内容 ID）选项；非空时本层按 v2 渲染/派发 */
+  /** B6-W3：v3 池（内容 ID）选项；legacy 12 项池路径已清偿退役（EG-2） */
   private optionsV2: UpgradeV2Option[] | null = null;
   private timeoutId: number | null = null;
   /** QA-BUG-1：选卡确认（100ms）延迟句柄——同一轮只允许排程一次，hide/show 时撤销，杜绝跨局残留 choose */
@@ -64,20 +73,8 @@ export class LevelUpOverlay {
     window.addEventListener('keydown', this.onKeyDown);
   }
 
-  /** 显示三张升级卡（进 LEVEL_UP 时由 PlayScene 调用；legacy 12 项池） */
-  show(options: UpgradeOption[]): void {
-    this.optionsV2 = null;
-    this.options = options;
-    this.shownAt = Date.now(); // 纠结埋点：展示时刻
-    this.render();
-    this.showRoot();
-    this.clearTimeout();
-    this.timeoutId = window.setTimeout(() => this.choose(0), this.timeoutSeconds * 1000);
-  }
-
-  /** E4-S4：显示 v2 池（40 项内容 ID）三张卡 */
+  /** 显示三张升级卡（进 LEVEL_UP 时由 PlayScene 调用；v3 池内容 ID + 席位角标/卡类徽记） */
   showV2(options: UpgradeV2Option[]): void {
-    this.options = [];
     this.optionsV2 = options;
     this.shownAt = Date.now();
     this.renderV2();
@@ -115,49 +112,29 @@ export class LevelUpOverlay {
     this.root.remove();
   }
 
-  // —— 渲染 ——
-  private render(): void {
-    this.cards.forEach((card, i) => {
-      card.classList.remove('bmv-selected');
-      card.innerHTML = '';
-      const option = this.options[i];
-      if (!option) return;
-      const { title, desc, effectText } = formatUpgradeOption(option);
-      card.innerHTML = `
-        <div class="bmv-upgrade-icon">${renderIconSvg(iconKeyForUpgradeId(option.item.id))}</div>
-        <div class="bmv-upgrade-title">${escapeHtml(title)}</div>
-        <div class="bmv-upgrade-desc">${escapeHtml(desc)}</div>
-        <div class="bmv-upgrade-effect">${escapeHtml(effectText)}</div>
-      `;
-    });
-  }
-
-  /** E4-S4：v2 卡渲染（内容 ID 池；进化卡/解锁变体用 ★ 星徽，M3 换正式图标） */
+  // —— 渲染（B6-W3：v3 卡 + 席位角标 + 卡类徽记）——
   private renderV2(): void {
     this.cards.forEach((card, i) => {
       card.classList.remove('bmv-selected');
       card.innerHTML = '';
       const option = this.optionsV2?.[i];
       if (!option) return;
-      const star = option.kind === 'evolution' ? '★★' : option.unlockVariant ? '★' : '';
+      const star = option.unlockVariant ? '★' : '';
       const iconInner =
-        option.kind === 'evolution'
-          ? '<div class="bmv-upgrade-icon bmv-evo-icon">★★ 进化</div>'
-          : `<div class="bmv-upgrade-icon bmv-v2-icon">${escapeHtml(option.effectText)}${star ? '<div class="bmv-star">' + star + '</div>' : ''}</div>`;
+        `<div class="bmv-upgrade-icon bmv-v2-icon">${escapeHtml(option.effectText)}${star ? '<div class="bmv-star">' + star + '</div>' : ''}</div>`;
+      // 席位角标（P1~P5 保底席位命中 = related；gdd-talent-tree §⑧）+ 卡类徽记（id 前缀映射）
+      const seatBadge = option.related ? '<div class="bmv-seat-badge">保底</div>' : '';
+      const category = cardCategoryBadge(option.upgradeId);
+      const catBadge = category ? `<div class="bmv-cat-badge">${escapeHtml(category)}</div>` : '';
       card.innerHTML = `
+        ${seatBadge}${catBadge}
         ${iconInner}
         <div class="bmv-upgrade-title">${escapeHtml(option.name)}</div>
         <div class="bmv-upgrade-desc">${escapeHtml(option.desc)}</div>
         <div class="bmv-upgrade-effect">${escapeHtml(option.effectText)}</div>
       `;
-      // 卡面底色分型（asset-spec §1.6：机制蓝紫 / 数值金 / 进化幽紫；E4-S4）
-      const kindClass =
-        option.kind === 'evolution'
-          ? 'bmv-evo-card'
-          : option.cardKind === 'amber-gold'
-            ? 'bmv-numeric-card'
-            : 'bmv-mechanic-card';
-      card.classList.add(kindClass);
+      // 卡面底色分型（asset-spec §1.6：机制蓝紫 / 数值金）
+      card.classList.add(option.cardKind === 'amber-gold' ? 'bmv-numeric-card' : 'bmv-mechanic-card');
     });
   }
 
@@ -207,14 +184,10 @@ export class LevelUpOverlay {
 
   private choose(index: number): void {
     if (this.root.style.display === 'none') return;
-    const option = this.options[index];
     const optionV2 = this.optionsV2?.[index];
     const dwellSeconds = this.shownAt > 0 ? (Date.now() - this.shownAt) / 1000 : 0;
     this.hide();
-    // E4-S4：v2 池 optionId = 内容 ID 字符串（upgradeId/evoId）；legacy = 数字 id
-    const optionId: number | string = optionV2
-      ? (optionV2.upgradeId ?? optionV2.evoId ?? 'up_g_1')
-      : (option?.id ?? 1);
+    const optionId: number | string = optionV2 ? (optionV2.upgradeId ?? optionV2.evoId ?? 'up_g_1') : 'up_g_1';
     // 单向数据流：只发事件，不写游戏状态（ADR-004）；dwellSeconds 供纠结时刻埋点（E4-S1）
     GameEvents.emit(GameEvent.UpgradeChosen, { optionId, index, dwellSeconds });
   }
@@ -316,6 +289,21 @@ export class LevelUpOverlay {
         background: #0B0E14; border: 3px solid #54E6C9; border-radius: 10px;
         text-shadow: 0 0 8px rgba(176,106,240,0.8);
       }
+      /* B6-W3：席位角标（余辉金）+ 卡类徽记（冷青）——gdd-talent-tree §⑧ */
+      .bmv-seat-badge {
+        position: absolute; top: -10px; left: -10px;
+        font-size: 14px; font-weight: 700; color: #131722;
+        background: #FFC93C; border-radius: 6px;
+        padding: 2px 8px;
+        box-shadow: 0 0 6px rgba(255,201,60,0.8);
+      }
+      .bmv-cat-badge {
+        position: absolute; top: -10px; right: -10px;
+        font-size: 13px; font-weight: 600; color: #54E6C9;
+        background: #0B0E14; border: 1px solid #54E6C9; border-radius: 6px;
+        padding: 1px 6px;
+      }
+      .bmv-upgrade-card { position: relative; }
       .bmv-star {
         position: absolute; top: -8px; right: -8px;
         font-size: 22px; color: #FFC93C;
