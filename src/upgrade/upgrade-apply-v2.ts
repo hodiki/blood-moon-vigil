@@ -38,6 +38,8 @@ export interface KeyPassiveState {
   summonLifetimeMult: number;
   /** key_grail 范围持续 +25% */
   areaDurationMult: number;
+  /** key_nail 葬仪铁钉：重击类冷却 −8%（B3 新增钥；重击类判定/消费留 B4 共鸣批） */
+  heavyCooldownMult: number;
 }
 
 export function emptyKeyPassiveState(): KeyPassiveState {
@@ -49,6 +51,7 @@ export function emptyKeyPassiveState(): KeyPassiveState {
     summonCountBonus: 0,
     summonLifetimeMult: 1,
     areaDurationMult: 1,
+    heavyCooldownMult: 1,
   };
 }
 
@@ -60,6 +63,7 @@ const KEY_PASSIVE_MAP: Record<string, (s: KeyPassiveState) => void> = {
   key_pact: (s) => { s.summonCountBonus = 1; },
   key_bone: (s) => { s.summonLifetimeMult = 1.2; },
   key_grail: (s) => { s.areaDurationMult = 1.25; },
+  key_nail: (s) => { s.heavyCooldownMult = 0.92; },
 };
 
 /** 从 UpgradeState 派生钥被动效果（PlayScene 开局 + 每次取钥后调用） */
@@ -106,7 +110,7 @@ const CLASS_BRANCH_IDS: readonly UpgradeId[] = [
 ];
 
 const KEY_IDS: readonly UpgradeId[] = [
-  'key_scope', 'key_holy', 'key_tome', 'key_silver', 'key_pact', 'key_bone', 'key_grail',
+  'key_scope', 'key_holy', 'key_tome', 'key_silver', 'key_pact', 'key_bone', 'key_grail', 'key_nail',
 ];
 
 /** 类强化分支 → 所属类（up_w_a1 → A；'up_w_b1'[5]='b'） */

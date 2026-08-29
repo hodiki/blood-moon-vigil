@@ -51,11 +51,15 @@ export type UpgradeId =
   | 'up_w_b1' | 'up_w_b2' | 'up_w_b3'
   | 'up_w_c1' | 'up_w_c2' | 'up_w_c3'
   | 'up_w_d1' | 'up_w_d2' | 'up_w_d3'
-  | 'key_scope' | 'key_holy' | 'key_tome' | 'key_silver' | 'key_pact' | 'key_bone' | 'key_grail'
+  | 'up_w_g1' | 'up_w_g2'
+  | 'key_scope' | 'key_holy' | 'key_tome' | 'key_silver' | 'key_pact' | 'key_bone' | 'key_grail' | 'key_nail'
   | 'up_a_cd_edmund' | 'up_a_charge_edmund' | 'up_a_effect_edmund'
   | 'up_a_cd_cassandra' | 'up_a_charge_cassandra' | 'up_a_effect_cassandra'
   | 'up_a_cd_violet' | 'up_a_charge_violet' | 'up_a_effect_violet'
-  | 'up_a_cd_galvan' | 'up_a_charge_galvan' | 'up_a_effect_galvan';
+  | 'up_a_cd_galvan' | 'up_a_charge_galvan' | 'up_a_effect_galvan'
+  | 'up_d_revolver' | 'up_d_lantern' | 'up_d_dash' | 'up_d_snipe' | 'up_d_requiem' | 'up_d_judgment' | 'up_d_rage' | 'up_d_charge'
+  /** B3 质变卡池项（mc_<专武>_<order>；数据源 MUTATION_CARDS 封闭表） */
+  | `mc_${string}`;
 
 /** 升级项抽取标签（gdd-upgrade-pool-v2 §3.1/§3.6：global / weapon_class_* / key / hero_<id>） */
 export type UpgradeTag = 'global' | 'weapon_class_a' | 'weapon_class_b' | 'weapon_class_c' | 'weapon_class_d' | 'key' | HeroId;
