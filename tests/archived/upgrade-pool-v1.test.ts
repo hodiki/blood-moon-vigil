@@ -1,3 +1,6 @@
+/**
+ * 【EG-2 归档用例 · 不被 vitest 收集】B3-W4：v1 demo 池引擎锁现值用例收档（替代 = tests/unit/upgrade/upgrade-pool-v3.test.ts）。
+ */
 import { describe, it, expect } from 'vitest';
 import { UPGRADES } from '@/config/balance';
 import {

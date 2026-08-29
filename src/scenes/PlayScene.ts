@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { PLAYER, BOSS, BOSSES, PALETTE, ACTIVE_SKILL, ACTIVE_SKILL_RULES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, EVOLUTIONS, WEAPON_CONFIGS, FX, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
+import { PLAYER, BOSS, BOSSES, PALETTE, ACTIVE_SKILL, ACTIVE_SKILL_RULES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
@@ -55,10 +55,10 @@ import { XpGem } from '@/xp/xp-gem';
 import { XpManager } from '@/xp/xp-manager';
 import { HealPickup } from '@/xp/heal-pickup';
 import { HealManager, shouldDropHeal } from '@/xp/heal-manager';
-import { UpgradeState, UPGRADE_BY_ID, type UpgradeOption } from '@/upgrade/upgrade-pool';
-import { applyUpgrade, type UpgradeWriteTargets } from '@/upgrade/upgrade-apply';
-import { rollThreeV2, poolItemById, type UpgradeV2Option, type UpgradePoolV2Context } from '@/upgrade/upgrade-pool-v2';
-import { applyUpgradeByIdV2, type UpgradeV2WriteTargets } from '@/upgrade/upgrade-apply-v2';
+import { UpgradeState } from '@/upgrade/upgrade-pool';
+import { rollThreeV3, poolItemByIdV3, type UpgradePoolV3Context } from '@/upgrade/upgrade-pool-v3';
+import { applyUpgradeByIdV3, type UpgradeV3WriteTargets } from '@/upgrade/upgrade-apply-v3';
+import { createMutationPipeline, defaultMutationChannels, takeCard1, takeCard2, onEliteKilled, onUpgradeChosenForPipeline, type MutationPipelineState, type MutationChannelConfig } from '@/upgrade/mutation-pipeline';
 import { playerEnemyContact, type ContactEnemy } from '@/combat/contact';
 import { LevelUpOverlay } from '@/ui/levelup-overlay';
 import { Hud, createHud } from '@/ui/hud';
@@ -102,8 +102,8 @@ interface EnemyKilledPayload {
 }
 
 interface UpgradeChosenPayload {
-  /** E4-S4：v2 池为内容 ID 字符串（up_/key_/evo_）；legacy 为数字 id */
-  optionId: number | string;
+  /** E4-S4 起为内容 ID 字符串；B3-W4 legacy 数字 id 分支已退役（v1 引擎归档） */
+  optionId: string;
   index: number;
   dwellSeconds?: number;
 }
@@ -123,7 +123,6 @@ export class PlayScene extends Phaser.Scene {
   private healPool!: ArcadePoolLike<HealPickup>;
   private healManager!: HealManager;
   private upgradeState!: UpgradeState;
-  private upgradeTargets!: UpgradeWriteTargets;
   private overlay!: LevelUpOverlay;
   private hud!: Hud;
   private results!: ResultsOverlay;
@@ -134,8 +133,6 @@ export class PlayScene extends Phaser.Scene {
   private stats = new RunStats();
   /** 当前 Boss（6:00 出场；null = 未出场） */
   private boss: Boss | null = null;
-  /** 最近一次三选一选项（纠结埋点判定用，E4-S1） */
-  private lastOptions: UpgradeOption[] = [];
   /** TASK-28 特效管理器（粒子池 ≤ cfg.maxParticles + 血月/渐晕常驻） */
   private fx!: FxManager;
   /** 特殊行为标记（尸巫光环 / 猎手警告线 / 侍僧符文 / 状态小点） */
@@ -160,12 +157,19 @@ export class PlayScene extends Phaser.Scene {
   private rage = new RageBuff();
   /** E4-S3 主动技运行时配置（升级分支改写；效果结算统一读本类） */
   private skillRuntime!: ActiveSkillRuntimeConfig;
-  /** E4-S4 v2 升级池写回目标（PlayScene 装配） */
-  private upgradeV2Targets!: UpgradeV2WriteTargets;
+  /** B3-W4 v3 升级池写回目标（PlayScene 装配；v2 语义复用 + 质变卡/衍生技/通用强化扩展） */
+  private upgradeV3Targets!: UpgradeV3WriteTargets;
+  /** B3-W1 当前专武（2 选 1 选择演出 B5/B6 接入前，默认角色对第一把；applyLoadout 同步点） */
+  private currentExclusiveId: import('@/config/balance').ExclusiveWeaponId = 'xw_lantern';
+  /** B3-W3 质变卡双节拍管线（卡 1 P1 席位 / 卡 2 三渠道 + 待发队列） */
+  private mutationPipeline: MutationPipelineState = createMutationPipeline();
+  private mutationChannels: MutationChannelConfig = defaultMutationChannels();
+  /** B3-W2 P4 窗口判定：本局升级次数（含本次） */
+  private upgradeChoiceCount = 0;
   /** E4-S5 已拥有武器 id（初始武器 + 解锁；v2 抽取上下文） */
   private ownedWeaponIds: WeaponId[] = [];
   /** E4-S4 最近一次 v2 三选一选项（纠结埋点） */
-  private lastOptionsV2: UpgradeV2Option[] = [];
+  private lastOptionsV2: import('@/upgrade/upgrade-pool-v2').UpgradeV2Option[] = [];
   /** E4-S6 图鉴追踪器（单会话内存态；持久化走 save） */
   private codex = new CodexTracker();
   /** E4-S7/S8 局外存档（读入 create；局终写回） */
@@ -284,30 +288,10 @@ export class PlayScene extends Phaser.Scene {
     // E4-S1 守夜人「提灯圣辉」：经验磁力 +20px（专属被动；非守夜人为 0）
     this.xp.setMagnetRadiusBonus(this.player.stats.magnetRadiusBonus);
     this.upgradeState = new UpgradeState();
-    this.upgradeTargets = {
-      stats: this.player.stats,
-      orbit: {
-        unlock: () => this.weaponSystem.orbit.unlock(),
-        addOrb: () => this.weaponSystem.orbit.addOrb(),
-      },
-      shockwave: {
-        unlock: () => this.weaponSystem.shockwave.unlock(),
-        setRadiusMultiplier: (m) => this.weaponSystem.shockwave.setRadiusMultiplier(m),
-        setKnockback: (b) => this.weaponSystem.shockwave.setKnockback(b),
-      },
-      weapons: {
-        setMissileSplit: (n) => this.weaponSystem.setMissileSplit(n),
-        setMissilePierce: (n) => this.weaponSystem.setMissilePierce(n),
-        setCooldownMultiplier: (m) => this.weaponSystem.setCooldownMultiplier(m),
-        // E2-S8：武器类强化写回（12 分支派生重算，WeaponSystem 广播到注册表）
-        setClassUpgrade: (stacks) => this.weaponSystem.applyClassUpgrade(stacks),
-      },
-      xp: {
-        setMagnetMultiplier: (m) => this.xp.setMagnetMultiplier(m),
-      },
-    };
-    // E4-S4：v2 升级池写回目标（40 项内容 ID 全量；E4-S5 解锁 / E4-S3 主动技强化 / E4-S6 图鉴挂钩）
-    this.upgradeV2Targets = {
+    // B3-W1：当前专武默认角色对第一把（正式 2 选 1 选择演出 = B5/B6 接入点；applyLoadout 汇聚同步）
+    this.currentExclusiveId = HERO_EXCLUSIVE_PAIRS[this.heroId][0];
+    // B3-W4：v3 升级池写回目标（37 项定义；v2 语义复用 + 质变卡/衍生技/通用强化扩展）
+    this.upgradeV3Targets = {
       stats: this.player.stats,
       weapons: {
         setMissileSplit: (n) => this.weaponSystem.setMissileSplit(n),
@@ -326,6 +310,29 @@ export class PlayScene extends Phaser.Scene {
       },
       activeSkill: {
         applyActiveSkillUpgrade: (upId) => this.onActiveSkillUpgrade(upId),
+      },
+      // B3 v3 扩展：质变卡 → 行为 machine 写回（B2 预留接口）
+      exclusive: {
+        applyMutationCard: (machine) => {
+          const behavior = this.weaponSystem.exclusiveBehaviors[this.currentExclusiveId] as
+            import('@/weapons/exclusive/exclusive-behaviors').ExclusiveWeaponBehavior<unknown>;
+          behavior.applyMutationCard(machine);
+        },
+      },
+      // B3 v3 扩展：衍生技强化（up_d_* 质变级效果；运行时形态消费随 B5 衍生技装配收拢）
+      derivative: {
+        applyDerivativeUpgrade: (upId) => this.onDerivativeUpgrade(upId),
+      },
+      // B3 v3 扩展：通用通武强化独立乘区（与钥被动相乘写回）
+      weapons_extra: {
+        setCommonEnhancement: (e) => {
+          const keys = this.weaponSystem.keyPassiveState;
+          this.weaponSystem.setKeyPassives({
+            ...keys,
+            rangeMult: keys.rangeMult * e.rangeMult,
+            areaRadiusMult: keys.areaRadiusMult * e.areaMult,
+          });
+        },
       },
     };
     this.overlay = new LevelUpOverlay(getOverlayHost(), {});
@@ -694,6 +701,11 @@ export class PlayScene extends Phaser.Scene {
         // 首杀 Boss/精英 → 功绩 +2/只（E4-S7；精英 = tank 运行时类，Boss = boss 类）
         const kind = payload.enemyType as EnemyKindId;
         if (kind === 'boss' || kind === 'tank') this.firstBossKillsThisRun += 1;
+        // B3-W3 渠道 1（默认开）：首精英击杀必掉卡 2（待发队列防卡死 §6.1-4）
+        if (kind === 'tank') {
+          const r = onEliteKilled(this.mutationPipeline, this.mutationChannels, this.spawner.elapsedSeconds, true);
+          if (r.granted) this.applyMutationCard2();
+        }
         // 血月化身（boss_4）：任意图稀有月坠 → 图鉴隐藏条目 + 功绩 +5（gdd-codex §3.2/§3.4）
         if (payload.enemyId === 'boss_4') {
           this.codex.recordTrigger(MOON_AVATAR_ENTRY_ID);
@@ -979,15 +991,20 @@ export class PlayScene extends Phaser.Scene {
     this.player.stats.levelUp(); // E3-S2 自动成长（+8HP/+4%/每5级+4px/s）
     // E4-S1 HUD：升级回血（+8）后 HP 变化
     GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-    // E4-S4：v2 池抽取（标签过滤 + 抽取规则 5 条 + 回退；M3-DESIGN-1 阶段权重 + 保底席位）
-    const v2Ctx: UpgradePoolV2Context = {
+    // B3-W2：v3 池抽取（37 定义 / 单局 ≤30 + P1~P5 保底 + 席位冲突裁决 + 阶段权重修订）
+    this.upgradeChoiceCount += 1;
+    const v3Ctx: UpgradePoolV3Context = {
       heroId: this.heroId,
       ownedWeaponIds: [...this.ownedWeaponIds],
-      isEvolved: (w) => this.weaponSystem.evolution.isEvolved(w),
-      // M3-DESIGN-1 节奏：由局时秒驱动 STAGE_WEIGHT_MULT（upgrade-experience-v2 §2.2 / §4.2）
+      // M3-DESIGN-1 节奏沿用：局时秒驱动阶段权重（S1 数值 ×0.5 → S3 ×1.2）
       runTimeSeconds: this.spawner.elapsedSeconds,
+      exclusiveId: this.currentExclusiveId,
+      derivativeId: EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId],
+      takenMutationOrders: this.takenMutationOrders(),
+      upgradeCount: this.upgradeChoiceCount,
+      derivativeUpgradeTaken: this.upgradeState.stackOf(EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId]) >= 1,
     };
-    const options = rollThreeV2(this.upgradeState, v2Ctx);
+    const options = rollThreeV3(this.upgradeState, v3Ctx);
     this.lastOptionsV2 = options;
     // QA-BUG-1 兜底：无可选选项不进入 LEVEL_UP（rollThreeV2 回退机制下理论不可达，
     // 防御「暂停无 UI」死锁）——照常 RUNNING（升级回血 HpChanged 已在上方 emit）
@@ -1028,50 +1045,52 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  /** QA-BUG-1 拆分：选卡消费主体（异常由 onUpgradeChosen 捕获保活） */
+  /** QA-BUG-1 拆分：选卡消费主体（异常由 onUpgradeChosen 捕获保活）。
+   *  B3-W4 legacy 双池清偿：evo_ 进化分支随超武退役（R2-3）移除；legacy 数字 id 分支退役（v1 引擎归档 EG-2）。 */
   private consumeUpgradeChoice(payload: UpgradeChosenPayload): void {
-    if (typeof payload.optionId === 'string') {
-      // E4-S4：v2 池（内容 ID 字符串）
-      const optionId = payload.optionId;
-      if (optionId.startsWith('evo_')) {
-        // 超武进化卡：消费 WeaponSystem.evolve（不可逆；E2-S6 引擎已就绪）
-        const evo = EVOLUTIONS.find((e) => e.evoId === optionId);
-        if (evo && this.weaponSystem.evolve(evo.wpnId, this, this.cfg)) {
-          if (this.codex.recordEvolve(evo.evoId)) this.codexToastPending = true; // E4-S6 图鉴：首进化幂等
-          GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: evo.evoId, name: evo.name });
-          // M3 真机埋点：一次进化完成（evolutionComplete 数据源，upgrade-experience-v2 §4.4）
-          this.stats.recordEvolutionComplete();
-        }
-        this.upgradeState.lastPickId = optionId;
-        this.stats.recordHesitationV2(payload.dwellSeconds ?? 0, this.lastOptionsV2);
-      } else {
-        const upId = optionId as UpgradeId;
-        const result = applyUpgradeByIdV2(this.upgradeState, this.upgradeV2Targets, upId, {
-          ownedWeaponIds: [...this.ownedWeaponIds],
-          random: Math.random,
-        });
-        this.upgradeState.lastPickId = upId; // 抽取权重 ×0.5（gdd §3.6.4）
-        const item = poolItemById(upId);
-        if (item) this.stats.recordUpgradeChosen(0, item.name, this.spawner.elapsedSeconds);
-        this.stats.recordHesitationV2(payload.dwellSeconds ?? 0, this.lastOptionsV2);
-        // E4-S5 解锁变体：onWeaponUnlocked 已由 unlockWeapon 目标处理（unlockVariant 仅返回）
-        void result;
-        // E4-S1 HUD：武器解锁（全局 1/2 号兼容 + 解锁变体已由 onWeaponUnlocked emit）
-        if (item?.id === 'up_g_1') {
-          GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: 0, name: item.name });
-        }
-      }
+    const upId = payload.optionId as UpgradeId;
+    const result = applyUpgradeByIdV3(this.upgradeState, this.upgradeV3Targets, upId, {
+      ownedWeaponIds: [...this.ownedWeaponIds],
+      random: Math.random,
+    });
+    this.upgradeState.lastPickId = upId; // 防重复 ×0.5（沿袭）
+    // B3-W3 质变卡管线回调：卡 1 = P1 席位承载（含待发队列立即补发）；其余升级计入兜底 N
+    if (upId === `mc_${this.currentExclusiveId.slice(3)}_1`) {
+      const { card2Granted } = takeCard1(this.mutationPipeline, this.spawner.elapsedSeconds);
+      if (card2Granted) this.applyMutationCard2();
+    } else if (upId === `mc_${this.currentExclusiveId.slice(3)}_2`) {
+      takeCard2(this.mutationPipeline, this.spawner.elapsedSeconds);
     } else {
-      // legacy 数字 id（兼容/基准回退；v2 流程不产生）
-      const item = UPGRADE_BY_ID[payload.optionId];
-      applyUpgrade(this.upgradeState, this.upgradeTargets, payload.optionId);
-      this.upgradeState.lastPickId = payload.optionId;
-      if (item) this.stats.recordUpgradeChosen(payload.optionId, item.name, this.spawner.elapsedSeconds);
-      this.stats.recordHesitation(payload.dwellSeconds ?? 0, this.lastOptions);
-      if (payload.optionId === 1 || payload.optionId === 2) {
-        GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: payload.optionId, name: item?.name ?? '' });
-      }
+      onUpgradeChosenForPipeline(this.mutationPipeline, this.mutationChannels, this.spawner.elapsedSeconds);
     }
+    const item = poolItemByIdV3(upId);
+    if (item) this.stats.recordUpgradeChosen(0, item.name, this.spawner.elapsedSeconds);
+    this.stats.recordHesitationV2(payload.dwellSeconds ?? 0, this.lastOptionsV2);
+    // E4-S5 解锁变体：onWeaponUnlocked 已由 unlockWeapon 目标处理（unlockVariant 仅返回）
+    void result;
+  }
+
+  /** B3-W3：卡 2 写回（管线 granted 后调用；顺序解锁已由管线保证） */
+  private applyMutationCard2(): void {
+    const card2Id = `mc_${this.currentExclusiveId.slice(3)}_2` as UpgradeId;
+    applyUpgradeByIdV3(this.upgradeState, this.upgradeV3Targets, card2Id, {
+      ownedWeaponIds: [...this.ownedWeaponIds],
+      random: Math.random,
+    });
+  }
+
+  /** B3 v3：当前已取质变卡 order 列表（P1 全局限 1 / 满层剔除上下文） */
+  private takenMutationOrders(): (1 | 2)[] {
+    const orders: (1 | 2)[] = [];
+    if (this.upgradeState.stackOf(`mc_${this.currentExclusiveId.slice(3)}_1`) >= 1) orders.push(1);
+    if (this.upgradeState.stackOf(`mc_${this.currentExclusiveId.slice(3)}_2`) >= 1) orders.push(2);
+    return orders;
+  }
+
+  /** B3 v3：衍生技强化登记（up_d_* 形态级效果；运行时消费随 B5 衍生技装配收拢） */
+  private onDerivativeUpgrade(upId: UpgradeId): void {
+    // 形态效果登记占位：UpgradeState 堆叠已记录（applyV3 内）；行为级消费在 B5 接线
+    void upId;
   }
 
   /** E4-S5/E4-S6：武器解锁（v2 目标 unlockWeapon / 初始武器 / 进化超武） */

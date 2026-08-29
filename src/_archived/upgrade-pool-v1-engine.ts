@@ -1,8 +1,12 @@
 /**
- * ⚠ B3-W4 legacy 标注：本文件 v1 demo 抽取引擎（rollThree/pickWeight/stacksFor/isMaxed）运行时已退役
- * （PlayScene 单池 = v3；收档快照 src/_archived/upgrade-pool-v1-engine.ts，用例收档 tests/archived/）。
- * 保留部分：UpgradeState（全系统共享状态件）+ UPGRADE_BY_ID/mechanicRatio（测试/图鉴口径）+
- * formatUpgradeOption/UpgradeOption（levelup-overlay legacy 渲染路径依赖，B6 清偿）。
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 【EG-2 归档资产 · 不参与构建】src/_archived/ —— B3-W4 legacy 双池清偿收档快照
+ * 本文件 = upgrade/upgrade-pool.ts（v1 demo 池 12 项抽取引擎）在 B3 时的完整收档快照。
+ * 清偿内容：PlayScene legacy 数字 id 分支已退役（运行时单池 = v3）；
+ * 对应用例收档 tests/archived/upgrade-pool-v1.test.ts。
+ * 注：upgrade-pool.ts 本体保留 UpgradeState 共享件 + levelup-overlay legacy 渲染路径依赖
+ * （formatUpgradeOption/UpgradeOption，B6 UI 清偿时随 overlay 旧路径一并退役）。
+ * ═══════════════════════════════════════════════════════════════════════════
  *
  * upgrade/upgrade-pool.ts —— 升级池 12 项 + 抽取规则（ARCH §2 / S7 / E3-S3）
  *
