@@ -36,6 +36,7 @@ import {
   createResonanceLanternState, stepResonanceLantern,
   createResonanceCrossState, onResonanceCrossExplode, stepResonanceResidues,
 } from '@/weapons/resonance/resonance-math';
+import { SIM_MOVEMENT_DEFAULTS, treeScenarioDps, type SimMovementParams, type TreeScenario } from './sim-config';
 
 /** 与 PlayScene 桌面同屏上限一致（runtime-config.maxEnemies 桌面档） */
 const MAX_ACTIVE_ENEMIES = 400;
@@ -59,6 +60,12 @@ export interface RunMetrics {
   levelUpOffers: Array<{ tSeconds: number; level: number; offerIds: string[] }>;
   /** 受击分桶：每 30s 窗口承伤合计 */
   damageTakenBuckets: Array<{ fromSeconds: number; toSeconds: number; damage: number }>;
+  /** 首次承伤时点 s（MD-1 首死/首伤判据输入；null = 未被命中） */
+  firstHitAtSeconds: number | null;
+  /** 走位模型是否启用 */
+  movementModel: boolean;
+  /** 树工况 */
+  treeScenario: TreeScenario;
 }
 
 export interface SimOptions {
@@ -74,6 +81,12 @@ export interface SimOptions {
   invincible?: boolean;
   /** B4-W4 共鸣形态对照（R-1 环带 / R-6 余焰叠加采样；仅 lantern/cross 支持完整对照） */
   resonance?: boolean;
+  /** SIM-W1 生存/走位模型（默认开；false = B1 站桩对照口径） */
+  movement?: boolean;
+  /** 树工况（GT-7/8 知情矩阵：none/b/bd/bds1；flatDps 锚近似 + s1 窗口乘区） */
+  tree?: TreeScenario;
+  /** 移动模型参数覆盖（校准批次调参入口；缺省 = SIM_MOVEMENT_DEFAULTS） */
+  movementParams?: Partial<SimMovementParams>;
 }
 
 const DT = 1 / 60;
@@ -152,6 +165,16 @@ export function simulateRun(opts: SimOptions): RunMetrics {
   let damageTakenWindow = 0;
   let bossSpawned = false;
   let bossKilled = false;
+
+  // —— SIM-W1 生存/走位模型（1D 径向等效：玩家移动 = 敌相对速度修正 drift）——
+  const movement = opts.movement !== false; // 默认开
+  const mv: SimMovementParams = { ...SIM_MOVEMENT_DEFAULTS, ...opts.movementParams };
+  const band = mv.kitingBands[exclusive ?? 'fallback'] ?? mv.kitingBands.fallback!;
+  let playerOffset = 0; // 玩家径向位移（后撤累计；0 = 出生位）
+  const retreatCap = map.width / 2; // 后撤边界 = 半图（玩家可跑全图半径；1D 最坏情形没有绕回）
+  const tree = opts.tree ?? 'none';
+  const treeDps = treeScenarioDps(tree, exclusive ?? 'fallback');
+  let firstHitAt: number | null = null;
 
   // —— 专武真实结算状态机（按 id 建状态；rng 注入保证种子确定性）——
   const playerLike = { x: 0, y: 0, hp: playerHp, maxHp: 100 };
@@ -247,15 +270,32 @@ export function simulateRun(opts: SimOptions): RunMetrics {
         void expired;
       }
       const stunned = e.cc.stun !== null && t < e.cc.stun.until;
+      // SIM-W1 走位 AI（纯确定性规则）：
+      // 1) 威胁回避：最近敌 < band.min → 后撤（drift = +playerSpeed）
+      // 2) 风筝带维持：最近敌 > band.max → 逼近（drift = -advanceMult×speed，攻击窗口近似）
+      // 3) 带内 → 原地环走（drift = 0）
+      let drift = 0;
+      if (movement && !opts.invincible) {
+        const minDist = enemies.reduce((m, x) => (x.dist < m ? x.dist : m), Number.POSITIVE_INFINITY);
+        if (minDist < band.min) drift = mv.playerSpeed * mv.retreatSpeedMult; // 绕行等效拉开
+        else if (minDist > band.max) drift = -mv.playerSpeed * mv.advanceSpeedMult;
+        // 后撤边界：达半图后仍有沿边绕行的残余径向分量（capEdgeDriftMult；1D 无绕回的最坏情形缓解）
+        if (drift > 0 && playerOffset >= retreatCap) drift = mv.playerSpeed * mv.capEdgeDriftMult;
+        playerOffset = Math.max(0, Math.min(retreatCap, playerOffset + drift * DT));
+      } else if (movement && opts.invincible) {
+        drift = 0; // DPS 平台带口径：无敌模式隔离走位变量（保持站桩）
+      }
       if (!stunned) {
         const slowMult = e.cc.slow !== null && t < e.cc.slow.until ? 1 - e.cc.slow.value : 1;
-        e.dist = Math.max(0, e.dist - e.speed * slowMult * DT);
+        // 敌相对接近速度 = 敌速 − 玩家后撤速度（1D 径向等效；逼近时 drift<0 加快接近）
+        e.dist = Math.max(0, e.dist - (e.speed * slowMult - drift) * DT);
       }
       e.x = e.dist; // 1D 径向：x = 距离（玩家在原点）
       e.y = 0;
       e.attackTimer -= DT;
-      if (e.dist <= e.radius + 14 && e.attackTimer <= 0 && !stunned) {
+      if (e.dist <= e.radius + mv.playerRadius && e.attackTimer <= 0 && !stunned) {
         e.attackTimer = e.attackInterval;
+        if (firstHitAt === null) firstHitAt = round2(t);
         if (!opts.invincible) playerHp -= e.damage; // 无敌模式：隔离承伤（输出效率口径）
         damageTakenWindow += e.damage;
       }
@@ -305,7 +345,8 @@ export function simulateRun(opts: SimOptions): RunMetrics {
         };
       }
       let stepDamage = 0;
-      const mul = 1; // 无升级加成（开局口径；升级 offer 占位不消费）
+      const s1Active = tree === 'bds1' && t <= 30;
+      const mul = 1 * (s1Active ? treeDps.s1Mult : 1); // Q-s1 银炉预热窗口（×1.2 独立结算口径）
       const mulberry = rng;
       switch (exclusive) {
         case 'xw_lantern':
@@ -342,7 +383,8 @@ export function simulateRun(opts: SimOptions): RunMetrics {
           stepDamage = stepHorn(horn, DT, t, playerLike, targets, mul, emptyMachine).damageDealt;
           break;
       }
-      damageDealtWindow += stepDamage;
+      // 树工况通武贡献（b/d：配对通武 + 预选通武锚 DPS——GDD §6.2 锚近似，非结算层）
+      damageDealtWindow += stepDamage + treeDps.flatDps * DT * (s1Active ? treeDps.s1Mult : 1);
       // 弹药装弹推进（左轮）
       if (exclusive === 'xw_revolver') tickReload(revolver.ammo as AmmoState, DT);
       // 击杀/经验结算（专武 math 的 kills 由 hp<=0 扫描捕获）
@@ -421,6 +463,9 @@ export function simulateRun(opts: SimOptions): RunMetrics {
     dpsCurve,
     levelUpOffers,
     damageTakenBuckets,
+    firstHitAtSeconds: firstHitAt,
+    movementModel: movement,
+    treeScenario: tree,
   };
 }
 
