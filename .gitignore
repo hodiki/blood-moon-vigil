@@ -28,3 +28,4 @@ tmp/
 # 编辑器
 .vscode/
 .idea/
+tools/sim/output/
