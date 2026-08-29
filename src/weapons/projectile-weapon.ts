@@ -119,6 +119,8 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
   private readonly config: WeaponConfig;
   /** 往返类：飞刃去程角（回程由 behavior 记录） */
   private readonly boomerangs = new Map<StraightProjectile, { angle: number; phase: 'out' | 'back' }>();
+  /** B4-W2 共鸣命中钩子（WeaponSystem 注入；未配置 = 普通形态零变化——验收判据 1） */
+  onHitResonance?: (weaponId: WeaponId, target: Enemy, now: number) => void;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -262,6 +264,8 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
       // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
       hitEnemy(enemy, weaponDamageOnTarget(damage, enemy, now));
       p.recordHit(enemy);
+      // B4-W2 共鸣命中钩子（R-2 银潮轮舞回充计数 / R-3 血月回旋印记）
+      this.onHitResonance?.(c.id, enemy, now);
       this.fx.missileImpact(p.x, p.y);
       if (p.pierceRemaining > 0) {
         p.consumePierce();

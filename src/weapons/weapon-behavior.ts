@@ -25,6 +25,8 @@ export interface WeaponUpdateContext {
   enemies: readonly Enemy[];
   /** 总伤害倍率（player.stats.totalDamageMultiplier） */
   damageMultiplier: number;
+  /** B4-W3 钥被动派生（key_nail 重击类冷却 ×0.92 等；未装配 = undefined） */
+  keyPassives?: import('@/upgrade/upgrade-apply-v2').KeyPassiveState;
 }
 
 /** 武器行为统一接口（gdd-weapons-v2 §3.0 / E2-S1）

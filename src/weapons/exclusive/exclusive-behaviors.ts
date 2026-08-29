@@ -8,7 +8,8 @@
  * 质变卡：applyMutationCard(machine) 写入派生参数（B3 质变卡池接入后经 P1 保底驱动）。
  */
 
-import type { ExclusiveWeaponId } from '@/config/balance';
+import { EXCLUSIVE_WEAPONS, type ExclusiveWeaponId } from '@/config/balance';
+import { heavyCooldownMult } from '@/weapons/resonance/resonance-engine';
 import type { Enemy } from '@/enemies/enemy';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { ExclusivePlayerLike, ExclusiveTarget, StepResult } from './exclusive-math';
@@ -32,6 +33,8 @@ interface ExclusiveWeaponHooks<S> {
 
 /** step 统一入参（player/enemies/multiplier 从 ctx 拆解 + 各武专属回调） */
 interface StepArgs {
+  /** R-6 落点爆炸回调（仅十字 hook 消费） */
+  onExplode?: (x: number, y: number) => void;
   dt: number;
   now: number;
   player: ExclusivePlayerLike;
@@ -59,6 +62,8 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
   totalDamage = 0;
   /** 击杀回调（左轮补弹等；装配层按武注入） */
   onEnemyKilled?: (target: ExclusiveTarget) => void;
+  /** B4 R-6 圣火十诫：十字落点爆炸回调（WeaponSystem 注入 → 余焰登记） */
+  onExplode?: (x: number, y: number) => void;
 
   constructor(readonly exclusiveId: ExclusiveWeaponId, private readonly hooks: ExclusiveWeaponHooks<S>) {
     this.weaponId = exclusiveId;
@@ -81,6 +86,11 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
     this.totalDamage = 0;
   }
 
+  /** B4-W2：内部结算状态读取（WeaponSystem R-2 回充读取左轮 AmmoState 等装配消费） */
+  getState(): S {
+    return this.state;
+  }
+
   clearAll(): void {
     this.resetState();
   }
@@ -91,18 +101,29 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
 
   update(ctx: WeaponUpdateContext): void {
     if (!this.enabled) return;
+    // B4-W3 铁钉消费：重击类专武（巨斧 2.2s / 十字 3.0s ≥2.0s 阈值）冷却 ×0.92（keys.heavyCooldownMult）
+    let effectiveMachine = this.machine;
+    const baseInterval = EXCLUSIVE_WEAPONS[this.exclusiveId].params.interval ?? 0;
+    const heavy = heavyCooldownMult(baseInterval, ctx.keyPassives);
+    if (heavy !== 1) {
+      effectiveMachine = {
+        ...this.machine,
+        cooldown: (this.machine['cooldown'] ?? baseInterval) * heavy,
+      };
+    }
     const player = ctx.player as unknown as ExclusivePlayerLike;
     // 击杀回调挂点注入（本次 ctx.enemies 的目标；onKilled 幂等覆盖）
     for (const e of ctx.enemies) {
       if (this.onEnemyKilled) e.onKilled = this.onEnemyKilled as unknown as (target: Enemy) => void;
     }
     const result = this.hooks.step(this.state, {
+      onExplode: this.onExplode,
       dt: ctx.dt,
       now: ctx.now,
       player,
       enemies: ctx.enemies as readonly ExclusiveTarget[],
       damageMultiplier: ctx.damageMultiplier,
-      machine: this.machine,
+      machine: effectiveMachine,
       rng: Math.random,
       healSink: (amount) => {
         ctx.player.stats.heal(amount);
@@ -162,7 +183,7 @@ function crossHooks(): ExclusiveWeaponHooks<CrossState> {
   return {
     id: 'xw_cross',
     createState: createCrossState,
-    step: (s, a) => stepCross(s, a.dt, a.now, a.player, a.enemies, a.damageMultiplier, a.machine),
+    step: (s, a) => stepCross(s, a.dt, a.now, a.player, a.enemies, a.damageMultiplier, a.machine, a.onExplode),
   };
 }
 function axeHooks(): ExclusiveWeaponHooks<AxeState> {

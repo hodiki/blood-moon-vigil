@@ -517,6 +517,8 @@ export function stepCross(
   enemies: readonly ExclusiveTarget[],
   damageMultiplier: number,
   machine: Readonly<Record<string, number>> = {},
+  /** 落点爆炸回调（B4 R-6 圣火十诫余焰挂点；参数 = 爆炸位置） */
+  onExplode?: (x: number, y: number) => void,
 ): StepResult {
   const result = emptyStep();
   const base = EXCLUSIVE_WEAPONS.xw_cross.params;
@@ -539,6 +541,7 @@ export function stepCross(
     }
     state.pending.splice(i, 1);
     explodeCross(state, cross, now, enemies, base.damage!, explodeRadius, damageMultiplier, machine, result);
+    onExplode?.(cross.x, cross.y);
   }
 
   if (state.throwTimer <= 0) {
@@ -557,6 +560,7 @@ export function stepCross(
         };
         if (cross.explodeAt <= now) {
           explodeCross(state, cross, now, enemies, base.damage!, explodeRadius, damageMultiplier, machine, result);
+          onExplode?.(cross.x, cross.y);
         } else {
           state.pending.push(cross);
         }

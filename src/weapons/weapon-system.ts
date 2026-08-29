@@ -45,6 +45,17 @@ import { SUPER_WEAPON_EVOLUTION } from '@/weapons/super-weapons';
 import { EvolutionState } from '@/weapons/evolution-engine';
 import { createExclusiveBehaviors } from '@/weapons/exclusive/exclusive-behaviors';
 import type { LoadoutResult } from '@/weapons/loadout';
+import { ResonanceState, commitResonance, heavyCooldownMult } from '@/weapons/resonance/resonance-engine';
+import {
+  createResonanceLanternState, stepResonanceLantern,
+  createResonanceJavelinState, stepResonanceTotems,
+  createResonanceCrossState, stepResonanceResidues, onResonanceCrossExplode,
+  createResonanceRevolverFeedState, onResonanceCrossbowHit,
+  createResonanceTwinbladesMarkState, onResonanceBoomerangHit,
+} from '@/weapons/resonance/resonance-math';
+import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
+import type { RevolverState } from '@/weapons/exclusive/exclusive-math';
+import { resonancePairByExclusive, type ResonancePairConfig } from '@/config/balance';
 import { emptyKeyPassiveState, type KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { FxManager } from '@/fx/fx-manager';
 import type { Enemy } from '@/enemies/enemy';
@@ -261,10 +272,14 @@ function registerNewWeaponBehaviors(
   scene: Phaser.Scene,
   cfg: RuntimeConfig,
   fx: FxManager,
+  onHitResonance?: (weaponId: WeaponId, target: Enemy, now: number) => void,
 ): void {
+  void onHitResonance;
   // A 类：银针连弩 / 圣银火铳 / 幽灵飞刃 / 骨钉标枪（血月猎手由 MissileWeaponBehavior 注册）
   for (const id of ['wpn_a_2', 'wpn_a_3', 'wpn_a_4', 'wpn_a_5'] as const) {
-    registry.register(new ProjectileWeaponBehavior(scene, cfg, id, fx));
+    const behavior = new ProjectileWeaponBehavior(scene, cfg, id, fx);
+    behavior.onHitResonance = onHitResonance;
+    registry.register(behavior);
   }
   // B 类：荆棘圣环 / 圣光壁垒（守夜之环由 OrbitBehaviorAdapter 注册）
   for (const id of ['wpn_b_2', 'wpn_b_3'] as const) {
@@ -311,14 +326,32 @@ export class WeaponSystem {
     this.registry.register(new OrbitBehaviorAdapter(this.orbit, this.player));
     this.registry.register(new ShockwaveBehaviorAdapter(this.shockwave, this.player));
 
-    // 注册新武器四类行为（E2-S2~S5）
-    registerNewWeaponBehaviors(this.registry, scene, cfg, fx);
+    // 注册新武器四类行为（E2-S2~S5）+ B4-W2 共鸣命中钩子（R-2/R-3；未达成 = no-op 普通形态）
+    registerNewWeaponBehaviors(this.registry, scene, cfg, fx, (weaponId, target, now) => {
+      if (this.resonance.isAchieved('R2') && weaponId === 'wpn_a_2') {
+        const revolver = this.exclusiveBehaviors.xw_revolver as ExclusiveWeaponBehavior<RevolverState>;
+        const ammo = (revolver.getState() as RevolverState).ammo;
+        onResonanceCrossbowHit(this.resonanceFeed, ammo, resonancePairByExclusive('xw_revolver')!.machine);
+      }
+      if (this.resonance.isAchieved('R3') && weaponId === 'wpn_a_4') {
+        onResonanceBoomerangHit(this.resonanceMarks, target as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget, now, resonancePairByExclusive('xw_twinblades')!.machine);
+      }
+    });
 
     // B2-W1：注册 8 专武行为（默认 disabled，applyLoadout 门控开启；结算层零 Phaser 依赖）
     this.exclusiveBehaviors = createExclusiveBehaviors();
     for (const behavior of Object.values(this.exclusiveBehaviors)) {
       this.registry.register(behavior as unknown as WeaponBehavior);
     }
+    // B4-W2 R-6：十字落点爆炸 → 余焰登记（共鸣达成后生效）
+    let lastNow = 0;
+    const crossBehavior = this.exclusiveBehaviors.xw_cross as unknown as { onExplode?: (x: number, y: number) => void };
+    crossBehavior.onExplode = (x: number, y: number) => {
+      if (this.resonance.isAchieved('R6')) {
+        onResonanceCrossExplode(this.resonanceCross, x, y, lastNow, resonancePairByExclusive('xw_cross')!.machine);
+      }
+    };
+    this.setNow = (now: number) => { lastNow = now; };
 
     // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲初始未解锁；
     // 其余新武器由 E4-S5 解锁流开启（本冲刺保持未启用，行为注册但不运行）
@@ -331,6 +364,15 @@ export class WeaponSystem {
 
   /** B2-W1：8 专武行为表（id → behavior；loadout/沙盘/遥测消费） */
   readonly exclusiveBehaviors: Record<keyof ReturnType<typeof createExclusiveBehaviors>, WeaponBehavior>;
+  /** B4-W1 共鸣达成状态（每局重置；不可逆 commit） */
+  readonly resonance = new ResonanceState();
+  private readonly resonanceLantern = createResonanceLanternState();
+  private readonly resonanceTotems = createResonanceJavelinState();
+  private readonly resonanceCross = createResonanceCrossState();
+  private readonly resonanceFeed = createResonanceRevolverFeedState();
+  private readonly resonanceMarks = createResonanceTwinbladesMarkState();
+  /** R-6 落点时刻桥接（update 起始写；onExplode 读） */
+  private setNow: (now: number) => void = () => {};
 
   // —— 既有升级写回接口（UpgradeWriteTargets.weapons，PlayScene 消费） ——
   setMissileSplit(level: number): void {
@@ -405,6 +447,19 @@ export class WeaponSystem {
   }
 
   /**
+   * B4-W1 共鸣达成提交（gdd-resonance §3.1）：双条件门控（持配对专武 ∧ 持钥）→
+   * 原子形态切换（clearAll 配对通武在途弹体，§⑦-3）→ 不可逆 commit。
+   * 半满足（未持钥/未持专武）返回 null——普通形态零变化（验收判据 2）。
+   * hasKey 由调用方注入（UpgradeState.hasKey）。
+   */
+  tryResonance(exclusiveId: Parameters<ResonanceState['isAchievedForExclusive']>[0], hasKey: (keyId: string) => boolean): ResonancePairConfig | null {
+    const pair = commitResonance(this.resonance, { exclusiveId, hasKey });
+    if (!pair) return null;
+    this.registry.get(pair.commonWeaponId)?.clearAll(); // 原子切换：在途弹体清空（结算沿用旧形态完毕）
+    return pair;
+  }
+
+  /**
    * E2-S6：超武进化（原子切换，gdd-weapons-v2 §5.1）。
    * 流程：进化瞬间清空旧弹体 → 源武器行为替换为超武行为（注册表同 key 覆盖）→ 标记不可逆。
    * 超武不再吃类强化（SuperWeaponBehavior.applyClassUpgrade 为 no-op）。
@@ -431,6 +486,7 @@ export class WeaponSystem {
   }
 
   update(dt: number, now: number): void {
+    this.setNow(now);
     this.refreshEnemies(now);
     const mult = this.player.stats.totalDamageMultiplier;
     const ctx: WeaponUpdateContext = {
@@ -439,9 +495,37 @@ export class WeaponSystem {
       player: this.player,
       enemies: this.activeEnemies,
       damageMultiplier: mult,
+      keyPassives: this.keyPassives,
     };
     // 注册表统一遍历（既有 3 武器 + 新武器四类）
     this.registry.each((behavior) => behavior.update(ctx));
+    this.tickResonanceSegments(ctx);
+  }
+
+  /** B4-W2 共鸣持续结算段（独立伤害段由系统级驱动；R-1 环带 / R-4 图腾 / R-6 余焰） */
+  private tickResonanceSegments(ctx: WeaponUpdateContext): void {
+    const targets = ctx.enemies as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget[];
+    const playerPos = { x: ctx.player.x, y: ctx.player.y };
+    // R-1 守夜环灯：环带沿灯环边缘巡行（半径 = 灯环当前半径，含质变卡 1 外扩）
+    if (this.resonance.isAchieved('R1')) {
+      const lanternBehavior = this.exclusiveBehaviors.xw_lantern as unknown as { machine: Record<string, number> };
+      const ringRadius = lanternBehavior.machine['auraRadius'] ?? 90;
+      stepResonanceLantern(this.resonanceLantern, ctx.dt, ctx.now, playerPos, targets, ctx.damageMultiplier, resonancePairByExclusive('xw_lantern')!.machine, ringRadius);
+    }
+    // R-4 猎月贯钉：月痕图腾减速段
+    if (this.resonance.isAchieved('R4')) {
+      stepResonanceTotems(this.resonanceTotems, ctx.dt, ctx.now, targets, resonancePairByExclusive('xw_longbow')!.machine);
+    }
+    // R-6 圣火十诫：十字落点余焰（落点由 exclusive-behaviors 经 stepCross onExplode 注入）
+    if (this.resonance.isAchieved('R6')) {
+      stepResonanceResidues(this.resonanceCross, ctx.dt, ctx.now, targets, ctx.damageMultiplier, resonancePairByExclusive('xw_cross')!.machine);
+    }
+  }
+
+  /** B4-W3 铁钉冷却乘区（重击类专武 ×0.92；exclusive-behaviors 消费） */
+  heavyCooldownMultiplierFor(exclusiveId: 'xw_axe' | 'xw_cross', baseInterval: number): number {
+    void exclusiveId;
+    return heavyCooldownMult(baseInterval, this.keyPassives);
   }
 
   /** 玩家死亡：清除全部弹体/环绕球/召唤物/地面领域 + 冷却重置（gdd-weapons-v2 §⑥.7） */
