@@ -200,6 +200,16 @@ export class PlayerStats {
     return heal;
   }
 
+  /**
+   * B2-W1 通用回复落点（clamp 到 maxHp，返回实际回复量）：
+   * 专武吸血/血爆回复/圣铃铃响/衍生技治疗统一走此口（HUD hp:changed 由调用方 emit）。
+   */
+  heal(amount: number): number {
+    const applied = Math.max(0, Math.min(amount, this.maxHp - this.hp));
+    this.hp += applied;
+    return applied;
+  }
+
   /** M3-DESIGN-1 up_g_3 鲜血契约：当前是否处于回复窗口（测试/表现层查询） */
   isHitHealWindowActive(nowSeconds: number): boolean {
     return !!this.hitHeal && nowSeconds <= this.hitHealWindowUntil;

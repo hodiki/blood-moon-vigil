@@ -14,6 +14,7 @@ import { enemyPanel, runtimeKindForEnemyId, type EnemyKindId } from '@/enemies/e
 import type { EnemyConfig, EnemyId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { slowedSpeed } from '@/active-skill/active-skill-effects';
+import { emptyStatusState, isStunned, slowMultiplier, clearStatuses, type StatusState } from '@/combat/status/status-engine';
 import { SPECIAL_MARKERS } from '@/fx/fx-spec';
 import type { Player } from '@/player/player';
 
@@ -49,6 +50,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   spawnedAt = 0;
   /** Boss 出场姿态截止（秒）：期内切 `-entrance`，尊者无该帧则为 0 */
   entranceUntil = 0;
+  /**
+   * B2 CC 状态层载荷（gdd-status-effects；专武/衍生技/圣物施加走 status-engine.applyStatus，
+   * 抗性按 ccProfile 解析）。旧 4 技散落字段（stunnedUntil/slowUntil/markUntil）保留并行至
+   * 旧技能退役（B5 开局重写），消费侧两源合并：任一生效即冻结/减速。
+   */
+  cc: StatusState = emptyStatusState();
+  /** CC 抗性画像（tier 由怪物域重做逐敌配置；普通敌缺省） */
+  ccProfile?: import('@/combat/status/status-config').CcProfile;
+  /**
+   * B2 击杀回调挂点（可选）：专武行为按帧注入（左轮处决装填补弹/巨斧击杀回血等）。
+   * 池复用重置清空，防跨局残留。
+   */
+  onKilled?: (target: Enemy) => void;
 
   /**
    * 构造器：池契约 acquire(x,y,texture?,frame?) —— 由调用方显式传 'characters' + 帧名
@@ -85,6 +99,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.slowPct = 0;
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;
+    clearStatuses(this.cc); // B2 状态层载荷重置（池复用不残留）
+    this.onKilled = undefined;
+    this.ccProfile = undefined;
     this.visualFrame = `enemy-${kind}`;
     this.setTexture('characters', this.visualFrame);
     this.setPosition(x, y);
@@ -119,6 +136,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.slowPct = 0;
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;
+    clearStatuses(this.cc); // B2 状态层载荷重置
+    this.onKilled = undefined;
+    this.ccProfile = undefined;
     this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
     this.setPosition(x, y);
@@ -134,7 +154,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    *  M1b 主动技：`now` 秒时间戳（scene.time.now/1000）；眩晕期内冻结（速度 0、攻击计时不递减，
    *  眩晕结束自然恢复移动与攻击节奏）。缺省 now=0 → 永不眩晕（兼容旧调用方）。 */
   updateMovement(dt: number, player: Player, now = 0): void {
-    if (this.stunnedUntil > now) {
+    // B2 状态层并线：旧散落字段（stunnedUntil）与状态引擎（cc.stun）任一生效即冻结
+    if (this.stunnedUntil > now || isStunned(this.cc, now)) {
       const body = this.body as Phaser.Physics.Arcade.Body;
       body.setVelocity(0, 0);
       return; // 眩晕：冻结移动与攻击计时（contact.ts 同步阻止接触伤害）
@@ -148,8 +169,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       body.setVelocity(0, 0);
       return;
     }
-    // E4-S2 安魂曲：减速期内移速 ×(1-slowPct)（slowUntil 截止后自然恢复）
-    const currentSpeed = slowedSpeed(this.speed, this, now);
+    // 减速并线：旧 slowUntil/slowPct 与状态引擎 cc.slow 取更慢者（任一生效即减速）
+    const legacySlow = slowedSpeed(this.speed, this, now);
+    const statusSlow = this.speed * slowMultiplier(this.cc, now);
+    const currentSpeed = Math.min(legacySlow, statusSlow);
     body.setVelocity((dx / len) * currentSpeed, (dy / len) * currentSpeed);
   }
 

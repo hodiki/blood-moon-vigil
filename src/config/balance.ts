@@ -23,3 +23,4 @@ export * from './balance/xp';
 export * from './balance/upgrade';
 export * from './balance/heroes';
 export * from './balance/maps';
+export * from './balance/exclusive';

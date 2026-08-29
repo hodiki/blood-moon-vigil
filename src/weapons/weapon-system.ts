@@ -43,6 +43,8 @@ import { SummonWeaponBehavior } from '@/weapons/summon-weapons';
 import { SuperWeaponBehavior } from '@/weapons/super-weapon-behavior';
 import { SUPER_WEAPON_EVOLUTION } from '@/weapons/super-weapons';
 import { EvolutionState } from '@/weapons/evolution-engine';
+import { createExclusiveBehaviors } from '@/weapons/exclusive/exclusive-behaviors';
+import type { LoadoutResult } from '@/weapons/loadout';
 import { emptyKeyPassiveState, type KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { FxManager } from '@/fx/fx-manager';
 import type { Enemy } from '@/enemies/enemy';
@@ -312,6 +314,12 @@ export class WeaponSystem {
     // 注册新武器四类行为（E2-S2~S5）
     registerNewWeaponBehaviors(this.registry, scene, cfg, fx);
 
+    // B2-W1：注册 8 专武行为（默认 disabled，applyLoadout 门控开启；结算层零 Phaser 依赖）
+    this.exclusiveBehaviors = createExclusiveBehaviors();
+    for (const behavior of Object.values(this.exclusiveBehaviors)) {
+      this.registry.register(behavior as unknown as WeaponBehavior);
+    }
+
     // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲初始未解锁；
     // 其余新武器由 E4-S5 解锁流开启（本冲刺保持未启用，行为注册但不运行）
     this.orbit.setEnabled(false);
@@ -320,6 +328,9 @@ export class WeaponSystem {
       this.registry.get(id)?.setEnabled(false);
     }
   }
+
+  /** B2-W1：8 专武行为表（id → behavior；loadout/沙盘/遥测消费） */
+  readonly exclusiveBehaviors: Record<keyof ReturnType<typeof createExclusiveBehaviors>, WeaponBehavior>;
 
   // —— 既有升级写回接口（UpgradeWriteTargets.weapons，PlayScene 消费） ——
   setMissileSplit(level: number): void {
@@ -368,6 +379,29 @@ export class WeaponSystem {
   applyInitialWeapon(initialWeapon: WeaponId): void {
     this.registry.get('wpn_a_1')?.setEnabled(initialWeapon === 'wpn_a_1');
     this.registry.get(initialWeapon)?.setEnabled(true);
+  }
+
+  /**
+   * B2-W1 专武装配（gdd-exclusive-weapons §3.1；loadout 单一汇聚点）：
+   * - 开启选中专武行为（其余专武保持 disabled）；
+   * - 开启开局通武（computeLoadout 去重后的集合；开集合、关其余默认飞弹门控语义保留）；
+   * - 落选专武 → 衍生技由 PlayScene 装配 ActiveSkill/衍生技控制器（B5 开局重写时收拢至此）。
+   * 返回衍生技 id（落选转化，「转化为技能」标注数据源）。
+   */
+  applyLoadout(loadout: LoadoutResult): LoadoutResult['derivativeId'] {
+    // 开集合：专武 + 通武
+    for (const [id, behavior] of this.exclusiveEntries()) {
+      behavior.setEnabled(id === loadout.exclusiveId);
+    }
+    this.applyInitialWeapon(loadout.initialCommonWeapon);
+    return loadout.derivativeId;
+  }
+
+  /** 专武行为条目（id → behavior；applyLoadout 内部遍历用） */
+  private *exclusiveEntries(): Generator<[string, WeaponBehavior]> {
+    for (const [id, behavior] of Object.entries(this.exclusiveBehaviors)) {
+      yield [id, behavior];
+    }
   }
 
   /**

@@ -10,7 +10,7 @@
  * 本层只做装配与帧转发（架构纪律：scenes/weapons 不写业务数学）。
  */
 
-import type { WeaponId, WeaponClass } from '@/config/balance';
+import type { WeaponClass } from '@/config/balance';
 import type { Player } from '@/player/player';
 import type { Enemy } from '@/enemies/enemy';
 import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
@@ -27,9 +27,10 @@ export interface WeaponUpdateContext {
   damageMultiplier: number;
 }
 
-/** 武器行为统一接口（gdd-weapons-v2 §3.0 / E2-S1） */
+/** 武器行为统一接口（gdd-weapons-v2 §3.0 / E2-S1）
+ *  B2 起 weaponId 放宽为 string：专武（xw_*）与通武（wpn_*）同表注册（WeaponRegistry key 同步放宽）。 */
 export interface WeaponBehavior {
-  readonly weaponId: WeaponId;
+  readonly weaponId: string;
   readonly weaponClass: WeaponClass;
   /** 每帧推进（冷却/发射/命中/召唤/领域） */
   update(ctx: WeaponUpdateContext): void;
@@ -49,19 +50,19 @@ export interface WeaponBehavior {
   applyFocusedCooldown?(multiplier: number): void;
 }
 
-/** 武器行为注册表（WeaponSystem 持有；新武器按 WeaponId 注册） */
+/** 武器行为注册表（WeaponSystem 持有；新武器按 weaponId 注册；B2 起含专武 xw_*） */
 export class WeaponRegistry {
-  private readonly behaviors = new Map<WeaponId, WeaponBehavior>();
+  private readonly behaviors = new Map<string, WeaponBehavior>();
 
   register(behavior: WeaponBehavior): void {
     this.behaviors.set(behavior.weaponId, behavior);
   }
 
-  get(weaponId: WeaponId): WeaponBehavior | undefined {
+  get(weaponId: string): WeaponBehavior | undefined {
     return this.behaviors.get(weaponId);
   }
 
-  has(weaponId: WeaponId): boolean {
+  has(weaponId: string): boolean {
     return this.behaviors.has(weaponId);
   }
 
@@ -85,7 +86,7 @@ export class WeaponRegistry {
   }
 
   /** M3-DESIGN-1 专精疾射广播：目标武器 ×mult / 非目标 ×1.0（无冷却行为 no-op） */
-  applyFocusedCooldown(targetWeaponIds: readonly WeaponId[], multiplier: number): void {
+  applyFocusedCooldown(targetWeaponIds: readonly string[], multiplier: number): void {
     this.each((behavior) =>
       behavior.applyFocusedCooldown?.(targetWeaponIds.includes(behavior.weaponId) ? multiplier : 1),
     );

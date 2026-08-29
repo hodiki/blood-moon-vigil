@@ -28,6 +28,11 @@ export interface ContactEnemy {
   readonly damage: number;
   /** M1b 主动技：眩晕截止（秒时间戳）；> nowSeconds 期间不造成接触伤害（冻结攻击） */
   readonly stunnedUntil: number;
+  /**
+   * B2 状态层并线（可选）：状态引擎眩晕查询（enemy.cc.stun）。
+   * Enemy 结构性提供 `(now) => isStunned(this.cc, now)`；旧调用方/测试缺省 = 不并线。
+   */
+  readonly statusStunned?: (nowSeconds: number) => boolean;
 }
 
 export interface ContactPlayer {
@@ -52,7 +57,9 @@ export function playerEnemyContact(
   nowSeconds: number,
   player: ContactPlayer,
 ): boolean {
-  if (!enemy.active || enemy.attackTimer > 0 || enemy.stunnedUntil > nowSeconds) return false;
+  // B2 状态层并线：状态引擎眩晕（cc.stun）与旧散落字段任一生效即阻止接触伤害
+  const ccStunned = enemy.statusStunned?.(nowSeconds) ?? false;
+  if (!enemy.active || enemy.attackTimer > 0 || enemy.stunnedUntil > nowSeconds || ccStunned) return false;
   enemy.attackTimer = enemy.attackInterval;
   return player.hurt(enemy.damage, nowSeconds);
 }
