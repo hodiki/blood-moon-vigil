@@ -60,6 +60,25 @@ export interface RunResult {
   evolutionComplete: boolean;
   /** M3 真机埋点：单局三选一「build 相关卡」占比（related/总 offer 卡，向心性 ≥50% 判据） */
   relatedCardShare: number | null;
+  // ───── B6-W5 遥测全量（EG-9 口径；gdd-upgrade-pool-v3/gdd-resonance/gdd-talent-tree 验收判据）─────
+  /** 衍生技 DPS 占比（12~18% 锚 EG-9；衍生技伤害 / 全局伤害，沙盘口径近似 = cast 结算累计/总伤） */
+  derivativeDpsShare: number | null;
+  /** 圣物伤害占比（<5% 红线 §⑤；占位校验口径） */
+  relicDpsShare: number | null;
+  /** 质变卡 1 获取时点 s（双节拍锚 30~60s） */
+  mutationCard1AtSeconds: number | null;
+  /** 质变卡 2 获取时点 s（双节拍锚 90~150s） */
+  mutationCard2AtSeconds: number | null;
+  /** 共鸣达成时点 s（null = 本局未达成） */
+  resonanceAtSeconds: number | null;
+  /** 共鸣达成对 id（R1~R8） */
+  resonancePairId: string | null;
+  /** 天赋复活触发次数（Q-c/Q-e；HUD 复活次数指示同源） */
+  talentReviveCount: number;
+  /** 精英抽卡 offer 发放次数（Q-f1/f2/f3） */
+  eliteOfferCount: number;
+  /** 树质变节点点亮数（树节奏遥测） */
+  treeMutationCount: number;
 }
 
 // —— 纠结时刻纯函数（可单测） ——
@@ -158,6 +177,18 @@ export class RunStats {
   evolutionCompleteCount = 0;
   /** M3 真机埋点：三选一中标记为「build 相关卡」的卡数（relatedCardShare 分子） */
   relatedOfferCards = 0;
+  // ───── B6-W5 遥测全量（运行时累计）─────
+  /** 衍生技累计伤害（castDerivative damageDealt 汇总） */
+  derivativeDamage = 0;
+  /** 全局伤害累计（占比分母；PlayScene 击杀/伤害事件近似 —— 敌 hp 消耗累计） */
+  totalDamageDealt = 0;
+  mutationCard1AtSeconds: number | null = null;
+  mutationCard2AtSeconds: number | null = null;
+  resonanceAtSeconds: number | null = null;
+  resonancePairId: string | null = null;
+  talentReviveCount = 0;
+  eliteOfferCount = 0;
+  treeMutationCount = 0;
   /** M3 真机埋点：三选一总卡数（relatedCardShare 分母；= offersPerRun × 每轮卡数） */
   totalOfferCards = 0;
 
@@ -176,6 +207,15 @@ export class RunStats {
     this.boss = null;
     this.activeSkillCasts = 0;
     this.offersPerRun = 0;
+    this.derivativeDamage = 0;
+    this.totalDamageDealt = 0;
+    this.mutationCard1AtSeconds = null;
+    this.mutationCard2AtSeconds = null;
+    this.resonanceAtSeconds = null;
+    this.resonancePairId = null;
+    this.talentReviveCount = 0;
+    this.eliteOfferCount = 0;
+    this.treeMutationCount = 0;
     this.xpGainedPerRun = 0;
     this.evolutionCompleteCount = 0;
     this.relatedOfferCards = 0;
@@ -189,7 +229,55 @@ export class RunStats {
 
   /**
    * M3 真机埋点：一次三选一出现（PlayScene.onLevelUp 在 rollThreeV2 返回后调用）。
-   * offersPerRun +1；逐卡统计 related 标记（rollThreeV2 按 §2.1 保底席位判定写回 option.related）。
+  /** B6-W5：衍生技伤害累计（占比分母由 totalDamageDealt 提供；share = derivative/total） */
+  recordDerivativeDamage(damage: number): void {
+    this.derivativeDamage += Math.max(0, damage);
+  }
+
+  /** B6-W5：全局伤害累计（PlayScene 击杀/武器伤害事件近似） */
+  recordTotalDamage(damage: number): void {
+    this.totalDamageDealt += Math.max(0, damage);
+  }
+
+  /** B6-W5：质变卡获取时点（双节拍锚 30~60s / 90~150s） */
+  recordMutationTaken(order: 1 | 2, nowSeconds: number): void {
+    if (order === 1) this.mutationCard1AtSeconds = nowSeconds;
+    else this.mutationCard2AtSeconds = nowSeconds;
+  }
+
+  /** B6-W5：共鸣达成（时点 + 对 id） */
+  recordResonance(pairId: string, nowSeconds: number): void {
+    this.resonancePairId = pairId;
+    this.resonanceAtSeconds = nowSeconds;
+  }
+
+  /** B6-W5：复活触发 +1（HUD 复活次数指示同源） */
+  recordTalentRevive(): void {
+    this.talentReviveCount += 1;
+  }
+
+  /** B6-W5：精英 offer 发放 +1（Q-f 串联每次） */
+  recordEliteOffer(): void {
+    this.eliteOfferCount += 1;
+  }
+
+  /** B6-W5：树质变节点点亮数（开局时从树应用快照写入） */
+  setTreeMutationCount(count: number): void {
+    this.treeMutationCount = count;
+  }
+
+  /** B6-W5：衍生技 DPS 占比（EG-9 12~18% 锚；分母 ≤0 → null） */
+  derivativeDpsShareOf(): number | null {
+    return this.totalDamageDealt > 0 ? this.derivativeDamage / this.totalDamageDealt : null;
+  }
+
+  /** B6-W5：圣物伤害占比（<5% 红线；圣物无独立伤害段（演出型）→ 恒 0，断言口径预留） */
+  relicDpsShareOf(): number | null {
+    return this.totalDamageDealt > 0 ? 0 : null;
+  }
+
+  /** M3 真机埋点：三选一出现轮数（offersPerRun；onLevelUp 每轮 +1）。
+   * offersPerRun +1；逐卡统计 related 标记（保底席位判定写回 option.related）。
    */
   recordUpgradeOffered(options: readonly UpgradeV2Option[]): void {
     this.offersPerRun += 1;
@@ -262,6 +350,15 @@ export class RunStats {
       evolutionCompleteCount: this.evolutionCompleteCount,
       evolutionComplete: evolutionCompleted(this.evolutionCompleteCount),
       relatedCardShare: relatedCardShareOf(this.relatedOfferCards, this.totalOfferCards),
+      derivativeDpsShare: this.derivativeDpsShareOf(),
+      relicDpsShare: this.relicDpsShareOf(),
+      mutationCard1AtSeconds: this.mutationCard1AtSeconds,
+      mutationCard2AtSeconds: this.mutationCard2AtSeconds,
+      resonanceAtSeconds: this.resonanceAtSeconds,
+      resonancePairId: this.resonancePairId,
+      talentReviveCount: this.talentReviveCount,
+      eliteOfferCount: this.eliteOfferCount,
+      treeMutationCount: this.treeMutationCount,
     };
   }
 }
