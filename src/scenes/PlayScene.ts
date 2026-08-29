@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
@@ -147,6 +147,8 @@ export class PlayScene extends Phaser.Scene {
   private eliteOfferQueue = 0;
   /** Q-s1：开局窗口截止局时 s（-1 = 未点亮） */
   private treeS1UntilElapsed = -1;
+  /** B6-W4 up_d_rage 失控边缘：累计延长 s（上限 3） */
+  private rageExtraSeconds = 0;
   /** Q-s3：遗言余烬（首次 HP 归零事件 + 终局折算） */
   private treeS3Active = false;
   private treeS3EmberUsed = false;
@@ -282,6 +284,8 @@ export class PlayScene extends Phaser.Scene {
     this.treeEliteOffers = treeApp.mutations.eliteOffers;
     this.treeS3Active = treeApp.mutations.emberOnDeath;
     this.treeS1UntilElapsed = treeApp.mutations.openingWindow ? 30 : -1;
+    // B6-W5 树节奏遥测：质变节点点亮数（mutation flags 真值计数）
+    this.stats.setTreeMutationCount(Object.values(treeApp.mutations).filter(Boolean).length);
     // B5-W3 复活判定序挂钩（gdd-talent-tree §⑥-3；Q-c/Q-e 判定序最低优先级）
     this.player.reviveHandler = (now) => this.judgePlayerRevive(now);
     // M2 收口：生成器按当前地图装配（槽位池/权重覆盖/移速加权，E3-S7）
@@ -534,6 +538,15 @@ export class PlayScene extends Phaser.Scene {
       this.hud.setSkillCooldown(this.derivativeController.cooldown, this.derivativeController.cdSeconds);
       this.hud.setSkillCharges(this.derivativeController.chargeCount);
     }
+    // B6-W2 HUD 补全：左轮弹巢点阵（usesAmmo 仅左轮）+ 复活次数指示（Q-c/Q-e）
+    if (this.ownedWeaponIds.includes('xw_revolver' as unknown as WeaponId)) {
+      const revolver = this.weaponSystem.exclusiveBehaviors.xw_revolver as unknown as { getState(): { ammo: import('@/weapons/ammo').AmmoState } };
+      const ammo = revolver.getState().ammo;
+      this.hud.setAmmoDots(ammo.reloading ? 0 : ammo.current);
+    } else {
+      this.hud.setAmmoDots(null);
+    }
+    this.hud.setReviveCharges(this.treeReviveRemaining > 0 ? this.treeReviveRemaining : null);
     // 2) 敌潮生成（budget(t) 秒制累加；6:00 自动触发 onBossTime）
     this.spawner.update(dt);
     // 3) 敌人 AI（朝玩家移动 + 攻击计时）+ TASK-28 敌型动画（普通 3 敌 idle/move，Boss 恒 idle）
@@ -702,6 +715,9 @@ export class PlayScene extends Phaser.Scene {
   private onEnemyKilled(args: unknown): void {
     const payload = args as EnemyKilledPayload;
     this.stats.recordKill();
+    // B6-W5 占比分母近似：击杀敌面板 HP 计入总伤害（1D/沙盘校准口径；精确伤害流留遥测批次）
+    const cfg = payload.enemyId ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[payload.enemyId] ?? (BOSSES as Record<string, { hp?: number }>)[payload.enemyId] : undefined;
+    if (cfg?.hp) this.stats.recordTotalDamage(cfg.hp);
     // E4-S6 图鉴：首杀记录（15 敌/Boss；内容 ID 幂等；旧 kind 三敌 enemyId 为 null 跳过）
     if (payload.enemyId) {
       if (this.codex.recordKill(payload.enemyId)) {
@@ -742,6 +758,11 @@ export class PlayScene extends Phaser.Scene {
     }
     if (this.player.stats.applyLifesteal()) {
       GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+    }
+    // B6-W4 up_d_rage 失控边缘：狂化期击杀延长 0.5s（上限 +3s）
+    if (this.rage.active(this.time.now / 1000) && this.upgradeState.stackOf('up_d_rage') >= 1) {
+      this.rageExtraSeconds = Math.min(3, this.rageExtraSeconds + 0.5);
+      this.rage.apply(this.time.now / 1000, 6 + this.rageExtraSeconds);
     }
     // 血月狂化衍生技：狂化中击杀回 1 HP（dv_blood_rage 口径沿旧值；与吸血升级/兽血愈合叠加）
     if (this.rage.active(this.time.now / 1000)) {
@@ -815,9 +836,15 @@ export class PlayScene extends Phaser.Scene {
         if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
       },
       ammo,
+      // B6-W4 P4 形态挂点：贯月审判图腾 / 终审庭余焰 → R-4/R-6 持续段（WeaponSystem 桥接）
+      totemSink: (x, y) => this.weaponSystem.placeResonanceTotemAt(x, y),
+      residueSink: (x, y) => this.weaponSystem.placeResonanceResidueAt(x, y),
     });
     if (!result) return;
     this.stats.recordActiveSkillCast();
+    // B6-W5 遥测：衍生技伤害累计 + 占比分母
+    this.stats.recordDerivativeDamage(result.damageDealt);
+    this.stats.recordTotalDamage(result.damageDealt);
     this.player.beginSkillPose();
     // 血月狂化衍生技：RageBuff 增益（伤害 +40% / 移速 +15%，GDD §4.6；旧接触光环随旧技退役）
     if (result.events.includes('rage')) {
@@ -879,6 +906,7 @@ export class PlayScene extends Phaser.Scene {
       const hpPct = talentReviveHpPct(this.treeRevivesUsed);
       this.treeRevivesUsed += 1;
       this.treeReviveRemaining -= 1;
+      this.stats.recordTalentRevive(); // B6-W5 复活触发遥测（HUD 复活次数同源）
       // Q-s3：被复活来源救回 → 原地掉落余烬宝石（首次 HP 归零事件）
       if (this.treeS3Active && !this.treeS3EmberUsed) {
         this.treeS3EmberUsed = true;
@@ -915,6 +943,7 @@ export class PlayScene extends Phaser.Scene {
     if (options.length === 0) return;
     this.lastOptionsV2 = options;
     this.stats.recordUpgradeOffered(options);
+    this.stats.recordEliteOffer(); // B6-W5 精英抽卡遥测（Q-f 串联每次）
     GameEvents.emit(GameEvent.UpgradeOffered, { options });
     this.fx.levelUpBurst(this.player.x, this.player.y);
     if (this.isBench) {
@@ -1048,7 +1077,8 @@ export class PlayScene extends Phaser.Scene {
     if (upId.startsWith('key_')) {
       const pair = this.weaponSystem.tryResonance(this.currentExclusiveId, (k) => this.upgradeState.hasKey(k));
       if (pair) {
-        // 共鸣达成遥测（达成率/各对选取分布，GDD §⑧-6；B6 结算口径）
+        // 共鸣达成遥测（达成率/各对选取分布，GDD §⑧-6）
+        this.stats.recordResonance(pair.id, this.spawner.elapsedSeconds);
         GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: pair.commonWeaponId, name: `共鸣·${pair.name}` });
         // B5-W4 R-5 圣域壁垒收拢：壁垒承伤减免 −10% → −18%（+8pp 叠加进 PlayerStats 减伤池）
         if (pair.id === 'R5') this.player.stats.addDamageReduction(0.08);
@@ -1058,8 +1088,10 @@ export class PlayScene extends Phaser.Scene {
     if (upId === `mc_${this.currentExclusiveId.slice(3)}_1`) {
       const { card2Granted } = takeCard1(this.mutationPipeline, this.spawner.elapsedSeconds);
       if (card2Granted) this.applyMutationCard2();
+      this.stats.recordMutationTaken(1, this.spawner.elapsedSeconds); // B6-W5 双节拍遥测
     } else if (upId === `mc_${this.currentExclusiveId.slice(3)}_2`) {
       takeCard2(this.mutationPipeline, this.spawner.elapsedSeconds);
+      this.stats.recordMutationTaken(2, this.spawner.elapsedSeconds);
     } else {
       onUpgradeChosenForPipeline(this.mutationPipeline, this.mutationChannels, this.spawner.elapsedSeconds);
     }

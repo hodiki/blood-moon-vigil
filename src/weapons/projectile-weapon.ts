@@ -121,6 +121,10 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
   private readonly boomerangs = new Map<StraightProjectile, { angle: number; phase: 'out' | 'back' }>();
   /** B4-W2 共鸣命中钩子（WeaponSystem 注入；未配置 = 普通形态零变化——验收判据 1） */
   onHitResonance?: (weaponId: WeaponId, target: Enemy, now: number) => void;
+  /** B6-W4 R-4 猎月贯钉：发射时贯穿数提供者（返回 null = 不覆写；满蓄同步信号由 WeaponSystem 闭包判定） */
+  resonancePierceProvider?: () => number | null;
+  /** B6-W4 R-4：弹体落点回调（插钉成月痕图腾） */
+  onProjectileLand?: (x: number, y: number) => void;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -235,6 +239,9 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
     pierce: number,
     c: WeaponConfig,
   ): void {
+    // B6-W4 R-4 猎月贯钉：发射时贯穿覆写（长弓满蓄同步信号经 provider 判定）
+    const override = this.resonancePierceProvider?.() ?? null;
+    if (override !== null) pierce = override;
     const vis = sceneWeaponVisual(this.scene, c.frame, 'missile');
     const p = this.pool.acquire(ctx.player.x, ctx.player.y, vis.atlas, vis.frame);
     if (!p) return;
@@ -281,6 +288,7 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
           else sub.setTint(this.tintFor(c.powerTag));
         }
       }
+      this.onProjectileLand?.(p.x, p.y); // R-4 落点 → 月痕图腾
       p.dissipate();
       break;
     }

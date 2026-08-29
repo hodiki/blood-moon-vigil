@@ -89,6 +89,8 @@ export class SummonWeaponBehavior implements WeaponBehavior {
   private readonly chain: Phaser.GameObjects.Sprite;
   /** B4-W2 R-7 葬仪断罪钩子（WeaponSystem 注入）：返回 true = 已拖拽（跳过击退）；未配置 = 击退原行为 */
   onHitResonance?: (target: Enemy, now: number) => boolean;
+  /** B6-W4 R-8 狼群誓约：召唤上限共享门控（返回 false = 上限满静默丢弃 §⑦-2）；未配置 = 不设限 */
+  summonGate?: () => boolean;
   /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0） */
   private focusedCooldownMultiplier = 1;
   /** E4-S4 钥被动（D3 锁链独立字段；召唤群走 params） */
@@ -184,10 +186,10 @@ export class SummonWeaponBehavior implements WeaponBehavior {
       // 索敌攻击：朝最近敌撕咬（D2 索敌 ×1.30 建模：追击距离放大）
       this.updateSummonAttack(s, ctx);
     }
-    // 重召唤：补足至 params.count
+    // 重召唤：补足至 params.count（B6-W4 R-8：狼群誓约上限共享——召唤门控 false 时静默丢弃，§⑦-2）
     if (alive < p.count) {
       this.respawnTimer -= ctx.dt;
-      if (this.respawnTimer <= 0 && alive < p.count) {
+      if (this.respawnTimer <= 0 && alive < p.count && (this.summonGate?.() ?? true)) {
         const slot = this.summons.find((s) => !s.active);
         if (slot) {
           slot.activate(

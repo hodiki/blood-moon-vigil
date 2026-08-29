@@ -262,7 +262,7 @@ describe('B2-W2 衍生技（CC 走状态层；§4.8 对照表）', () => {
     expect(target.cc?.stun).toBeNull();
     expect(target.cc?.slow).toBeNull();
     const charge = castDerivative('dv_wolf_charge', { now: 0, player: { x: 0, y: 0, hp: 100, maxHp: 100 }, enemies: [target] });
-    expect(charge.damageDealt).toBe(90); // 3 狼 × 30
+    expect(charge.damageDealt).toBe(120); // B6-W4 群狼环猎：单目标 3 狼 → 30 + 45 + 45（第 2 发起 ×1.5）
     expect(charge.events.filter((e) => e === 'knockback')).toHaveLength(3);
     expect(target.cc?.stun).toBeNull(); // 位移不进状态层
   });

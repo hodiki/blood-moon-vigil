@@ -26,6 +26,10 @@ export interface DerivativeCastContext {
   companion?: { healFull(): void; fillReviveProgress(): void };
   /** 左轮弹巢引用（dv_lantern_flash：补满 + 5s 无限弹；未带 = 跳过弹药段） */
   ammo?: AmmoState;
+  /** B6-W4 P4 形态挂点：贯月审判图腾落点（up_d_snipe；PlayScene 注入 → R-4 totem 持续段） */
+  totemSink?: (x: number, y: number) => void;
+  /** B6-W4 P4 形态挂点：终审庭余焰登记（up_d_judgment → R-6 residues 持续段） */
+  residueSink?: (x: number, y: number) => void;
 }
 
 export interface DerivativeCastResult {
@@ -94,6 +98,18 @@ function castRevolverBurst(p: Readonly<Record<string, number>>, ctx: DerivativeC
   if (last?.cc) {
     last.cc = applyStatus(last.cc, { kind: 'vulnerable', value: p['vulnerable']!, durationSeconds: p['vulnerableDuration']!, source: 'dv_revolver_burst' }, ctx.now).state;
     result.events.push('vulnerable');
+    // B6-W4 up_d_revolver 圣痕传染：命中传染周围 80px 敌人（持续减半 3s）
+    if ((p['infectRadius'] ?? 0) > 0) {
+      const rSq = (p['infectRadius'] ?? 80) ** 2;
+      for (const e of ctx.enemies) {
+        if (!e.active || e.hp <= 0 || !e.cc || e === last) continue;
+        const dx = e.x - last.x;
+        const dy = e.y - last.y;
+        if (dx * dx + dy * dy > rSq) continue;
+        e.cc = applyStatus(e.cc, { kind: 'vulnerable', value: p['vulnerable']!, durationSeconds: p['infectDuration'] ?? 3, source: 'dv_revolver_burst_infect' }, ctx.now).state;
+        result.events.push('infect');
+      }
+    }
   }
   return result;
 }
@@ -166,6 +182,11 @@ function castMoonSnipe(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
       }
     }
   }
+  // B6-W4 up_d_snipe 贯月审判：巨矢命中处残留月痕图腾（60px 减速 15%/3s——减速段走 R-4 图腾持续层）
+  if (ctx.totemSink && (p['totemRadius'] ?? 0) > 0 && targets[0]) {
+    ctx.totemSink(targets[0].x, targets[0].y);
+    result.events.push('totem');
+  }
   result.events.push('charged');
   return result;
 }
@@ -203,6 +224,14 @@ function castHolyJudgment(p: Readonly<Record<string, number>>, ctx: DerivativeCa
       result.events.push('stunApplied');
     }
   }
+  // B6-W4 up_d_judgment 终审庭：眩晕命中处追加余焰（100px 8伤/s/3s——持续段走 R-6 residues 层）
+  if (ctx.residueSink) {
+    for (const e of ctx.enemies) {
+      if (!e.active || e.hp <= 0) continue;
+      ctx.residueSink(e.x, e.y);
+    }
+    result.events.push('residue');
+  }
   ctx.healSink?.((p['healAuraPerSec'] ?? 3) * (p['healAuraDuration'] ?? 5) * 0.2); // 首帧口径：光环 tick 持续段归行为层
   result.events.push('healAura');
   return result;
@@ -223,11 +252,16 @@ function castWolfCharge(p: Readonly<Record<string, number>>, ctx: DerivativeCast
   const result = emptyResult();
   const wolves = p['wolves']!;
   const targets = aliveByDistance(ctx.enemies, ctx.player.x, ctx.player.y);
+  const hitCount = new Map<ExclusiveTarget, number>();
   for (let w = 0; w < wolves; w += 1) {
     const target = targets[w % Math.max(1, targets.length)];
     if (!target) break;
-    dealDamage(target, p['damage']!, result);
-    // 击退 100px（位移，非状态层枚举——直接位移；运行时由碰撞体执行，这里数据位）
+    // B6-W4 up_d_charge 群狼环猎：环形包抄命中同一目标伤 ×1.5（第 2 发起）
+    const hits = (hitCount.get(target) ?? 0) + 1;
+    hitCount.set(target, hits);
+    const mult = hits >= 2 ? p['packFocusMult'] ?? 1.5 : 1;
+    dealDamage(target, p['damage']! * mult, result);
+    // 击退 100px（位移，非状态层枚举——运行时由碰撞体执行）
     result.events.push('knockback');
   }
   result.events.push('rage');

@@ -52,7 +52,7 @@ import {
   createResonanceCrossState, stepResonanceResidues, onResonanceCrossExplode,
   createResonanceRevolverFeedState, onResonanceCrossbowHit,
   createResonanceTwinbladesMarkState, onResonanceBoomerangHit,
-  createResonanceDragState, onResonanceChainHit,
+  createResonanceDragState, onResonanceChainHit, placeResonanceTotem,
 } from '@/weapons/resonance/resonance-math';
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
 import type { RevolverState } from '@/weapons/exclusive/exclusive-math';
@@ -352,9 +352,32 @@ export class WeaponSystem {
       }
     };
     this.setNow = (now: number) => { lastNow = now; };
+    this.lastNowSeconds = 0;
     // B4-W2 R-7 葬仪断罪：锁链命中 → 拖拽（拉至巨斧弧心；×1.5 伤害段经 resonanceAxeDamageMult 结算口径）
     const chainBehavior = this.registry.get('wpn_d_3') as unknown as { onHitResonance?: (t: Enemy, now: number) => boolean } | undefined;
     if (chainBehavior) {
+      // B6-W4 R-8 狼群誓约：猎犬召唤上限共享门控（月狼在场计数占位；§⑦-2 静默丢弃）
+    const hound = this.registry.get('wpn_d_2') as unknown as { summonGate?: () => boolean } | undefined;
+    if (hound) {
+      hound.summonGate = () => {
+        if (!this.resonance.isAchieved('R8')) return true;
+        // 猎犬自身 count=1（重召节拍即上限）；月狼侧共享计数由 exclusive-math.sharedSummonCount 承载
+        return true;
+      };
+    }
+    // B6-W4 R-4 猎月贯钉：长弓满蓄同步（shotCounter 每 3 矢）→ 标枪贯穿 6 + 落点图腾
+      const javelin = this.registry.get('wpn_a_5') as ProjectileWeaponBehavior;
+      javelin.resonancePierceProvider = () => {
+        if (!this.resonance.isAchieved('R4')) return null;
+        const longbow = this.exclusiveBehaviors.xw_longbow as ExclusiveWeaponBehavior<import('@/weapons/exclusive/exclusive-math').LongbowState>;
+        const charged = (longbow.getState().shotCounter % 3) === 0; // 满蓄窗口（每第 3 矢）
+        return charged ? 6 : 3;
+      };
+      javelin.onProjectileLand = (x: number, y: number) => {
+        if (this.resonance.isAchieved('R4')) {
+          placeResonanceTotem(this.resonanceTotems, x, y, lastNow, resonancePairByExclusive('xw_longbow')!.machine);
+        }
+      };
       chainBehavior.onHitResonance = (target: Enemy, _now: number) => {
         if (!this.resonance.isAchieved('R7')) return false;
         return onResonanceChainHit(
@@ -385,6 +408,7 @@ export class WeaponSystem {
   private readonly resonanceFeed = createResonanceRevolverFeedState();
   private readonly resonanceMarks = createResonanceTwinbladesMarkState();
   private readonly resonanceDrag = createResonanceDragState();
+  private lastNowSeconds = 0;
   /** R-6 落点时刻桥接（update 起始写；onExplode 读） */
   private setNow: (now: number) => void = () => {};
 
@@ -458,6 +482,18 @@ export class WeaponSystem {
     for (const [id, behavior] of Object.entries(this.exclusiveBehaviors)) {
       yield [id, behavior];
     }
+  }
+
+  /** B6-W4 P4 形态挂点：贯月审判图腾落点（公共桥接；衍生技 cast 注入） */
+  placeResonanceTotemAt(x: number, y: number): void {
+    if (!this.resonance.isAchieved('R4')) return;
+    placeResonanceTotem(this.resonanceTotems, x, y, this.lastNowSeconds, resonancePairByExclusive('xw_longbow')!.machine);
+  }
+
+  /** B6-W4 P4 形态挂点：终审庭余焰登记（公共桥接） */
+  placeResonanceResidueAt(x: number, y: number): void {
+    if (!this.resonance.isAchieved('R6')) return;
+    onResonanceCrossExplode(this.resonanceCross, x, y, this.lastNowSeconds, resonancePairByExclusive('xw_cross')!.machine);
   }
 
   /**
