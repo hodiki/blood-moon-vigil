@@ -1,4 +1,9 @@
 /**
+ * ⚠ B5 退役标注（EG-2 归档不删）：本文件加成层（MERIT_BONUSES/canEquipMerit/toggleMeritEquipped/
+ * computeMeritApplication/meritProgress 等）已被 progression/tree-state.ts 替代（gdd-talent-tree A-2）。
+ * calculateMeritPoints + PURE_IN_GAME_MODE_KEY 管线沿用（GT-4：更名余辉止于文案）。
+ * 运行时消费仅剩 merit-overlay（B6 树界面替换时整体退役）；收档快照 src/_archived/merit-v1.ts。
+ *
  * stats/merit.ts —— 守夜功绩数据层（E4-S7，gdd-codex §3.4）
  *
  * 纯函数（可脱离 Phaser 单测）：功绩点数结算 + 4 加成配置 + 纯局内模式开关。
