@@ -26,10 +26,10 @@ import {
   selectHeroSafely,
   canSelectHero,
 } from '@/config/session-selection';
-import type { SaveData } from '@/stats/save';
+import { saveKey, type SaveData } from '@/stats/save';
 import { detectIsMobile } from '@/utils/device';
 import { CodexOverlay, createCodexOverlay } from '@/ui/codex-overlay';
-import { MeritOverlay, createMeritOverlay } from '@/ui/merit-overlay';
+import { TreeOverlay, createTreeOverlay } from '@/ui/tree-overlay';
 import { NP } from '@/narratives/narratives';
 
 export interface StartOverlay {
@@ -119,7 +119,7 @@ export function createStartOverlay(
       <div class="bmv-map-row"></div>
       <div class="bmv-feature-row">
         <button class="bmv-feature-btn" data-feature="codex" type="button">守夜日志</button>
-        <button class="bmv-feature-btn" data-feature="merit" type="button">守夜功绩</button>
+        <button class="bmv-feature-btn" data-feature="merit" type="button">滤月余辉</button>
       </div>
       <button class="bmv-start-btn" type="button">点击开始</button>
     </div>
@@ -130,7 +130,7 @@ export function createStartOverlay(
   // QA-BUG-2 ①③：面板打开期间 .bmv-start-mask 让位（pointer-events:none，关闭恢复），
   // 关闭后焦点还给「点击开始」；两面板互斥打开（蒙层归属管理保持简单）
   let codexOverlay: CodexOverlay | null = null;
-  let meritOverlay: MeritOverlay | null = null;
+  let treeOverlay: TreeOverlay | null = null;
   const startMask = root.querySelector('.bmv-start-mask') as HTMLElement;
   const holdStartUiForPanel = (): void => {
     startMask.style.pointerEvents = 'none';
@@ -140,7 +140,7 @@ export function createStartOverlay(
     btn.focus(); // QA-BUG-2 ③：焦点归还「点击开始」，Tab 不再盲开局
   };
   const openCodex = (): void => {
-    if (!opts.save || codexOverlay || meritOverlay) return;
+    if (!opts.save || codexOverlay || treeOverlay) return;
     holdStartUiForPanel();
     codexOverlay = createCodexOverlay({
       save: opts.save,
@@ -151,14 +151,25 @@ export function createStartOverlay(
       },
     });
   };
-  const openMerit = (): void => {
-    if (!opts.save || meritOverlay || codexOverlay) return;
+  // B6-W1：滤月余辉树界面（merit-overlay 退役，gdd-talent-tree A-1；写入 save + onStateChange 持久化）
+  const openTree = (): void => {
+    if (!opts.save || treeOverlay || codexOverlay) return;
     holdStartUiForPanel();
-    meritOverlay = createMeritOverlay({
-      save: opts.save,
+    const save = opts.save;
+    treeOverlay = createTreeOverlay(getOverlayHost(), {
+      points: save.meritPoints,
+      purchases: save.treeState.purchases,
+      pureInGame: save.pureInGame,
       isMobile: detectIsMobile(),
+      onStateChange: (purchases, pointsSpent, pointsRemaining) => {
+        save.treeState = { unlockedNodeIds: Object.keys(purchases), purchases, pointsSpent };
+        save.meritPoints = pointsRemaining + pointsSpent; // 余额 = 总累计 − 已投入；总累计不变口径
+        // 主菜单层无 storage 注入 → 直接 localStorage（Boot/PlayScene 同键 v3）
+        const platform = detectIsMobile() ? 'mobile' : 'desktop';
+        window.localStorage.setItem(saveKey(platform), JSON.stringify(save));
+      },
       onClose: () => {
-        meritOverlay = null;
+        treeOverlay = null;
         releaseStartUiFromPanel();
       },
     });
@@ -248,7 +259,7 @@ export function createStartOverlay(
   const featureHandlers: Array<{ el: HTMLElement; onClick: () => void }> = [];
   if (opts.save) {
     const codexOnClick = (): void => openCodex();
-    const meritOnClick = (): void => openMerit();
+    const meritOnClick = (): void => openTree();
     codexBtn.addEventListener('click', codexOnClick);
     meritBtn.addEventListener('click', meritOnClick);
     featureHandlers.push({ el: codexBtn, onClick: codexOnClick }, { el: meritBtn, onClick: meritOnClick });
@@ -260,7 +271,7 @@ export function createStartOverlay(
   return {
     destroy(): void {
       codexOverlay?.destroy();
-      meritOverlay?.destroy();
+      treeOverlay = null;
       btn.removeEventListener('click', onStart);
       for (const h of featureHandlers) h.el.removeEventListener('click', h.onClick);
       for (const h of heroHandlers) h.el.removeEventListener('click', h.onClick);

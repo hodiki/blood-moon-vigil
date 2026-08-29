@@ -93,6 +93,10 @@ export class Hud {
         <div class="bmv-hud-weapon" data-weapon="shockwave">${renderIconSvg(weaponIconKeyForId('shockwave'))}</div>
       </div>
       <div class="bmv-hud-boss"><div class="bmv-hud-boss-fill"></div></div>
+      <div class="bmv-hud-status">
+        <div class="bmv-hud-ammo" hidden></div>
+        <div class="bmv-hud-revive" hidden></div>
+      </div>
     `;
     host.appendChild(this.root);
 
@@ -188,6 +192,35 @@ export class Hud {
   }
 
   /** E4-S2 充能制：技能按钮充能数角标（血猎手 2 段；单充能隐藏） */
+  /** B6-W2 弹巢点阵（gdd-exclusive-weapons §4.9：6 点弹巢；usesAmmo 仅左轮；null = 隐藏） */
+  setAmmoDots(current: number | null, max = 6): void {
+    const el = this.root.querySelector('.bmv-hud-ammo') as HTMLElement | null;
+    if (!el) return;
+    if (current === null) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    el.innerHTML = '';
+    for (let i = 0; i < max; i += 1) {
+      const dot = document.createElement('span');
+      dot.className = i < current ? 'bmv-hud-ammo-dot on' : 'bmv-hud-ammo-dot';
+      el.appendChild(dot);
+    }
+  }
+
+  /** B6-W2 复活次数指示（Q-c/Q-e 点亮后；null = 隐藏；唯一局内 HUD 新增触点 §⑧） */
+  setReviveCharges(count: number | null): void {
+    const el = this.root.querySelector('.bmv-hud-revive') as HTMLElement | null;
+    if (!el) return;
+    if (count === null) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    el.textContent = `复活 ×${count}`;
+  }
+
   setSkillCharges(count: number): void {
     if (!this.skillEl) return;
     const el = this.skillEl.querySelector('.bmv-hud-skill-charges') as HTMLElement | null;
