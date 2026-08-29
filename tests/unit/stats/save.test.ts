@@ -5,6 +5,10 @@ import {
   loadSave,
   writeSave,
   saveKey,
+  saveKeyLegacy,
+  SAVE_VERSION,
+  SAVE_VERSION_PREVIOUS,
+  migrateSaveV1toV2,
   recordMapCleared,
   unlockStatusFromSave,
   type SaveData,
@@ -65,21 +69,27 @@ describe('E4-S8 存档数据层（gdd-codex §3.2/§6）', () => {
     expect(storage.getItem(saveKey('desktop') + '.bak')).toBe('{broken json!!!');
   });
 
-  it('版本不符 → 回退空存档 + 备份', () => {
-    storage.setItem(saveKey('desktop'), JSON.stringify({ version: 999, codexUnlocked: [] }));
+  it('未来版本档 → 回退空存档 + 备份；原档数据保留不覆盖（口径延续）', () => {
+    const future = JSON.stringify({ version: 999, codexUnlocked: ['codex_enemy_enemy_g1_1'], meritPoints: 88 });
+    storage.setItem(saveKey('desktop'), future);
     const data = loadSave(storage, 'desktop');
-    expect(data.version).toBe(1);
-    expect(storage.getItem(saveKey('desktop') + '.bak')).toBeTruthy();
+    expect(data.version).toBe(SAVE_VERSION);
+    expect(data).toEqual(emptySave());
+    // .bak 备份 + 原键不删除（旧数据保留，防迁移回退/取证）
+    expect(storage.getItem(saveKey('desktop') + '.bak')).toBe(future);
+    expect(storage.getItem(saveKey('desktop'))).toBe(future);
   });
 
-  it('parseSave 宽松：非法字段回退默认（meritEquipped 过滤非法 id）', () => {
+  it('parseSave 宽松：非法字段回退默认（meritEquipped 过滤非法 id；v2 新增字段缺省回退）', () => {
     const parsed = parseSave(
-      JSON.stringify({ version: 1, codexUnlocked: ['ok', 42], meritEquipped: ['merit_hp', 'bogus'], meritPoints: -5, pureInGame: 'yes' }),
+      JSON.stringify({ version: 2, codexUnlocked: ['ok', 42], meritEquipped: ['merit_hp', 'bogus'], meritPoints: -5, pureInGame: 'yes', treeState: 'bad', preselectedWeapon: 42 }),
     );
     expect(parsed.codexUnlocked).toEqual(['ok']);
     expect(parsed.meritEquipped).toEqual(['merit_hp']);
     expect(parsed.meritPoints).toBe(0);
     expect(parsed.pureInGame).toBe(false);
+    expect(parsed.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(parsed.preselectedWeapon).toBeNull();
   });
 
   it('通关记录幂等 + 解锁流查询（E4-S9）', () => {
@@ -103,5 +113,139 @@ describe('E4-S8 存档数据层（gdd-codex §3.2/§6）', () => {
     };
     expect(() => writeSave(broken, emptySave(), 'desktop')).not.toThrow();
     expect(loadSave(broken, 'desktop')).toEqual(emptySave());
+  });
+});
+
+describe('B1 存档 v2 迁移骨架（EG 裁决：迁移函数先于版本号落地）', () => {
+  let storage: ReturnType<typeof makeStorage>;
+  beforeEach(() => {
+    storage = makeStorage();
+  });
+
+  it('版本常量：SAVE_VERSION=2 / 迁移链上一版=1（先迁移后 bump 的落地顺序锚点）', () => {
+    expect(SAVE_VERSION).toBe(2);
+    expect(SAVE_VERSION_PREVIOUS).toBe(1);
+  });
+
+  it('矩阵 A · v1 标准档 → 迁移：逐字段保留 + meritPoints 1:1 + 新字段默认值', () => {
+    const v1 = {
+      version: 1,
+      codexUnlocked: ['codex_enemy_enemy_g1_1', 'codex_boss_boss_1'],
+      meritPoints: 57,
+      meritEquipped: ['merit_hp', 'merit_dmg'],
+      clearedMaps: ['map_graveyard', 'map_cathedral'],
+      pureInGame: false,
+    };
+    const migrated = migrateSaveV1toV2(v1);
+    expect(migrated.version).toBe(2);
+    expect(migrated.codexUnlocked).toEqual(['codex_enemy_enemy_g1_1', 'codex_boss_boss_1']);
+    expect(migrated.meritPoints).toBe(57); // 1:1 平移（功绩 → 余辉）
+    expect(migrated.meritEquipped).toEqual(['merit_hp', 'merit_dmg']); // 迁移期保留（merit-overlay 兼容）
+    expect(migrated.clearedMaps).toEqual(['map_graveyard', 'map_cathedral']);
+    expect(migrated.pureInGame).toBe(false);
+    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 }); // 占位空树（B5 填语义）
+    expect(migrated.preselectedWeapon).toBeNull(); // Q-d 占位（B5 接线）
+  });
+
+  it('矩阵 B · v1 空字段档（缺字段）→ 迁移：全部回退默认，不崩溃', () => {
+    const migrated = migrateSaveV1toV2({ version: 1 });
+    expect(migrated.version).toBe(2);
+    expect(migrated.codexUnlocked).toEqual([]);
+    expect(migrated.meritPoints).toBe(0);
+    expect(migrated.meritEquipped).toEqual([]);
+    expect(migrated.clearedMaps).toEqual([]);
+    expect(migrated.pureInGame).toBe(false);
+    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(migrated.preselectedWeapon).toBeNull();
+  });
+
+  it('矩阵 B2 · v1 非法字段档 → 迁移：非法过滤（与 v1 parseSave 同宽入口径）', () => {
+    const migrated = migrateSaveV1toV2({
+      version: 1,
+      codexUnlocked: ['ok', 42],
+      meritEquipped: ['merit_hp', 'bogus'],
+      meritPoints: -5,
+      clearedMaps: ['map_den', 'bogus_map'],
+      pureInGame: 'yes',
+    });
+    expect(migrated.codexUnlocked).toEqual(['ok']);
+    expect(migrated.meritEquipped).toEqual(['merit_hp']);
+    expect(migrated.meritPoints).toBe(0);
+    expect(migrated.clearedMaps).toEqual(['map_den']);
+    expect(migrated.pureInGame).toBe(false);
+  });
+
+  it('矩阵 C · parseSave 内嵌 v1 档 → 走迁移链（version=1 分派到 migrateSaveV1toV2）', () => {
+    const migrated = parseSave(JSON.stringify({ version: 1, meritPoints: 30, meritEquipped: ['merit_speed'] }));
+    expect(migrated.version).toBe(2);
+    expect(migrated.meritPoints).toBe(30);
+    expect(migrated.meritEquipped).toEqual(['merit_speed']);
+    expect(migrated.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+  });
+
+  it('矩阵 D · 未来版本档 → 空存档；旧数据保留不覆盖（原键不删 + .bak）', () => {
+    const future = JSON.stringify({ version: 3, codexUnlocked: ['x'], meritPoints: 99 });
+    storage.setItem(saveKey('desktop'), future);
+    const data = loadSave(storage, 'desktop');
+    expect(data).toEqual(emptySave());
+    expect(storage.getItem(saveKey('desktop'))).toBe(future); // 不覆盖
+    expect(storage.getItem(saveKey('desktop') + '.bak')).toBe(future); // 备份
+  });
+
+  it('矩阵 E · 损坏档 → 空存档安全兜底 + .bak（口径延续）', () => {
+    storage.setItem(saveKey('desktop'), 'not json {{{');
+    const data = loadSave(storage, 'desktop');
+    expect(data).toEqual(emptySave());
+    expect(storage.getItem(saveKey('desktop') + '.bak')).toBe('not json {{{');
+  });
+
+  it('迁移链 · 仅 v1 旧键存在 → loadSave 经旧键回读迁移出 v2 结构；旧键保留', () => {
+    const v1 = { version: 1, codexUnlocked: ['codex_enemy_enemy_g1_1'], meritPoints: 42, meritEquipped: [], clearedMaps: ['map_den'], pureInGame: true };
+    storage.setItem(saveKeyLegacy('desktop'), JSON.stringify(v1));
+    const loaded = loadSave(storage, 'desktop');
+    expect(loaded.version).toBe(2);
+    expect(loaded.meritPoints).toBe(42);
+    expect(loaded.codexUnlocked).toEqual(['codex_enemy_enemy_g1_1']);
+    expect(loaded.clearedMaps).toEqual(['map_den']);
+    expect(loaded.pureInGame).toBe(true);
+    expect(loaded.treeState).toEqual({ unlockedNodeIds: [], pointsSpent: 0 });
+    expect(loaded.preselectedWeapon).toBeNull();
+    // 旧键数据保留（只读迁移，不覆盖不删除）
+    expect(storage.getItem(saveKeyLegacy('desktop'))).toBe(JSON.stringify(v1));
+  });
+
+  it('迁移链 · v2 键优先：两键并存时只读 v2（v1 旧键忽略）', () => {
+    storage.setItem(saveKeyLegacy('desktop'), JSON.stringify({ version: 1, meritPoints: 1 }));
+    storage.setItem(saveKey('desktop'), JSON.stringify({ ...emptySave(), meritPoints: 200 }));
+    const loaded = loadSave(storage, 'desktop');
+    expect(loaded.meritPoints).toBe(200);
+  });
+
+  it('迁移链 · 损坏 v1 旧档 → 安全兜底空存档（不崩溃）', () => {
+    storage.setItem(saveKeyLegacy('desktop'), 'broken!!!');
+    const loaded = loadSave(storage, 'desktop');
+    expect(loaded).toEqual(emptySave());
+  });
+
+  it('迁移链 · 全空 v1 旧档（恰为 v1 emptySave）→ 迁移出 v2 空存档，不误判损坏', () => {
+    storage.setItem(saveKeyLegacy('desktop'), JSON.stringify({ version: 1, codexUnlocked: [], meritPoints: 0, meritEquipped: [], clearedMaps: [], pureInGame: false }));
+    const loaded = loadSave(storage, 'desktop');
+    expect(loaded).toEqual(emptySave());
+  });
+
+  it('多端独立迁移：desktop/mobile 旧键互不串档', () => {
+    storage.setItem(saveKeyLegacy('desktop'), JSON.stringify({ version: 1, meritPoints: 11 }));
+    storage.setItem(saveKeyLegacy('mobile'), JSON.stringify({ version: 1, meritPoints: 22 }));
+    expect(loadSave(storage, 'desktop').meritPoints).toBe(11);
+    expect(loadSave(storage, 'mobile').meritPoints).toBe(22);
+  });
+
+  it('roundtrip：迁移结果可写回 v2 键并读回一致', () => {
+    storage.setItem(saveKeyLegacy('desktop'), JSON.stringify({ version: 1, meritPoints: 66, meritEquipped: ['merit_magnet'] }));
+    const migrated = loadSave(storage, 'desktop');
+    writeSave(storage, migrated, 'desktop');
+    const reloaded = loadSave(storage, 'desktop');
+    expect(reloaded).toEqual(migrated);
+    expect(reloaded.meritPoints).toBe(66);
   });
 });
