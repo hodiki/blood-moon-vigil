@@ -12,16 +12,16 @@ import {
 import { emptySave } from '@/stats/save';
 
 describe('图鉴「守夜日志」UI 纯逻辑（codex-ui-spec v1.0）', () => {
-  it('6 页签 + 计数徽章：角色 4 / 敌人 15 / Boss 4 / 武器 14 / 超武 7 / 事件 6 = 50', () => {
+  it('6 页签 + 计数徽章：角色 4 / 敌人 16 / Boss 4 / 武器 14 / 超武 7 / 事件 6 = 51', () => {
     expect(CODEX_TABS.map((t) => t.category)).toEqual(['hero', 'enemy', 'boss', 'weapon', 'evo', 'event']);
     const counts = codexTabCounts();
     expect(counts.hero).toBe(4);
-    expect(counts.enemy).toBe(15);
+    expect(counts.enemy).toBe(16);
     expect(counts.boss).toBe(4);
     expect(counts.weapon).toBe(14);
     expect(counts.evo).toBe(7);
     expect(counts.event).toBe(6);
-    expect(CODEX_ENTRIES.length).toBe(50);
+    expect(CODEX_ENTRIES.length).toBe(51);
   });
 
   it('三态卡片（spec §4）：解锁 / 锁定剪影 + ？ / 血月化身隐藏？？？保密', () => {

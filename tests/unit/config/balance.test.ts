@@ -131,10 +131,10 @@ describe('经验/宝石/升级池常量（E3 基线）', () => {
 });
 
 describe('M2-S1a 内容表骨架（content-design-outline v1.1 数据驱动，纯数据层）', () => {
-  it('表规模：武器 14 / 超武 7 / 敌人 15 / Boss 4 / 角色 4 / 主动技 4 / 地图 3 / 升级池 40（R-C3-RULING 敌人 14→15）', () => {
+  it('表规模：武器 14 / 超武 7 / 敌人 16 / Boss 4 / 角色 4 / 主动技 4 / 地图 3 / 升级池 40（gdd-enemies-v3 §③-2 敌 15→16）', () => {
     expect(Object.keys(WEAPON_CONFIGS)).toHaveLength(14);
     expect(EVOLUTIONS).toHaveLength(7);
-    expect(Object.keys(ENEMY_CONFIGS)).toHaveLength(15);
+    expect(Object.keys(ENEMY_CONFIGS)).toHaveLength(16);
     expect(Object.keys(BOSSES)).toHaveLength(4);
     expect(Object.keys(HEROES)).toHaveLength(4);
     expect(Object.keys(ACTIVE_SKILLS)).toHaveLength(4);

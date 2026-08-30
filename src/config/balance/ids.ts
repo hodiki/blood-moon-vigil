@@ -27,7 +27,7 @@ export type EvoId =
   | 'evo_bloodsea' | 'evo_batstorm' | 'evo_packleader';
 
 export type EnemyId =
-  | 'enemy_g1_1' | 'enemy_g1_2' | 'enemy_g1_3' | 'enemy_g1_4' | 'enemy_g1_5' | 'enemy_g1_6'
+  | 'enemy_g1_1' | 'enemy_g1_2' | 'enemy_g1_3' | 'enemy_g1_4' | 'enemy_g1_5' | 'enemy_g1_6' | 'enemy_g1_7'
   | 'enemy_g2_1' | 'enemy_g2_2' | 'enemy_g2_3' | 'enemy_g2_4' | 'enemy_g2_5'
   | 'enemy_g3_1' | 'enemy_g3_2' | 'enemy_g3_3' | 'enemy_g3_4';
 

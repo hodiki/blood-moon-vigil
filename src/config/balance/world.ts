@@ -35,6 +35,7 @@ export const PALETTE = {
   enemyWraith: '#8C5A8C', // 亡魂：幽紫残影（相位·半透明）
   enemyNecro: '#7A3A4A', // 尸巫：暗红褐（骷髅法杖）
   enemyGravekeeper: '#6E3A8C', // 守墓者：幽紫（R-C3-RULING 墓地精英 · 断碑残冠 1.5x）
+  enemyDecayedknight: '#4E5E86', // 腐朽骑士：暗月蓝灰（gdd-enemies-v3 §③-2 MN-16 · MOON 反转体 · 千年前守夜甲胄）
   beastGrey: '#7A6A5A', // 灰狼：暗灰棕（竖耳）
   beastShadow: '#4A4256', // 暗影狼：暗蓝灰（流线）
   beastStone: '#5A5E6E', // 石甲狼：冷灰（石甲纹·精英幽紫调）

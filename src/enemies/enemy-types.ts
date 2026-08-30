@@ -48,7 +48,11 @@ export function runtimeKindForEnemyId(id: EnemyId): EnemyKindId {
   return 'zombie';
 }
 
-/** 某地图的全部敌人 id（按 ENEMY_CONFIGS.map；E3-S7 生成器槽位池输入） */
+/** 某地图的全部敌人 id（按 ENEMY_CONFIGS.map；E3-S7 生成器槽位池输入）。
+ *  W-12 收口（gdd-enemies-v3 §③-2 验收 1）：formationOnly 敌（腐朽骑士 g1_7）
+ *  不进任何生成池——仅由方阵 spawnGroup 与 Boss 高威胁技生成（断言挂 formation-config.test）。 */
 export function enemiesForMap(mapId: MapId): EnemyId[] {
-  return (Object.keys(ENEMY_CONFIGS) as EnemyId[]).filter((id) => ENEMY_CONFIGS[id].map === mapId);
+  return (Object.keys(ENEMY_CONFIGS) as EnemyId[]).filter(
+    (id) => ENEMY_CONFIGS[id].map === mapId && !ENEMY_CONFIGS[id].formationOnly,
+  );
 }

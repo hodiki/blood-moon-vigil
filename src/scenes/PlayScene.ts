@@ -87,6 +87,8 @@ interface EnemyKilledPayload {
   /** E4-S6 图鉴：内容 ID（15 敌/Boss；旧 kind 三敌 null） */
   enemyId?: EnemyId | BossId | null;
   xp: number;
+  /** W-12 召唤物 noXp：true = 击杀反馈链跳过宝石生成（零 XP 路径，gdd-spawner-v2 §③-7） */
+  noXp?: boolean;
   x: number;
   y: number;
 }
@@ -749,7 +751,10 @@ export class PlayScene extends Phaser.Scene {
     // TASK-28：击杀溅射（颜色/形状按敌人类型分化）
     this.fx.deathBurst(payload.x, payload.y, payload.enemyType as EnemyKindId);
     if (payload.enemyType !== 'boss') {
-      this.xp.dropGem(payload.xp, payload.x, payload.y);
+      // W-12 召唤物 noXp 全量（MN-23）：技能召唤实体零宝石路径（无宝石生成 = 天然区分）
+      if (!payload.noXp) {
+        this.xp.dropGem(payload.xp, payload.x, payload.y);
+      }
     }
     // M3 治疗道具（merit-ui-spec §11 + 平衡模拟调整）：精英（tank 槽）掉率 50% / Boss 保底；
     // 普通怪不掉（防掉落稀释）；Boss 保底 100%（shouldDropHeal 内按 HEAL.ELITE_DROP_CHANCE 判定）

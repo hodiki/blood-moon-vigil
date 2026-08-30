@@ -9,6 +9,7 @@ import {
   type BossId,
 } from '@/config/balance';
 import { FRAME_BY_CONTENT_ID } from '@/config/frame-registry';
+import { enemiesForMap } from '@/enemies/enemy-types';
 
 /**
  * E1-S3 敌人表 15 + Boss 表 4 面板断言（gdd-enemies-v2 §3.1~3.4；
@@ -20,15 +21,26 @@ import { FRAME_BY_CONTENT_ID } from '@/config/frame-registry';
 
 const POWER_TAGS: readonly PowerTag[] = ['SILVER', 'HALLOWED', 'BEAST', 'BLOOD', 'MOON'];
 
-describe('敌人表 15（gdd-enemies-v2 §3.1~3.3）', () => {
-  it('恰好 15 只，内容 ID 全覆盖（enemy_<地图>_<id>）', () => {
+describe('敌人表 16（gdd-enemies-v3 §③-2 定稿口径）', () => {
+  it('恰好 16 只，内容 ID 全覆盖（enemy_<地图>_<id>；15 + 腐朽骑士 g1_7 方阵专属）', () => {
     const ids = Object.keys(ENEMY_CONFIGS) as EnemyId[];
-    expect(ids).toHaveLength(15);
+    expect(ids).toHaveLength(16);
     expect(ids).toEqual([
-      'enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_4', 'enemy_g1_5', 'enemy_g1_6',
+      'enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_4', 'enemy_g1_5', 'enemy_g1_6', 'enemy_g1_7',
       'enemy_g2_1', 'enemy_g2_2', 'enemy_g2_3', 'enemy_g2_4', 'enemy_g2_5',
       'enemy_g3_1', 'enemy_g3_2', 'enemy_g3_3', 'enemy_g3_4',
     ]);
+  });
+
+  it('腐朽骑士 g1_7 方阵专属（MN-16）：面板锚 + formationOnly 不入任何生成池', () => {
+    expect(ENEMY_CONFIGS.enemy_g1_7).toMatchObject({
+      name: '腐朽骑士', hp: 280, speed: 90, damage: 14, attackInterval: 1.2, xp: 10, powerTag: 'MOON',
+    });
+    expect(ENEMY_CONFIGS.enemy_g1_7.formationOnly).toBe(true);
+    // enemies-v3 验收 1：不进普通槽位池 —— enemiesForMap 全图过滤（仅方阵/Boss 高威胁技生成）
+    for (const map of ['map_graveyard', 'map_cathedral', 'map_den'] as const) {
+      expect(enemiesForMap(map)).not.toContain('enemy_g1_7');
+    }
   });
 
   it('powerTag 全覆盖（敌人表未单列，按阵营语义：墓地/教堂 BLOOD、狼穴 BEAST）', () => {

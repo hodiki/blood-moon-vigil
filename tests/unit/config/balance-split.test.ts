@@ -52,7 +52,7 @@ describe('EG-1 balance 域拆分 · re-export 等价守卫', () => {
     expect(shim.PLAYER.MOVE_SPEED).toBe(235);
     expect(Object.keys(shim.ENEMIES)).toEqual(['zombie', 'wolf', 'tank', 'boss']);
     expect(Object.keys(shim.WEAPON_CONFIGS)).toHaveLength(14);
-    expect(shim.ENEMY_CONFIGS ? Object.keys(shim.ENEMY_CONFIGS) : []).toHaveLength(15);
+    expect(shim.ENEMY_CONFIGS ? Object.keys(shim.ENEMY_CONFIGS) : []).toHaveLength(16);
     expect(Object.keys(shim.BOSSES)).toHaveLength(4);
     expect(shim.EVOLUTIONS).toHaveLength(7);
     expect(shim.UPGRADES).toHaveLength(12);

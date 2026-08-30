@@ -102,6 +102,8 @@
         "enemy-necro-v",
         "enemy-gravekeeper",
         "enemy-gravekeeper-v",
+        "enemy-decayedknight",
+        "enemy-decayedknight-v",
         "enemy-acolyte",
         "enemy-acolyte-v",
         "enemy-bat",
@@ -324,6 +326,10 @@
     "enemy_g1_6": [
       "enemy-gravekeeper",
       "enemy-gravekeeper-v"
+    ],
+    "enemy_g1_7": [
+      "enemy-decayedknight",
+      "enemy-decayedknight-v"
     ],
     "enemy_g2_1": [
       "enemy-acolyte",
@@ -599,6 +605,8 @@
     "enemy-necro-v",
     "enemy-gravekeeper",
     "enemy-gravekeeper-v",
+    "enemy-decayedknight",
+    "enemy-decayedknight-v",
     "enemy-acolyte",
     "enemy-acolyte-v",
     "enemy-bat",

@@ -585,6 +585,54 @@ function gravekeeperShape(ctx: Ctx, pose = 0, color = PALETTE.enemyGravekeeper):
   ctx.stroke();
 }
 
+/** 腐朽骑士（enemy_g1_7）：堕落的初代守夜骑士（gdd-enemies-v3 §③-2 MN-16 方阵专属）。
+ *  角饰头盔 + 缺月纹章胸甲 + 拖地断剑（MOON 反转体：暗月蓝灰，月银白缺口纹章） */
+function decayedknightShape(ctx: Ctx, pose = 0, color = PALETTE.enemyDecayedknight): void {
+  ctx.beginPath();
+  // 站姿甲胄主体（挺直窄肩，区别守墓者宽肩巨尸；变体前倾 = 冲锋预备）
+  ctx.moveTo(pose === 1 ? -9 : -8, -8);
+  ctx.lineTo(pose === 1 ? 9 : 8, -10);
+  ctx.lineTo(8, 12);
+  ctx.lineTo(-8, 12);
+  ctx.closePath();
+  // 角饰头盔（守夜骑士双直角：竖直尖角，区别 tank 外倾双角）
+  ctx.moveTo(-6, -8);
+  ctx.lineTo(-7, -15);
+  ctx.lineTo(-3, -9);
+  ctx.closePath();
+  ctx.moveTo(6, -8);
+  ctx.lineTo(7, -15);
+  ctx.lineTo(3, -9);
+  ctx.closePath();
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.fill();
+  // 缺月纹章（月银白圆 + 暗色缺口 = MOON 反转体身份；变体缺口下移 = 堕落态）
+  fillCircle(ctx, 0, 0 + (pose === 1 ? 2 : 0), 3.2, PALETTE.player);
+  fillCircle(ctx, pose === 1 ? 0 : -1.4, pose === 1 ? -1.6 : 0.6, 2.2, color);
+  // 拖地断剑（右手侧；变体前指 = 集团冲锋 pose）
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  if (pose === 1) {
+    ctx.moveTo(8, -6);
+    ctx.lineTo(16, -10);
+  } else {
+    ctx.moveTo(9, -4);
+    ctx.lineTo(11, 12);
+  }
+  ctx.stroke();
+  // 眼缝（暗色横缝 = 头盔无面目）
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(-4, -5);
+  ctx.lineTo(4, -5);
+  ctx.stroke();
+}
+
 /** 血信徒（enemy_g2_1）：兜帽烛台（暗红，兜帽前伸持烛） */
 function acolyteShape(ctx: Ctx, pose = 0, color = PALETTE.enemyZombie): void {
   ctx.fillStyle = color;
@@ -889,6 +937,7 @@ const ENEMY_SHAPE_FALLBACK: Record<
   'enemy-wraith': { shape: wraithShape, cell: 32 },
   'enemy-necro': { shape: necroShape, cell: 32 },
   'enemy-gravekeeper': { shape: gravekeeperShape, cell: 32 },
+  'enemy-decayedknight': { shape: decayedknightShape, cell: 32 },
   'enemy-acolyte': { shape: acolyteShape, cell: 32 },
   'enemy-bat': { shape: batShape, cell: 32 },
   'enemy-cupbearer': { shape: cupbearerShape, cell: 32 },

@@ -6,9 +6,10 @@
  * 供测试断言 15 敌 + 既有 4 敌全覆盖 → 真机无 __MISSING。
  * 绘制实现（shape 函数）留在 procedural-textures.ts（import Phaser 的环境）。
  *
- * 覆盖（asset-spec §4.2 / content-id-frame-map §3）：
- * 既有 4（zombie/wolf/tank/boss）+ 15 新敌（beetle/hound/wraith/necro/gravekeeper/acolyte/bat/
- * cupbearer/fleshmass/penitent/greywolf/shadowwolf/stonewolf/wolfhunter）。
+ * 覆盖（asset-spec §4.2 / content-id-frame-map §3；gdd-enemies-v3 §③-2 增补）：
+ * 既有 4（zombie/wolf/tank/boss）+ 16 新敌（beetle/hound/wraith/necro/gravekeeper/
+ * decayedknight/acolyte/bat/cupbearer/fleshmass/penitent/greywolf/shadowwolf/
+ * stonewolf/wolfhunter）。
  */
 
 /** 有程序剪影兜底的敌帧名（含 base 帧；`-v` 变体帧由 base 形状 pose=1 派生，同集覆盖） */
@@ -22,6 +23,7 @@ export const SILHOUETTE_FALLBACK_FRAMES: readonly string[] = [
   'enemy-wraith',
   'enemy-necro',
   'enemy-gravekeeper',
+  'enemy-decayedknight',
   'enemy-acolyte',
   'enemy-bat',
   'enemy-cupbearer',

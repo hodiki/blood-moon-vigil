@@ -9,16 +9,16 @@ import {
 } from '@/codex/codex';
 
 describe('E4-S6 图鉴数据层（gdd-codex §3.1）', () => {
-  it('条目分项：角色 4 / 敌人 15 / Boss 4 / 武器 14 / 超武 7 / 事件 6（合计 50；R-C3-RULING 敌人 14→15）', () => {
+  it('条目分项：角色 4 / 敌人 16 / Boss 4 / 武器 14 / 超武 7 / 事件 6（合计 51；gdd-enemies-v3 §③-2 敌 15→16 增补腐朽骑士）', () => {
     const counts = codexCategoryCounts();
     expect(counts.hero).toBe(4);
-    expect(counts.enemy).toBe(15);
+    expect(counts.enemy).toBe(16);
     expect(counts.boss).toBe(4);
     expect(counts.weapon).toBe(14);
     expect(counts.evo).toBe(7);
     expect(counts.event).toBe(6);
     // GDD 表头「合计 35」与分项和 50 不一致 —— 工程按分项全量落表（口径注明见 codex.ts 头注释）
-    expect(CODEX_ENTRIES.length).toBe(50);
+    expect(CODEX_ENTRIES.length).toBe(51);
   });
 
   it('条目含 entryId/类别/解锁类型/条件；血月化身 Boss 为隐藏条目', () => {

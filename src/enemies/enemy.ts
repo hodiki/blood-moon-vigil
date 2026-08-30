@@ -29,6 +29,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   speed = 0;
   damage = 0;
   xp = 0;
+  /**
+   * W-12 召唤物 noXp（gdd-spawner-v2 §③-7）：true = 击杀反馈链跳过宝石生成、
+   * 不计入击杀 XP 统计口径（kills/xpGained 分账）。静态来源 = ENEMY_CONFIGS.noXp；
+   * 动态召唤实体（Boss 技能/尸巫重召/血旗增援/苏生唤尸）由生成侧置 true。
+   */
+  noXp = false;
   attackInterval = 0;
   /** 碰撞半径（面板值，供武器圆-圆命中检测） */
   radius = 14;
@@ -91,6 +97,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.xp = panel.xp;
     this.attackInterval = panel.attackInterval;
     this.radius = panel.radius;
+    this.noXp = false; // noXp 属内容配置/动态召唤语义，legacy 面板路径恒 false
     this.attackTimer = 0;
     this.orbitHitCooldownUntil = 0;
     this.graceUntil = 0; // 霸体由 Boss.beginGrace 显式设置；普通敌恒 0
@@ -128,6 +135,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.xp = cfg.xp;
     this.attackInterval = cfg.attackInterval;
     this.radius = cfg.radius;
+    // W-12：静态 noXp 随配置（敌技能召唤整档标记）；动态召唤实体由生成侧覆写为 true
+    this.noXp = cfg.noXp === true;
     this.attackTimer = 0;
     this.orbitHitCooldownUntil = 0;
     this.graceUntil = 0;
@@ -198,6 +207,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       // E4-S6 图鉴数据层：15 敌/Boss 内容 ID（旧 kind 三敌为 null，图鉴只记录内容 ID 击杀）
       enemyId: this.enemyId,
       xp: this.xp,
+      // W-12：击杀反馈链挂点——PlayScene 宝石生成按 noXp 跳过（召唤物零宝石路径）
+      noXp: this.noXp,
       x: this.x,
       y: this.y,
     });

@@ -57,12 +57,29 @@ export interface EnemyConfig {
   counter?: string;
   /** 远程怪投射伤害（g2_5 忏悔者烛火弹 8） */
   rangedDamage?: number;
+  /**
+   * W-12 召唤物 noXp（gdd-spawner-v2 §③-7 / MN-23）：静态标记 = 该敌种整档无经验
+   * （生成来源 = 敌方技能的实体挂此处）；动态召唤实体默认 noXp=true（运行时，
+   * 见 enemies/noxp.ts SKILL_SUMMON_SOURCES 判定口径）。方阵本体成员不挂此字段
+   * （正常掉 XP，F-4）；祭品（decoy）为方阵本体成员 noXp=false 且 XP ×3。
+   */
+  noXp?: boolean;
+  /**
+   * 方阵专属（gdd-enemies-v3 §③-2 MN-16）：不进任何普通槽位池 / 生成池
+   * （enemiesForMap 过滤），仅由方阵（腐朽骑士团）与 Boss 高威胁技生成。
+   */
+  formationOnly?: boolean;
+  /**
+   * W-8/c 案 HP 联动锚字段位（gdd-difficulty-v3 §5.1 SC-2）：c 档位敌 HP 联动
+   * 系数挂点（×1.05~1.20 三档，难度域参数化）；缺省 = 未启用（1.0）。
+   * 数值由 XP c 案模拟裁决后冻结（W-E 只出数据不回填）。
+   */
+  hpCaseLink?: number;
 }
 
 /**
- * 敌人表 15（gdd-enemies-v2 §3.1~3.3；R-C3-RULING 14→15 补墓地 elite 守墓者）。
- * powerTag 说明：GDD 敌人表未单列 powerTag 列，按 world-bible §3 阵营语义赋值——
- * 墓地/教堂亡者与血廷 = BLOOD（血月傀儡），狼穴兽群 = BEAST；仅 Boss 表由 GDD 明确。
+ * 敌人表 16（gdd-enemies-v3 §③-2 定稿口径：R2 基数 15 + 腐朽骑士 g1_7 方阵专属；
+ * 掷骨者 g1_8 新增 / 忏悔者升格 / 亡魂退役属基线批 W-1~9 roster 收口，本批不动）。
  */
 export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
   enemy_g1_1: { id: 'enemy_g1_1', name: '行尸', map: 'map_graveyard', tier: 'normal', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-zombie', counter: '走位拉扯' },
@@ -72,6 +89,10 @@ export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
   enemy_g1_5: { id: 'enemy_g1_5', name: '尸巫', map: 'map_graveyard', tier: 'special', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, powerTag: 'BLOOD', frame: 'enemy-necro', special: '光环：120px 内亡者攻速 +20%（叠 3 层）', counter: '集火（优先击杀光环源）' },
   // R-C3-RULING：墓地补 elite 守墓者（tank 槽只放 elite；无特殊行为，纯厚血精英）
   enemy_g1_6: { id: 'enemy_g1_6', name: '守墓者', map: 'map_graveyard', tier: 'elite', hp: 350, speed: 40, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BLOOD', frame: 'enemy-gravekeeper', counter: '集火（高 XP 对价）' },
+  // gdd-enemies-v3 §③-2 MN-16：腐朽骑士 g1_7 方阵专属（堕落的初代守夜骑士，powerTag MOON）。
+  // 面板锚：HP 280 / 移速 90 / 伤 14 / 攻间隔 1.2s / XP 10；不进普通槽位池（formationOnly），
+  // 仅由腐朽骑士团方阵与 boss_1 高威胁技生成；radius 为工程常量（GDD 未列）。
+  enemy_g1_7: { id: 'enemy_g1_7', name: '腐朽骑士', map: 'map_graveyard', tier: 'normal', hp: 280, speed: 90, damage: 14, attackInterval: 1.2, radius: 20, xp: 10, powerTag: 'MOON', frame: 'enemy-decayedknight', counter: '横向躲冲锋线（保持移动 + 读缝隙）', formationOnly: true },
   enemy_g2_1: { id: 'enemy_g2_1', name: '血信徒', map: 'map_cathedral', tier: 'normal', hp: 14, speed: 60, damage: 12, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-acolyte', counter: '走位拉扯' },
   enemy_g2_2: { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat', counter: '范围清屏/绕开' },
   enemy_g2_3: { id: 'enemy_g2_3', name: '圣杯侍僧', map: 'map_cathedral', tier: 'special', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, powerTag: 'BLOOD', frame: 'enemy-cupbearer', special: '每 5s 召唤 1 血信徒（上限 3）', counter: '集火打断（召唤源优先）' },
