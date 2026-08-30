@@ -41,6 +41,8 @@ import {
 } from '@/weapons/resonance/resonance-math';
 import { SIM_MOVEMENT_DEFAULTS, treeScenarioDps, type SimMovementParams, type TreeScenario } from './sim-config';
 import { applyCaseHpLink } from '@/enemies/noxp';
+import { scaleForTime, mercyMult } from '@/enemies/panel-scale';
+import { GEM } from '@/config/balance';
 
 /** 与 PlayScene 桌面同屏上限一致（runtime-config.maxEnemies 桌面档） */
 const MAX_ACTIVE_ENEMIES = 400;
@@ -99,6 +101,10 @@ export interface SimOptions {
   xpCase?: XpCaseParams;
   /** W-E：budget 分段五端点（gdd-spawner-v2 §③-1；缺省 = 既有 budget(t) 单段曲线） */
   budgetEndpoints?: ReadonlyArray<readonly [number, number]>;
+  /** W-8 复测：M3 面板缩放（scale(t) × 滞后宽容；仅 HP，精英独立曲线不吃；缺省关） */
+  panelScale?: boolean;
+  /** S-3 复测：gem 磁吸时延模型（XP 入账 = 击杀点 (dist−pickup)/360s 延迟；缺省关 = 真空拾取） */
+  pickupDelay?: boolean;
 }
 
 const DT = 1 / 60;
@@ -196,6 +202,19 @@ export function simulateRun(opts: SimOptions): RunMetrics {
   const treeDps = treeScenarioDps(tree, exclusive ?? 'fallback');
   let firstHitAt: number | null = null;
 
+  // S-3 拾取时延：gem 落地于击杀点 → 磁吸入账延迟 = (dist − pickup)/MAGNET_SPEED
+  const pendingXp: Array<{ at: number; amount: number }> = [];
+  const creditKillXp = (baseXp: number, noXp: boolean, dist: number): void => {
+    const amount = xpAwardForKill({ baseXp, noXp });
+    if (amount <= 0) return;
+    if (opts.pickupDelay) {
+      const delay = Math.max(0, dist - GEM.PICKUP_RADIUS) / GEM.MAGNET_SPEED;
+      pendingXp.push({ at: t + delay, amount });
+    } else {
+      xpAcc += amount;
+    }
+  };
+
   // —— 专武真实结算状态机（按 id 建状态；rng 注入保证种子确定性）——
   const playerLike = { x: 0, y: 0, hp: playerHp, maxHp: 100 };
   const lantern = createLanternState();
@@ -237,12 +256,17 @@ export function simulateRun(opts: SimOptions): RunMetrics {
         const id = spawnEnemyId();
         const cfg = ENEMY_CONFIGS[id as keyof typeof ENEMY_CONFIGS];
         // W-E c 案三联动：敌 HP 联动（仅基础面板）+ 敌 XP 下调（精英/Boss 独立曲线不吃）
+        // W-8 复测：M3 scale(t) × 等级滞后宽容（panelScale 开时；精英独立曲线不吃）
         const hpLink = opts.xpCase && cfg.tier !== 'elite' ? opts.xpCase.enemyHpLink : undefined;
+        let baseHp = applyCaseHpLink(cfg.hp, hpLink, cfg.tier);
+        if (opts.panelScale && cfg.tier !== 'elite') {
+          baseHp *= scaleForTime(t) * mercyMult(level, t);
+        }
         enemies.push({
           kind: cfg.tier === 'elite' ? 'elite' : 'zombie',
           configId: id,
-          hp: applyCaseHpLink(cfg.hp, hpLink, cfg.tier),
-          maxHp: applyCaseHpLink(cfg.hp, hpLink, cfg.tier),
+          hp: baseHp,
+          maxHp: baseHp,
           speed: cfg.speed,
           damage: cfg.damage,
           attackInterval: cfg.attackInterval,
@@ -406,7 +430,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
             damageDealtWindow += dealt;
             if (shot.target.hp <= 0) {
               kills += 1;
-              xpAcc += xpAwardForKill({ baseXp: shot.target.xp, noXp: shot.target.noXp === true });
+              creditKillXp(shot.target.xp, shot.target.noXp === true, shot.target.dist);
               const deadTarget = shot.target;
               for (let j = incoming.length - 1; j >= 0; j -= 1) {
                 const other = incoming[j];
@@ -421,7 +445,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       // 击杀 → 经验（onKilled 挂点）
       for (const e of enemies) {
         e.onKilled = (target) => {
-          xpAcc += xpAwardForKill({ baseXp: (target as SimEnemy).xp, noXp: (target as SimEnemy).noXp === true });
+          creditKillXp((target as SimEnemy).xp, (target as SimEnemy).noXp === true, (target as SimEnemy).dist);
         };
       }
       let stepDamage = 0;
@@ -472,7 +496,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
         const e = enemies[i]!;
         if (e.hp <= 0) {
           kills += 1;
-          xpAcc += xpAwardForKill({ baseXp: e.xp, noXp: e.noXp === true });
+          creditKillXp(e.xp, e.noXp === true, e.dist);
           if (e.kind === 'boss') {
             bossKilled = true;
             if (bossSkills) {
@@ -489,6 +513,15 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       // 左轮无限弹/补弹等 ammo 演进：consumeAmmo 由 stepRevolver 内部消费（这里仅 tickReload）
       void consumeAmmo;
       void fullAmmo;
+    }
+
+    // ---- S-3 拾取时延：到期 gem 入账 ----
+    for (let i = pendingXp.length - 1; i >= 0; i -= 1) {
+      const g = pendingXp[i]!;
+      if (t >= g.at) {
+        xpAcc += g.amount;
+        pendingXp.splice(i, 1);
+      }
     }
 
     // ---- 升级（真实 XP 曲线；offer 占位）----

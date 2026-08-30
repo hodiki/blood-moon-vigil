@@ -80,6 +80,8 @@ function runTier(caseIndex: number): TierResult {
     invincible,
     xpCase: c,
     budgetEndpoints: BUDGET_PIECEWISE_ENDPOINTS,
+    panelScale: true, // W-8 复测：M3 缩放链生效
+    pickupDelay: true, // S-3 复测：gem 磁吸时延
   });
 
   // —— XP 曲线口径（invincible = 全程 6min，隔离承伤变量；batch-calib DPS 平台带同构）——
@@ -156,6 +158,8 @@ const report = {
     wave: { amplitude: 0.25, period: 60 },
     note: '五端点中值锚（0.9~1.1/1.0~1.2/~1.6/~2.4/3.2~3.6）；分段线性插值 + 正弦波（gdd-spawner-v2 §③-1）',
   },
+  panelScale: true,
+  pickupDelayModel: 'XP 入账延迟 = (击杀点距离 − 拾取半径 16px) / 磁吸速度 360px/s（1D 径向）',
   modelNote: '近似模型（1D 径向等效走位 + Boss 五槽调度桩，README-sim 假设清单）；XP 三档只出数据不回填 balance，c 案裁决归用户（difficulty-v3 §5.2）',
   results,
 };
