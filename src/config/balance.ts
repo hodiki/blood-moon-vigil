@@ -27,3 +27,4 @@ export * from './balance/exclusive';
 export * from './balance/upgrade-v3';
 export * from './balance/resonance';
 export * from './balance/talent-tree';
+export * from './balance/formations';

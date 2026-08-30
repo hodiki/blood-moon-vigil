@@ -34,6 +34,19 @@ import {
   spawnRingFor,
   type EnemySlot,
 } from '@/spawner/map-spawner';
+import {
+  createGroupSchedulerState,
+  stepGroupScheduler,
+  rollGroup,
+  reportGroupBudget,
+  onBossTimeGroups,
+  clearGroupQueues,
+  accompanyBoostActive,
+  boostedWeights,
+  type GroupSchedulerState,
+  type GroupRollContext,
+} from '@/spawner/spawn-group';
+import { MAP_CONFIGS } from '@/config/balance';
 import type { Enemy } from '@/enemies/enemy';
 import type { Player } from '@/player/player';
 
@@ -53,9 +66,18 @@ export class EnemySpawner {
    */
   private pendingTank: { x: number; y: number; remaining: number; enemyId: EnemyId } | null = null;
   private stopped = false;
+  /**
+   * W-A/W-10 方阵组生成（gdd-spawner-v2 §③-4）：默认关闭（存量测试确定性不变），
+   * PlayScene 传 true 启用。掷点/预扣/分帧落地全走 spawn-group 纯函数层。
+   */
+  private readonly groups: GroupSchedulerState | null;
+  /** 组生成掷点上下文（惰性组装；环带按图双端覆盖） */
+  private readonly groupCtx: GroupRollContext;
 
   /** E4-S3 复用：6:00 到达时回调（PlayScene 在此做清场 + Boss 出场） */
   onBossTime: (() => void) | null = null;
+  /** W-A F-2：boss_4 在场停掷（血月化身 4:30 稀有触发；由 PlayScene 出场时置位） */
+  boss4OnField = false;
 
   constructor(
     private readonly cfg: RuntimeConfig,
@@ -63,7 +85,22 @@ export class EnemySpawner {
     private readonly player: Player,
     /** M2 收口：当前地图（槽位池 + 权重覆盖 + 移速加权的数据源；E3-S7） */
     private readonly mapId: MapId,
-  ) {}
+    /** W-A：方阵组生成开关（PlayScene true 启用；测试缺省 false 保确定性） */
+    enableFormations = false,
+  ) {
+    this.groups = enableFormations ? createGroupSchedulerState() : null;
+    const ring = spawnRingFor(mapId, cfg.isMobile);
+    const map = MAP_CONFIGS[mapId];
+    this.groupCtx = {
+      mapId,
+      mapWidth: map.width,
+      mapHeight: map.height,
+      playerX: player.x,
+      playerY: player.y,
+      ringMin: ring[0],
+      ringMax: ring[1],
+    };
+  }
 
   update(dt: number): void {
     if (this.stopped) return;
@@ -74,10 +111,13 @@ export class EnemySpawner {
     if (bossTriggerDue(this.t, SPAWNER.BOSS_TIME)) {
       this.stopped = true;
       this.pendingTank = null; // 收束后不落地
+      if (this.groups) onBossTimeGroups(this.groups); // W-A §⑥-4：丢弃未落地预约
       this.onBossTime?.();
       return;
     }
-    this.budgetAcc += budget(this.t) * dt;
+    const budgetGain = budget(this.t) * dt;
+    this.budgetAcc += budgetGain;
+    this.tickGroups(dt);
     this.tick(dt);
   }
 
@@ -85,6 +125,7 @@ export class EnemySpawner {
   stop(): void {
     this.stopped = true;
     this.pendingTank = null;
+    if (this.groups) clearGroupQueues(this.groups); // W-A §⑥-2：方阵预约/在场组全清
   }
 
   /**
@@ -108,7 +149,12 @@ export class EnemySpawner {
   private tick(dt: number): void {
     const stage = stageForTime(this.t);
     // M2 收口（E3-S7）：实际生效权重 = 基准 + 该图覆盖（教堂/狼穴 wolf ↑，权重和 1.00）
-    const weights = weightedWeightsForStage(this.mapId, stage);
+    // W-A F-1：方阵伴随窗口内普通槽权重瞬时 +20%（10s 锚；wolf/tank 等比削减）
+    const baseWeights = weightedWeightsForStage(this.mapId, stage);
+    const weights =
+      this.groups && accompanyBoostActive(this.groups)
+        ? boostedWeights(baseWeights, true)
+        : baseWeights;
     if (Number.isFinite(stage.tankGuaranteeEvery)) {
       this.tankGuaranteeAcc += dt;
     } else {
@@ -151,6 +197,47 @@ export class EnemySpawner {
     this.pendingTank = null;
     this.spawnOneById(p.enemyId, p.x, p.y);
     GameEvents.emit(GameEvent.TankSpawned, { x: p.x, y: p.y });
+  }
+
+  /**
+   * W-A/W-10 方阵组生成 tick：掷点（成组预扣）→ 分帧落地（≤5 只/帧，maxEnemies 节流不丢组）。
+   * 预扣 = rollGroup 成本从 budgetAcc 扣除（计入总盘会计 ≤25%）；落地走 spawnOneById
+   * （ENEMY_CONFIGS 单一数据源；方阵本体成员正常 XP，noXp 语义归 W-B 召唤侧）。
+   */
+  private tickGroups(dt: number): void {
+    const groups = this.groups;
+    if (!groups) return;
+    // 预扣占比会计分母：budget 总盘同额上报
+    reportGroupBudget(groups, budget(this.t) * dt);
+    groups.boss4OnField = this.boss4OnField;
+    // 掷点（60~90s 节奏位；命中 → 预约 + 预扣 + 阵纹预警事件）
+    this.groupCtx.playerX = this.player.x;
+    this.groupCtx.playerY = this.player.y;
+    const roll = rollGroup(groups, this.groupCtx, Math.random);
+    if (roll.rolled && roll.cost > 0) {
+      this.budgetAcc = Math.max(0, this.budgetAcc - roll.cost); // 成组预扣
+      if (roll.pending) {
+        GameEvents.emit(GameEvent.FormationWarning, {
+          formationId: roll.pending.formationId,
+          x: roll.pending.centerX,
+          y: roll.pending.centerY,
+        });
+      }
+    }
+    // 分帧落地（canSpawn = 未达同屏上限；false 帧组不丢，顺延）
+    const canSpawn = this.enemyPool.activeCount < this.cfg.maxEnemies;
+    const events = stepGroupScheduler(groups, dt, canSpawn);
+    for (const land of events.lands) {
+      this.spawnOneById(land.member.enemyId, land.member.x, land.member.y);
+      if (land.isGroupStart) {
+        GameEvents.emit(GameEvent.FormationLanded, {
+          groupId: land.groupId,
+          formationId: land.formationId,
+          x: land.member.x,
+          y: land.member.y,
+        });
+      }
+    }
   }
 
   /** 出生环带内随机位置（E3-S7：按地图双端覆盖 —— 教堂桌面 [500,800] / 移动 [420,680]；其余基准） */

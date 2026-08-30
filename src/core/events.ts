@@ -118,6 +118,10 @@ export const GameEvent = {
   HealCollected: 'xp:heal-collected',
   /** M3 轻叙事：图鉴新条目（payload 无；PlayScene 聚合同帧解锁合并 emit 1 条，narratives-spec §6 n_toast_codex） */
   CodexUpdated: 'codex:updated',
+  /** W-A/W-10 方阵预约：阵纹预警开始（payload { formationId, x, y }；2.5s 阵纹演出挂点 W-13） */
+  FormationWarning: 'enemy:formation-warning',
+  /** W-A/W-10 方阵组落地沿（payload { groupId, formationId, x, y }；伴随生成窗口/黑板创建挂点） */
+  FormationLanded: 'enemy:formation-landed',
 } as const;
 
 export type GameEventName = (typeof GameEvent)[keyof typeof GameEvent];

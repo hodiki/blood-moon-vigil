@@ -291,7 +291,7 @@ export class PlayScene extends Phaser.Scene {
     // B5-W3 复活判定序挂钩（gdd-talent-tree §⑥-3；Q-c/Q-e 判定序最低优先级）
     this.player.reviveHandler = (now) => this.judgePlayerRevive(now);
     // M2 收口：生成器按当前地图装配（槽位池/权重覆盖/移速加权，E3-S7）
-    this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId);
+    this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId, true);
     // E4-S3 收束：6:00 清场 + Boss 出场（预算恒 0 由 spawner 停止保证，S8 §⑥.3）
     this.spawner.onBossTime = () => {
       this.spawner.clearAll();
