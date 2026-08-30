@@ -17,7 +17,8 @@ import { BOSSES, ENEMY_CONFIGS, MAP_CONFIGS, SPAWNER, WEAPONS, XP, type MapId } 
 import { createBossSkillState, stepBossSkills, clearBossSummons, type BossSkillState } from '@/enemies/boss-skill-engine';
 import { xpAwardForKill } from '@/enemies/noxp';
 import type { ExclusiveWeaponId } from '@/config/balance';
-import { budget } from '@/spawner/spawner';
+import { budget, budgetPiecewise } from '@/spawner/spawner';
+import { needXpCase, BUDGET_PIECEWISE_WAVE, type XpCaseParams } from './xp-cases';
 import { needXp } from '@/xp/xp-manager';
 import { enemiesForMap } from '@/enemies/enemy-types';
 import { emptyStatusState, type StatusState } from '@/combat/status/status-engine';
@@ -39,6 +40,7 @@ import {
   createResonanceCrossState, onResonanceCrossExplode, stepResonanceResidues,
 } from '@/weapons/resonance/resonance-math';
 import { SIM_MOVEMENT_DEFAULTS, treeScenarioDps, type SimMovementParams, type TreeScenario } from './sim-config';
+import { applyCaseHpLink } from '@/enemies/noxp';
 
 /** 与 PlayScene 桌面同屏上限一致（runtime-config.maxEnemies 桌面档） */
 const MAX_ACTIVE_ENEMIES = 400;
@@ -93,6 +95,10 @@ export interface SimOptions {
   tree?: TreeScenario;
   /** 移动模型参数覆盖（校准批次调参入口；缺省 = SIM_MOVEMENT_DEFAULTS） */
   movementParams?: Partial<SimMovementParams>;
+  /** W-E：XP c 案档位（三联动：needXp 两段式 + 敌 XP 下调 + 敌 HP 联动；缺省 = 现行曲线） */
+  xpCase?: XpCaseParams;
+  /** W-E：budget 分段五端点（gdd-spawner-v2 §③-1；缺省 = 既有 budget(t) 单段曲线） */
+  budgetEndpoints?: ReadonlyArray<readonly [number, number]>;
 }
 
 const DT = 1 / 60;
@@ -169,7 +175,8 @@ export function simulateRun(opts: SimOptions): RunMetrics {
   let budgetAcc = 0;
   let xpAcc = 0;
   let level = 1;
-  let nextNeed = needXp(level);
+  const need = opts.xpCase ? (lvl: number): number => needXpCase(opts.xpCase!, lvl) : needXp;
+  let nextNeed = need(level);
   let kills = 0;
   let damageDealtWindow = 0;
   let damageTakenWindow = 0;
@@ -222,22 +229,26 @@ export function simulateRun(opts: SimOptions): RunMetrics {
 
     // ---- 敌潮生成（真实 budget 曲线）----
     if (t < SPAWNER.BOSS_TIME) {
-      budgetAcc += budget(t) * DT;
+      budgetAcc += (opts.budgetEndpoints
+        ? budgetPiecewise(t, opts.budgetEndpoints, BUDGET_PIECEWISE_WAVE.amplitude, BUDGET_PIECEWISE_WAVE.period)
+        : budget(t)) * DT;
       while (budgetAcc >= 1 && enemies.length < MAX_ACTIVE_ENEMIES) {
         budgetAcc -= 1;
         const id = spawnEnemyId();
         const cfg = ENEMY_CONFIGS[id as keyof typeof ENEMY_CONFIGS];
+        // W-E c 案三联动：敌 HP 联动（仅基础面板）+ 敌 XP 下调（精英/Boss 独立曲线不吃）
+        const hpLink = opts.xpCase && cfg.tier !== 'elite' ? opts.xpCase.enemyHpLink : undefined;
         enemies.push({
           kind: cfg.tier === 'elite' ? 'elite' : 'zombie',
           configId: id,
-          hp: cfg.hp,
-          maxHp: cfg.hp,
+          hp: applyCaseHpLink(cfg.hp, hpLink, cfg.tier),
+          maxHp: applyCaseHpLink(cfg.hp, hpLink, cfg.tier),
           speed: cfg.speed,
           damage: cfg.damage,
           attackInterval: cfg.attackInterval,
           dist: map.spawnRingDesktop[0] + rng() * (map.spawnRingDesktop[1] - map.spawnRingDesktop[0]),
           radius: cfg.radius,
-          xp: cfg.xp,
+          xp: cfg.xp * (opts.xpCase?.enemyXpMult ?? 1),
           attackTimer: 0,
           active: true,
           x: 0,
@@ -484,7 +495,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
     while (xpAcc >= nextNeed && level < XP.MAX_LEVEL) {
       xpAcc -= nextNeed;
       level += 1;
-      nextNeed = needXp(level);
+      nextNeed = need(level);
       levelUpOffers.push({ tSeconds: round2(t), level, offerIds: Array(OFFER_SIZE).fill(PLACEHOLDER_OFFER_ID) });
     }
 

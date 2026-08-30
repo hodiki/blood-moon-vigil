@@ -61,6 +61,47 @@ export function budgetMean(t: number): number {
   return SPAWNER.BASE_BUDGET * (1 + (SPAWNER.LINEAR_SCALE * t) / SPAWNER.LINEAR_TOTAL_SECONDS);
 }
 
+/**
+ * budget 分段曲线（gdd-spawner-v2 §③-1 修订定稿 / gdd-difficulty-v3 §5.3 B2 案）：
+ * 分段线性插值端点 + 正弦波幅/周期共 6 参数（端点参数化，五端点可独立断言）。
+ * 端点锚（均值 点/s）：0s 0.9~1.1 / 60s 1.0~1.2（H2 前段压平）/ 120s ~1.6 /
+ * 240s ~2.4 / 360s 3.2~3.6。端点值由调用方传入（模拟复测锚裁决后冻结；
+ * 运行时切换属 B2 实装基线批 W-8 联动，本批不替换既有 budget(t)）。
+ *
+ * @param t 局时秒
+ * @param endpoints 均值端点表 [t, mean]（升序；t 越界 clamp 首末段）
+ * @param waveAmplitude 正弦波幅（±0.2~0.3 锚）
+ * @param wavePeriodSeconds 正弦周期（60s 锚）
+ */
+export function budgetPiecewise(
+  t: number,
+  endpoints: ReadonlyArray<readonly [number, number]>,
+  waveAmplitude: number,
+  wavePeriodSeconds: number,
+): number {
+  if (endpoints.length === 0) return 0;
+  const mean = piecewiseMean(t, endpoints);
+  const wave = 1 + waveAmplitude * Math.sin((2 * Math.PI * t) / wavePeriodSeconds);
+  return mean * wave;
+}
+
+/** 分段线性插值（均值；t 越界 clamp 首末端点） */
+export function piecewiseMean(
+  t: number,
+  endpoints: ReadonlyArray<readonly [number, number]>,
+): number {
+  const first = endpoints[0]!;
+  const last = endpoints[endpoints.length - 1]!;
+  if (t <= first[0]) return first[1];
+  if (t >= last[0]) return last[1];
+  for (let i = 1; i < endpoints.length; i += 1) {
+    const [t1, m1] = endpoints[i]!;
+    const [t0, m0] = endpoints[i - 1]!;
+    if (t <= t1) return m0 + ((m1 - m0) * (t - t0)) / (t1 - t0);
+  }
+  return last[1];
+}
+
 /** 局时 → 阶段（t 越界 clamp 到首/末阶段） */
 export function stageForTime(t: number): SpawnStage {
   for (const stage of SPAWN_STAGES) {
