@@ -29,3 +29,4 @@ export * from './balance/resonance';
 export * from './balance/talent-tree';
 export * from './balance/formations';
 export * from './balance/boss-skills';
+export * from './balance/affixes';

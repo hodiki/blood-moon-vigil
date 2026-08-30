@@ -62,6 +62,9 @@ export function runtimeKindForEnemyId(id: EnemyId): EnemyKindId {
  *  不进任何生成池——仅由方阵 spawnGroup 与 Boss 高威胁技生成（断言挂 formation-config.test）。 */
 export function enemiesForMap(mapId: MapId): EnemyId[] {
   return (Object.keys(ENEMY_CONFIGS) as EnemyId[]).filter(
-    (id) => ENEMY_CONFIGS[id].map === mapId && !ENEMY_CONFIGS[id].formationOnly,
+    (id) =>
+      ENEMY_CONFIGS[id].map === mapId &&
+      !ENEMY_CONFIGS[id].formationOnly &&
+      !ENEMY_CONFIGS[id].retiredNarrative,
   );
 }

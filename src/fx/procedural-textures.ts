@@ -633,6 +633,54 @@ function decayedknightShape(ctx: Ctx, pose = 0, color = PALETTE.enemyDecayedknig
   ctx.stroke();
 }
 
+/** 掷骨者（enemy_g1_8）：远程精英（gdd-enemies-v3 §③-4-4 MN-17，墓地主場）。
+ *  颅骨法冠 + 暗圣金罩袍 + 骨杖（HALLOWED 反转体：堕落圣辉，圣白转暗金）；变体蓄力后仰 */
+function bonethrowerShape(ctx: Ctx, pose = 0, color = PALETTE.enemyBonethrower): void {
+  ctx.beginPath();
+  // 罩袍主体（瘦长，区别守墓者巨尸；变体后仰 = 蓄力抛掷）
+  ctx.moveTo(-7, -6);
+  ctx.lineTo(pose === 1 ? 5 : 7, -8);
+  ctx.lineTo(9, 12);
+  ctx.lineTo(-9, 12);
+  ctx.closePath();
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.fill();
+  // 颅骨法冠（骨白颅顶 + 暗色眼窝双孔 = 远程敌读圈身份）
+  fillCircle(ctx, pose === 1 ? -1 : 0, -9, 4.2, PALETTE.player);
+  fillCircle(ctx, -1.8, -9, 1.2, INK);
+  fillCircle(ctx, 1.8, -9, 1.2, INK);
+  // 骨杖（右上斜举；变体后仰抛掷姿）
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  if (pose === 1) {
+    ctx.moveTo(6, -2);
+    ctx.lineTo(13, -12);
+  } else {
+    ctx.moveTo(7, 2);
+    ctx.lineTo(12, -10);
+  }
+  ctx.stroke();
+  // 骨矛头（杖端骨白菱形）
+  ctx.fillStyle = PALETTE.player;
+  ctx.beginPath();
+  if (pose === 1) {
+    ctx.moveTo(13, -14);
+    ctx.lineTo(15.5, -10.5);
+    ctx.lineTo(12, -9.5);
+  } else {
+    ctx.moveTo(12, -12);
+    ctx.lineTo(14.5, -8.5);
+    ctx.lineTo(11, -7.5);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
 /** 血信徒（enemy_g2_1）：兜帽烛台（暗红，兜帽前伸持烛） */
 function acolyteShape(ctx: Ctx, pose = 0, color = PALETTE.enemyZombie): void {
   ctx.fillStyle = color;
@@ -938,6 +986,7 @@ const ENEMY_SHAPE_FALLBACK: Record<
   'enemy-necro': { shape: necroShape, cell: 32 },
   'enemy-gravekeeper': { shape: gravekeeperShape, cell: 32 },
   'enemy-decayedknight': { shape: decayedknightShape, cell: 32 },
+  'enemy-bonethrower': { shape: bonethrowerShape, cell: 32 },
   'enemy-acolyte': { shape: acolyteShape, cell: 32 },
   'enemy-bat': { shape: batShape, cell: 32 },
   'enemy-cupbearer': { shape: cupbearerShape, cell: 32 },

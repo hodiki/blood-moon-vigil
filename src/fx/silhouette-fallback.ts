@@ -24,6 +24,7 @@ export const SILHOUETTE_FALLBACK_FRAMES: readonly string[] = [
   'enemy-necro',
   'enemy-gravekeeper',
   'enemy-decayedknight',
+  'enemy-bonethrower',
   'enemy-acolyte',
   'enemy-bat',
   'enemy-cupbearer',

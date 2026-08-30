@@ -39,8 +39,9 @@ import { stageForTime } from '@/spawner/spawner';
 const GAME_TICK = 0.05; // 50ms 模拟步长（clampDelta 上限）
 
 /** 三图专属敌种（ENEMY_CONFIGS.map 全集；不重不漏） */
+// gdd-enemies-v3 §③-2 槽位池落点收口：亡魂 MN-15 退役不入池、掷骨者 g1_8 入墓地 tank
 const MAP_ENEMY_SET: Record<MapId, readonly EnemyId[]> = {
-  map_graveyard: ['enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_4', 'enemy_g1_5', 'enemy_g1_6'],
+  map_graveyard: ['enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_5', 'enemy_g1_6', 'enemy_g1_8'],
   map_cathedral: ['enemy_g2_1', 'enemy_g2_2', 'enemy_g2_3', 'enemy_g2_4', 'enemy_g2_5'],
   map_den: ['enemy_g3_1', 'enemy_g3_2', 'enemy_g3_3', 'enemy_g3_4'],
 };
@@ -123,7 +124,7 @@ afterEach(() => {
 });
 
 describe('M2 收口：三图槽位池构成（E3-S7 / gdd-maps §3.4）', () => {
-  it('三图槽位池 = 该图 ENEMY_CONFIGS 全集（墓地 6 / 教堂 5 / 狼穴 4，不重不漏）', () => {
+  it('三图槽位池 = 该图可生成敌集合（墓地 6 / 教堂 5 / 狼穴 4，不重不漏；gdd-enemies-v3 §③-2）', () => {
     for (const mapId of Object.keys(MAP_ENEMY_SET) as MapId[]) {
       const poolIds = new Set<string>();
       for (const slot of ['zombie', 'wolf', 'tank'] as EnemySlot[]) {
@@ -191,7 +192,7 @@ describe('M2 收口：EnemySpawner 运行时 15 敌接入（spawnByConfig + pick
     }
   });
 
-  it('spawnByConfig 触发：5 类特殊行为敌（相位/光环/召唤/远程/冲锋）在该图全时段内出现', () => {
+  it('spawnByConfig 触发：3 类在役特殊行为敌（光环/召唤/冲锋）在该图全时段内出现（MN-15/17 收口）', () => {
     for (const mapId of ['map_graveyard', 'map_cathedral', 'map_den'] as const) {
       mockRandomSeq(RAND_SEQ);
       const { spawner, spawned } = makeRuntimeSpawner(mapId);

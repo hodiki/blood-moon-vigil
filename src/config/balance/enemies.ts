@@ -109,6 +109,9 @@ export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
   // 面板锚：HP 280 / 移速 90 / 伤 14 / 攻间隔 1.2s / XP 10；不进普通槽位池（formationOnly），
   // 仅由腐朽骑士团方阵与 boss_1 高威胁技生成；radius 为工程常量（GDD 未列）。
   enemy_g1_7: { id: 'enemy_g1_7', name: '腐朽骑士', map: 'map_graveyard', tier: 'normal', hp: 280, speed: 90, damage: 14, attackInterval: 1.2, radius: 20, xp: 10, powerTag: 'MOON', frame: 'enemy-decayedknight', counter: '横向躲冲锋线（保持移动 + 读缝隙）', formationOnly: true },
+  // MN-17 采纳：掷骨者 g1_8 远程精英（墓地主場，§③-4-4）；HALLOWED 反转体（堕落圣辉）；
+  // 面板锚 320/55/接触伤 10/XP 12；轨③ 180s 入墓地 tank 槽；radius 工程常量
+  enemy_g1_8: { id: 'enemy_g1_8', name: '掷骨者', map: 'map_graveyard', tier: 'elite', hp: 320, speed: 55, damage: 10, attackInterval: 1.8, radius: 20, xp: 12, powerTag: 'HALLOWED', frame: 'enemy-bonethrower', counter: '读落点圈走位 + 压近逼后撤步再绕截', special: '读圈走位：200~260px 游走 → 驻停 1.0s 抛骨矛（90px 预警圈 0.8s，伤 18）3 连射 → CD 4s；被近身 80px 后撤步 150px（CD 3s）', rangedDamage: 18, unlockAt: 180 },
   enemy_g2_1: { id: 'enemy_g2_1', name: '血信徒', map: 'map_cathedral', tier: 'normal', hp: 14, speed: 60, damage: 12, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-acolyte', counter: '走位拉扯' },
   enemy_g2_2: { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat', counter: '范围清屏/绕开', unlockAt: 75 }, // 轨① 突袭 60~90（教堂微调）
   enemy_g2_3: { id: 'enemy_g2_3', name: '圣杯侍僧', map: 'map_cathedral', tier: 'special', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, powerTag: 'BLOOD', frame: 'enemy-cupbearer', special: '每 5s 召唤 1 血信徒（上限 3）', counter: '集火打断（召唤源优先）', unlockAt: 135 }, // 轨① 特殊行为 120~150（教堂微调）

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   ENEMY_CONFIGS,
+  BOSSES,
   type EnemyKindId,
   type EnemyId,
 } from '@/config/balance';
 import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
-import { ENEMY_CONFIGS, BOSSES } from '@/config/balance';
 import { ENEMY_PANELS, NORMAL_ENEMY_KINDS, isNormalEnemy, enemyPanel, enemiesForMap, runtimeKindForEnemyId } from '@/enemies/enemy-types';
 
 /** enemies §③ 数值表（埋点断言基线，与 GDD 逐项一致；TASK-39 厚血经验 15→10） */

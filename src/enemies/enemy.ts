@@ -24,6 +24,8 @@ let ENEMY_INSTANCE_SEQ = 0;
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** W-1：实例 ID（EnemyAiDirector 同源召唤计数键） */
   readonly instanceId = ++ENEMY_INSTANCE_SEQ;
+  /** W-6/MN-4 词缀 ID（精英 tank 槽 180s 起单词缀；方阵成员恒 null——F-8 互斥） */
+  affix: string | null = null;
   kind: EnemyKindId = 'zombie';
   /** 当前外观帧（M4：tick 按此播 idle/move，避免 15 敌被播回 wolf/zombie 剪影） */
   visualFrame = 'enemy-zombie';
@@ -139,6 +141,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.groupRole = null;
     this.groupSlotIndex = -1;
     this.ccProfile = undefined;
+    this.affix = null;
     this.visualFrame = `enemy-${kind}`;
     this.setTexture('characters', this.visualFrame);
     this.setPosition(x, y);
@@ -192,6 +195,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.groupSlotIndex = -1;
     // W-5/MN-9：逐敌覆写优先（石甲狼减速 ×0.5）；否则按 tier 派生（精英 ×0.5 / 普通全效）
     this.ccProfile = cfg.ccProfile ?? (cfg.tier === 'elite' ? { tier: 'elite' } : undefined);
+    this.affix = null;
     this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
     this.setPosition(x, y);

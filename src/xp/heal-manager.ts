@@ -67,6 +67,10 @@ export function healAmountForPickup(boostedHeal: number, hp: number, maxHp: numb
 }
 
 export class HealManager {
+  /** MN-4 腐蚀词缀：治疗效能倍率提供器（120px 内腐蚀精英 → ×0.7；缺省 = 1）。
+   *  覆盖「道具/铃/回血同折」口径中的道具拾取路径（词缀域消费）。 */
+  healEfficiencyProvider: (() => number) | null = null;
+
   constructor(
     private readonly pool: HealPoolLike,
     private readonly player: HealPlayerLike,
@@ -85,8 +89,8 @@ export class HealManager {
     this.pool.eachActive((pickup) => {
       const result = stepGem(pickup, this.player, dt, 0, 0, HEAL.PICKUP_RADIUS);
       if (result !== 'collected') return;
-      // 治疗应用：基础 × 修女被动（boostedHealAmount）→ 上限钳制 → 写入 HP
-      const boosted = this.target.boostedHealAmount(HEAL.AMOUNT);
+      // 治疗应用：基础 × 修女被动（boostedHealAmount）× 腐蚀词缀效能（MN-4）→ 上限钳制 → 写入 HP
+      const boosted = this.target.boostedHealAmount(HEAL.AMOUNT) * (this.healEfficiencyProvider?.call(null) ?? 1);
       const healed = healAmountForPickup(boosted, this.target.hp, this.target.maxHp);
       if (healed <= 0) return; // 满血：保留地面不消失（回血后再捡有效，§11）
       this.target.hp += healed;

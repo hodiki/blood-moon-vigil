@@ -49,6 +49,7 @@ import {
 import { MAP_CONFIGS, FORMATIONS, type FormationId } from '@/config/balance';
 import { FormationRuntime } from '@/enemies/formation-runtime';
 import { applyPanelScale } from '@/enemies/panel-scale';
+import { rollAffix, AFFIXES, type AffixId } from '@/config/balance';
 import type { GroupMemberState } from '@/enemies/group-blackboard';
 import type { Enemy } from '@/enemies/enemy';
 import type { Player } from '@/player/player';
@@ -209,7 +210,7 @@ export class EnemySpawner {
     if (this.pendingTank.remaining > 0) return;
     const p = this.pendingTank;
     this.pendingTank = null;
-    this.spawnOneById(p.enemyId, p.x, p.y, this.t);
+    this.spawnOneById(p.enemyId, p.x, p.y, this.t, true);
     GameEvents.emit(GameEvent.TankSpawned, { x: p.x, y: p.y });
   }
 
@@ -360,13 +361,13 @@ export class EnemySpawner {
   /** M2 收口：槽位 → 该图槽位池具体敌（rForSlot 定槽 + subR 选敌）→ spawnByConfig */
   private spawnOneAt(slot: EnemySlot, weights: StageWeights, x: number, y: number, elapsed?: number): void {
     const id = pickEnemyIdForMap(this.mapId, weights, rForSlot(slot, weights), Math.random(), elapsed);
-    this.spawnOneById(id, x, y, elapsed);
+    this.spawnOneById(id, x, y, elapsed, slot === 'tank');
   }
 
   /** M2 收口：按内容 ID 注册实体（ENEMY_CONFIGS 唯一数据源 + 狼穴移速加权）。
    *  W-B：返回实体供组元数据/召唤 noXp 置位（原调用方忽略返回值不受影响）。
    *  W-8 面板链：精英不吃 scale(t)（独立曲线），基础面板 HP × scale(t) × c 案联动 × 宽容（仅 HP）。 */
-  private spawnOneById(id: EnemyId, x: number, y: number, elapsed?: number): Enemy | null {
+  private spawnOneById(id: EnemyId, x: number, y: number, elapsed?: number, allowAffix = false): Enemy | null {
     const cfg = ENEMY_CONFIGS[id];
     // 池契约 acquire(x,y,texture?,frame?) —— 显式 'characters' + 配置帧名（消除 __MISSING 警告）
     const enemy = this.enemyPool.acquire(x, y, 'characters', cfg.frame);
@@ -381,9 +382,26 @@ export class EnemySpawner {
       });
       hpMult = scaled.hp / cfg.hp;
     }
+    // W-6/MN-4 词缀：180s 起 tank 槽精英单词缀（掷骨者/忏悔者排除；方阵成员不走 allowAffix）
+    let affix: AffixId | null = null;
+    if (allowAffix && elapsed !== undefined && cfg.tier === 'elite') {
+      affix = rollAffix(id, elapsed, Math.random());
+      if (affix) {
+        enemy.affix = affix;
+        hpMult *= AFFIXES[affix].hpMult ?? 1;
+      }
+    }
     enemy.spawnByConfig(cfg, x, y, { hpMult });
+    // 迅捷：移速/攻速倍率（在狼穴移速加权后应用）
+    if (affix && AFFIXES[affix].speedMult) enemy.speed *= AFFIXES[affix].speedMult!;
+    if (affix && AFFIXES[affix].attackIntervalMult) {
+      enemy.attackInterval *= AFFIXES[affix].attackIntervalMult!;
+      enemy.baseAttackInterval = enemy.attackInterval;
+    }
+    // 词缀 XP ×1.2 锚（❌ 额外道具——宝箱渠道唯一性）
     // E3-S7：狼穴敌潮移速 ×1.08（不含 Boss；gdd-maps §3.4 移速加权；其余图 ×1.0 恒等）
     enemy.speed = enemySpeedFor(this.mapId, cfg.speed);
+    if (affix) enemy.xp = Math.round(enemy.xp * 1.2 * 100) / 100;
     return enemy;
   }
 }

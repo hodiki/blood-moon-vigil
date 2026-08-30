@@ -21,15 +21,23 @@ import { enemiesForMap } from '@/enemies/enemy-types';
 
 const POWER_TAGS: readonly PowerTag[] = ['SILVER', 'HALLOWED', 'BEAST', 'BLOOD', 'MOON'];
 
-describe('敌人表 16（gdd-enemies-v3 §③-2 定稿口径）', () => {
-  it('恰好 16 只，内容 ID 全覆盖（enemy_<地图>_<id>；15 + 腐朽骑士 g1_7 方阵专属）', () => {
+describe('敌人表 17（gdd-enemies-v3 §③-2 定稿口径：16 + 掷骨者 g1_8）', () => {
+  it('恰好 17 只，内容 ID 全覆盖（enemy_<地图>_<id>）', () => {
     const ids = Object.keys(ENEMY_CONFIGS) as EnemyId[];
-    expect(ids).toHaveLength(16);
+    expect(ids).toHaveLength(17);
     expect(ids).toEqual([
-      'enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_4', 'enemy_g1_5', 'enemy_g1_6', 'enemy_g1_7',
+      'enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_4', 'enemy_g1_5', 'enemy_g1_6', 'enemy_g1_7', 'enemy_g1_8',
       'enemy_g2_1', 'enemy_g2_2', 'enemy_g2_3', 'enemy_g2_4', 'enemy_g2_5',
       'enemy_g3_1', 'enemy_g3_2', 'enemy_g3_3', 'enemy_g3_4',
     ]);
+  });
+
+  it('掷骨者 g1_8 远程精英（MN-17 c 采纳，§③-4-4）：面板锚 + 轨③ 180s + HALLOWED 反转体', () => {
+    expect(ENEMY_CONFIGS.enemy_g1_8).toMatchObject({
+      name: '掷骨者', tier: 'elite', hp: 320, speed: 55, damage: 10, xp: 12,
+      powerTag: 'HALLOWED', rangedDamage: 18, unlockAt: 180,
+    });
+    expect(ENEMY_CONFIGS.enemy_g1_8.counter).toContain('读落点圈');
   });
 
   it('腐朽骑士 g1_7 方阵专属（MN-16）：面板锚 + formationOnly 不入任何生成池', () => {
@@ -84,14 +92,16 @@ describe('敌人表 16（gdd-enemies-v3 §③-2 定稿口径）', () => {
     expect(ENEMY_CONFIGS.enemy_g3_4).toMatchObject({ name: '狼裔猎手', hp: 16, speed: 70, damage: 12, attackInterval: 1.2, radius: 14, xp: 3, special: expect.stringContaining('冲锋') });
   });
 
-  it('特殊行为敌人每地图 ≤2 种（content-design-outline §4.1；gdd-enemies-v2 ①）', () => {
+  it('特殊行为敌人每地图 ≤2 种（gdd-enemies-v3 §③-3：各图恰 1 种在役；退役/精英化不计）', () => {
     const byMap = new Map<MapId, number>();
     for (const e of Object.values(ENEMY_CONFIGS)) {
-      if (e.special) byMap.set(e.map, (byMap.get(e.map) ?? 0) + 1);
+      if (e.special && !e.retiredNarrative && e.tier !== 'elite') {
+        byMap.set(e.map, (byMap.get(e.map) ?? 0) + 1);
+      }
     }
-    expect(byMap.get('map_graveyard')).toBeLessThanOrEqual(2); // 亡魂（相位）+ 尸巫（光环）
-    expect(byMap.get('map_cathedral')).toBeLessThanOrEqual(2); // 圣杯侍僧（召唤）+ 忏悔者（远程）；血蝠 tier=air 不计
-    expect(byMap.get('map_den')).toBeLessThanOrEqual(2); // 狼裔猎手（冲锋）
+    expect(byMap.get('map_graveyard')).toBe(1); // 尸巫（光环）；亡魂 MN-15 退役不计
+    expect(byMap.get('map_cathedral')).toBe(1); // 圣杯侍僧（召唤）；忏悔者 MN-17 精英化不计
+    expect(byMap.get('map_den')).toBe(1); // 狼裔猎手（冲锋）
   });
 
   it('反制字段完整：每只普通/特殊怪均有明确反制（gdd-enemies-v2 ① 可检验含义③）', () => {
@@ -153,6 +163,7 @@ const GDD_ENEMY_PANELS: ReadonlyArray<{
   { id: 'enemy_g1_4', name: '亡魂', map: 'map_graveyard', tier: 'special', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, powerTag: 'BLOOD', frame: 'enemy-wraith', special: '（退役）曾可穿越障碍；守夜会记录：近百年亡魂渐稀，今夜尤为罕见' }, // MN-15
   { id: 'enemy_g1_5', name: '尸巫', map: 'map_graveyard', tier: 'special', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, powerTag: 'BLOOD', frame: 'enemy-necro', special: '光环：120px 内亡者攻速 +20%（叠 3 层）' },
   { id: 'enemy_g1_6', name: '守墓者', map: 'map_graveyard', tier: 'elite', hp: 350, speed: 40, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BLOOD', frame: 'enemy-gravekeeper' },
+  { id: 'enemy_g1_8', name: '掷骨者', map: 'map_graveyard', tier: 'elite', hp: 320, speed: 55, damage: 10, attackInterval: 1.8, radius: 20, xp: 12, powerTag: 'HALLOWED', frame: 'enemy-bonethrower', special: '读圈走位：200~260px 游走 → 驻停 1.0s 抛骨矛（90px 预警圈 0.8s，伤 18）3 连射 → CD 4s；被近身 80px 后撤步 150px（CD 3s）', rangedDamage: 18 }, // MN-17 新增精英
   // ---- §3.2 地图 2 · 血教堂（5）----
   { id: 'enemy_g2_1', name: '血信徒', map: 'map_cathedral', tier: 'normal', hp: 14, speed: 60, damage: 12, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-acolyte' },
   { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat' },

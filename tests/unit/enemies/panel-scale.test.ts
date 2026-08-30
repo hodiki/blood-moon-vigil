@@ -98,24 +98,23 @@ describe('W-9 轨① 敌种分批解锁（per-kind unlockAt 过滤 + 回退）',
     expect(ENEMY_CONFIGS.enemy_g1_1.unlockAt).toBeUndefined();
   });
 
-  it('t < unlockAt → 该敌被过滤（血犬 @50s 不出，@60s 起）', () => {
+  it('轨① 过滤：墓地 wolf 槽 @50s 全过滤 → 回退基础敌血犬（§③-2 槽基础=突袭档）；@120s 尸巫可达', () => {
     const w = weightedWeightsForStage('map_graveyard', stageForTime(50));
     for (let i = 0; i < 64; i += 1) {
       const r = ((i * 7 + 3) % 100) / 100;
       const subR = ((i * 11 + 5) % 100) / 100;
-      const slotWolf = r >= w.zombie && r < w.zombie + w.wolf;
-      if (slotWolf) {
-        const id = pickEnemyIdForMap('map_graveyard', w, r, subR, 50);
-        expect(id).not.toBe('enemy_g1_2');
+      if (r >= w.zombie && r < w.zombie + w.wolf) {
+        // 血犬(60)/尸巫(120) 全过滤 → 回退槽基础敌血犬（最低 unlockAt）
+        expect(pickEnemyIdForMap('map_graveyard', w, r, subR, 50)).toBe('enemy_g1_2');
       }
     }
-    // @60s 起血犬可达
-    const w2 = weightedWeightsForStage('map_graveyard', stageForTime(60));
+    // @120s：尸巫（120）可达
+    const w2 = weightedWeightsForStage('map_graveyard', stageForTime(120));
     const ids = new Set<string>();
-    for (let i = 0; i < 64; i += 1) {
-      ids.add(pickEnemyIdForMap('map_graveyard', w2, ((i * 7 + 3) % 100) / 100, ((i * 11 + 5) % 100) / 100, 60));
+    for (let i = 0; i < 128; i += 1) {
+      ids.add(pickEnemyIdForMap('map_graveyard', w2, ((i * 7 + 3) % 100) / 100, ((i * 11 + 5) % 100) / 100, 120));
     }
-    expect(ids.has('enemy_g1_2')).toBe(true);
+    expect(ids.has('enemy_g1_5')).toBe(true);
   });
 
   it('过滤后池空 → 回退该槽 unlockAt=0 基础敌（§⑥-3）', () => {

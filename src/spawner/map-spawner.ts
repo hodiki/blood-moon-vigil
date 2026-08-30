@@ -16,20 +16,19 @@ import { SPAWN_STAGES, pickEnemyKind, type StageWeights, type SpawnStage } from 
 /** 生成器三抽象槽（pickEnemyKind 输出收敛，排除 boss；M2 收口 15 敌运行时接入） */
 export type EnemySlot = 'zombie' | 'wolf' | 'tank';
 
-/** 每地图槽位 → 具体敌人（E3-S7；15 敌不重不漏；墓地/教堂/狼穴各 6/5/4）。
- *  R-C3-RULING（gdd-enemies-v2 §3.1~3.3 槽位语义裁定）：tank 槽只放 elite tier
- *  （墓地=守墓者 / 教堂=血肉畸体 / 狼穴=石甲狼），特殊行为敌全部归 wolf 槽
- *  （尸巫→墓地 wolf、圣杯侍僧→教堂 wolf、狼裔猎手→狼穴 wolf）——保底厚血 100% 精英。 */
+/** 每地图槽位 → 具体敌人（gdd-enemies-v3 §③-2 槽位池落点定稿：普通槽池 10 敌种 + 精英 5，
+ *  亡魂 MN-15 退役不入池、忏悔者 MN-17 升精英入教堂 tank、掷骨者 g1_8 新增墓地 tank；
+ *  腐朽骑士 g1_7 formationOnly 不入任何槽；tank 槽只放 elite——R-C3-RULING 语义维持） */
 export const MAP_ENEMY_SLOTS: Record<MapId, Record<EnemySlot, EnemyId[]>> = {
   map_graveyard: {
-    zombie: ['enemy_g1_1', 'enemy_g1_3'], // 行尸 / 墓穴甲虫（纯尸潮）
-    wolf: ['enemy_g1_2', 'enemy_g1_4', 'enemy_g1_5'], // 血犬 / 亡魂（相位）/ 尸巫（光环）
-    tank: ['enemy_g1_6'], // 守墓者（精英；R-C3-RULING tank 只放 elite）
+    zombie: ['enemy_g1_1', 'enemy_g1_3'], // 行尸（含甲虫变体 MN-14 并轨）
+    wolf: ['enemy_g1_2', 'enemy_g1_5'], // 血犬（突袭）/ 尸巫（光环）
+    tank: ['enemy_g1_6', 'enemy_g1_8'], // 守墓者 / 掷骨者（精英 ×2）
   },
   map_cathedral: {
-    zombie: ['enemy_g2_1', 'enemy_g2_5'], // 血信徒 / 忏悔者（远程）
-    wolf: ['enemy_g2_2', 'enemy_g2_3'], // 血蝠（空中·相位）/ 圣杯侍僧（召唤）
-    tank: ['enemy_g2_4'], // 血肉畸体（精英）
+    zombie: ['enemy_g2_1'], // 血信徒
+    wolf: ['enemy_g2_2', 'enemy_g2_3'], // 血蝠（空中）/ 圣杯侍僧（召唤）
+    tank: ['enemy_g2_4', 'enemy_g2_5'], // 血肉畸体 / 忏悔者（精英化 MN-17）
   },
   map_den: {
     zombie: ['enemy_g3_1'], // 灰狼

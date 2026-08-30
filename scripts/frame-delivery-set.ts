@@ -24,11 +24,11 @@ export const FRAME_DELIVERY_SET: readonly string[] = [
   // §2 超武（7）
   'super-moonwrath', 'super-silverblast', 'super-seraphring', 'super-totaleclipse',
   'super-bloodsea', 'super-batstorm', 'super-packleader',
-  // §3 敌人（16 ×2 帧；gdd-enemies-v3 §③-2 增补腐朽骑士 decayedknight）
+  // §3 敌人（17 ×2 帧；gdd-enemies-v3 §③-2 增补腐朽骑士/掷骨者）
   'enemy-zombie', 'enemy-zombie-v', 'enemy-hound', 'enemy-hound-v',
   'enemy-beetle', 'enemy-beetle-v', 'enemy-wraith', 'enemy-wraith-v',
   'enemy-necro', 'enemy-necro-v', 'enemy-gravekeeper', 'enemy-gravekeeper-v',
-  'enemy-decayedknight', 'enemy-decayedknight-v',
+  'enemy-decayedknight', 'enemy-decayedknight-v', 'enemy-bonethrower', 'enemy-bonethrower-v',
   'enemy-acolyte', 'enemy-acolyte-v',
   'enemy-bat', 'enemy-bat-v', 'enemy-cupbearer', 'enemy-cupbearer-v',
   'enemy-fleshmass', 'enemy-fleshmass-v', 'enemy-penitent', 'enemy-penitent-v',
