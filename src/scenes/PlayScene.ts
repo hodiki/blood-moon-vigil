@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
@@ -35,6 +35,8 @@ import { MapSystem, DECAL_COUNT_DESKTOP, DECAL_COUNT_MOBILE } from '@/map/map';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { Enemy } from '@/enemies/enemy';
 import { Boss } from '@/enemies/boss';
+import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
+import { moonAvatarTriggerDue } from '@/enemies/boss-math';
 import { WeaponSystem } from '@/weapons/weapon-system';
 import { EnemySpawner } from '@/spawner/enemy-spawner';
 import { XpGem } from '@/xp/xp-gem';
@@ -80,6 +82,8 @@ import { PrologueOverlay, createPrologueOverlay } from '@/ui/prologue-overlay';
  * 36s = 完整 1 局 + Boss 战全程 + 第 2 局爬升，峰值段（300–360 局时 = 15–18 真实秒）有 18s 持续采样。
  */
 const BENCH_TIME_SCALE = 20;
+/** W-3：化身判定窗口上界（= BOSS_TIME 360s；spawner-v2 §⑥-5 同帧常规优先口径） */
+const BOSS_TIME_GATE = 360;
 const BENCH_DURATION_MS = 36_000;
 
 interface EnemyKilledPayload {
@@ -139,6 +143,12 @@ export class PlayScene extends Phaser.Scene {
   private tankMark: Phaser.GameObjects.Image | null = null;
   /** B5-W4 衍生技控制器（替代旧 4 技 ActiveSkill 运行时；EG-2 归档） */
   private derivativeController!: DerivativeSkillController;
+  /** W-1 特殊行为 AI 运行时（光环/召唤/冲锋；enemy-ai-runtime） */
+  private aiDirector!: EnemyAiDirector;
+  /** W-3 MN-12：血月化身本局已触发（5% 判定 once；常规 Boss 优先口径 §⑥-5） */
+  private avatarTriggeredThisRun = false;
+  /** W-3：化身判定节拍（1s 一次；工程锚） */
+  private avatarRollAcc = 0;
   /** E4-S1 当前角色（开局从 session-selection 读取） */
   private heroId: HeroId = 'hero_edmund';
   /** E4-S1 当前地图（开局从 session-selection 读取；相机/玩家 clamp 按 MAP_CONFIGS 尺寸） */
@@ -296,6 +306,12 @@ export class PlayScene extends Phaser.Scene {
     this.player.reviveHandler = (now) => this.judgePlayerRevive(now);
     // M2 收口：生成器按当前地图装配（槽位池/权重覆盖/移速加权，E3-S7）
     this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId, true);
+    // W-8 面板链：等级滞后宽容玩家等级来源 +（裁决后）c 案联动系数
+    this.spawner.playerLevelProvider = () => this.xp.level;
+    // W-1 特殊行为 AI 运行时（召唤出口走 spawner 敌方技能召唤口：noXp 自动置位）
+    this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
+      this.spawner.spawnRuntimeSummon(id, x, y, tag),
+    );
     // E4-S3 收束：6:00 清场 + Boss 出场（预算恒 0 由 spawner 停止保证，S8 §⑥.3）
     this.spawner.onBossTime = () => {
       this.spawner.clearAll();
@@ -561,6 +577,10 @@ export class PlayScene extends Phaser.Scene {
       e.updateMovement(dt, this.player, now);
       tickEnemyAnim(e);
     });
+    // W-1 特殊行为 AI（光环攻速/侍僧召唤/猎手冲锋；冲锋速度覆盖在 updateMovement 之后）
+    this.aiDirector.update(dt, now, this.player);
+    // W-3 MN-12：血月化身稀有触发（270s 后 5%/判定，1s 节拍工程锚；once；BOSS_TIME 前独立）
+    this.tickAvatarTrigger(dt);
     this.markers.sync(this.enemyPool, this.player, now);
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now, this.s1WindowDamageMult());
@@ -672,22 +692,59 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** E4-S3 6:00 Boss 出场：清场已完成，在玩家前方一段距离登场 + 0.5s 霸体闪红 */
+  /**
+   * W-3 MN-12：血月化身稀有触发（任意图；BOSS_TIME 后 4:30（270s）起判定 5%，已触发本局不再触发）。
+   * 判定节拍 = 1s/次（工程锚；spawner-v2 §⑥-5：与 BOSS_TIME 同帧常规优先——BOSS_TIME 触发后
+   * spawner 停止 + boss4OnField 由 spawner 停掷，本节拍在 360s 后不再进入）。
+   */
+  private tickAvatarTrigger(dt: number): void {
+    if (this.avatarTriggeredThisRun) return;
+    const t = this.spawner.elapsedSeconds;
+    if (t < MOON_AVATAR.AFTER_SECONDS || t >= BOSS_TIME_GATE) return;
+    this.avatarRollAcc += dt;
+    if (this.avatarRollAcc < 1) return;
+    this.avatarRollAcc = 0;
+    if (!moonAvatarTriggerDue(t, Math.random())) return;
+    this.avatarTriggeredThisRun = true;
+    this.spawnAvatar();
+  }
+
+  /** W-3：血月化身出场（boss_4 独立曲线面板；月坠机制属 Boss 技能内容批演出） */
+  private spawnAvatar(): void {
+    const now = this.time.now / 1000;
+    const avatar = this.enemyPool.acquire(this.player.x, this.player.y, 'characters', BOSSES.boss_4.frame) as Boss | null;
+    if (!avatar) return;
+    const angle = Math.random() * Math.PI * 2;
+    const bx = this.player.x + Math.cos(angle) * BOSS.SPAWN_DISTANCE;
+    const by = this.player.y + Math.sin(angle) * BOSS.SPAWN_DISTANCE;
+    avatar.spawnByBossConfig(BOSSES.boss_4, bx, by);
+    avatar.beginGrace(now);
+    this.spawner.boss4OnField = true; // W-A F-2：化身在场方阵停掷
+    this.tweens.add({
+      targets: avatar,
+      alpha: 0.35,
+      duration: 120,
+      yoyo: true,
+      repeat: 2,
+      onComplete: () => {
+        if (avatar.active) avatar.setAlpha(1);
+      },
+    });
+  }
+
   private spawnBoss(): void {
     const now = this.time.now / 1000;
-    const boss = this.enemyPool.acquire(this.player.x, this.player.y, 'characters', 'enemy-boss') as Boss | null;
+    const bossCfg = BOSSES[MAP_CONFIGS[this.mapId].boss];
+    const boss = this.enemyPool.acquire(this.player.x, this.player.y, 'characters', bossCfg.frame) as Boss | null;
     if (!boss) return; // 池满兜底（清场后正常不会）
     const angle = Math.random() * Math.PI * 2;
     const bx = this.player.x + Math.cos(angle) * BOSS.SPAWN_DISTANCE;
     const by = this.player.y + Math.sin(angle) * BOSS.SPAWN_DISTANCE;
-    boss.spawn('boss', bx, by);
-    const bossFrame = BOSSES[MAP_CONFIGS[this.mapId].boss].frame;
-    if (this.textures.get('characters').has(bossFrame)) {
-      boss.visualFrame = bossFrame;
-      boss.setTexture('characters', bossFrame);
-    }
+    // W-3/W-8 收口：Boss 面板单源化（BOSSES 表 + ccProfile 覆写；legacy spawn('boss') 退役）
+    boss.spawnByBossConfig(bossCfg, bx, by);
     boss.beginGrace(now);
     this.boss = boss;
-    const entranceFrame = bossEntranceFrameName(bossFrame);
+    const entranceFrame = bossEntranceFrameName(bossCfg.frame);
     if (hasCharacterFrame(this, entranceFrame)) {
       boss.entranceUntil = now + FX.BOSS_ENTRANCE_MS / 1000;
       boss.setTexture('characters', entranceFrame);

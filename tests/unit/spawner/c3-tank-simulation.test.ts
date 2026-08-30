@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { SPAWNER, ENEMIES, ENEMY_CONFIGS, PLAYER, GAME } from '@/config/balance';
+import {
+  SPAWNER,
+  ENEMY_CONFIGS,
+  PLAYER,
+  GAME,
+} from '@/config/balance';
+import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
 import { budget, stageForTime, pickEnemyKind, tankGuaranteeDue } from '@/spawner/spawner';
 import { DESKTOP_CONFIG, MOBILE_CONFIG } from '@/config/runtime-config';
 import { mulberry32 } from '@/utils/math';
@@ -113,7 +119,7 @@ describe('E3-S10 击杀时间对表（gdd-enemies §5.1，DPS 口径单目标等
   it('6 分钟成型 DPS ~70：普通 12HP ≈0.17s / 8HP 秒杀级；精英 500→~7.1s / 400→~5.7s（GDD 7s/6s）', () => {
     const DPS_70 = 70;
     expect(ENEMY_CONFIGS.enemy_g1_1.hp / DPS_70).toBeCloseTo(0.17, 1); // 行尸 12
-    expect(ENEMY_CONFIGS.enemy_g1_3.hp / DPS_70).toBeLessThan(0.15); // 墓穴甲虫 8 → 秒杀
+    expect(ENEMY_CONFIGS.enemy_g1_3.hp / DPS_70).toBeLessThan(0.2); // 墓穴甲虫 MN-14 并轨行尸 12HP
     expect(ENEMY_CONFIGS.enemy_g2_4.hp / DPS_70).toBeCloseTo(7.1, 1); // 血肉畸体 500
     expect(ENEMY_CONFIGS.enemy_g3_3.hp / DPS_70).toBeCloseTo(5.7, 1); // 石甲狼 400
   });

@@ -7,7 +7,7 @@
  * E3-S1 扩展：15 敌运行时注册（runtimeKindForEnemyId / enemiesForMap 槽位池输入）。
  */
 
-import { ENEMIES, ENEMY_CONFIGS, type EnemyKindId, type EnemyId, type MapId } from '@/config/balance';
+import { ENEMY_CONFIGS, BOSSES, type EnemyKindId, type EnemyId, type MapId } from '@/config/balance';
 
 export type { EnemyKindId } from '@/config/balance';
 
@@ -21,8 +21,17 @@ export interface EnemyPanelData {
   xp: number;
 }
 
-/** 面板表（唯一出口；平衡改动只允许改 balance.ts） */
-export const ENEMY_PANELS: Record<EnemyKindId, EnemyPanelData> = ENEMIES;
+/**
+ * 面板表（W-8 单源化：从 ENEMY_CONFIGS/BOSSES 派生；legacy ENEMIES 已收档 _archived）。
+ * kind 路径仅池兼容保留（spawn('boss') 已由 spawnByBossConfig 取代）——
+ * zombie/wolf/tank 代表面板 = 该槽首位敌种（行尸/血犬/守墓者），boss = boss_1。
+ */
+export const ENEMY_PANELS: Record<EnemyKindId, EnemyPanelData> = {
+  zombie: ENEMY_CONFIGS.enemy_g1_1,
+  wolf: ENEMY_CONFIGS.enemy_g1_2,
+  tank: ENEMY_CONFIGS.enemy_g1_6,
+  boss: BOSSES.boss_1,
+};
 
 /** 普通 3 敌（共用一池，ARCH §3.3）；Boss 独立（E4） */
 export const NORMAL_ENEMY_KINDS: readonly EnemyKindId[] = ['zombie', 'wolf', 'tank'] as const;

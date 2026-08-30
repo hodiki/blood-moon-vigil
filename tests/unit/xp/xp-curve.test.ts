@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { needXp } from '@/xp/xp-manager';
 import { budget, stageForTime, pickEnemyKind } from '@/spawner/spawner';
-import { ENEMIES } from '@/config/balance';
+import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
 import { mulberry32 } from '@/utils/math';
 
 /**

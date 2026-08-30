@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { ACTIVE_SKILL, ACTIVE_SKILL_RULES, ENEMIES, GAME, GROWTH } from '@/config/balance';
+import {
+  ACTIVE_SKILL,
+  ACTIVE_SKILL_RULES,
+  GAME,
+  GROWTH,
+} from '@/config/balance';
+import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
 import { initialDpsEstimate } from '@/weapons/weapon-math';
 import { ActiveSkill } from '@/active-skill/active-skill';
 import {

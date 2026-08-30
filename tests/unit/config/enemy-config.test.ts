@@ -53,11 +53,13 @@ describe('敌人表 16（gdd-enemies-v3 §③-2 定稿口径）', () => {
     expect(ENEMY_CONFIGS.enemy_g3_1.powerTag).toBe('BEAST');
   });
 
-  it('地图 1 月下墓地 6 只：行尸/血犬/墓穴甲虫/亡魂/尸巫/守墓者（§3.1 面板；R-C3-RULING 补守墓者）', () => {
+  it('地图 1 月下墓地 6 只（gdd-enemies-v3 §③-2/§③-3：甲虫并轨 MN-14 / 亡魂退役 MN-15）', () => {
     expect(ENEMY_CONFIGS.enemy_g1_1).toMatchObject({ name: '行尸', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 });
     expect(ENEMY_CONFIGS.enemy_g1_2).toMatchObject({ name: '血犬', hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2 });
-    expect(ENEMY_CONFIGS.enemy_g1_3).toMatchObject({ name: '墓穴甲虫', hp: 8, speed: 70, damage: 6, attackInterval: 0.8, radius: 10, xp: 1 });
-    expect(ENEMY_CONFIGS.enemy_g1_4).toMatchObject({ name: '亡魂', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, special: expect.stringContaining('相位') });
+    // MN-14 变体化：与行尸共用面板/行为（同参数并轨 = 12/55/10/1.0/14），甲虫壳 = 出场皮肤替换
+    expect(ENEMY_CONFIGS.enemy_g1_3).toMatchObject({ name: '墓穴甲虫', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 });
+    // MN-15 叙事化退役：配置保留 + 补句，生成池移除
+    expect(ENEMY_CONFIGS.enemy_g1_4).toMatchObject({ name: '亡魂', retiredNarrative: true, special: expect.stringContaining('退役') });
     expect(ENEMY_CONFIGS.enemy_g1_5).toMatchObject({ name: '尸巫', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, special: expect.stringContaining('光环') });
     // R-C3-RULING：墓地 elite 守墓者（纯厚血精英，无特殊行为）
     expect(ENEMY_CONFIGS.enemy_g1_6).toMatchObject({ name: '守墓者', tier: 'elite', hp: 350, speed: 40, damage: 15, attackInterval: 1.8, radius: 22, xp: 10 });
@@ -71,7 +73,8 @@ describe('敌人表 16（gdd-enemies-v3 §③-2 定稿口径）', () => {
     expect(ENEMY_CONFIGS.enemy_g2_2.special).toBeUndefined();
     expect(ENEMY_CONFIGS.enemy_g2_3).toMatchObject({ name: '圣杯侍僧', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, special: expect.stringContaining('召唤') });
     expect(ENEMY_CONFIGS.enemy_g2_4).toMatchObject({ name: '血肉畸体', hp: 500, speed: 40, damage: 18, attackInterval: 1.8, radius: 24, xp: 12 });
-    expect(ENEMY_CONFIGS.enemy_g2_5).toMatchObject({ name: '忏悔者', hp: 14, speed: 55, damage: 10, attackInterval: 1.2, radius: 13, xp: 3, rangedDamage: 8, special: expect.stringContaining('投掷') });
+    // MN-17 升格精英（§③-4-5）：340/55/10/1.8/XP 12，轨③ 180s
+    expect(ENEMY_CONFIGS.enemy_g2_5).toMatchObject({ name: '忏悔者', tier: 'elite', hp: 340, speed: 55, damage: 10, attackInterval: 1.8, xp: 12, rangedDamage: 8, unlockAt: 180 });
   });
 
   it('地图 3 狼穴 4 只：灰狼/暗影狼/石甲狼/狼裔猎手（§3.3 面板）', () => {
@@ -146,8 +149,8 @@ const GDD_ENEMY_PANELS: ReadonlyArray<{
   // ---- §3.1 地图 1 · 月下墓地（6；R-C3-RULING 补守墓者）----
   { id: 'enemy_g1_1', name: '行尸', map: 'map_graveyard', tier: 'normal', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-zombie' },
   { id: 'enemy_g1_2', name: '血犬', map: 'map_graveyard', tier: 'fast', hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2, powerTag: 'BLOOD', frame: 'enemy-hound' },
-  { id: 'enemy_g1_3', name: '墓穴甲虫', map: 'map_graveyard', tier: 'normal', hp: 8, speed: 70, damage: 6, attackInterval: 0.8, radius: 10, xp: 1, powerTag: 'BLOOD', frame: 'enemy-beetle' },
-  { id: 'enemy_g1_4', name: '亡魂', map: 'map_graveyard', tier: 'special', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, powerTag: 'BLOOD', frame: 'enemy-wraith', special: '可穿越障碍（相位）' },
+  { id: 'enemy_g1_3', name: '墓穴甲虫', map: 'map_graveyard', tier: 'normal', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-beetle' }, // MN-14 并轨行尸
+  { id: 'enemy_g1_4', name: '亡魂', map: 'map_graveyard', tier: 'special', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, powerTag: 'BLOOD', frame: 'enemy-wraith', special: '（退役）曾可穿越障碍；守夜会记录：近百年亡魂渐稀，今夜尤为罕见' }, // MN-15
   { id: 'enemy_g1_5', name: '尸巫', map: 'map_graveyard', tier: 'special', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, powerTag: 'BLOOD', frame: 'enemy-necro', special: '光环：120px 内亡者攻速 +20%（叠 3 层）' },
   { id: 'enemy_g1_6', name: '守墓者', map: 'map_graveyard', tier: 'elite', hp: 350, speed: 40, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BLOOD', frame: 'enemy-gravekeeper' },
   // ---- §3.2 地图 2 · 血教堂（5）----
@@ -155,7 +158,7 @@ const GDD_ENEMY_PANELS: ReadonlyArray<{
   { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat' },
   { id: 'enemy_g2_3', name: '圣杯侍僧', map: 'map_cathedral', tier: 'special', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, powerTag: 'BLOOD', frame: 'enemy-cupbearer', special: '每 5s 召唤 1 血信徒（上限 3）' },
   { id: 'enemy_g2_4', name: '血肉畸体', map: 'map_cathedral', tier: 'elite', hp: 500, speed: 40, damage: 18, attackInterval: 1.8, radius: 24, xp: 12, powerTag: 'BLOOD', frame: 'enemy-fleshmass' },
-  { id: 'enemy_g2_5', name: '忏悔者', map: 'map_cathedral', tier: 'special', hp: 14, speed: 55, damage: 10, attackInterval: 1.2, radius: 13, xp: 3, powerTag: 'BLOOD', frame: 'enemy-penitent', special: '每 3s 投掷烛火弹（慢速可躲）', rangedDamage: 8 },
+  { id: 'enemy_g2_5', name: '忏悔者', map: 'map_cathedral', tier: 'elite', hp: 340, speed: 55, damage: 10, attackInterval: 1.8, radius: 15, xp: 12, powerTag: 'BLOOD', frame: 'enemy-penitent', special: '弹幕与血渍：260~320px 轮射 3 连烛火弹 + 血渍减速 15%/2s', rangedDamage: 8 }, // MN-17 升格
   // ---- §3.3 地图 3 · 狼穴（4）----
   { id: 'enemy_g3_1', name: '灰狼', map: 'map_den', tier: 'fast', hp: 12, speed: 85, damage: 10, attackInterval: 0.8, radius: 13, xp: 1, powerTag: 'BEAST', frame: 'enemy-greywolf' },
   { id: 'enemy_g3_2', name: '暗影狼', map: 'map_den', tier: 'fast', hp: 10, speed: 160, damage: 10, attackInterval: 0.7, radius: 11, xp: 2, powerTag: 'BEAST', frame: 'enemy-shadowwolf' },
@@ -209,7 +212,7 @@ describe('E1-S3 敌人 15 全量面板断言（gdd-enemies-v2 §3.1~3.3 逐项�
       if (row.rangedDamage !== undefined) expect(e.rangedDamage).toBe(row.rangedDamage);
       else expect(e.rangedDamage).toBeUndefined();
     }
-    expect(ENEMY_CONFIGS.enemy_g2_5.rangedDamage).toBe(8); // 忏悔者烛火弹
+    expect(ENEMY_CONFIGS.enemy_g2_5.rangedDamage).toBe(8); // 忏悔者烛火弹（精英技能伤锚，W-16 消费）
   });
 
   it('掉落 XP 与 §5.3 对齐：普通 1~3 / 精英 12·10·10（血肉畸体 12、石甲狼 10、守墓者 10）', () => {

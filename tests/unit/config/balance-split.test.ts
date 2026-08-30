@@ -52,7 +52,8 @@ describe('EG-1 balance 域拆分 · re-export 等价守卫', () => {
   it('拆分后关键表引用不变（抽查：消费方零改动保证）', () => {
     expect(shim.WORLD).toEqual({ WIDTH: 3000, HEIGHT: 3000 });
     expect(shim.PLAYER.MOVE_SPEED).toBe(235);
-    expect(Object.keys(shim.ENEMIES)).toEqual(['zombie', 'wolf', 'tank', 'boss']);
+    // W-8 收档：legacy ENEMIES 已迁出 shim（_archived/enemies-legacy-panel 守卫归档）
+    expect((shim as Record<string, unknown>).ENEMIES).toBeUndefined();
     expect(Object.keys(shim.WEAPON_CONFIGS)).toHaveLength(14);
     expect(shim.ENEMY_CONFIGS ? Object.keys(shim.ENEMY_CONFIGS) : []).toHaveLength(16);
     expect(Object.keys(shim.BOSSES)).toHaveLength(4);

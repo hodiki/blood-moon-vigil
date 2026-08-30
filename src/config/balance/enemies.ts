@@ -21,17 +21,12 @@ export interface EnemyPanel {
   xp: number;
 }
 
-export const ENEMIES: Record<EnemyKindId, EnemyPanel> = {
-  zombie: { hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1 },
-  wolf: { hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2 },
-  // TASK-39 R1 波次2：厚血经验 15→10（E3 预授权判据触发：R1 满局 Lv47 → 压后期经验通胀，目标 Lv42–45）
-  tank: { hp: 600, speed: 35, damage: 20, attackInterval: 1.5, radius: 22, xp: 10 },
-  // TASK-31 收尾节奏调整（rhythm-pace-adj §3）：Boss HP 6000→4000（-33%，匹配 6min 局成型强度；
-  // 中位 DPS 60–75 → 战 53–67s、保守 45–55 → 73–89s ≤ 90s 上限；60~90s 判据保持）
-  boss: { hp: 4000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100 },
-};
-
-/** 敌人类型 id（面板 key；普通 3 敌共用一池，Boss 由 E4 接入） */
+/**
+ * legacy ENEMIES 面板表已随 W-8 收档（gdd-spawner-v2 附录 A / difficulty-v3 硬依赖）：
+ * 迁出至 `src/_archived/enemies-legacy-panel.ts`（EG-2 归档不删纪律），ENEMY_CONFIGS/BOSSES
+ * 单源化——运行时面板链走 spawnByConfig/spawnByBossConfig + panel-scale（M3 仅 HP）。
+ * ENEMY_PANELS（enemy-types）现从单源派生，历史 kind 路径仅池兼容保留。
+ */
 export type EnemyKindId = 'zombie' | 'wolf' | 'tank' | 'boss';
 
 /** 敌人层级（gdd-enemies-v2 §3.1~3.3） */
@@ -75,6 +70,25 @@ export interface EnemyConfig {
    * 数值由 XP c 案模拟裁决后冻结（W-E 只出数据不回填）。
    */
   hpCaseLink?: number;
+  /**
+   * W-9 轨① 敌种分批解锁（gdd-difficulty-v3 §5.4 / gdd-spawner-v2 §③-3）：局时 s，
+   * t < unlockAt 时该敌种被 pickEnemyIdForMap 过滤（过滤后池空回退该槽 unlockAt=0 基础敌）。
+   * 缺省 = 0（炮灰档常驻）。
+   */
+  unlockAt?: number;
+  /**
+   * W-5/MN-9 CC 抗性画像（enemies-v3 §③-8）：tier 默认 + 逐敌覆写（名额 3 定稿：
+   * 芬里厄蓄力减速 ×0.5 / 化身易伤免疫 / 石甲狼石甲期减速 ×0.5）；缺省 = 走 spawnByConfig
+   * 的 tier 派生（精英 elite / Boss boss / 普通 normal）。
+   */
+  ccProfile?: import('@/combat/status/status-config').CcProfile;
+  /**
+   * MN-15 叙事化退役标记：保留配置与图鉴条目（补句「守夜会记录：近百年亡魂渐稀」），
+   * 生成侧移出普通池（MAP_ENEMY_SLOTS 不含）、相位接线撤销（ENEMY_BEHAVIORS 无 phase 项）。
+   */
+  retiredNarrative?: boolean;
+  /** MN-17 精英化标记（忏悔者 g2_5：普通忏悔者形态退役，精英化入 tank 槽） */
+  eliteUpgraded?: boolean;
 }
 
 /**
@@ -83,10 +97,12 @@ export interface EnemyConfig {
  */
 export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
   enemy_g1_1: { id: 'enemy_g1_1', name: '行尸', map: 'map_graveyard', tier: 'normal', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-zombie', counter: '走位拉扯' },
-  enemy_g1_2: { id: 'enemy_g1_2', name: '血犬', map: 'map_graveyard', tier: 'fast', hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2, powerTag: 'BLOOD', frame: 'enemy-hound', counter: '优先处理/绕开' },
-  enemy_g1_3: { id: 'enemy_g1_3', name: '墓穴甲虫', map: 'map_graveyard', tier: 'normal', hp: 8, speed: 70, damage: 6, attackInterval: 0.8, radius: 10, xp: 1, powerTag: 'BLOOD', frame: 'enemy-beetle', counter: '范围清屏' },
-  enemy_g1_4: { id: 'enemy_g1_4', name: '亡魂', map: 'map_graveyard', tier: 'special', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, powerTag: 'BLOOD', frame: 'enemy-wraith', special: '可穿越障碍（相位）', counter: '走位拉扯（障碍无效化，改靠移速/范围）' },
-  enemy_g1_5: { id: 'enemy_g1_5', name: '尸巫', map: 'map_graveyard', tier: 'special', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, powerTag: 'BLOOD', frame: 'enemy-necro', special: '光环：120px 内亡者攻速 +20%（叠 3 层）', counter: '集火（优先击杀光环源）' },
+  // 轨①（§5.4）：血犬 = 突袭型 60s（墓地基准）；甲虫 = 行尸变体并轨（MN-14：同参数）
+  enemy_g1_2: { id: 'enemy_g1_2', name: '血犬', map: 'map_graveyard', tier: 'fast', hp: 10, speed: 150, damage: 8, attackInterval: 0.8, radius: 12, xp: 2, powerTag: 'BLOOD', frame: 'enemy-hound', counter: '优先处理/绕开', unlockAt: 60 },
+  enemy_g1_3: { id: 'enemy_g1_3', name: '墓穴甲虫', map: 'map_graveyard', tier: 'normal', hp: 12, speed: 55, damage: 10, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-beetle', counter: '范围清屏' }, // MN-14 变体化：与行尸共用面板/行为（同参数并轨），出场皮肤替换
+  // MN-15 叙事化退役：配置保留（图鉴补句），生成池移除 + 相位接线撤销
+  enemy_g1_4: { id: 'enemy_g1_4', name: '亡魂', map: 'map_graveyard', tier: 'special', hp: 12, speed: 95, damage: 10, attackInterval: 1.0, radius: 13, xp: 2, powerTag: 'BLOOD', frame: 'enemy-wraith', special: '（退役）曾可穿越障碍；守夜会记录：近百年亡魂渐稀，今夜尤为罕见', counter: '—', retiredNarrative: true },
+  enemy_g1_5: { id: 'enemy_g1_5', name: '尸巫', map: 'map_graveyard', tier: 'special', hp: 16, speed: 45, damage: 6, attackInterval: 1.5, radius: 16, xp: 3, powerTag: 'BLOOD', frame: 'enemy-necro', special: '光环：120px 内亡者攻速 +20%（叠 3 层）', counter: '集火（优先击杀光环源）', unlockAt: 120 }, // 轨① 特殊行为 120s（墓地基准）
   // R-C3-RULING：墓地补 elite 守墓者（tank 槽只放 elite；无特殊行为，纯厚血精英）
   enemy_g1_6: { id: 'enemy_g1_6', name: '守墓者', map: 'map_graveyard', tier: 'elite', hp: 350, speed: 40, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BLOOD', frame: 'enemy-gravekeeper', counter: '集火（高 XP 对价）' },
   // gdd-enemies-v3 §③-2 MN-16：腐朽骑士 g1_7 方阵专属（堕落的初代守夜骑士，powerTag MOON）。
@@ -94,14 +110,16 @@ export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
   // 仅由腐朽骑士团方阵与 boss_1 高威胁技生成；radius 为工程常量（GDD 未列）。
   enemy_g1_7: { id: 'enemy_g1_7', name: '腐朽骑士', map: 'map_graveyard', tier: 'normal', hp: 280, speed: 90, damage: 14, attackInterval: 1.2, radius: 20, xp: 10, powerTag: 'MOON', frame: 'enemy-decayedknight', counter: '横向躲冲锋线（保持移动 + 读缝隙）', formationOnly: true },
   enemy_g2_1: { id: 'enemy_g2_1', name: '血信徒', map: 'map_cathedral', tier: 'normal', hp: 14, speed: 60, damage: 12, attackInterval: 1.0, radius: 14, xp: 1, powerTag: 'BLOOD', frame: 'enemy-acolyte', counter: '走位拉扯' },
-  enemy_g2_2: { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat', counter: '范围清屏/绕开' },
-  enemy_g2_3: { id: 'enemy_g2_3', name: '圣杯侍僧', map: 'map_cathedral', tier: 'special', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, powerTag: 'BLOOD', frame: 'enemy-cupbearer', special: '每 5s 召唤 1 血信徒（上限 3）', counter: '集火打断（召唤源优先）' },
+  enemy_g2_2: { id: 'enemy_g2_2', name: '血蝠', map: 'map_cathedral', tier: 'air', hp: 8, speed: 130, damage: 8, attackInterval: 0.8, radius: 10, xp: 2, powerTag: 'BLOOD', frame: 'enemy-bat', counter: '范围清屏/绕开', unlockAt: 75 }, // 轨① 突袭 60~90（教堂微调）
+  enemy_g2_3: { id: 'enemy_g2_3', name: '圣杯侍僧', map: 'map_cathedral', tier: 'special', hp: 16, speed: 50, damage: 8, attackInterval: 1.2, radius: 15, xp: 3, powerTag: 'BLOOD', frame: 'enemy-cupbearer', special: '每 5s 召唤 1 血信徒（上限 3）', counter: '集火打断（召唤源优先）', unlockAt: 135 }, // 轨① 特殊行为 120~150（教堂微调）
   enemy_g2_4: { id: 'enemy_g2_4', name: '血肉畸体', map: 'map_cathedral', tier: 'elite', hp: 500, speed: 40, damage: 18, attackInterval: 1.8, radius: 24, xp: 12, powerTag: 'BLOOD', frame: 'enemy-fleshmass', counter: '集火（高 XP 对价）' },
-  enemy_g2_5: { id: 'enemy_g2_5', name: '忏悔者', map: 'map_cathedral', tier: 'special', hp: 14, speed: 55, damage: 10, attackInterval: 1.2, radius: 13, xp: 3, powerTag: 'BLOOD', frame: 'enemy-penitent', special: '每 3s 投掷烛火弹（慢速可躲）', counter: '走位（横向闪避投射）', rangedDamage: 8 },
+  // MN-17 升格精英（§③-4-5）：340HP/55/10/XP 12；普通形态退役，入教堂 tank 槽；轨③ 180s（教堂提前）
+  enemy_g2_5: { id: 'enemy_g2_5', name: '忏悔者', map: 'map_cathedral', tier: 'elite', hp: 340, speed: 55, damage: 10, attackInterval: 1.8, radius: 15, xp: 12, powerTag: 'BLOOD', frame: 'enemy-penitent', special: '弹幕与血渍：260~320px 轮射 3 连烛火弹 + 血渍减速 15%/2s', counter: '借位挡弹 + 读弹道横向走位 + 血渍区规划', rangedDamage: 8, eliteUpgraded: true, unlockAt: 180 },
   enemy_g3_1: { id: 'enemy_g3_1', name: '灰狼', map: 'map_den', tier: 'fast', hp: 12, speed: 85, damage: 10, attackInterval: 0.8, radius: 13, xp: 1, powerTag: 'BEAST', frame: 'enemy-greywolf', counter: '走位拉扯' },
-  enemy_g3_2: { id: 'enemy_g3_2', name: '暗影狼', map: 'map_den', tier: 'fast', hp: 10, speed: 160, damage: 10, attackInterval: 0.7, radius: 11, xp: 2, powerTag: 'BEAST', frame: 'enemy-shadowwolf', counter: '优先处理/绕开' },
-  enemy_g3_3: { id: 'enemy_g3_3', name: '石甲狼', map: 'map_den', tier: 'elite', hp: 400, speed: 45, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BEAST', frame: 'enemy-stonewolf', counter: '集火（高 XP 对价）' },
-  enemy_g3_4: { id: 'enemy_g3_4', name: '狼裔猎手', map: 'map_den', tier: 'special', hp: 16, speed: 70, damage: 12, attackInterval: 1.2, radius: 14, xp: 3, powerTag: 'BEAST', frame: 'enemy-wolfhunter', special: '每 6s 蓄力冲锋（警告线后冲刺 500px/s）', counter: '横向走位（躲警告线方向）' },
+  enemy_g3_2: { id: 'enemy_g3_2', name: '暗影狼', map: 'map_den', tier: 'fast', hp: 10, speed: 160, damage: 10, attackInterval: 0.7, radius: 11, xp: 2, powerTag: 'BEAST', frame: 'enemy-shadowwolf', counter: '优先处理/绕开', unlockAt: 90 }, // 轨① 突袭 60~90（狼穴稍后）
+  // MN-9 覆写名额 ③：石甲狼石甲期减速 ×0.5（甲重难移；狂暴期解除由 W-16 行为运行时处理）
+  enemy_g3_3: { id: 'enemy_g3_3', name: '石甲狼', map: 'map_den', tier: 'elite', hp: 400, speed: 45, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BEAST', frame: 'enemy-stonewolf', counter: '集火（高 XP 对价）', ccProfile: { tier: 'elite', ccResistance: { slow: { durationMult: 0.5 } } } },
+  enemy_g3_4: { id: 'enemy_g3_4', name: '狼裔猎手', map: 'map_den', tier: 'special', hp: 16, speed: 70, damage: 12, attackInterval: 1.2, radius: 14, xp: 3, powerTag: 'BEAST', frame: 'enemy-wolfhunter', special: '每 6s 蓄力冲锋（警告线后冲刺 500px/s）', counter: '横向走位（躲警告线方向）', unlockAt: 150 }, // 轨① 特殊行为 120~150（狼穴冲锋稍后）
 };
 
 /** Boss 配置（gdd-enemies-v2 §3.4；map='any' 表示任意地图稀有 Boss） */
@@ -121,14 +139,18 @@ export interface BossConfig {
   phase2?: string;
   /** 视觉编码（§3.4 视觉编码列） */
   visual: string;
+  /** MN-9 覆写（enemies-v3 §③-8）：缺省 = Boss 默认（硬控免疫）；逐敌覆写走此处 */
+  ccProfile?: import('@/combat/status/status-config').CcProfile;
 }
 
 /** Boss 表 4（gdd-enemies-v2 §3.4 / content-design-outline §4.3） */
 export const BOSSES: Record<BossId, BossConfig> = {
   boss_1: { id: 'boss_1', name: '血月尊者', map: 'map_graveyard', hp: 4000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100, powerTag: 'MOON', frame: 'enemy-boss', visual: '≥3x·猩红金 4px·残破守夜袍·手持锈蚀初代提灯（灯内血色光）' },
   boss_2: { id: 'boss_2', name: '血主教·尼禄', map: 'map_cathedral', hp: 4500, speed: 30, damage: 32, attackInterval: 2.2, radius: 42, xp: 120, powerTag: 'BLOOD', frame: 'boss-cardinal', phase2: '阶段 2（HP<50%）：召唤 2 圣杯侍僧；脚下周期性血池（减速 30% + 持续伤）', visual: '≥3x·猩红金·主教冠冕+圣杯' },
-  boss_3: { id: 'boss_3', name: '狼王·芬里厄', map: 'map_den', hp: 4200, speed: 32, damage: 30, attackInterval: 2.0, radius: 42, xp: 120, powerTag: 'BEAST', frame: 'boss-fenrir', phase2: '阶段 2（HP<50%）：蓄力冲锋扑击（警告线，逼走位）；召唤 2 灰狼', visual: '≥3x·猩红金·狼鬃王冠' },
-  boss_4: { id: 'boss_4', name: '血月化身', map: 'any', hp: 3000, speed: 40, damage: 25, attackInterval: 1.8, radius: 40, xp: 150, powerTag: 'MOON', frame: 'boss-moonavatar', phase2: '4:30 后 5% 触发「月坠」（预警后降临）；不掉通关进度，掉稀有图鉴', visual: '半透明猩红金·月光人形·无角饰·边缘月白描边' },
+  // MN-9 覆写名额 ①：芬里厄蓄力期减速 ×0.5（迟滞不锁死；蓄力期条件由 Boss 技能运行时判定）
+  boss_3: { id: 'boss_3', name: '狼王·芬里厄', map: 'map_den', hp: 4200, speed: 32, damage: 30, attackInterval: 2.0, radius: 42, xp: 120, powerTag: 'BEAST', frame: 'boss-fenrir', phase2: '阶段 2（HP<50%）：蓄力冲锋扑击（警告线，逼走位）；召唤 2 灰狼', visual: '≥3x·猩红金·狼鬃王冠', ccProfile: { tier: 'boss', ccResistance: { slow: { durationMult: 0.5 } } } },
+  // MN-9 覆写名额 ②：化身易伤免疫（防猎物标记把短战打穿下限）
+  boss_4: { id: 'boss_4', name: '血月化身', map: 'any', hp: 3000, speed: 40, damage: 25, attackInterval: 1.8, radius: 40, xp: 150, powerTag: 'MOON', frame: 'boss-moonavatar', phase2: '4:30 后 5% 触发「月坠」（预警后降临）；不掉通关进度，掉稀有图鉴', visual: '半透明猩红金·月光人形·无角饰·边缘月白描边', ccProfile: { tier: 'boss', ccResistance: { vulnerable: { immune: true } } } },
 };
 
 /**
@@ -186,10 +208,9 @@ export type EnemyBehaviorConfig =
 
 /** 特殊行为表（gdd-enemies-v2 §3.1~3.3；无条目 = 普通敌） */
 export const ENEMY_BEHAVIORS: Partial<Record<EnemyId, EnemyBehaviorConfig>> = {
-  enemy_g1_4: { kind: 'phase' }, // 亡魂：相位穿障碍
+  // MN-15：亡魂相位接线撤销（退役不入池，条目删除）；MN-17：忏悔者普通远程退役（行为升格 W-16 精英技能）
   enemy_g1_5: { kind: 'aura', radius: 120, attackSpeedBonus: 0.2, maxStacks: 3 }, // 尸巫：光环
   enemy_g2_3: { kind: 'summon', interval: 5, summonedId: 'enemy_g2_1', summonCap: 3 }, // 圣杯侍僧
-  enemy_g2_5: { kind: 'ranged', interval: 3, projectileSpeed: 180 }, // 忏悔者（投射伤害 8 见 ENEMY_CONFIGS.rangedDamage）
   enemy_g3_4: { kind: 'charge', interval: 6, windup: 0.5, warning: 0.15, dashSpeed: 500, dashDuration: 0.4 }, // 狼裔猎手
 };
 

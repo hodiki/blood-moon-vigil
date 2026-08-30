@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { ENEMIES, ENEMY_CONFIGS, type EnemyKindId, type EnemyId } from '@/config/balance';
+import {
+  ENEMY_CONFIGS,
+  type EnemyKindId,
+  type EnemyId,
+} from '@/config/balance';
+import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
+import { ENEMY_CONFIGS, BOSSES } from '@/config/balance';
 import { ENEMY_PANELS, NORMAL_ENEMY_KINDS, isNormalEnemy, enemyPanel, enemiesForMap, runtimeKindForEnemyId } from '@/enemies/enemy-types';
 
 /** enemies §③ 数值表（埋点断言基线，与 GDD 逐项一致；TASK-39 厚血经验 15→10） */
@@ -37,8 +43,11 @@ describe('敌人面板与 GDD 一致（E2-S2 / enemies §③ / E8-1）', () => {
 });
 
 describe('enemy-types 收敛（唯一出口）', () => {
-  it('ENEMY_PANELS 与 balance.ENEMIES 同一数据源', () => {
-    expect(ENEMY_PANELS).toBe(ENEMIES);
+  it('W-8 单源化：ENEMY_PANELS 从 ENEMY_CONFIGS/BOSSES 派生（legacy ENEMIES 已收档）', () => {
+    expect(ENEMY_PANELS.zombie).toBe(ENEMY_CONFIGS.enemy_g1_1);
+    expect(ENEMY_PANELS.boss).toBe(BOSSES.boss_1);
+    // legacy 表数值对照（收档回归守卫；运行时零消费）
+    expect(ENEMY_PANELS.zombie.hp).toBe(ENEMIES.zombie.hp);
   });
 
   it('普通 3 敌：僵尸/疾行/厚血（共用一池，ARCH §3.3）', () => {

@@ -1,5 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { BOSS, BOSSES, BOSS_FIGHT, MOON_AVATAR, ENEMIES, ENEMY_CONFIGS, PALETTE, GAME } from '@/config/balance';
+import {
+  BOSS,
+  BOSSES,
+  BOSS_FIGHT,
+  MOON_AVATAR,
+  ENEMY_CONFIGS,
+  PALETTE,
+  GAME,
+} from '@/config/balance';
+import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
 import {
   bossGraceEndsAt,
   isBossInGrace,

@@ -1,10 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import {
-  WORLD, TILE, PALETTE, PLAYER, GROWTH, JOYSTICK, ENEMIES, WEAPONS, SPAWNER, XP, GEM, UPGRADES,
+  WORLD,
+  TILE,
+  PALETTE,
+  PLAYER,
+  GROWTH,
+  JOYSTICK,
+  WEAPONS,
+  SPAWNER,
+  XP,
+  GEM,
+  UPGRADES,
   ACTIVE_SKILL_RULES,
-  WEAPON_CONFIGS, EVOLUTIONS, ENEMY_CONFIGS, BOSSES, HEROES, ACTIVE_SKILLS, MAP_CONFIGS, UPGRADE_POOL,
+  WEAPON_CONFIGS,
+  EVOLUTIONS,
+  ENEMY_CONFIGS,
+  BOSSES,
+  HEROES,
+  ACTIVE_SKILLS,
+  MAP_CONFIGS,
+  UPGRADE_POOL,
   type PowerTag,
 } from '@/config/balance';
+import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
 
 describe('balance 数值常量表与 GDD 一致（test-framework §4 埋点断言基线）', () => {
   it('世界 3000×3000、tile 64×64（S9 / art-bible §5）', () => {

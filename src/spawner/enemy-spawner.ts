@@ -48,6 +48,7 @@ import {
 } from '@/spawner/spawn-group';
 import { MAP_CONFIGS, FORMATIONS, type FormationId } from '@/config/balance';
 import { FormationRuntime } from '@/enemies/formation-runtime';
+import { applyPanelScale } from '@/enemies/panel-scale';
 import type { GroupMemberState } from '@/enemies/group-blackboard';
 import type { Enemy } from '@/enemies/enemy';
 import type { Player } from '@/player/player';
@@ -84,6 +85,11 @@ export class EnemySpawner {
   onBossTime: (() => void) | null = null;
   /** W-A F-2：boss_4 在场停掷（血月化身 4:30 稀有触发；由 PlayScene 出场时置位） */
   boss4OnField = false;
+
+  /** W-8 等级滞后宽容：玩家等级提供器（PlayScene 注入 XpManager.level；缺省 = 不启用宽容） */
+  playerLevelProvider: (() => number) | null = null;
+  /** W-8 c 案 HP 联动系数（难度域裁决后回填；缺省未启用） */
+  caseHpLink: number | undefined = undefined;
 
   constructor(
     private readonly cfg: RuntimeConfig,
@@ -186,11 +192,11 @@ export class EnemySpawner {
       if (forceTank && !this.pendingTank) {
         // TASK-39 E2 屠夫预警：保底厚血先「预约」——出生点血月印记，TANK_WARNING_SECONDS 后落地
         const pos = this.spawnRingPosition();
-        const enemyId = pickEnemyIdForMap(this.mapId, weights, rForSlot('tank', weights), Math.random());
+        const enemyId = pickEnemyIdForMap(this.mapId, weights, rForSlot('tank', weights), Math.random(), this.t);
         this.pendingTank = { x: pos.x, y: pos.y, remaining: SPAWNER.TANK_WARNING_SECONDS, enemyId };
         GameEvents.emit(GameEvent.TankWarning, { x: pos.x, y: pos.y });
       } else {
-        this.spawnOne(slot, weights);
+        this.spawnOne(slot, weights, this.t);
       }
       this.budgetAcc -= 1;
     }
@@ -203,7 +209,7 @@ export class EnemySpawner {
     if (this.pendingTank.remaining > 0) return;
     const p = this.pendingTank;
     this.pendingTank = null;
-    this.spawnOneById(p.enemyId, p.x, p.y);
+    this.spawnOneById(p.enemyId, p.x, p.y, this.t);
     GameEvents.emit(GameEvent.TankSpawned, { x: p.x, y: p.y });
   }
 
@@ -236,7 +242,7 @@ export class EnemySpawner {
     const canSpawn = this.enemyPool.activeCount < this.cfg.maxEnemies;
     const events = stepGroupScheduler(groups, dt, canSpawn);
     for (const land of events.lands) {
-      const enemy = this.spawnOneById(land.member.enemyId, land.member.x, land.member.y);
+      const enemy = this.spawnOneById(land.member.enemyId, land.member.x, land.member.y, this.t);
       if (enemy && this.formationRuntime) {
         // W-B：组元数据写入 + 承伤路由（受击激活/仪式受击计数）
         enemy.setGroupMeta(land.groupId, land.member.role, land.member.slotIndex);
@@ -277,7 +283,7 @@ export class EnemySpawner {
           // 组召唤实体：noXp=true（F-4 全量）；生成点 = 仪式主体位（缺省玩家环带）
           for (let i = 0; i < ev.count; i += 1) {
             const at = this.groupRitualistPosition(ev.groupId);
-            const enemy = this.spawnOneById(ev.enemyId, at.x + (i - (ev.count - 1) / 2) * 24, at.y);
+            const enemy = this.spawnOneById(ev.enemyId, at.x + (i - (ev.count - 1) / 2) * 24, at.y, this.t);
             if (!enemy) continue;
             enemy.noXp = true;
             enemy.setGroupMeta(ev.groupId, 'summon', -1);
@@ -317,6 +323,18 @@ export class EnemySpawner {
     return { x: pos.x, y: pos.y };
   }
 
+  /**
+   * W-1 敌方技能召唤口（圣杯侍僧等；enemies/noxp 判定口径：敌方技能 → noXp=true）。
+   * ownerTag = 召唤者实例标识（上限计数按同源扫描；召唤物死亡释放计数由召唤方维护）。
+   */
+  spawnRuntimeSummon(id: EnemyId, x: number, y: number, ownerTag: string | null): Enemy | null {
+    const enemy = this.spawnOneById(id, x, y, this.t);
+    if (!enemy) return null;
+    enemy.noXp = true; // 敌方技能召唤 → noXp（spawner-v2 §③-7）
+    if (ownerTag) enemy.setGroupMeta(ownerTag, 'summon', -1);
+    return enemy;
+  }
+
   /** W-B：组内成员/召唤物击杀路由（PlayScene enemy:killed payload 转发） */
   notifyGroupMemberKilled(payload: { groupId?: string | null; groupSlotIndex?: number }): void {
     if (!this.formationRuntime || !payload.groupId) return;
@@ -334,25 +352,36 @@ export class EnemySpawner {
   }
 
   /** M2 收口：槽位 → 地图槽位池具体敌（pickEnemyIdForMap）→ 环带位置出生 */
-  private spawnOne(slot: EnemySlot, weights: StageWeights): void {
+  private spawnOne(slot: EnemySlot, weights: StageWeights, elapsed?: number): void {
     const pos = this.spawnRingPosition();
-    this.spawnOneAt(slot, weights, pos.x, pos.y);
+    this.spawnOneAt(slot, weights, pos.x, pos.y, elapsed);
   }
 
   /** M2 收口：槽位 → 该图槽位池具体敌（rForSlot 定槽 + subR 选敌）→ spawnByConfig */
-  private spawnOneAt(slot: EnemySlot, weights: StageWeights, x: number, y: number): void {
-    const id = pickEnemyIdForMap(this.mapId, weights, rForSlot(slot, weights), Math.random());
-    this.spawnOneById(id, x, y);
+  private spawnOneAt(slot: EnemySlot, weights: StageWeights, x: number, y: number, elapsed?: number): void {
+    const id = pickEnemyIdForMap(this.mapId, weights, rForSlot(slot, weights), Math.random(), elapsed);
+    this.spawnOneById(id, x, y, elapsed);
   }
 
   /** M2 收口：按内容 ID 注册实体（ENEMY_CONFIGS 唯一数据源 + 狼穴移速加权）。
-   *  W-B：返回实体供组元数据/召唤 noXp 置位（原调用方忽略返回值不受影响）。 */
-  private spawnOneById(id: EnemyId, x: number, y: number): Enemy | null {
+   *  W-B：返回实体供组元数据/召唤 noXp 置位（原调用方忽略返回值不受影响）。
+   *  W-8 面板链：精英不吃 scale(t)（独立曲线），基础面板 HP × scale(t) × c 案联动 × 宽容（仅 HP）。 */
+  private spawnOneById(id: EnemyId, x: number, y: number, elapsed?: number): Enemy | null {
     const cfg = ENEMY_CONFIGS[id];
     // 池契约 acquire(x,y,texture?,frame?) —— 显式 'characters' + 配置帧名（消除 __MISSING 警告）
     const enemy = this.enemyPool.acquire(x, y, 'characters', cfg.frame);
     if (!enemy) return null; // 已检查 activeCount，正常不会为 null
-    enemy.spawnByConfig(cfg, x, y);
+    let hpMult = 1;
+    if (elapsed !== undefined && cfg.tier !== 'elite') {
+      const scaled = applyPanelScale({
+        baseHp: cfg.hp,
+        t: elapsed,
+        playerLevel: this.playerLevelProvider?.call(null) ?? undefined,
+        caseLink: this.caseHpLink,
+      });
+      hpMult = scaled.hp / cfg.hp;
+    }
+    enemy.spawnByConfig(cfg, x, y, { hpMult });
     // E3-S7：狼穴敌潮移速 ×1.08（不含 Boss；gdd-maps §3.4 移速加权；其余图 ×1.0 恒等）
     enemy.speed = enemySpeedFor(this.mapId, cfg.speed);
     return enemy;

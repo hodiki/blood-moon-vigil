@@ -14,8 +14,6 @@ import {
   isWithinAuraDistance,
   isUndead,
   summonShouldFire,
-  rangedAttackDue,
-  rangedProjectileSpeed,
   rangedDamageFor,
   chargePhaseFor,
   chargeSpeedFor,
@@ -30,19 +28,30 @@ import {
  * 面板断言见 enemy-config.test（E1-S3）；本文件补「运行时行为」断言（M2-S3 验收门）。
  */
 
-describe('E3-S1 特殊行为表（gdd-enemies-v2 §3.1~3.3 特殊行为列结构化）', () => {
-  it('恰好 5 类行为，一类一只，内容 ID 闭合', () => {
+describe('特殊行为表（gdd-enemies-v3 §③-3 收口：3 类在册；MN-15/MN-17 退役 2 类）', () => {
+  it('恰好 3 类行为（MN-15 亡魂 phase 撤销 / MN-17 忏悔者 ranged 升格 W-16 精英技能）', () => {
     const ids = Object.keys(ENEMY_BEHAVIORS) as EnemyId[];
-    expect(ids).toEqual(['enemy_g1_4', 'enemy_g1_5', 'enemy_g2_3', 'enemy_g2_5', 'enemy_g3_4']);
+    expect(ids).toEqual(['enemy_g1_5', 'enemy_g2_3', 'enemy_g3_4']);
     const kinds = Object.values(ENEMY_BEHAVIORS).map((b) => b.kind).sort();
-    expect(kinds).toEqual(['aura', 'charge', 'phase', 'ranged', 'summon']);
+    expect(kinds).toEqual(['aura', 'charge', 'summon']);
   });
 
-  it('亡魂 phase / 尸巫 aura 120px +20% ×3 / 圣杯侍僧 summon 5s cap3 / 忏悔者 ranged 3s 180 / 狼裔猎手 charge 6s 0.5+0.15 500', () => {
-    expect(specialBehaviorFor('enemy_g1_4')).toEqual({ kind: 'phase' });
+  it('MN-15 亡魂叙事化退役：相位接线撤销（无 phase 条目）+ 生成池移除标记', () => {
+    expect(specialBehaviorFor('enemy_g1_4')).toBeNull();
+    expect(ENEMY_CONFIGS.enemy_g1_4.retiredNarrative).toBe(true);
+    expect(ENEMY_CONFIGS.enemy_g1_4.special).toContain('退役'); // 图鉴补句口径
+  });
+
+  it('MN-17 忏悔者升格精英：普通 ranged 行为退役，rangedDamage 单列保留（W-16 精英技能消费）', () => {
+    expect(specialBehaviorFor('enemy_g2_5')).toBeNull();
+    expect(ENEMY_CONFIGS.enemy_g2_5.tier).toBe('elite');
+    expect(ENEMY_CONFIGS.enemy_g2_5.eliteUpgraded).toBe(true);
+    expect(rangedDamageFor('enemy_g2_5')).toBe(8);
+  });
+
+  it('尸巫 aura 120px +20% ×3 / 圣杯侍僧 summon 5s cap3 / 狼裔猎手 charge 6s 0.5+0.15 500', () => {
     expect(specialBehaviorFor('enemy_g1_5')).toEqual({ kind: 'aura', radius: 120, attackSpeedBonus: 0.2, maxStacks: 3 });
     expect(specialBehaviorFor('enemy_g2_3')).toEqual({ kind: 'summon', interval: 5, summonedId: 'enemy_g2_1', summonCap: 3 });
-    expect(specialBehaviorFor('enemy_g2_5')).toEqual({ kind: 'ranged', interval: 3, projectileSpeed: 180 });
     expect(specialBehaviorFor('enemy_g3_4')).toEqual({ kind: 'charge', interval: 6, windup: 0.5, warning: 0.15, dashSpeed: 500, dashDuration: 0.4 });
   });
 
@@ -52,15 +61,15 @@ describe('E3-S1 特殊行为表（gdd-enemies-v2 §3.1~3.3 特殊行为列结构
     expect(specialBehaviorFor('enemy_g3_3')).toBeNull(); // 石甲狼=厚血精英
   });
 
-  it('特殊行为敌人每地图 ≤2 种（§①；血蝠 tier=air 不计，行为表同口径）', () => {
+  it('特殊行为敌人每地图 ≤2 种且各图恰 1 种（gdd-enemies-v3 §③-3 定稿构成）', () => {
     const byMap = new Map<MapId, number>();
     for (const id of Object.keys(ENEMY_BEHAVIORS) as EnemyId[]) {
       const map = ENEMY_CONFIGS[id].map;
       byMap.set(map, (byMap.get(map) ?? 0) + 1);
     }
-    expect(byMap.get('map_graveyard')).toBeLessThanOrEqual(2); // 亡魂 + 尸巫
-    expect(byMap.get('map_cathedral')).toBeLessThanOrEqual(2); // 圣杯侍僧 + 忏悔者
-    expect(byMap.get('map_den')).toBeLessThanOrEqual(2); // 狼裔猎手
+    expect(byMap.get('map_graveyard')).toBe(1); // 尸巫（光环）
+    expect(byMap.get('map_cathedral')).toBe(1); // 圣杯侍僧（召唤）
+    expect(byMap.get('map_den')).toBe(1); // 狼裔猎手（冲锋）
   });
 
   it('特殊行为敌均有明确反制字段（集火/走位/打断，支柱 3 可检验含义③）', () => {
@@ -70,9 +79,9 @@ describe('E3-S1 特殊行为表（gdd-enemies-v2 §3.1~3.3 特殊行为列结构
   });
 });
 
-describe('E3-S2 相位（亡魂 §3.1；血蝠 tier=air 同语义 §3.2）', () => {
-  it('亡魂穿越障碍（passesObstacles=true）', () => {
-    expect(passesObstacles('enemy_g1_4')).toBe(true);
+describe('E3-S2 相位（血蝠 tier=air 同语义 §3.2；亡魂已退役 MN-15）', () => {
+  it('MN-15：亡魂相位撤销 → 不再穿越障碍语义（退役敌不生成，字段位仅 air 语义保留）', () => {
+    expect(passesObstacles('enemy_g1_4')).toBe(false);
   });
 
   it('血蝠 tier=air：空中=相位障碍无效（行为表无 phase 条目但穿越障碍）', () => {
@@ -144,19 +153,10 @@ describe('E3-S3 圣杯侍僧召唤（每 5s 1 血信徒，上限 3）', () => {
   });
 });
 
-describe('E3-S3 忏悔者远程（每 3s 烛火弹 180px/s 8 伤，慢速可躲）', () => {
-  it('每 3s 触发一次（rangedAttackDue）', () => {
-    const b = specialBehaviorFor('enemy_g2_5');
-    if (!b || b.kind !== 'ranged') throw new Error('unreachable');
-    expect(rangedAttackDue(b, 2.99)).toBe(false);
-    expect(rangedAttackDue(b, 3.0)).toBe(true);
-  });
-
-  it('烛火弹慢速 180px/s（§⑥.8 可躲）+ 投射伤害 8（rangedDamage 单列）', () => {
-    const b = specialBehaviorFor('enemy_g2_5');
-    if (!b || b.kind !== 'ranged') throw new Error('unreachable');
-    expect(rangedProjectileSpeed(b)).toBe(180);
-    expect(rangedDamageFor('enemy_g2_5')).toBe(8);
+describe('MN-17 忏悔者升格精英（普通远程退役；行为参数由 W-16 精英技能引擎承接）', () => {
+  it('ranged 行为条目已撤销（rangedAttackDue/rangedProjectileSpeed 保留为通用工具）', () => {
+    expect(specialBehaviorFor('enemy_g2_5')).toBeNull();
+    expect(rangedDamageFor('enemy_g2_5')).toBe(8); // 烛火弹 8 伤锚不变（W-16 消费）
   });
 });
 

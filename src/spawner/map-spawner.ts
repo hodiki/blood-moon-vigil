@@ -10,7 +10,7 @@
  * 槽位池：阶段权重（zombie/wolf/tank 抽象槽）→ 每地图槽位 → 具体敌人 id（E3-S1 enemiesForMap 派生）。
  */
 
-import { MAP_CONFIGS, type MapId, type EnemyId } from '@/config/balance';
+import { MAP_CONFIGS, ENEMY_CONFIGS, type MapId, type EnemyId } from '@/config/balance';
 import { SPAWN_STAGES, pickEnemyKind, type StageWeights, type SpawnStage } from '@/spawner/spawner';
 
 /** 生成器三抽象槽（pickEnemyKind 输出收敛，排除 boss；M2 收口 15 敌运行时接入） */
@@ -68,11 +68,36 @@ export function weightedWeightsForStage(mapId: MapId, stage: SpawnStage): StageW
   return applyWeightOverride(stage.weights, delta);
 }
 
-/** 权重抽槽位 → 槽内选具体敌人（r 抽槽、subR 选敌；E3-S7 生成器消费） */
-export function pickEnemyIdForMap(mapId: MapId, weights: StageWeights, r: number, subR: number): EnemyId {
+/**
+ * 权重抽槽位 → 槽内选具体敌人（r 抽槽、subR 选敌；E3-S7 生成器消费）。
+ * W-9 轨①（gdd-difficulty-v3 §5.4）：elapsed 给定时按 per-kind unlockAt 过滤
+ * （t < unlockAt 跳过；过滤后池空回退该槽 unlockAt=0 基础敌——结构校验每槽 ≥1）；
+ * elapsed 缺省 = 不过滤（既有调用方/测试兼容）。
+ */
+export function pickEnemyIdForMap(
+  mapId: MapId,
+  weights: StageWeights,
+  r: number,
+  subR: number,
+  elapsed?: number,
+): EnemyId {
   // pickEnemyKind 面板三槽 {zombie,wolf,tank} 不会返回 'boss'（r 恒 < 1，权重表无 boss）
   const slot = pickEnemyKind(weights, r) as EnemySlot;
-  const pool = MAP_ENEMY_SLOTS[mapId][slot];
+  const fullPool = MAP_ENEMY_SLOTS[mapId][slot];
+  if (elapsed === undefined) {
+    const idx = Math.min(fullPool.length - 1, Math.floor(subR * fullPool.length));
+    return fullPool[idx]!;
+  }
+  const pool = fullPool.filter((id) => (ENEMY_CONFIGS[id].unlockAt ?? 0) <= elapsed);
+  if (pool.length === 0) {
+    // §⑥-3 回退：该槽最低 unlockAt 基础敌（GDD §③-2 槽基础敌口径：墓地 wolf=血犬(60) /
+    // 教堂 wolf=血蝠(75) / 狼穴 wolf=暗影狼(90)——炮灰槽恒有 0 基础敌，wolf 槽基础=突袭档）
+    let base = fullPool[0]!;
+    for (const id of fullPool) {
+      if ((ENEMY_CONFIGS[id].unlockAt ?? 0) < (ENEMY_CONFIGS[base].unlockAt ?? 0)) base = id;
+    }
+    return base;
+  }
   const idx = Math.min(pool.length - 1, Math.floor(subR * pool.length));
   return pool[idx]!;
 }

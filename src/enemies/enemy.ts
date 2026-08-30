@@ -18,7 +18,12 @@ import { emptyStatusState, isStunned, slowMultiplier, clearStatuses, type Status
 import { SPECIAL_MARKERS } from '@/fx/fx-spec';
 import type { Player } from '@/player/player';
 
+/** 敌实体实例计数器（同源召唤计数键 sk_<instanceId>；池复用实例身份稳定） */
+let ENEMY_INSTANCE_SEQ = 0;
+
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
+  /** W-1：实例 ID（EnemyAiDirector 同源召唤计数键） */
+  readonly instanceId = ++ENEMY_INSTANCE_SEQ;
   kind: EnemyKindId = 'zombie';
   /** 当前外观帧（M4：tick 按此播 idle/move，避免 15 敌被播回 wolf/zombie 剪影） */
   visualFrame = 'enemy-zombie';
@@ -36,6 +41,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    */
   noXp = false;
   attackInterval = 0;
+  /** W-1 光环基准攻击间隔（ENEMY_CONFIGS 原值；光环 stacks 每帧重算 attackInterval） */
+  baseAttackInterval = 0;
   /** 碰撞半径（面板值，供武器圆-圆命中检测） */
   radius = 14;
   /** 接触攻击计时（秒）：与玩家 overlap 且 ≤0 才造成伤害，命中后重置为攻击间隔 */
@@ -148,11 +155,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * 帧名取 config.frame（如 enemy-hound/enemy-wraith），池分类由 runtimeKindForEnemyId 派生
    * （死亡溅射/剪影颜色等 4 类消费）。特殊行为运行时由 enemy-behaviors.ts 纯函数驱动。
    */
-  spawnByConfig(cfg: EnemyConfig, x: number, y: number): void {
+  spawnByConfig(
+    cfg: EnemyConfig,
+    x: number,
+    y: number,
+    opts?: { hpMult?: number },
+  ): void {
     this.enemyId = cfg.id;
     this.kind = runtimeKindForEnemyId(cfg.id);
-    this.maxHp = cfg.hp;
-    this.hp = cfg.hp;
+    // W-8 面板链：HP = 基础面板 × hpMult（scale(t)×c 案联动×宽容，由生成侧组装；
+    // 仅 HP——伤害/移速/攻击间隔不缩放 MN-2）；缺省 1 = 无缩放（测试确定性路径）
+    const hpMult = opts?.hpMult ?? 1;
+    this.maxHp = Math.max(1, Math.round(cfg.hp * hpMult));
+    this.hp = this.maxHp;
+    this.baseAttackInterval = cfg.attackInterval; // W-1 光环攻速基准（每帧重算用）
     this.speed = cfg.speed;
     this.damage = cfg.damage;
     this.xp = cfg.xp;
@@ -174,7 +190,51 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.groupId = null;
     this.groupRole = null;
     this.groupSlotIndex = -1;
-    this.ccProfile = undefined;
+    // W-5/MN-9：逐敌覆写优先（石甲狼减速 ×0.5）；否则按 tier 派生（精英 ×0.5 / 普通全效）
+    this.ccProfile = cfg.ccProfile ?? (cfg.tier === 'elite' ? { tier: 'elite' } : undefined);
+    this.visualFrame = cfg.frame;
+    this.setTexture('characters', cfg.frame);
+    this.setPosition(x, y);
+    this.setActive(true).setVisible(true);
+    this.resetVisualState();
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.enable = true;
+    body.setCircle(cfg.radius);
+    body.reset(x, y);
+  }
+
+  /**
+   * W-3/W-8 收口：Boss 面板单源化（BOSSES 表；legacy spawn('boss')/ENEMIES.boss 退役）。
+   * Boss 独立曲线：不吃 scale(t)/c 案联动（difficulty-v3 §5.1，MD-4 65~85s 反推锚）；
+   * ccProfile = BossConfig.ccProfile ?? { tier:'boss' }（MN-9 覆写：芬里厄减速 ×0.5 / 化身易伤免疫）。
+   */
+  spawnByBossConfig(cfg: import('@/config/balance').BossConfig, x: number, y: number): void {
+    this.enemyId = null;
+    this.kind = 'boss';
+    this.maxHp = cfg.hp;
+    this.hp = cfg.hp;
+    this.speed = cfg.speed;
+    this.damage = cfg.damage;
+    this.xp = cfg.xp;
+    this.attackInterval = cfg.attackInterval;
+    this.baseAttackInterval = cfg.attackInterval;
+    this.radius = cfg.radius;
+    this.noXp = false;
+    this.attackTimer = 0;
+    this.orbitHitCooldownUntil = 0;
+    this.graceUntil = 0; // 出场霸体由 beginGrace 显式设置
+    this.stunnedUntil = 0;
+    this.slowUntil = 0;
+    this.slowPct = 0;
+    this.markUntil = 0;
+    this.markDamageMult = 1;
+    clearStatuses(this.cc);
+    this.onKilled = undefined;
+    this.onDamaged = undefined;
+    this.groupId = null;
+    this.groupRole = null;
+    this.groupSlotIndex = -1;
+    this.ccProfile = cfg.ccProfile ?? { tier: 'boss' };
     this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
     this.setPosition(x, y);
