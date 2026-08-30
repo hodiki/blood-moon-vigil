@@ -26,10 +26,11 @@ import {
   type EnemyId,
 } from '@/config/balance';
 
-/** 预约组成员（阵型站位落点在预约时定死） */
+/** 预约组成员（阵型站位落点在预约时定死；slotIndex = 组内槽位，黑板/元数据路由键） */
 export interface GroupMemberSlot {
   enemyId: EnemyId;
   role: FormationRole;
+  slotIndex: number;
   x: number;
   y: number;
   landed: boolean;
@@ -303,7 +304,7 @@ export function rollGroup(
     for (const m of formation.members) {
       for (let c = 0; c < m.count; c += 1) {
         const p = positions[idx++]!;
-        members.push({ enemyId: m.enemyId, role: m.role, x: p.x, y: p.y, landed: false });
+        members.push({ enemyId: m.enemyId, role: m.role, slotIndex: idx - 1, x: p.x, y: p.y, landed: false });
       }
     }
     const group: PendingGroup = {
@@ -344,7 +345,7 @@ export function rollGroup(
   for (const m of formation.members) {
     for (let c = 0; c < m.count; c += 1) {
       const p = positions[idx++]!;
-      members.push({ enemyId: m.enemyId, role: m.role, x: p.x, y: p.y, landed: false });
+      members.push({ enemyId: m.enemyId, role: m.role, slotIndex: idx - 1, x: p.x, y: p.y, landed: false });
     }
   }
   const group: PendingGroup = {

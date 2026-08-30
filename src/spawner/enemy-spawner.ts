@@ -46,7 +46,9 @@ import {
   type GroupSchedulerState,
   type GroupRollContext,
 } from '@/spawner/spawn-group';
-import { MAP_CONFIGS } from '@/config/balance';
+import { MAP_CONFIGS, FORMATIONS, type FormationId } from '@/config/balance';
+import { FormationRuntime } from '@/enemies/formation-runtime';
+import type { GroupMemberState } from '@/enemies/group-blackboard';
 import type { Enemy } from '@/enemies/enemy';
 import type { Player } from '@/player/player';
 
@@ -66,11 +68,15 @@ export class EnemySpawner {
    */
   private pendingTank: { x: number; y: number; remaining: number; enemyId: EnemyId } | null = null;
   private stopped = false;
+  /** 场景时间戳秒（scene.time.now/1000 等效；update 由 PlayScene RUNNING 秒制驱动） */
+  private time_now = 0;
   /**
    * W-A/W-10 方阵组生成（gdd-spawner-v2 §③-4）：默认关闭（存量测试确定性不变），
    * PlayScene 传 true 启用。掷点/预扣/分帧落地全走 spawn-group 纯函数层。
    */
   private readonly groups: GroupSchedulerState | null;
+  /** W-B/W-11 组黑板运行时（与 groups 同生命周期；enableFormations 时创建） */
+  private readonly formationRuntime: FormationRuntime | null;
   /** 组生成掷点上下文（惰性组装；环带按图双端覆盖） */
   private readonly groupCtx: GroupRollContext;
 
@@ -89,6 +95,7 @@ export class EnemySpawner {
     enableFormations = false,
   ) {
     this.groups = enableFormations ? createGroupSchedulerState() : null;
+    this.formationRuntime = enableFormations ? new FormationRuntime() : null;
     const ring = spawnRingFor(mapId, cfg.isMobile);
     const map = MAP_CONFIGS[mapId];
     this.groupCtx = {
@@ -104,6 +111,7 @@ export class EnemySpawner {
 
   update(dt: number): void {
     if (this.stopped) return;
+    this.time_now += dt;
     this.t += dt;
     // TASK-39 E2 屠夫预警：预约厚血倒计时（随世界冻结 pause，dt 由 PlayScene RUNNING 秒制驱动）
     this.tickPendingTank(dt);
@@ -228,8 +236,24 @@ export class EnemySpawner {
     const canSpawn = this.enemyPool.activeCount < this.cfg.maxEnemies;
     const events = stepGroupScheduler(groups, dt, canSpawn);
     for (const land of events.lands) {
-      this.spawnOneById(land.member.enemyId, land.member.x, land.member.y);
-      if (land.isGroupStart) {
+      const enemy = this.spawnOneById(land.member.enemyId, land.member.x, land.member.y);
+      if (enemy && this.formationRuntime) {
+        // W-B：组元数据写入 + 承伤路由（受击激活/仪式受击计数）
+        enemy.setGroupMeta(land.groupId, land.member.role, land.member.slotIndex);
+        this.formationRuntime.bindMember(land.groupId, land.member.slotIndex, enemy, () => {
+          this.formationRuntime?.onMemberDamaged(land.groupId, land.member.slotIndex);
+        });
+      }
+      if (land.isGroupStart && this.formationRuntime) {
+        const formation = FORMATIONS[land.formationId];
+        const states: GroupMemberState[] = [];
+        let slot = 0;
+        for (const m of formation.members) {
+          for (let c = 0; c < m.count; c += 1) {
+            states.push({ slotIndex: slot++, enemyId: m.enemyId, role: m.role, alive: true });
+          }
+        }
+        this.formationRuntime.registerGroup(land.groupId, land.formationId as FormationId, states);
         GameEvents.emit(GameEvent.FormationLanded, {
           groupId: land.groupId,
           formationId: land.formationId,
@@ -237,6 +261,69 @@ export class EnemySpawner {
           y: land.member.y,
         });
       }
+    }
+    // W-B：黑板状态机推进（仪式/唤尸/治疗/宝藏相位；事件副作用在下方消费）
+    this.stepFormations(dt);
+  }
+
+  /** W-B 黑板推进与事件副作用消费（召唤生成 noXp 实体 / 治疗结算 / 解散清理） */
+  private stepFormations(dt: number): void {
+    const runtime = this.formationRuntime;
+    if (!runtime || runtime.groupCount === 0) return;
+    const now = this.time_now;
+    for (const ev of runtime.stepAll(dt, now)) {
+      switch (ev.type) {
+        case 'summon': {
+          // 组召唤实体：noXp=true（F-4 全量）；生成点 = 仪式主体位（缺省玩家环带）
+          for (let i = 0; i < ev.count; i += 1) {
+            const at = this.groupRitualistPosition(ev.groupId);
+            const enemy = this.spawnOneById(ev.enemyId, at.x + (i - (ev.count - 1) / 2) * 24, at.y);
+            if (!enemy) continue;
+            enemy.noXp = true;
+            enemy.setGroupMeta(ev.groupId, 'summon', -1);
+            runtime.bindSummon(ev.groupId, enemy);
+          }
+          break;
+        }
+        case 'heal':
+          runtime.healMember(ev.groupId, ev.targetSlotIndex, ev.amount);
+          break;
+        case 'ritual-start':
+        case 'ritual-interrupted':
+        case 'ritual-complete':
+        case 'activated':
+        case 'treasure-dropped':
+        case 'aggro':
+        case 'depart':
+        case 'dissolved':
+          // 演出/宝藏实体/横穿 AI 消费点（W-13/W-14 内容批）；黑板状态已生效
+          break;
+      }
+    }
+  }
+
+  /** 仪式主体位置（召唤落点基准；未绑定时回退玩家环带点） */
+  private groupRitualistPosition(groupId: string): { x: number; y: number } {
+    const board = this.formationRuntime?.boardFor(groupId);
+    if (board) {
+      const idx = board.members.findIndex((s) => s.role === 'healer' || s.role === 'summoner');
+      if (idx >= 0) {
+        const entry = (this.formationRuntime as unknown as { groups: Map<string, { members: Array<{ x: number; y: number } | null> }> }).groups.get(groupId);
+        const m = entry?.members[idx];
+        if (m) return { x: m.x, y: m.y };
+      }
+    }
+    const pos = this.spawnRingPosition();
+    return { x: pos.x, y: pos.y };
+  }
+
+  /** W-B：组内成员/召唤物击杀路由（PlayScene enemy:killed payload 转发） */
+  notifyGroupMemberKilled(payload: { groupId?: string | null; groupSlotIndex?: number }): void {
+    if (!this.formationRuntime || !payload.groupId) return;
+    if (payload.groupSlotIndex === -1) {
+      this.formationRuntime.onSummonKilled(payload.groupId);
+    } else if (typeof payload.groupSlotIndex === 'number') {
+      this.formationRuntime.onMemberKilled(payload.groupId, payload.groupSlotIndex);
     }
   }
 
@@ -258,14 +345,16 @@ export class EnemySpawner {
     this.spawnOneById(id, x, y);
   }
 
-  /** M2 收口：按内容 ID 注册实体（ENEMY_CONFIGS 唯一数据源 + 狼穴移速加权） */
-  private spawnOneById(id: EnemyId, x: number, y: number): void {
+  /** M2 收口：按内容 ID 注册实体（ENEMY_CONFIGS 唯一数据源 + 狼穴移速加权）。
+   *  W-B：返回实体供组元数据/召唤 noXp 置位（原调用方忽略返回值不受影响）。 */
+  private spawnOneById(id: EnemyId, x: number, y: number): Enemy | null {
     const cfg = ENEMY_CONFIGS[id];
     // 池契约 acquire(x,y,texture?,frame?) —— 显式 'characters' + 配置帧名（消除 __MISSING 警告）
     const enemy = this.enemyPool.acquire(x, y, 'characters', cfg.frame);
-    if (!enemy) return; // 已检查 activeCount，正常不会为 null
+    if (!enemy) return null; // 已检查 activeCount，正常不会为 null
     enemy.spawnByConfig(cfg, x, y);
     // E3-S7：狼穴敌潮移速 ×1.08（不含 Boss；gdd-maps §3.4 移速加权；其余图 ×1.0 恒等）
     enemy.speed = enemySpeedFor(this.mapId, cfg.speed);
+    return enemy;
   }
 }

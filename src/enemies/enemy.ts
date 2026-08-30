@@ -69,6 +69,25 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * 池复用重置清空，防跨局残留。
    */
   onKilled?: (target: Enemy) => void;
+  /**
+   * W-B/W-11 承伤回调挂点（可选）：方阵成员受击 → FormationRuntime 路由
+   * （苏生受击激活 / 追猎仪式受击计数）。池复用重置清空。
+   */
+  onDamaged?: (target: Enemy) => void;
+  // —— W-B 组黑板元数据（方阵成员/召唤物；普通敌 null/undefined）——
+  /** 所属组 ID（spawnGroup 落地成员 / 组召唤实体） */
+  groupId: string | null = null;
+  /** 组角色槽（FormationRole；召唤物 = 'summon' 语义走 groupSlotIndex=-1） */
+  groupRole: string | null = null;
+  /** 组内槽位（-1 = 召唤物） */
+  groupSlotIndex = -1;
+
+  /** W-B：组元数据写入（spawnGroup 落地/召唤生成时调用；noXp 召唤侧同批置位） */
+  setGroupMeta(groupId: string, role: string, slotIndex: number): void {
+    this.groupId = groupId;
+    this.groupRole = role;
+    this.groupSlotIndex = slotIndex;
+  }
 
   /**
    * 构造器：池契约 acquire(x,y,texture?,frame?) —— 由调用方显式传 'characters' + 帧名
@@ -108,6 +127,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.markDamageMult = 1;
     clearStatuses(this.cc); // B2 状态层载荷重置（池复用不残留）
     this.onKilled = undefined;
+    this.onDamaged = undefined;
+    this.groupId = null;
+    this.groupRole = null;
+    this.groupSlotIndex = -1;
     this.ccProfile = undefined;
     this.visualFrame = `enemy-${kind}`;
     this.setTexture('characters', this.visualFrame);
@@ -147,6 +170,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.markDamageMult = 1;
     clearStatuses(this.cc); // B2 状态层载荷重置
     this.onKilled = undefined;
+    this.onDamaged = undefined;
+    this.groupId = null;
+    this.groupRole = null;
+    this.groupSlotIndex = -1;
     this.ccProfile = undefined;
     this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
@@ -209,6 +236,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       xp: this.xp,
       // W-12：击杀反馈链挂点——PlayScene 宝石生成按 noXp 跳过（召唤物零宝石路径）
       noXp: this.noXp,
+      // W-B/W-11：组黑板路由（成员击杀 → 成员槽置亡/召唤物计数释放）
+      groupId: this.groupId,
+      groupRole: this.groupRole,
+      groupSlotIndex: this.groupSlotIndex,
       x: this.x,
       y: this.y,
     });

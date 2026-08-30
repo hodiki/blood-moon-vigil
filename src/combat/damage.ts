@@ -64,9 +64,14 @@ export function applyDamage(target: Damageable, amount: number): boolean {
 /**
  * 统一「打中敌人」入口：扣血 → 死亡则 kill()（回收 + emit enemy:killed）。
  * 返回是否击杀；调用方据此决定子弹是否消散/穿透。
+ * W-B：可选 onDamaged 承伤回调（方阵成员受击 → FormationRuntime 路由）在扣血后触发。
  */
-export function hitEnemy(target: Killable, amount: number): boolean {
+export function hitEnemy<T extends Killable>(
+  target: T & { onDamaged?: (t: T) => void },
+  amount: number,
+): boolean {
   const killed = applyDamage(target, amount);
+  target.onDamaged?.(target);
   if (killed) target.kill();
   return killed;
 }

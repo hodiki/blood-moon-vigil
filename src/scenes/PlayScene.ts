@@ -89,6 +89,10 @@ interface EnemyKilledPayload {
   xp: number;
   /** W-12 召唤物 noXp：true = 击杀反馈链跳过宝石生成（零 XP 路径，gdd-spawner-v2 §③-7） */
   noXp?: boolean;
+  /** W-B/W-11 组黑板路由（方阵成员击杀 → 槽位置亡/召唤物计数释放） */
+  groupId?: string | null;
+  groupRole?: string | null;
+  groupSlotIndex?: number;
   x: number;
   y: number;
 }
@@ -717,6 +721,10 @@ export class PlayScene extends Phaser.Scene {
   private onEnemyKilled(args: unknown): void {
     const payload = args as EnemyKilledPayload;
     this.stats.recordKill();
+    // W-B/W-11：方阵成员/召唤物击杀 → 组黑板路由（槽位置亡/计数释放/全灭解散）
+    if (payload.groupId) {
+      this.spawner.notifyGroupMemberKilled(payload);
+    }
     // B6-W5 占比分母近似：击杀敌面板 HP 计入总伤害（1D/沙盘校准口径；精确伤害流留遥测批次）
     const cfg = payload.enemyId ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[payload.enemyId] ?? (BOSSES as Record<string, { hp?: number }>)[payload.enemyId] : undefined;
     if (cfg?.hp) this.stats.recordTotalDamage(cfg.hp);
