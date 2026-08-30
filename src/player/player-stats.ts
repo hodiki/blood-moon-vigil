@@ -168,7 +168,15 @@ export class PlayerStats {
     mult += this.rageSpeedPct;
     mult += this.moveSpeedBonusPct;
     if (now < this.killSpeedBuffUntil && this.killSpeedBuff) mult += this.killSpeedBuff.pct;
+    // W-4 外部减速乘区（血渍区/领域类地面效应；0.85 = 减速 15%）
+    mult *= this.externalSlowMult;
     return this.moveSpeed * mult;
+  }
+
+  /** W-4 外部减速乘区（地面效应写入口；1 = 无减速） */
+  externalSlowMult = 1;
+  setExternalSlowMult(mult: number): void {
+    this.externalSlowMult = Math.max(0, mult);
   }
 
   /** E4-S4 写回：移速 +8%（up_g_4；与角色成长叠加） */

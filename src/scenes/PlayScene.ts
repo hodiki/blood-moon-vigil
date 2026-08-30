@@ -37,6 +37,7 @@ import { Enemy } from '@/enemies/enemy';
 import { Boss } from '@/enemies/boss';
 import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
 import { EliteSkillDirector } from '@/enemies/elite-skill-runtime';
+import { OathkeeperRuntime } from '@/weapons/companion/oathkeeper-runtime';
 import { TelegraphLayer } from '@/fx/telegraph-layer';
 import {
   createBossSkillState,
@@ -165,6 +166,12 @@ export class PlayScene extends Phaser.Scene {
   private static readonly BOSS_SUMMON_TAG = 'boss_skills';
   /** W-14 宝藏实体（驮尸全灭落地；拾取 = offer 直发 MN-21；TTL 30s） */
   private treasure: { x: number; y: number; age: number } | null = null;
+  /** W-4 守誓者运行时（FQ-2：薇奥莱+圣铃开局自带；索敌切换/承伤转移/撕咬/墓碑） */
+  private oathkeeper!: OathkeeperRuntime;
+  /** W-4 血渍减速区（忏悔者弹着点；60px/2s/减速 15%，工程锚） */
+  private bloodstains: Array<{ x: number; y: number; until: number }> = [];
+  /** W-4 月影幻影到期表（hp1 实体；到期自散 → 释放 Boss 同源召唤计数） */
+  private phantoms: Array<{ enemy: Enemy; until: number }> = [];
   /** W-3 MN-12：血月化身本局已触发（5% 判定 once；常规 Boss 优先口径 §⑥-5） */
   private avatarTriggeredThisRun = false;
   /** W-3：化身判定节拍（1s 一次；工程锚） */
@@ -341,6 +348,9 @@ export class PlayScene extends Phaser.Scene {
     // W-16 精英技能运行时 + W-13 telegraph 演出基座
     this.eliteDirector = new EliteSkillDirector();
     this.telegraphs = new TelegraphLayer(this);
+    // W-4 守誓者运行时（FQ-2：修女选圣铃开局自带；墓碑回血 sink = 玩家回血钳上限）
+    this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y);
+    this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && this.ownedWeaponIds.includes('xw_bell' as unknown as WeaponId));
     // W-14：宝藏落地监听（实体由 PlayScene 持有；拾取 = MN-21 offer 直发）
     GameEvents.on(GameEvent.TreasureDropped, (args: unknown) => {
       const p = args as { x: number; y: number };
@@ -503,7 +513,8 @@ export class PlayScene extends Phaser.Scene {
         playerEnemyContact(
           o2 as unknown as ContactEnemy,
           this.time.now / 1000,
-          this.player,
+          // W-4：接触伤经守誓者承伤转移路由（替身圈 150px 内 50%/mc_bell_2 65%）
+          { hurt: (amount: number, nowSeconds: number) => this.hurtPlayer(amount, nowSeconds) },
         ),
     );
 
@@ -612,7 +623,9 @@ export class PlayScene extends Phaser.Scene {
       tickEnemyAnim(e);
     });
     // W-1 特殊行为 AI（光环攻速/侍僧召唤/猎手冲锋；冲锋速度覆盖在 updateMovement 之后）
-    this.aiDirector.update(dt, now, this.player);
+    this.aiDirector.update(dt, now, this.player, this.oathkeeper.friendlyTarget());
+    // W-4 守誓者步进（跟随/墓碑/重召唤/撕咬）+ 血渍区/幻影到期
+    this.stepCompanion(dt, now);
     // W-16 精英技能运行时（五精英 + MN-20 打断；技能伤走 player.hurt 独立结算）
     this.stepEliteSkills(dt, now);
     // W-15 Boss 五槽运行时消费（普攻基底/技能伤桩/召唤 noXp/阶段 2 霸体）
@@ -638,7 +651,7 @@ export class PlayScene extends Phaser.Scene {
       const bossCast = casting && bossRef?.active
         ? { x: this.player.x, y: this.player.y, range: 90, progress: 1 - Math.max(0, casting.fireAt - now) / 1.0 }
         : null;
-      this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossCast, this.cfg.isMobile ? 1 : 0);
+      this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossCast, this.cfg.isMobile ? 1 : 0, this.bloodstains);
     }
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now, this.s1WindowDamageMult());
@@ -758,6 +771,48 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** E4-S3 6:00 Boss 出场：清场已完成，在玩家前方一段距离登场 + 0.5s 霸体闪红 */
+  /**
+   * W-4 玩家受击统一入口：守誓者承伤转移路由（替身圈内 50%/mc_bell_2 65% 转移至
+   * 守誓者——R-5 圣域叠加口径经 mc_bell_2 machine 参数化）→ 剩余伤走 player.hurt
+   * （无敌帧/护盾/死亡分发语义不变）。
+   */
+  private hurtPlayer(amount: number, now: number): boolean {
+    const remaining = this.oathkeeper.isEnabled
+      ? this.oathkeeper.routePlayerHurt(amount, now, this.player)
+      : amount;
+    if (remaining <= 0) return false;
+    return this.player.hurt(remaining, now);
+  }
+
+  /** W-4：守誓者步进 + 血渍减速区 + 月影幻影到期 */
+  private stepCompanion(dt: number, now: number): void {
+    // 守誓者（撕咬目标 = 敌池最近敌；咬死走 Enemy.kill 全链路）
+    const biteTargets: Array<{ x: number; y: number; hp: number; kill(): void }> = [];
+    this.enemyPool.eachActive((e) => {
+      if (e.enemyId && !e.noXp) biteTargets.push(e); // 召唤物不咬（noXp 实体非合法撕咬目标语义）
+    });
+    this.oathkeeper.update(dt, now, this.player, biteTargets, (amount) => {
+      const healed = Math.min(amount, this.player.stats.maxHp - this.player.stats.hp);
+      if (healed > 0) {
+        this.player.stats.hp += healed;
+        GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      }
+      return healed;
+    });
+    // 血渍减速区（60px/2s/减速 15%；玩家 externalSlowMult 乘区消费）
+    this.bloodstains = this.bloodstains.filter((b) => now < b.until);
+    const inBlood = this.bloodstains.some((b) => Math.hypot(b.x - this.player.x, b.y - this.player.y) <= 60);
+    this.player.stats.setExternalSlowMult(inBlood ? 0.85 : 1);
+    // 月影幻影到期自散（释放同源计数）
+    for (let i = this.phantoms.length - 1; i >= 0; i -= 1) {
+      const ph = this.phantoms[i]!;
+      if (now >= ph.until || !ph.enemy.active) {
+        if (ph.enemy.active) ph.enemy.kill();
+        this.phantoms.splice(i, 1);
+      }
+    }
+  }
+
   /** W-16：精英技能逐帧推进 + 事件消费（伤害/位移/telegraph 由各消费端承接） */
   private stepEliteSkills(dt: number, now: number): void {
     const elites: Array<{ x: number; y: number; hp: number; maxHp: number; enemyId: EnemyId | null; cc: import('@/combat/status/status-engine').StatusState; speed: number; baseAttackInterval: number; attackInterval: number }> = [];
@@ -767,12 +822,15 @@ export class PlayScene extends Phaser.Scene {
     const events = this.eliteDirector.update(dt, now, this.player, elites);
     for (const ev of events) {
       if (ev.type === 'skill-damage') {
-        this.player.hurt(ev.damage, now); // 技能伤独立字段（无敌帧语义复用 player.hurt）
+        this.hurtPlayer(ev.damage, now); // 技能伤独立字段（经守誓者转移路由）
       } else if (ev.type === 'velocity') {
         const body = ev.override.enemy.body as { setVelocity(x: number, y: number): void } | undefined;
         body?.setVelocity(ev.override.vx, ev.override.vy);
+      } else if (ev.type === 'bloodstain') {
+        // W-4 实体化：血渍减速区（60px/2s，工程锚；演出 = telegraph 层暗红圆）
+        this.bloodstains.push({ x: ev.x, y: ev.y, until: now + 2 });
       }
-      // 'interrupted'（演出/音效挂点 W-13 内容批）/'bloodstain'（减速区实体内容批）/'armor-broken'（白闪演出）
+      // 'interrupted'（演出/音效挂点 W-13 内容批）/'armor-broken'（白闪演出）
     }
   }
 
@@ -789,9 +847,19 @@ export class PlayScene extends Phaser.Scene {
     const dist = Math.hypot(boss.x - this.player.x, boss.y - this.player.y);
     for (const ev of events) {
       if (ev.type === 'normal-attack' && dist <= 160) {
-        this.player.hurt(ev.damage, now); // 近身带语义桩（扇形/环形 160px）
+        this.hurtPlayer(ev.damage, now); // 近身带语义桩（扇形/环形 160px；经守誓者转移）
       } else if (ev.type === 'skill-damage' && dist <= 300) {
-        this.player.hurt(ev.damage, now); // 技能伤桩（telegraph 演出 W-13 内容批补）
+        this.hurtPlayer(ev.damage, now); // 技能伤桩（telegraph 演出 W-13 内容批补）
+      } else if (ev.type === 'summon-phantom') {
+        // W-4 月影幻影实体化：hp1 实体（受 1 次伤即散）+ 接触伤 25 + noXp + 到期自散；
+        // 镜像移动以默认追踪近似（追玩家移动方向），正式镜像语义留真机调参
+        const ph = this.spawner.spawnRuntimeSummon('enemy_g1_1', this.player.x + (Math.random() - 0.5) * 100, this.player.y + (Math.random() - 0.5) * 100, PlayScene.BOSS_SUMMON_TAG);
+        if (ph) {
+          ph.hp = 1;
+          ph.maxHp = 1;
+          ph.damage = ev.damage;
+          this.phantoms.push({ enemy: ph, until: now + ev.duration });
+        }
       } else if (ev.type === 'summon') {
         for (let i = 0; i < ev.count; i += 1) {
           const e = this.spawner.spawnRuntimeSummon(ev.enemyId, boss.x + (Math.random() - 0.5) * 120, boss.y + (Math.random() - 0.5) * 120, PlayScene.BOSS_SUMMON_TAG);

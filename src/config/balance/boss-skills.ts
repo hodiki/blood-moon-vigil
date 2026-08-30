@@ -32,6 +32,9 @@ export interface BossSkillConfig {
   telegraph: number;
   /** 召唤规格（noXp 全量；计数进 Boss 同源召唤池，受上限封顶） */
   summon?: { enemyId: EnemyId; count: number };
+  /** 月影幻影（boss_4 skill1 专用：镜像移动 8s、接触伤 25、受 1 次伤即散——hp1 实体承载）；
+   *  占 Boss 同源召唤计数（MN-23），到期/被击散释放 */
+  phantom?: { duration: number; damage: number };
   /** 动作桩标识（运行时结算层简化为伤害+召唤；演出内容批） */
   action: string;
 }
@@ -93,7 +96,7 @@ const BOSS_3_SLOTS: readonly BossSkillConfig[] = [
 /** boss_4 血月化身（任意图稀有 · 月相轮转系；无阶段，普技 CD 4~5s 短战压迫） */
 const BOSS_4_SLOTS: readonly BossSkillConfig[] = [
   { slot: 'normal', name: '月光鞭笞（160px 弧形）', cd: 1.8, unlockPhase: 1, damage: 25, castLock: 0, telegraph: 0.4, action: 'moon-whip' },
-  { slot: 'skill1', name: '月影分身（幻影 8s，受 1 次伤即散）', cd: 5, unlockPhase: 1, damage: 25, castLock: 0.3, telegraph: 0.3, action: 'mirror-image' },
+  { slot: 'skill1', name: '月影分身（幻影 8s，受 1 次伤即散）', cd: 5, unlockPhase: 1, damage: 25, castLock: 0.3, telegraph: 0.3, action: 'mirror-image', phantom: { duration: 8, damage: 25 } },
   { slot: 'skill2', name: '引力潮汐（220px 内拉 100px）', cd: 5, unlockPhase: 1, damage: 0, castLock: 0.3, telegraph: 1.0, action: 'gravity-tide' },
   { slot: 'skill3', name: '月相脉冲（环形波 300px 随机留缝）', cd: 5, unlockPhase: 1, damage: 20, castLock: 0.3, telegraph: 0.8, action: 'moon-pulse' },
   { slot: 'ultimate', name: '月坠（120px 落点 2s 预警）', cd: 8, unlockPhase: 1, damage: 30, castLock: 0.5, telegraph: 2.0, action: 'moonfall' },

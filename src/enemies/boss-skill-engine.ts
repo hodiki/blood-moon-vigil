@@ -66,6 +66,7 @@ export type BossSkillEvent =
   | { type: 'normal-attack'; damage: number }
   | { type: 'skill-damage'; slot: BossSlot; damage: number }
   | { type: 'summon'; enemyId: EnemyId; count: number; noXp: true }
+  | { type: 'summon-phantom'; duration: number; damage: number; noXp: true }
   | { type: 'phase-changed'; phase: 2 }
   | { type: 'cast-start'; slot: BossSlot; telegraph: number };
 
@@ -132,7 +133,14 @@ export function stepBossSkills(state: BossSkillState, ctx: BossStepContext): Bos
     if (skill.slot !== 'normal' && skill.damage > 0) {
       events.push({ type: 'skill-damage', slot: skill.slot, damage: skill.damage });
     }
-    if (skill.summon) {
+    if (skill.phantom) {
+      // 月影幻影（W-4 实体化）：hp1 实体承载（受 1 次伤即散）+ 到期自散；占同源计数
+      const cap = bossSummonCap(state);
+      if (state.summonsAlive + 1 <= cap && ctx.canSpawnMore) {
+        state.summonsAlive += 1;
+        events.push({ type: 'summon-phantom', duration: skill.phantom.duration, damage: skill.phantom.damage, noXp: true });
+      }
+    } else if (skill.summon) {
       const cap = bossSummonCap(state);
       if (state.summonsAlive + skill.summon.count <= cap && ctx.canSpawnMore) {
         state.summonsAlive += skill.summon.count;

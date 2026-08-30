@@ -142,6 +142,8 @@ interface SimEnemy extends ExclusiveTarget {
   noXp?: boolean;
   /** W-D：霸体截止（转阶段 1s 不承伤；Boss 专用） */
   graceUntil?: number;
+  /** W-4：月影幻影到期（hp1 实体受 1 次伤即散；到期自散） */
+  phantomUntil?: number;
   /** 接触攻击计时 s */
   attackTimer: number;
   cc: StatusState;
@@ -308,6 +310,12 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       });
     }
 
+    // ---- W-4 幻影到期自散（splice 不计 kills；被击散走 hp<=0 扫描）----
+    for (let i = enemies.length - 1; i >= 0; i -= 1) {
+      const ph = enemies[i]!;
+      if (ph.phantomUntil !== undefined && t >= ph.phantomUntil) enemies.splice(i, 1);
+    }
+
     // ---- 敌移动（1D 径向）+ 位置/CC tick + 接触伤害 ----
     for (const e of enemies) {
       // 状态层 tick（过期清除——B2 起真实 CC 生效于移动/接触）
@@ -372,6 +380,29 @@ export function simulateRun(opts: SimOptions): RunMetrics {
             if (firstHitAt === null) firstHitAt = round2(t);
             playerHp -= ev.damage;
             damageTakenWindow += ev.damage;
+          } else if (ev.type === 'summon-phantom') {
+            // W-4 月影幻影实体化：hp1（受 1 次伤即散）/接触伤 25/noXp/到期自散；
+            // 镜像移动 1D 径向近似 = 同接近语义
+            enemies.push({
+              kind: 'summon',
+              configId: 'boss_4',
+              hp: 1,
+              maxHp: 1,
+              speed: BOSSES.boss_4.speed,
+              damage: ev.damage,
+              attackInterval: BOSSES.boss_4.attackInterval,
+              dist: map.spawnRingDesktop[0] + rng() * 120,
+              radius: BOSSES.boss_4.radius,
+              xp: 0,
+              noXp: true,
+              phantomUntil: t + ev.duration,
+              attackTimer: 0,
+              active: true,
+              x: 0,
+              y: 0,
+              cc: emptyStatusState(),
+              kill: () => {},
+            });
           } else if (ev.type === 'summon') {
             // MN-23：召唤 noXp 全量 + 上限计数（引擎内已封顶，此处落实体）
             for (let i = 0; i < ev.count; i += 1) {

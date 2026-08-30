@@ -22,6 +22,7 @@ import {
   type EliteSkillPhase,
 } from '@/enemies/elite-skills';
 import { isStunned, type StatusState } from '@/combat/status/status-engine';
+import { wanderVelocity, BONETHROWER_BAND, PENITENT_BAND } from '@/enemies/keep-distance';
 import type { EnemyId } from '@/config/balance';
 
 /** 精英实体最小形状（Enemy 满足；body = Arcade Body 最小形状供位移覆盖） */
@@ -71,6 +72,8 @@ interface EliteState {
   lockedDir: { x: number; y: number } | null;
   shotsFired: number;
   armorBroken: boolean;
+  /** 游走时钟（wanderVelocity 周期翻转相位） */
+  wanderClock: number;
   /** 石甲/破甲面板已应用的相位（防重复应用） */
   armorPhaseApplied: 'stone' | 'broken' | null;
 }
@@ -201,7 +204,7 @@ export class EliteSkillDirector {
     }
   }
 
-  /** 掷骨者保持距离（200~260 游走；近身 80 → 后撤步 150px，CD 3） */
+  /** 掷骨者保持距离（200~260 游走 wanderVelocity；近身 80 → 后撤步 150px，CD 3） */
   private stepBonethrowerKeepDist(
     elite: EliteEnemyLike,
     dist: number,
@@ -220,13 +223,16 @@ export class EliteSkillDirector {
       events.push({ type: 'velocity', override: { enemy: elite, vx: (dx / len) * 300, vy: (dy / len) * 300 } });
       return;
     }
+    // 带内游走（W-4：距离带简化 → wanderVelocity 切向游走，可读规律）
+    events.push({ type: 'velocity', override: { enemy: elite, ...wanderVelocity(elite, player, state.wanderClock, BONETHROWER_BAND, elite.speed) } });
+    state.wanderClock += 1 / 60;
     state.cdRemaining = Math.max(0, state.cdRemaining - 1 / 60);
     if (dist <= params.triggerDist && state.cdRemaining <= 0) {
       this.enterWindup(elite, params, state, player);
     }
   }
 
-  /** 忏悔者保持距离（260~320；边退边射；近身 80 后撤步 120px CD 3） */
+  /** 忏悔者保持距离（260~320 游走 + 边退边射；近身 80 后撤步 120px CD 3） */
   private stepPenitentKeepDist(
     elite: EliteEnemyLike,
     dist: number,
@@ -243,6 +249,8 @@ export class EliteSkillDirector {
       events.push({ type: 'velocity', override: { enemy: elite, vx: (dx / len) * 300, vy: (dy / len) * 300 } });
       return;
     }
+    events.push({ type: 'velocity', override: { enemy: elite, ...wanderVelocity(elite, player, state.wanderClock, PENITENT_BAND, elite.speed) } });
+    state.wanderClock += 1 / 60;
     if (dist <= params.triggerDist && state.cdRemaining <= 0) {
       this.enterWindup(elite, params, state, player);
     }
@@ -292,7 +300,7 @@ export class EliteSkillDirector {
   private stateFor(e: EliteEnemyLike): EliteState {
     let s = this.states.get(e);
     if (!s) {
-      s = { phase: 'idle', phaseElapsed: 0, cdRemaining: 0, lockedDir: null, shotsFired: 0, armorBroken: false, armorPhaseApplied: null };
+      s = { phase: 'idle', phaseElapsed: 0, cdRemaining: 0, lockedDir: null, shotsFired: 0, armorBroken: false, wanderClock: 0, armorPhaseApplied: null };
       this.states.set(e, s);
     }
     return s;

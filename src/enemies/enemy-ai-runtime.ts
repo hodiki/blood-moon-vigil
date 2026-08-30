@@ -15,6 +15,7 @@
 
 import { ENEMY_BEHAVIORS, type EnemyId } from '@/config/balance';
 import { auraAdjustedAttackInterval, isUndead, chargePhaseFor, chargeCycleElapsed, specialBehaviorFor } from '@/enemies/enemy-behaviors';
+import { pickTarget, type FriendlyTargetLike } from '@/enemies/targeting';
 import type { Enemy } from '@/enemies/enemy';
 import type { ArcadePoolLike } from '@/core/object-pools';
 
@@ -36,7 +37,13 @@ export class EnemyAiDirector {
     private readonly spawnSummon: (id: EnemyId, x: number, y: number, ownerTag: string) => Enemy | null,
   ) {}
 
-  update(dt: number, now: number, player: { x: number; y: number }): void {
+  update(
+    dt: number,
+    now: number,
+    player: { x: number; y: number },
+    /** W-4：守誓者替身圈（targeting.pickTarget 消费；null = 无守誓者，敌恒追玩家） */
+    oathkeeper: FriendlyTargetLike | null = null,
+  ): void {
     // —— 收集尸巫位置（aura 源；每帧一次）——
     const necros: Array<{ x: number; y: number }> = [];
     this.pool.eachActive((e) => {
@@ -50,6 +57,19 @@ export class EnemyAiDirector {
 
       // —— aura（尸巫光环 → 亡者攻速；光环源自身不受自身加成外，其他 BLOOD 敌受叠层）——
       this.applyAura(e, necros);
+
+      // —— W-4 守誓者替身圈索敌（updateMovement 消费口径）：强制索敌守誓者时覆写
+      // 移动速度朝替身（冲锋 dash 相位除外——锁定方向语义优先；updateMovement 之后执行）——
+      if (oathkeeper && pickTarget(e, player, oathkeeper, 150) === 'companion') {
+        const inDash = behavior?.kind === 'charge' && chargePhaseFor(behavior, chargeCycleElapsed(now, e.spawnedAt, behavior.interval)) === 'dash';
+        if (!inDash) {
+          const dx = oathkeeper.x - e.x;
+          const dy = oathkeeper.y - e.y;
+          const len = Math.hypot(dx, dy) || 1;
+          const body = e.body as { setVelocity(x: number, y: number): void } | undefined;
+          body?.setVelocity((dx / len) * e.speed, (dy / len) * e.speed);
+        }
+      }
 
       if (!behavior) return;
       if (behavior.kind === 'summon') {

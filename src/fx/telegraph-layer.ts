@@ -31,6 +31,8 @@ export class TelegraphLayer {
     pendingFormations: Array<{ x: number; y: number; progress: number }>,
     bossCasting: { x: number; y: number; range: number; progress: number } | null,
     lineWidthBonus: number,
+    /** W-4 血渍减速区（忏悔者弹着点；暗红地面污染，60px/2s） */
+    bloodstains: Array<{ x: number; y: number; until: number }> = [],
   ): void {
     this.gfx.clear();
     // —— 精英技能 telegraph ——
@@ -80,6 +82,11 @@ export class TelegraphLayer {
       this.gfx.strokeCircle(f.x, f.y, 90);
       this.gfx.lineStyle(1 + lineWidthBonus, COLOR_FORMATION, a * 0.7);
       this.gfx.strokeCircle(f.x, f.y, 60);
+    }
+    // —— W-4 血渍区（暗红地面污染，渐隐）——
+    for (const b of bloodstains) {
+      this.gfx.fillStyle(0x8c1f1f, 0.35);
+      this.gfx.fillCircle(b.x, b.y, 60);
     }
     // —— Boss 施法预警（当前 casting 槽：玩家落点预警圈，半径随技能；数据层通用形状）——
     if (bossCasting) {
