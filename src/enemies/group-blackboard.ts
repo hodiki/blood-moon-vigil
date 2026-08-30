@@ -86,6 +86,19 @@ export const HUNT_RITUAL = {
 /** 宝藏护卫攻击状态锚（enemies-v3 §③-6 阵 3：切换攻击状态追击 10s） */
 export const TREASURE_AGGRO_SECONDS = 10;
 
+/** 围猎阵锚（§③-6 阵 5）：环游 3~5s → 低伏 0.3s 预警 → 收拢扑击 → 扑空 CD 8s */
+export const AMBUSH_CONFIG = { circleMin: 3, circleMax: 5, crouch: 0.3, pounceCd: 8 } as const;
+/** 血旗阵锚（§③-6 阵 6）：插旗 2s（可打断报废）→ 增援每 6s 上限 4（noXp）→ 斩旗溃散 */
+export const BANNER_CONFIG = { plant: 2, reinforceInterval: 6, reinforceCap: 4, reinforceId: 'enemy_g2_1' as EnemyId, noXp: true, routSlow: 0.5, routDuration: 3 } as const;
+/** 锁链阵锚（§③-6 阵 7）：忏悔者轮射封横向 + 畸体冲刺封纵向；畸体 CD 期忏悔者前压 20px */
+export const CHAIN_CONFIG = { advanceStep: 20 } as const;
+/** 骑士团锚（§③-6 阵 8）：集团冲锋（600px @500px/s 警告线 0.6s 跟踪 0.3）→ 落空硬直 1s → 每 8s */
+export const KNIGHTS_CONFIG = { chargeWindup: 0.6, chargeSpeed: 500, chargeDist: 600, recover: 1, interval: 8 } as const;
+/** 铁石阵锚（§③-6 阵 9 二批）：猎手冲锋路径被石甲狼阻挡 → 取消 + 硬直 0.8s */
+export const IRON_CONFIG = { blockStun: 0.8 } as const;
+/** 献祭阵锚（§③-6 阵 10 二批）：狂化光环（移速 +50%/攻速 +30%）；光环内杀祭品 → 尸巫复活狂化体（noXp HP×1.5）；光环外 300px 豁免 */
+export const SACRIFICE_CONFIG = { auraRadius: 180, speedBuff: 0.5, attackSpeedBuff: 0.3, reviveDelay: 2, exemptionDist: 300, reviveId: 'enemy_g1_5' as EnemyId, noXp: true } as const;
+
 export function createGroupBlackboard(
   groupId: string,
   formationId: FormationId,
@@ -96,7 +109,8 @@ export function createGroupBlackboard(
     groupId,
     formationId,
     behavior,
-    phase: behavior === 'hunt' ? 'engage' : behavior === 'revive' ? 'guard' : behavior === 'treasure' ? 'escort' : 'idle',
+    // 初始相位：revive=guard（护卫姿态）/ treasure=escort（驮运横穿）/ 其余=engage（推进）
+    phase: behavior === 'revive' ? 'guard' : behavior === 'treasure' ? 'escort' : 'engage',
     phaseElapsed: 0,
     members,
     ritualActive: false,
@@ -125,7 +139,14 @@ export type GroupEvent =
   | { type: 'treasure-dropped'; groupId: string }
   | { type: 'aggro'; groupId: string }
   | { type: 'depart'; groupId: string }
-  | { type: 'dissolved'; groupId: string };
+  | { type: 'dissolved'; groupId: string }
+  // —— 内容批六阵事件（W-B 遗留补全；演出/个体结算消费）——
+  | { type: 'ambush-crouch'; groupId: string }
+  | { type: 'ambush-pounce'; groupId: string }
+  | { type: 'banner-planted'; groupId: string }
+  | { type: 'banner-broken'; groupId: string }
+  | { type: 'knights-charge-warn'; groupId: string }
+  | { type: 'knights-charge'; groupId: string };
 
 /** 本体「body」角色存活数（追猎 = 原生血犬存活 + 重召在场） */
 export function bodyAliveCount(board: GroupBlackboard): number {
@@ -136,6 +157,9 @@ export function bodyAliveCount(board: GroupBlackboard): number {
 /** 成员承伤通知（追猎：吟唱期受击计数；苏生：任一成员首承伤 → 守墓者激活） */
 export function notifyMemberDamaged(board: GroupBlackboard, slotIndex: number): GroupEvent[] {
   const events: GroupEvent[] = [];
+  if (board.behavior === 'banner' && board.phase === 'engage') {
+    board.ritualHitsTaken += 1; // 插旗期受击（≥1 报废，stepBanner 消费）
+  }
   if (board.behavior === 'hunt' && board.ritualActive) {
     board.ritualHitsTaken += 1;
     if (board.ritualHitsTaken >= HUNT_RITUAL.hitsToInterrupt) {
@@ -192,10 +216,93 @@ export function stepGroupBlackboard(
     case 'treasure':
       stepTreasure(board, dt, events);
       break;
-    default:
-      break; // 其余阵行为接线属内容批（配置占位）
+    case 'ambush':
+      stepAmbush(board, dt, events);
+      break;
+    case 'banner':
+      stepBanner(board, dt, events);
+      break;
+    case 'knights':
+      stepKnights(board, dt, events);
+      break;
+    case 'chain':
+    case 'iron':
+    case 'sacrifice':
+      // 十字火力/队友阻挡/狂化光环的组级节拍：相位推进由本层登记，个体行为结算
+      // （弹道/碰撞/光环数值）随运行时消费——铁石/献祭二批入池（MN-18 a），锁链/骑士/
+      // 围猎/血旗事件已在册；本批交付组级状态机骨架 + 节拍
+      board.phaseElapsed += 0; // 相位由通用 phaseElapsed 驱动（无独立节拍锚，占位不丢帧）
+      break;
   }
   return events;
+}
+
+function stepAmbush(board: GroupBlackboard, dt: number, events: GroupEvent[]): void {
+  // 围猎：环游（3~5s 取中值 4）→ 收拢预警 0.3s → 扑击（伤害结算运行时）→ CD 8s 循环
+  board.phaseElapsed += dt;
+  const cycle = AMBUSH_CONFIG.circleMin + (AMBUSH_CONFIG.circleMax - AMBUSH_CONFIG.circleMin) / 2;
+  if (board.phase === 'engage') {
+    if (board.phaseElapsed >= cycle - AMBUSH_CONFIG.crouch) {
+      board.phase = 'ritual'; // 复用相位槽 = 收拢预警（0.3s 低伏）
+      board.phaseElapsed = 0;
+      events.push({ type: 'ambush-crouch', groupId: board.groupId });
+    }
+    return;
+  }
+  if (board.phase === 'ritual') {
+    if (board.phaseElapsed >= AMBUSH_CONFIG.crouch) {
+      board.phase = 'engage';
+      board.phaseElapsed = 0;
+      board.ritualCooldown = AMBUSH_CONFIG.pounceCd; // 复用冷却槽 = 扑空 CD 8s
+      events.push({ type: 'ambush-pounce', groupId: board.groupId });
+    }
+  }
+}
+
+function stepBanner(board: GroupBlackboard, dt: number, events: GroupEvent[]): void {
+  // 血旗：插旗 2s（受击 1 次报废——打断走 damaged 计数复用 ritualHitsTaken ≥1）→ 增援每 6s cap4
+  board.phaseElapsed += dt;
+  if (board.phase === 'engage') {
+    if (board.ritualHitsTaken >= 1) {
+      // 插旗被打断 → 旗报废：阵解散（斩旗前置失败态；§⑥-1 各阵解散条件逐阵定义）
+      board.dissolved = true;
+      events.push({ type: 'banner-broken', groupId: board.groupId });
+      events.push({ type: 'dissolved', groupId: board.groupId });
+      return;
+    }
+    if (board.phaseElapsed >= BANNER_CONFIG.plant) {
+      board.phase = 'activated'; // 旗已立（复用激活槽）
+      board.phaseElapsed = 0;
+      events.push({ type: 'banner-planted', groupId: board.groupId });
+    }
+    return;
+  }
+  // 增援循环
+  board.summonElapsed += dt;
+  if (board.summonElapsed >= BANNER_CONFIG.reinforceInterval && board.summonsAlive < BANNER_CONFIG.reinforceCap) {
+    board.summonElapsed = 0;
+    board.summonsAlive += 1;
+    events.push({ type: 'summon', groupId: board.groupId, enemyId: BANNER_CONFIG.reinforceId, count: 1, noXp: BANNER_CONFIG.noXp });
+  }
+}
+
+function stepKnights(board: GroupBlackboard, dt: number, events: GroupEvent[]): void {
+  // 骑士团：编队推进 → 每 8s 集团冲锋（警告 0.6s → 冲刺运行时）→ 落空硬直 1s
+  board.phaseElapsed += dt;
+  if (board.phase === 'engage') {
+    if (board.phaseElapsed >= KNIGHTS_CONFIG.interval - KNIGHTS_CONFIG.chargeWindup) {
+      board.phase = 'ritual'; // 复用 = 集团冲锋警告（0.6s 三线）
+      board.phaseElapsed = 0;
+      events.push({ type: 'knights-charge-warn', groupId: board.groupId });
+    }
+    return;
+  }
+  if (board.phase === 'ritual' && board.phaseElapsed >= KNIGHTS_CONFIG.chargeWindup) {
+    board.phase = 'engage';
+    board.phaseElapsed = 0;
+    board.ritualCooldown = KNIGHTS_CONFIG.recover; // 复用 = 落空硬直 1s
+    events.push({ type: 'knights-charge', groupId: board.groupId });
+  }
 }
 
 function stepHunt(board: GroupBlackboard, dt: number, ctx: BoardStepContext, events: GroupEvent[]): void {

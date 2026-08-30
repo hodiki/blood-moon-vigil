@@ -122,6 +122,10 @@ export const GameEvent = {
   FormationWarning: 'enemy:formation-warning',
   /** W-A/W-10 方阵组落地沿（payload { groupId, formationId, x, y }；伴随生成窗口/黑板创建挂点） */
   FormationLanded: 'enemy:formation-landed',
+  /** W-14 宝藏落地（payload { x, y }；驮尸全灭 → 宝藏实体生成挂点，MN-21 offer 直发） */
+  TreasureDropped: 'enemy:treasure-dropped',
+  /** W-14 宝藏拾取（payload { x, y }；三选一 offer 直发 1 次，与卡 2 渠道解耦） */
+  TreasureCollected: 'enemy:treasure-collected',
 } as const;
 
 export type GameEventName = (typeof GameEvent)[keyof typeof GameEvent];

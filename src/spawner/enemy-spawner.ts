@@ -72,6 +72,8 @@ export class EnemySpawner {
   private stopped = false;
   /** 场景时间戳秒（scene.time.now/1000 等效；update 由 PlayScene RUNNING 秒制驱动） */
   private time_now = 0;
+  /** W-14 宝藏护卫横穿移动器（落地成员引用 + 行进向量；到点/离场移除） */
+  private treasureMovers: Array<{ enemy: Enemy; dirX: number; dirY: number; speed: number; exitX: number; exitY: number }> = [];
   /**
    * W-A/W-10 方阵组生成（gdd-spawner-v2 §③-4）：默认关闭（存量测试确定性不变），
    * PlayScene 传 true 启用。掷点/预扣/分帧落地全走 spawn-group 纯函数层。
@@ -141,6 +143,7 @@ export class EnemySpawner {
     this.stopped = true;
     this.pendingTank = null;
     if (this.groups) clearGroupQueues(this.groups); // W-A §⑥-2：方阵预约/在场组全清
+    this.treasureMovers = [];
   }
 
   /**
@@ -244,6 +247,13 @@ export class EnemySpawner {
     const events = stepGroupScheduler(groups, dt, canSpawn);
     for (const land of events.lands) {
       const enemy = this.spawnOneById(land.member.enemyId, land.member.x, land.member.y, this.t);
+      // W-14：宝藏护卫横穿——落地成员登记移动器（escort 相位沿 path 40px/s 推进）
+      const pendingTreasure = groups.pending.find((g) => g.groupId === land.groupId);
+      const activeTreasure = groups.active.find((g) => g.groupId === land.groupId && g.formationId === 'f_treasure_guard');
+      const tPath = pendingTreasure?.path ?? (activeTreasure ? { dirX: 0, dirY: 0, speed: 40, exitX: 0, exitY: 0 } : null);
+      if (enemy && tPath) {
+        this.treasureMovers.push({ enemy, dirX: tPath.dirX, dirY: tPath.dirY, speed: tPath.speed, exitX: tPath.exitX, exitY: tPath.exitY });
+      }
       if (enemy && this.formationRuntime) {
         // W-B：组元数据写入 + 承伤路由（受击激活/仪式受击计数）
         enemy.setGroupMeta(land.groupId, land.member.role, land.member.slotIndex);
@@ -271,6 +281,32 @@ export class EnemySpawner {
     }
     // W-B：黑板状态机推进（仪式/唤尸/治疗/宝藏相位；事件副作用在下方消费）
     this.stepFormations(dt);
+    // W-14：宝藏护卫横穿移动（escort 相位沿 path 推进；aggro/depart 交还默认追踪）
+    this.stepTreasureMovement(dt);
+  }
+
+  /** W-14：横穿移动步进（escort 相位覆写速度 40px/s；到点移除） */
+  private stepTreasureMovement(dt: number): void {
+    void dt; // 速度直接覆写（帧率无关由 body velocity 承载）
+    for (let i = this.treasureMovers.length - 1; i >= 0; i -= 1) {
+      const m = this.treasureMovers[i]!;
+      const board = this.formationRuntime?.boardFor(m.enemy.groupId ?? '');
+      if (!m.enemy.active || (board && board.phase !== 'escort')) {
+        // aggro/depart：交还默认追踪/离场（depart 语义由黑板注销）
+        if (!m.enemy.active || board?.phase === 'depart') this.treasureMovers.splice(i, 1);
+        continue;
+      }
+      const dx = m.exitX - m.enemy.x;
+      const dy = m.exitY - m.enemy.y;
+      if (Math.hypot(dx, dy) < 20) {
+        // 到点离场（§③-5：到点/BOSS_TIME = 方阵离场，宝藏随队离场）
+        m.enemy.kill();
+        this.treasureMovers.splice(i, 1);
+        continue;
+      }
+      const len = Math.hypot(m.dirX, m.dirY) || 1;
+      (m.enemy.body as { setVelocity(x: number, y: number): void }).setVelocity(m.dirX / len * m.speed, m.dirY / len * m.speed);
+    }
   }
 
   /** W-B 黑板推进与事件副作用消费（召唤生成 noXp 实体 / 治疗结算 / 解散清理） */
@@ -299,7 +335,12 @@ export class EnemySpawner {
         case 'ritual-interrupted':
         case 'ritual-complete':
         case 'activated':
-        case 'treasure-dropped':
+        case 'treasure-dropped': {
+          // W-14：宝藏落地（MN-21：拾取 = 三选一 offer 直发 1 次，与卡 2 解耦）
+          const pos = this.groupAlivePosition(ev.groupId);
+          GameEvents.emit(GameEvent.TreasureDropped, { x: pos.x, y: pos.y });
+          break;
+        }
         case 'aggro':
         case 'depart':
         case 'dissolved':
@@ -307,6 +348,15 @@ export class EnemySpawner {
           break;
       }
     }
+  }
+
+  /** 组内任一存活成员位置（宝藏落地锚；无 → 玩家环带点） */
+  private groupAlivePosition(groupId: string): { x: number; y: number } {
+    for (const m of this.treasureMovers) {
+      if (m.enemy.groupId === groupId && m.enemy.active) return { x: m.enemy.x, y: m.enemy.y };
+    }
+    const pos = this.spawnRingPosition();
+    return { x: pos.x, y: pos.y };
   }
 
   /** 仪式主体位置（召唤落点基准；未绑定时回退玩家环带点） */
@@ -334,6 +384,16 @@ export class EnemySpawner {
     enemy.noXp = true; // 敌方技能召唤 → noXp（spawner-v2 §③-7）
     if (ownerTag) enemy.setGroupMeta(ownerTag, 'summon', -1);
     return enemy;
+  }
+
+  /** W-13 阵纹预警查询（pending 组落点 + 渐亮进度 0~1；演出层每帧读取） */
+  getPendingFormationWarnings(): Array<{ x: number; y: number; progress: number }> {
+    if (!this.groups) return [];
+    return this.groups.pending.map((g) => ({
+      x: g.centerX,
+      y: g.centerY,
+      progress: 1 - Math.max(0, g.remaining) / 2.5,
+    }));
   }
 
   /** W-B：组内成员/召唤物击杀路由（PlayScene enemy:killed payload 转发） */

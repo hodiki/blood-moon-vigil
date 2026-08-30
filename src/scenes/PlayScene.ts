@@ -36,6 +36,16 @@ import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { Enemy } from '@/enemies/enemy';
 import { Boss } from '@/enemies/boss';
 import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
+import { EliteSkillDirector } from '@/enemies/elite-skill-runtime';
+import { TelegraphLayer } from '@/fx/telegraph-layer';
+import {
+  createBossSkillState,
+  stepBossSkills,
+  clearBossSummons,
+  reportBossSummonKilled,
+  type BossSkillState,
+} from '@/enemies/boss-skill-engine';
+import { corruptHealMultFor } from '@/config/balance';
 import { moonAvatarTriggerDue } from '@/enemies/boss-math';
 import { WeaponSystem } from '@/weapons/weapon-system';
 import { EnemySpawner } from '@/spawner/enemy-spawner';
@@ -145,6 +155,16 @@ export class PlayScene extends Phaser.Scene {
   private derivativeController!: DerivativeSkillController;
   /** W-1 特殊行为 AI 运行时（光环/召唤/冲锋；enemy-ai-runtime） */
   private aiDirector!: EnemyAiDirector;
+  /** W-16 精英技能运行时（五精英技能化 + MN-20 打断） */
+  private eliteDirector!: EliteSkillDirector;
+  /** W-13 telegraph 演出基座（扇形/预警圈/警告线/阵纹，程序化） */
+  private telegraphs!: TelegraphLayer;
+  /** W-D/W-15 Boss 五槽运行时（PlayScene 消费；W-2 升级版接线） */
+  private bossSkills: BossSkillState | null = null;
+  /** MN-23：Boss 同源召唤 tag（死亡释放计数/死亡清场扫描键） */
+  private static readonly BOSS_SUMMON_TAG = 'boss_skills';
+  /** W-14 宝藏实体（驮尸全灭落地；拾取 = offer 直发 MN-21；TTL 30s） */
+  private treasure: { x: number; y: number; age: number } | null = null;
   /** W-3 MN-12：血月化身本局已触发（5% 判定 once；常规 Boss 优先口径 §⑥-5） */
   private avatarTriggeredThisRun = false;
   /** W-3：化身判定节拍（1s 一次；工程锚） */
@@ -312,6 +332,20 @@ export class PlayScene extends Phaser.Scene {
     this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
       this.spawner.spawnRuntimeSummon(id, x, y, tag),
     );
+    // W-6/MN-4 腐蚀词缀：治疗效能消费口（120px 内腐蚀精英 → ×0.7；拾取事件级扫描，频率低）
+    this.healManager.healEfficiencyProvider = () => {
+      const sources: Array<{ x: number; y: number; affix: string | null }> = [];
+      this.enemyPool.eachActive((e) => sources.push({ x: e.x, y: e.y, affix: e.affix }));
+      return corruptHealMultFor(sources, this.player);
+    };
+    // W-16 精英技能运行时 + W-13 telegraph 演出基座
+    this.eliteDirector = new EliteSkillDirector();
+    this.telegraphs = new TelegraphLayer(this);
+    // W-14：宝藏落地监听（实体由 PlayScene 持有；拾取 = MN-21 offer 直发）
+    GameEvents.on(GameEvent.TreasureDropped, (args: unknown) => {
+      const p = args as { x: number; y: number };
+      this.treasure = { x: p.x, y: p.y, age: 0 };
+    }, this);
     // E4-S3 收束：6:00 清场 + Boss 出场（预算恒 0 由 spawner 停止保证，S8 §⑥.3）
     this.spawner.onBossTime = () => {
       this.spawner.clearAll();
@@ -579,9 +613,33 @@ export class PlayScene extends Phaser.Scene {
     });
     // W-1 特殊行为 AI（光环攻速/侍僧召唤/猎手冲锋；冲锋速度覆盖在 updateMovement 之后）
     this.aiDirector.update(dt, now, this.player);
+    // W-16 精英技能运行时（五精英 + MN-20 打断；技能伤走 player.hurt 独立结算）
+    this.stepEliteSkills(dt, now);
+    // W-15 Boss 五槽运行时消费（普攻基底/技能伤桩/召唤 noXp/阶段 2 霸体）
+    this.stepBossSkillRuntime(dt, now);
+    // W-14 宝藏拾取（40px；MN-21 offer 直发；TTL 30s §⑥-5）
+    this.stepTreasurePickup(dt);
     // W-3 MN-12：血月化身稀有触发（270s 后 5%/判定，1s 节拍工程锚；once；BOSS_TIME 前独立）
     this.tickAvatarTrigger(dt);
     this.markers.sync(this.enemyPool, this.player, now);
+    // W-13 telegraph 演出同步（精英预警/阵纹/Boss 施法圈；移动端线宽 +1px §⑦）
+    {
+      const eliteTel: import('@/enemies/elite-skill-runtime').EliteTelegraph[] = [];
+      const eliteList: Array<{ x: number; y: number; hp: number; maxHp: number; enemyId: EnemyId | null; cc: import('@/combat/status/status-engine').StatusState; speed: number; baseAttackInterval: number; attackInterval: number }> = [];
+      this.enemyPool.eachActive((e) => {
+        if (e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') eliteList.push(e);
+      });
+      for (const e of eliteList) {
+        const t = this.eliteDirector.telegraphOf(e, this.player);
+        if (t) eliteTel.push(t);
+      }
+      const casting = this.bossSkills?.casting;
+      const bossRef = this.boss;
+      const bossCast = casting && bossRef?.active
+        ? { x: this.player.x, y: this.player.y, range: 90, progress: 1 - Math.max(0, casting.fireAt - now) / 1.0 }
+        : null;
+      this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossCast, this.cfg.isMobile ? 1 : 0);
+    }
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now, this.s1WindowDamageMult());
     // 5) 经验宝石磁吸/拾取（E3-S1）
@@ -630,6 +688,14 @@ export class PlayScene extends Phaser.Scene {
 
   /** E4-S3 胜利终局（Boss 击杀） */
   private onBossDefeated(): void {
+    // MN-23：Boss 死亡随 BOSS 清场（召唤物一并清除，不掉 XP——静默回收语义）
+    if (this.bossSkills) {
+      clearBossSummons(this.bossSkills);
+      this.enemyPool.eachActive((e) => {
+        if (e.groupId === PlayScene.BOSS_SUMMON_TAG) e.kill();
+      });
+      this.bossSkills = null;
+    }
     this.stats.recordBossDefeated(this.spawner.elapsedSeconds);
     // E4-S6 图鉴 progress：首通地图 → 事件条目（墓地→起源/守夜会；教堂→血廷；狼穴→兽群）
     if (this.saveData) {
@@ -692,6 +758,68 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** E4-S3 6:00 Boss 出场：清场已完成，在玩家前方一段距离登场 + 0.5s 霸体闪红 */
+  /** W-16：精英技能逐帧推进 + 事件消费（伤害/位移/telegraph 由各消费端承接） */
+  private stepEliteSkills(dt: number, now: number): void {
+    const elites: Array<{ x: number; y: number; hp: number; maxHp: number; enemyId: EnemyId | null; cc: import('@/combat/status/status-engine').StatusState; speed: number; baseAttackInterval: number; attackInterval: number }> = [];
+    this.enemyPool.eachActive((e) => {
+      if (e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') elites.push(e);
+    });
+    const events = this.eliteDirector.update(dt, now, this.player, elites);
+    for (const ev of events) {
+      if (ev.type === 'skill-damage') {
+        this.player.hurt(ev.damage, now); // 技能伤独立字段（无敌帧语义复用 player.hurt）
+      } else if (ev.type === 'velocity') {
+        const body = ev.override.enemy.body as { setVelocity(x: number, y: number): void } | undefined;
+        body?.setVelocity(ev.override.vx, ev.override.vy);
+      }
+      // 'interrupted'（演出/音效挂点 W-13 内容批）/'bloodstain'（减速区实体内容批）/'armor-broken'（白闪演出）
+    }
+  }
+
+  /** W-15：Boss 五槽运行时（PlayScene 消费 = W-2 升级版；召唤 noXp + 同源计数 + 阶段 2 霸体） */
+  private stepBossSkillRuntime(dt: number, now: number): void {
+    const boss = this.boss;
+    if (!boss?.active || !this.bossSkills) return;
+    const events = stepBossSkills(this.bossSkills, {
+      dt,
+      now,
+      hpRatio: boss.hp / boss.maxHp,
+      canSpawnMore: this.enemyPool.activeCount < this.cfg.maxEnemies,
+    });
+    const dist = Math.hypot(boss.x - this.player.x, boss.y - this.player.y);
+    for (const ev of events) {
+      if (ev.type === 'normal-attack' && dist <= 160) {
+        this.player.hurt(ev.damage, now); // 近身带语义桩（扇形/环形 160px）
+      } else if (ev.type === 'skill-damage' && dist <= 300) {
+        this.player.hurt(ev.damage, now); // 技能伤桩（telegraph 演出 W-13 内容批补）
+      } else if (ev.type === 'summon') {
+        for (let i = 0; i < ev.count; i += 1) {
+          const e = this.spawner.spawnRuntimeSummon(ev.enemyId, boss.x + (Math.random() - 0.5) * 120, boss.y + (Math.random() - 0.5) * 120, PlayScene.BOSS_SUMMON_TAG);
+          if (e) this.bossSkills!.summonsAlive += 0; // 计数由引擎登记（此处仅实体化）
+        }
+      } else if (ev.type === 'phase-changed') {
+        boss.graceUntil = now + 1; // 转阶段霸体 1s（不承伤，weapons refreshEnemies 过滤）
+      }
+    }
+  }
+
+  /** W-14：宝藏拾取（40px 拾取区；MN-21 三选一 offer 直发 1 次；TTL 30s） */
+  private stepTreasurePickup(dt: number): void {
+    if (!this.treasure) return;
+    this.treasure.age += dt;
+    if (this.treasure.age >= 30) {
+      this.treasure = null; // §⑥-5：30s 未拾取消失（防永久存场）
+      return;
+    }
+    const d = Math.hypot(this.treasure.x - this.player.x, this.treasure.y - this.player.y);
+    if (d <= 40) {
+      GameEvents.emit(GameEvent.TreasureCollected, { x: this.treasure.x, y: this.treasure.y });
+      this.treasure = null;
+      // MN-21 a：宝藏拾取 = 三选一 offer 直发（与卡 2 精英宝箱渠道解耦、每局 ≤1 由生成侧保证）
+      this.triggerExtraOffer();
+    }
+  }
+
   /**
    * W-3 MN-12：血月化身稀有触发（任意图；BOSS_TIME 后 4:30（270s）起判定 5%，已触发本局不再触发）。
    * 判定节拍 = 1s/次（工程锚；spawner-v2 §⑥-5：与 BOSS_TIME 同帧常规优先——BOSS_TIME 触发后
@@ -719,6 +847,7 @@ export class PlayScene extends Phaser.Scene {
     const by = this.player.y + Math.sin(angle) * BOSS.SPAWN_DISTANCE;
     avatar.spawnByBossConfig(BOSSES.boss_4, bx, by);
     avatar.beginGrace(now);
+    this.bossSkills = createBossSkillState('boss_4'); // 无阶段短战高密度
     this.spawner.boss4OnField = true; // W-A F-2：化身在场方阵停掷
     this.tweens.add({
       targets: avatar,
@@ -743,6 +872,7 @@ export class PlayScene extends Phaser.Scene {
     // W-3/W-8 收口：Boss 面板单源化（BOSSES 表 + ccProfile 覆写；legacy spawn('boss') 退役）
     boss.spawnByBossConfig(bossCfg, bx, by);
     boss.beginGrace(now);
+    this.bossSkills = createBossSkillState(bossCfg.id); // W-15：五槽调度运行时
     this.boss = boss;
     const entranceFrame = bossEntranceFrameName(bossCfg.frame);
     if (hasCharacterFrame(this, entranceFrame)) {
@@ -781,6 +911,10 @@ export class PlayScene extends Phaser.Scene {
     // W-B/W-11：方阵成员/召唤物击杀 → 组黑板路由（槽位置亡/计数释放/全灭解散）
     if (payload.groupId) {
       this.spawner.notifyGroupMemberKilled(payload);
+      // MN-23：Boss 同源召唤死亡释放计数（上限 6/8 口径）
+      if (payload.groupId === PlayScene.BOSS_SUMMON_TAG && this.bossSkills) {
+        reportBossSummonKilled(this.bossSkills);
+      }
     }
     // B6-W5 占比分母近似：击杀敌面板 HP 计入总伤害（1D/沙盘校准口径；精确伤害流留遥测批次）
     const cfg = payload.enemyId ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[payload.enemyId] ?? (BOSSES as Record<string, { hp?: number }>)[payload.enemyId] : undefined;
