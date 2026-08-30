@@ -14,6 +14,8 @@
  */
 
 import { BOSSES, ENEMY_CONFIGS, MAP_CONFIGS, SPAWNER, WEAPONS, XP, type MapId } from '@/config/balance';
+import { createBossSkillState, stepBossSkills, clearBossSummons, type BossSkillState } from '@/enemies/boss-skill-engine';
+import { xpAwardForKill } from '@/enemies/noxp';
 import type { ExclusiveWeaponId } from '@/config/balance';
 import { budget } from '@/spawner/spawner';
 import { needXp } from '@/xp/xp-manager';
@@ -62,6 +64,10 @@ export interface RunMetrics {
   damageTakenBuckets: Array<{ fromSeconds: number; toSeconds: number; damage: number }>;
   /** 首次承伤时点 s（MD-1 首死/首伤判据输入；null = 未被命中） */
   firstHitAtSeconds: number | null;
+  /** W-D：Boss 五槽调度召唤生成数（noXp；MN-23 上限计数口径） */
+  bossSummonsSpawned: number;
+  /** W-D：Boss 死亡清场清除的召唤数（不掉 XP） */
+  bossSummonsCleared: number;
   /** 走位模型是否启用 */
   movementModel: boolean;
   /** 树工况 */
@@ -120,6 +126,10 @@ interface SimEnemy extends ExclusiveTarget {
   /** 距玩家距离 px */
   dist: number;
   xp: number;
+  /** W-12：noXp 实体（Boss/技能召唤）零 XP 路径 */
+  noXp?: boolean;
+  /** W-D：霸体截止（转阶段 1s 不承伤；Boss 专用） */
+  graceUntil?: number;
   /** 接触攻击计时 s */
   attackTimer: number;
   cc: StatusState;
@@ -165,6 +175,9 @@ export function simulateRun(opts: SimOptions): RunMetrics {
   let damageTakenWindow = 0;
   let bossSpawned = false;
   let bossKilled = false;
+  let bossSkills: BossSkillState | null = null;
+  let bossSummonsSpawned = 0;
+  let bossSummonsCleared = 0;
 
   // —— SIM-W1 生存/走位模型（1D 径向等效：玩家移动 = 敌相对速度修正 drift）——
   const movement = opts.movement !== false; // 默认开
@@ -238,6 +251,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
     } else if (!bossSpawned) {
       bossSpawned = true;
       const cfg = BOSSES[map.boss];
+      bossSkills = createBossSkillState(map.boss); // W-D：Boss 五槽调度真实可跑
       enemies.push({
         kind: 'boss',
         configId: map.boss,
@@ -301,6 +315,61 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       }
     }
 
+    // ---- W-D Boss 五槽技能循环（真实调度：普攻基底/普技轮转/阶段2/召唤上限计数）----
+    if (bossSkills) {
+      const boss = enemies.find((e) => e.kind === 'boss');
+      if (boss) {
+        const bossRef = boss;
+        const events = stepBossSkills(bossSkills, {
+          dt: DT,
+          now: t,
+          hpRatio: boss.hp / boss.maxHp,
+          canSpawnMore: enemies.length < MAX_ACTIVE_ENEMIES,
+        });
+        for (const ev of events) {
+          if (ev.type === 'normal-attack' && boss.dist <= 160 && !opts.invincible) {
+            // 近身语义桩：普攻 = 面板伤（扇形/环形范围以 160px 近身带近似）
+            if (firstHitAt === null) firstHitAt = round2(t);
+            playerHp -= ev.damage;
+            damageTakenWindow += ev.damage;
+          } else if (ev.type === 'skill-damage' && boss.dist <= 300 && !opts.invincible) {
+            // 技能伤桩（独立技能伤字段语义；telegraph 演出属内容批）
+            if (firstHitAt === null) firstHitAt = round2(t);
+            playerHp -= ev.damage;
+            damageTakenWindow += ev.damage;
+          } else if (ev.type === 'summon') {
+            // MN-23：召唤 noXp 全量 + 上限计数（引擎内已封顶，此处落实体）
+            for (let i = 0; i < ev.count; i += 1) {
+              const scfg = ENEMY_CONFIGS[ev.enemyId as keyof typeof ENEMY_CONFIGS];
+              enemies.push({
+                kind: 'summon',
+                configId: ev.enemyId,
+                hp: scfg.hp,
+                maxHp: scfg.hp,
+                speed: scfg.speed,
+                damage: scfg.damage,
+                attackInterval: scfg.attackInterval,
+                dist: map.spawnRingDesktop[0] + rng() * 120, // 场边生成
+                radius: scfg.radius,
+                xp: scfg.xp,
+                noXp: true, // F-4 全量：零 XP 路径
+                attackTimer: 0,
+                active: true,
+                x: 0,
+                y: 0,
+                cc: emptyStatusState(),
+                kill: () => {},
+              });
+              bossSummonsSpawned += 1;
+            }
+          } else if (ev.type === 'phase-changed') {
+            // 转阶段霸体 1s：Boss 期内不承伤（武器伤害窗口由 hpRatio 承载的 boss.hp 冻结近似）
+            bossRef.graceUntil = t + 1;
+          }
+        }
+      }
+    }
+
     // ---- 武器结算 ----
     const targets = enemies.map(enemyToTarget);
     if (exclusive === null) {
@@ -326,7 +395,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
             damageDealtWindow += dealt;
             if (shot.target.hp <= 0) {
               kills += 1;
-              xpAcc += shot.target.xp;
+              xpAcc += xpAwardForKill({ baseXp: shot.target.xp, noXp: shot.target.noXp === true });
               const deadTarget = shot.target;
               for (let j = incoming.length - 1; j >= 0; j -= 1) {
                 const other = incoming[j];
@@ -341,7 +410,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       // 击杀 → 经验（onKilled 挂点）
       for (const e of enemies) {
         e.onKilled = (target) => {
-          xpAcc += (target as SimEnemy).xp;
+          xpAcc += xpAwardForKill({ baseXp: (target as SimEnemy).xp, noXp: (target as SimEnemy).noXp === true });
         };
       }
       let stepDamage = 0;
@@ -392,8 +461,17 @@ export function simulateRun(opts: SimOptions): RunMetrics {
         const e = enemies[i]!;
         if (e.hp <= 0) {
           kills += 1;
-          xpAcc += e.xp;
-          if (e.kind === 'boss') bossKilled = true;
+          xpAcc += xpAwardForKill({ baseXp: e.xp, noXp: e.noXp === true });
+          if (e.kind === 'boss') {
+            bossKilled = true;
+            if (bossSkills) {
+              // MN-23：Boss 死亡随 BOSS 清场（召唤物一并清除，不掉 XP）
+              bossSummonsCleared += clearBossSummons(bossSkills);
+              for (let j = enemies.length - 1; j >= 0; j -= 1) {
+                if (enemies[j]!.kind === 'summon') enemies.splice(j, 1);
+              }
+            }
+          }
           enemies.splice(i, 1);
         }
       }
@@ -415,7 +493,15 @@ export function simulateRun(opts: SimOptions): RunMetrics {
       for (let i = enemies.length - 1; i >= 0; i -= 1) {
         const e = enemies[i]!;
         if (e.hp <= 0) {
-          if (e.kind === 'boss') bossKilled = true;
+          if (e.kind === 'boss') {
+            bossKilled = true;
+            if (bossSkills) {
+              bossSummonsCleared += clearBossSummons(bossSkills);
+              for (let j = enemies.length - 1; j >= 0; j -= 1) {
+                if (enemies[j]!.kind === 'summon') enemies.splice(j, 1);
+              }
+            }
+          }
           enemies.splice(i, 1);
         }
       }
@@ -464,6 +550,8 @@ export function simulateRun(opts: SimOptions): RunMetrics {
     levelUpOffers,
     damageTakenBuckets,
     firstHitAtSeconds: firstHitAt,
+    bossSummonsSpawned,
+    bossSummonsCleared,
     movementModel: movement,
     treeScenario: tree,
   };
