@@ -11,6 +11,7 @@
 
 | 版本 | 日期 | 修订内容 |
 |---|---|---|
+| **v1.3.2** | 2026-08-31 | 五系统冻结回填：掷骨者/腐朽骑士 96；忏悔者 56→96；石甲 `-broken` 同族；守誓者/月狼 48；圣髑匣/圣物覆盖/专武弹体/UI 新帧入 frame-specs。§2.7 增 `-broken`/`-tombstone` 档 |
 | **v1.3.1** | 2026-08-25 | TA 入局审查：新增 §2.7 时间轴/朝向/步态门禁；§3.3 明确前摇仅表现叠层（无蓄力资源） |
 | **v1.3（本次）** | 2026-08-23 | 主理人确认：细致哥特风不再用 32px 契约。英雄 32→64、普通敌 ×2（20–34→40–68）、精英 48→96、Boss 120/128→240/256。碰撞半径保持（视觉与 hurtbox 脱钩）。外部 AI 轨 `outlineW=0`。武器/FX/tile 尺寸不动。 |
 | v1.2 | 2026-08-23 | 备料风格锁打包（asset-prep 审查裁定）：① 守夜人灯体改对齐 silhouette-v35（4×5，灯芯 ≥2px，光晕 r≤5.2）；② §1.3 吸收 R-C3 守墓者，敌人 15 种；③ §2.3 标注工程 3 图集口径；④ §2.1.1 删除 Demo 遗留 `enemy-tank`；⑤ §2.2 / §5.1 #4 边距量**填充包围盒（不含描边）**，描边由管线在预留环后置；⑥ §2.4 / §5.1 #8 玩家/召唤物 L*≥45，暗红普通敌靠剪影形状可读、描边编码可豁免 L* |
@@ -121,7 +122,7 @@
 > - **月光冷青通道**：尾羽/尾迹 = 冷青 `#54E6C9` 1px（月光/圣辉微光），拖尾 `p-streak` tint 冷青 α0.5（月光轨迹）。
 > - **与同类弹体区分**：血术弹（血橙红 `#FF3B30`）、普通纸白弹——银箭 = 月银白箭体 + 冷青尾，一眼可读「守夜人的月光之箭」。
 
-### 1.3 敌人（15 种）+ Boss（4 名）
+### 1.3 敌人（17 种）+ Boss（4 名）
 
 | # | 敌人（ID） | 地图 | 层级 | 帧名 | 设计尺寸 | 动画 | 图集 | 特殊行为标记 |
 |---|---|---|---|---|---|---|---|---|
@@ -134,12 +135,14 @@
 | 7 | 血蝠（enemy_g2_2） | 教堂 | 普通·空中 | 🔵 `enemy-bat` / `-v` | 40×40（0.8x） | 2 帧 | characters | — |
 | 8 | 圣杯侍僧（enemy_g2_3） | 教堂 | 普通·召唤 | 🔵 `enemy-cupbearer` / `-v` | 64×64（1.1x） | 2 帧 | characters | 头顶符文 |
 | 9 | 血肉畸体（enemy_g2_4） | 教堂 | 精英 | 🔵 `enemy-fleshmass` / `-v` | 96×96（1.6x） | 2 帧 | characters | **双角**（无管线描边） |
-| 10 | 忏悔者（enemy_g2_5） | 教堂 | 普通·远程 | 🔵 `enemy-penitent` / `-v` | 56×56 | 2 帧 | characters | 投射红色预警 |
+| 10 | 忏悔者（enemy_g2_5） | 教堂 | 精英·远程 | 🔵 `enemy-penitent` / `-v` | 96×96 | 2 帧 | characters | 投射红色预警；**双角**（升档，无管线描边） |
 | 11 | 灰狼（enemy_g3_1） | 狼穴 | 普通·快速 | 🔵 `enemy-greywolf` / `-v` | 56×56 | 2 帧 | characters | — |
 | 12 | 暗影狼（enemy_g3_2） | 狼穴 | 普通·高速 | 🔵 `enemy-shadowwolf` / `-v` | 48×48 | 2 帧 | characters | 暗红偏紫 |
-| 13 | 石甲狼（enemy_g3_3） | 狼穴 | 精英 | 🔵 `enemy-stonewolf` / `-v` | 96×96（1.5x） | 2 帧 | characters | **双角**（无管线描边） |
+| 13 | 石甲狼（enemy_g3_3） | 狼穴 | 精英 | 🔵 `enemy-stonewolf` / `-v` / `-broken` / `-broken-v` | 96×96（1.5x） | 2+2 帧 | characters | **双角**；破甲同族只剥甲（无管线描边） |
 | 14 | 狼裔猎手（enemy_g3_4） | 狼穴 | 普通·冲锋 | 🔵 `enemy-wolfhunter` / `-v` | 64×64 | 2 帧 | characters | 蓄力红警告线 |
 | 15 | 守墓者（enemy_g1_6） | 墓地 | 精英 | 🔵 `enemy-gravekeeper` / `-v` | 96×96（1.6x） | 2 帧 | characters | **双角**（R-C3；无管线描边） |
+| 16 | 腐朽骑士（enemy_g1_7） | 墓地 | 方阵专属 | 🔵 `enemy-decayedknight` / `-v` | 96×96 | 2 帧 | characters | 视觉精英档；玩法仍是方阵普通 |
+| 17 | 掷骨者（enemy_g1_8） | 墓地 | 精英·远程 | 🔵 `enemy-bonethrower` / `-v` | 96×96 | 2 帧 | characters | **双角**；抛骨预警圈 |
 
 **Boss 4（猩红金 4px，≥3x）**：
 
@@ -286,9 +289,10 @@
 | 范围 ring | 贴图源 64×64 / 帧 32~64 | **帧宽 = baseSize 不可变** |
 | 光束/锁链 beam | 32×64 | 中心轴对齐，按长度拉伸 |
 | 领域 aura | 64×64 | 半透明地面圈 |
-| 召唤物 summon | 16×16 / 32×32 | 玩家侧色系（§1.2 铁律） |
+| 召唤物 summon | 16×16 / 32×32 / **48×48** | 蝠/猎犬仍 16/32；守誓者·月狼 **48**（v1.3.2） |
 | 陷阱/危险贴花 | 64×64 | 2 帧闪烁 |
 | 拾取 gem/heal/chest | 12~24 | 1.5px 纸白描边 |
+| 圣髑匣 relic-reliquary | 32×32 | **不复用** chest；金光环归引擎 |
 | 行为标记 marker | 8~32 | 见 §2.6 |
 | tile / obst / decor / decal | 64×64 | 2 次幂 |
 | 粒子 p-circle/p-ring/p-streak | 8×8 / 32×32 / 16×8 | 白底形状帧 + tint |
@@ -326,7 +330,7 @@
 
 **统一规则**：TexturePacker JSON 数组（Phaser 3 atlas）；`premultipliedAlpha=false`；单图集 ≤2048²、留 ~10% 余量；tile 2 次幂 64×64；加载只走 atlas 单请求；帧内不留多余 padding。
 
-> **工程口径（v1.2，验收以 `frame-registry.json` 为准）**：运行时注册 **3 图集**——`characters` / `effects` / `ui`。`tiles` 与 `fx-ambient` 的帧并入 `effects`；武器/弹体帧契约表写 effects、**工程归 characters**。外部素材按这 3 个 key 打包交付，避免改加载链路。上表 5 行仍是设计分类，不是交付图集数。
+> **工程口径（v1.3.2+）**：运行时图集 **5**——`characters` / `effects` / `ui` / **`ui-portraits`**（`exw-card-*` 512 立绘）/ **`ui-slots`**（C-1～C-3 64px 槽位）。`tiles` 与 `fx-ambient` 仍并入 `effects`。`ui` 因 8×512 已满 2048²，立绘必须拆包。
 
 ### 2.4 色板与对比度约束
 
@@ -385,6 +389,8 @@
 | 重心（idle `-v`） | hypot ≤2px（64）/ 3px（96）/ 4px（Boss） |
 | 面积（idle `-v`） | 不透明像素 Δ ≤15%（犬科 ≤20%） |
 | 技能 / 出场 | 只换姿态；门禁宽于 idle；环/粒子归引擎，禁止画进 PNG |
+| 破甲 `-broken` | 同族 `enemy-stonewolf`；skill 档 hypot/脚底，面积 Δ≤30%（剥甲） |
+| 墓碑 `-tombstone` | 同族 `summon-oathkeeper`；skill 档 |
 | 方向 | 只 flipX，不出四向；**原图默认朝右**（鼻尖 / 吻部 / 灯在画面右侧）；镜像后剪影仍须可读 |
 | idle vs move | 当前 2 帧只承担 idle（1.4fps 呼吸）；move 用 `-walk-a/b` 再播 6fps。未到货时引擎播 idle |
 
@@ -532,7 +538,7 @@
 | 3 | 尺寸 | 精确到像素；与 §2.2 尺寸表一致（含实作尺寸） | 读取 PNG 尺寸 |
 | 4 | 安全边距 | **填充**包围盒（不含描边）≤ 帧 90% 宽；关键帧内容坐标上限表不越界 | 肉眼 + alpha 包围盒脚本（描边像素剔除后再量） |
 | 5 | 透明通道 | PNG RGBA；无白底/黑底垫图 | 脚本检查 |
-| 6 | 图集打包 | 工程 3 图集（characters/effects/ui）≤2048²；JSON 数组；`premultipliedAlpha=false`；tile 2 次幂；`<atlas>.png`+`.json` 成对 | 读 JSON 头 + 清单 |
+| 6 | 图集打包 | 工程图集 characters/effects/ui/ui-portraits/ui-slots 各 ≤2048²；JSON 数组；`premultipliedAlpha=false`；tile 2 次幂；`<atlas>.png`+`.json` 成对 | 读 JSON 头 + 清单 |
 | 7 | 色板 | 只用 §2.4 token 色或其同色相 alpha 派生；无新色相 | 取色脚本 vs token 表 |
 | 8 | 对比度 | 玩家/召唤物 L\* ≥45；暗红敌豁免（形状可读或描边编码正确）；背景 L\*≤18；图形/图标 ≥3:1 | L\* 计算脚本 |
 | 9 | 描边编码 | 玩家冷青 2px / 精英幽紫 3px / Boss 猩红 4px；描边不撞背景色；外部轨由管线后置 | 肉眼 + 取色 |
