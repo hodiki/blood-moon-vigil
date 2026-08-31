@@ -33,7 +33,7 @@ node process.mjs --list
 node process.mjs --check
 node process.mjs --check player
 
-# 5. 打包图集（characters/effects/ui 三个）
+# 打包图集（characters / effects / ui / ui-portraits / ui-slots）
 node pack.mjs
 
 # 6. 校验已打包图集（≤2048² / JSON 数组格式）
@@ -63,7 +63,7 @@ AI 原图（512² 即可，可带背景）
 | margin | **填充**包围盒（不含描边环）≤ 帧 90% | 全幅贴图类帧 |
 | luminance | 玩家/召唤物：L*≥45 或高亮≥3%（描边不能豁免）。暗红普通敌豁免。精英/Boss：L* 或高亮或描边正确 | 背景类帧（tile/moon/vignette） |
 | outline | 外部 AI 轨不画身份描边。精英靠体型+双角，Boss 靠独有剪影 | 程序剪影兜底仍可自绘 |
-| temporal | **按变体分档** vs base。idle `-v`：重心 hypot ≤2/3/4px（64/96/Boss）、脚底 ΔY=0（直立）/1（四足或幽灵）、面积 Δ≤15%（犬科 20%）。`skill-*`：hypot 6/8/12、脚底 +1px、面积 25%。`-walk-*`：hypot 3/4/6、脚底同 idle、面积 20%。`-entrance`：hypot 12/16/24、脚底 ≤2px、面积 30% | 全幅贴图类帧；无 base 则跳过 |
+| temporal | **按变体分档** vs base。idle `-v`：重心 hypot ≤2/3/4px（64/96/Boss）、脚底 ΔY=0（直立）/1（四足或幽灵）、面积 Δ≤15%（犬科 20%）。`skill-*` / `-tombstone`：hypot 6/8/12、脚底 +1px、面积 25%。`-broken`：同 skill 档、面积 30%。`-walk-*`：hypot 3/4/6、脚底同 idle、面积 20%。`-entrance`：hypot 12/16/24、脚底 ≤2px、面积 30% | 全幅贴图类帧；无 base 则跳过 |
 | pivot | 写入 `report.json` + `atlas/*.json` 的 `meta.framePivots` + `atlas/pivots.json`（脚底归一化）。**不写** `frames[].pivot` | Phaser 会自动 setOrigin，会打乱现有碰撞圆心 |
 
 > 玩家必须是银主体。青边黑团会因 L* 失败被打回，这是故意的。

@@ -1,10 +1,12 @@
 // frame-specs.mjs — 帧名 → 尺寸/图集 映射表（管线基准）
 // 来源：asset-spec-v1.md §1.1~§1.6 + §2.2 尺寸表；图集归属按工程注册表（frame-registry.json）口径：
-//   characters（角色/敌人/Boss/武器/超武）、effects（tiles+fx-ambient 并入）、ui
+//   characters / effects / ui / ui-portraits（512 立绘）/ ui-slots（C-1～C-3）
 // 用途：process.mjs 校验输出尺寸；pack.mjs 分组打包。
 
-// 图集 key（工程 3 图集口径）
-export const ATLAS_KEYS = ['characters', 'effects', 'ui'];
+import { familyKey, isAnimationVariant } from './layout.mjs';
+
+// 图集 key（工程 5 图集口径）
+export const ATLAS_KEYS = ['characters', 'effects', 'ui', 'ui-portraits', 'ui-slots'];
 
 // 帧名 → { w, h, atlas }
 // 显式列出全部契约帧；未列出的帧按默认规则（见 resolveFrameSpec）
@@ -40,6 +42,10 @@ const EXPLICIT = {
   'enemy-necro-v': { w: 68, h: 68, atlas: 'characters' },
   'enemy-gravekeeper': { w: 96, h: 96, atlas: 'characters' },
   'enemy-gravekeeper-v': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-decayedknight': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-decayedknight-v': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-bonethrower': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-bonethrower-v': { w: 96, h: 96, atlas: 'characters' },
   // 敌人（g2 教堂）
   'enemy-acolyte': { w: 56, h: 56, atlas: 'characters' },
   'enemy-acolyte-v': { w: 56, h: 56, atlas: 'characters' },
@@ -49,8 +55,8 @@ const EXPLICIT = {
   'enemy-cupbearer-v': { w: 64, h: 64, atlas: 'characters' },
   'enemy-fleshmass': { w: 96, h: 96, atlas: 'characters' },
   'enemy-fleshmass-v': { w: 96, h: 96, atlas: 'characters' },
-  'enemy-penitent': { w: 56, h: 56, atlas: 'characters' },
-  'enemy-penitent-v': { w: 56, h: 56, atlas: 'characters' },
+  'enemy-penitent': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-penitent-v': { w: 96, h: 96, atlas: 'characters' },
   // 敌人（g3 狼穴）
   'enemy-greywolf': { w: 56, h: 56, atlas: 'characters' },
   'enemy-greywolf-v': { w: 56, h: 56, atlas: 'characters' },
@@ -58,6 +64,8 @@ const EXPLICIT = {
   'enemy-shadowwolf-v': { w: 48, h: 48, atlas: 'characters' },
   'enemy-stonewolf': { w: 96, h: 96, atlas: 'characters' },
   'enemy-stonewolf-v': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-stonewolf-broken': { w: 96, h: 96, atlas: 'characters' },
+  'enemy-stonewolf-broken-v': { w: 96, h: 96, atlas: 'characters' },
   'enemy-wolfhunter': { w: 64, h: 64, atlas: 'characters' },
   'enemy-wolfhunter-v': { w: 64, h: 64, atlas: 'characters' },
   // Boss
@@ -87,6 +95,14 @@ const EXPLICIT = {
   'ring-holyfire': { w: 64, h: 64, atlas: 'characters' },
   'summon-bat': { w: 16, h: 16, atlas: 'characters' },
   'summon-hound': { w: 32, h: 32, atlas: 'characters' },
+  'summon-oathkeeper': { w: 48, h: 48, atlas: 'characters' },
+  'summon-oathkeeper-v': { w: 48, h: 48, atlas: 'characters' },
+  'summon-oathkeeper-tombstone': { w: 48, h: 48, atlas: 'characters' },
+  'summon-moonwolf': { w: 48, h: 48, atlas: 'characters' },
+  'summon-moonwolf-v': { w: 48, h: 48, atlas: 'characters' },
+  'proj-revolver': { w: 16, h: 16, atlas: 'characters' },
+  'proj-longbow': { w: 16, h: 16, atlas: 'characters' },
+  'proj-twinblade': { w: 16, h: 16, atlas: 'characters' },
   'beam-chain': { w: 32, h: 64, atlas: 'characters' },
   'super-moonwrath': { w: 16, h: 16, atlas: 'characters' },
   'super-silverblast': { w: 16, h: 16, atlas: 'characters' },
@@ -99,6 +115,12 @@ const EXPLICIT = {
   // 特效/拾取/标记（工程 effects 图集）
   'gem': { w: 16, h: 16, atlas: 'effects' },
   'heal': { w: 16, h: 16, atlas: 'effects' },
+  'relic-reliquary': { w: 32, h: 32, atlas: 'effects' },
+  'relic-mooneclipse': { w: 64, h: 64, atlas: 'effects' },
+  'relic-bloodtide': { w: 64, h: 64, atlas: 'effects' },
+  'relic-twelvelamps': { w: 64, h: 64, atlas: 'effects' },
+  'relic-silvertide': { w: 64, h: 64, atlas: 'effects' },
+  'relic-wolfspirit': { w: 64, h: 64, atlas: 'effects' },
   'skill-ring-edmund': { w: 64, h: 64, atlas: 'effects' },
   'skill-ring-cassandra': { w: 64, h: 64, atlas: 'effects' },
   'skill-ring-violet': { w: 64, h: 64, atlas: 'effects' },
@@ -145,7 +167,68 @@ const EXPLICIT = {
   'decal-blood': { w: 64, h: 64, atlas: 'effects' },
 
   // ---- ui ----
-  'hud-skillbtn': { w: 96, h: 96, atlas: 'ui' }
+  'hud-skillbtn': { w: 96, h: 96, atlas: 'ui' },
+  'hud-revive': { w: 24, h: 24, atlas: 'ui' },
+  'hud-merit-glow': { w: 24, h: 24, atlas: 'ui' },
+  'sticon-hard': { w: 24, h: 24, atlas: 'ui' },
+  'sticon-soft': { w: 24, h: 24, atlas: 'ui' },
+  'sticon-vuln': { w: 24, h: 24, atlas: 'ui' },
+  'seat-p1': { w: 32, h: 32, atlas: 'ui' },
+  'seat-p2': { w: 32, h: 32, atlas: 'ui' },
+  'seat-p3': { w: 32, h: 32, atlas: 'ui' },
+  'seat-p4': { w: 32, h: 32, atlas: 'ui' },
+  'seat-p5': { w: 32, h: 32, atlas: 'ui' },
+  'badge-mech': { w: 32, h: 32, atlas: 'ui' },
+  'badge-num': { w: 32, h: 32, atlas: 'ui' },
+  'badge-evo': { w: 32, h: 32, atlas: 'ui' },
+  'reso-ready': { w: 16, h: 16, atlas: 'ui' },
+  'reso-awaiting': { w: 16, h: 16, atlas: 'ui' },
+  'reso-achieved': { w: 16, h: 16, atlas: 'ui' },
+  'exw-card-lantern': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-revolver': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-twinblade': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-longbow': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-bell': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-cross': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-axe': { w: 512, h: 512, atlas: 'ui-portraits' },
+  'exw-card-horn': { w: 512, h: 512, atlas: 'ui-portraits' },
+
+  // C-1～C-3：桌面 2x = 64（raw 可 128 contain）；移动 48 运行时缩放，不另出帧名（asset-spec §2.5）
+  'tree-q-a': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-b': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-c': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-d': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-e': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-f1': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-f2': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-f3': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-s1': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-s3': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-q-s4': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-atk': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-dmg': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-aspd': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-cdr': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-exp': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-magnet': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-hp': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-spd': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-heal': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-a-pickup': { w: 64, h: 64, atlas: 'ui-slots' },
+  'tree-peak': { w: 64, h: 64, atlas: 'ui-slots' },
+  'relic-icon-mooneclipse': { w: 64, h: 64, atlas: 'ui-slots' },
+  'relic-icon-bloodtide': { w: 64, h: 64, atlas: 'ui-slots' },
+  'relic-icon-twelvelamps': { w: 64, h: 64, atlas: 'ui-slots' },
+  'relic-icon-silvertide': { w: 64, h: 64, atlas: 'ui-slots' },
+  'relic-icon-wolfspirit': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-lantern': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-revolver': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-twinblade': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-longbow': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-bell': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-cross': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-axe': { w: 64, h: 64, atlas: 'ui-slots' },
+  'exw-emblem-horn': { w: 64, h: 64, atlas: 'ui-slots' },
 };
 
 // UI 图标默认（桌面 2x 出档）
@@ -153,11 +236,27 @@ const UI_DEFAULT = { w: 128, h: 128, atlas: 'ui' }; // upg-*
 const SLOT_DEFAULT = { w: 64, h: 64, atlas: 'ui' }; // wslot-*/skill-*/codex-*
 const CHEST_SPEC = { w: 24, h: 24, atlas: 'effects' }; // 局内掉落走 effects；DOM 仍可读 /frames/chest.png
 
-// 动态解析：未显式列出的帧按前缀规则
+// 动态解析：未显式列出的帧按前缀规则（显式表优先）
 export function resolveFrameSpec(frameName) {
   if (EXPLICIT[frameName]) return EXPLICIT[frameName];
+  // `-walk-a/b` 等变体未逐条进 EXPLICIT：跟族基帧同画布、同图集（补货走循环）
+  if (isAnimationVariant(frameName)) {
+    const family = familyKey(frameName);
+    if (family !== frameName && EXPLICIT[family]) return EXPLICIT[family];
+  }
   if (frameName.startsWith('upg-')) return UI_DEFAULT;
   if (frameName.startsWith('wslot-') || frameName.startsWith('skill-') || frameName.startsWith('codex-')) return SLOT_DEFAULT;
+  if (frameName.startsWith('exw-card-')) return { w: 512, h: 512, atlas: 'ui-portraits' };
+  if (frameName.startsWith('exw-emblem-') || frameName.startsWith('tree-') || frameName.startsWith('relic-icon-')) {
+    return { w: 64, h: 64, atlas: 'ui-slots' };
+  }
+  if (frameName.startsWith('sticon-')) return { w: 24, h: 24, atlas: 'ui' };
+  if (frameName.startsWith('seat-')) return { w: 32, h: 32, atlas: 'ui' };
+  if (frameName.startsWith('badge-')) return { w: 32, h: 32, atlas: 'ui' };
+  if (frameName.startsWith('reso-')) return { w: 16, h: 16, atlas: 'ui' };
+  if (frameName.startsWith('hud-')) return { w: 24, h: 24, atlas: 'ui' };
+  if (frameName.startsWith('relic-')) return { w: 64, h: 64, atlas: 'effects' };
+  if (frameName.startsWith('proj-')) return { w: 16, h: 16, atlas: 'characters' };
   if (frameName === 'chest') return CHEST_SPEC;
   return null; // 未识别
 }

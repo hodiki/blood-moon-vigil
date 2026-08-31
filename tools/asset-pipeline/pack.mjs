@@ -1,8 +1,8 @@
-// pack.mjs — 图集打包：把 assets/frames/ 下处理好的帧打包成 3 个 atlas（TexturePacker JSON 数组格式）
+// pack.mjs — 图集打包：assets/frames/ → atlas PNG + TexturePacker JSON 数组
 //
 // 用法：
-//   node pack.mjs                    # 打包全部（characters/effects/ui）
-//   node pack.mjs characters         # 只打包指定图集
+//   node pack.mjs                    # 打包全部
+//   node pack.mjs ui-slots           # 只打包指定图集
 //   node pack.mjs --check            # 只校验现有图集（尺寸 ≤2048² / JSON 数组格式）
 //
 // 输出：

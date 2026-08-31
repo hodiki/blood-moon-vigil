@@ -12,7 +12,7 @@
  * 不可改名（Demo 既有帧），M4 只换图不换名。
  */
 
-/** 帧名注册表：图集 key → 帧名列表（对齐 architecture §5.1：characters/effects/ui） */
+/** 帧名注册表：图集 key → 帧名列表（characters/effects/ui + ui-portraits + ui-slots） */
 export interface AtlasFrameGroup {
   atlas: string;
   frames: readonly string[];
@@ -51,7 +51,12 @@ export const FRAME_BY_CONTENT_ID: Readonly<Record<string, readonly string[]>> = 
   evo_bloodsea: ['super-bloodsea'],
   evo_batstorm: ['super-batstorm'],
   evo_packleader: ['super-packleader'],
-  // ---- §3 敌人（16）+ Boss（4）----
+  xw_revolver: ['proj-revolver'],
+  xw_longbow: ['proj-longbow'],
+  xw_twinblades: ['proj-twinblade'],
+  xw_bell: ['summon-oathkeeper', 'summon-oathkeeper-v', 'summon-oathkeeper-tombstone'],
+  xw_horn: ['summon-moonwolf', 'summon-moonwolf-v'],
+  // ---- §3 敌人（17）+ Boss（4）----
   enemy_g1_1: ['enemy-zombie', 'enemy-zombie-v'],
   enemy_g1_2: ['enemy-hound', 'enemy-hound-v'],
   enemy_g1_3: ['enemy-beetle', 'enemy-beetle-v'],
@@ -67,7 +72,7 @@ export const FRAME_BY_CONTENT_ID: Readonly<Record<string, readonly string[]>> = 
   enemy_g2_5: ['enemy-penitent', 'enemy-penitent-v'],
   enemy_g3_1: ['enemy-greywolf', 'enemy-greywolf-v'],
   enemy_g3_2: ['enemy-shadowwolf', 'enemy-shadowwolf-v'],
-  enemy_g3_3: ['enemy-stonewolf', 'enemy-stonewolf-v'],
+  enemy_g3_3: ['enemy-stonewolf', 'enemy-stonewolf-v', 'enemy-stonewolf-broken', 'enemy-stonewolf-broken-v'],
   enemy_g3_4: ['enemy-wolfhunter', 'enemy-wolfhunter-v'],
   boss_1: ['enemy-boss', 'enemy-boss-v'],
   boss_2: ['boss-cardinal', 'boss-cardinal-v', 'boss-cardinal-entrance'],
@@ -104,6 +109,60 @@ export const FRAME_BY_CONTENT_ID: Readonly<Record<string, readonly string[]>> = 
   hud_skillbtn: ['hud-skillbtn'],
   codex_events: ['codex-event-1', 'codex-event-2', 'codex-event-3', 'codex-event-4', 'codex-event-5', 'codex-event-6'],
   chest: ['chest'],
+  xw_cards: [
+    'exw-card-lantern', 'exw-card-revolver', 'exw-card-twinblade', 'exw-card-longbow',
+    'exw-card-bell', 'exw-card-cross', 'exw-card-axe', 'exw-card-horn',
+  ],
+  hud_extra: ['hud-revive', 'hud-merit-glow'],
+  sticons: ['sticon-hard', 'sticon-soft', 'sticon-vuln'],
+  seats: ['seat-p1', 'seat-p2', 'seat-p3', 'seat-p4', 'seat-p5'],
+  badges: ['badge-mech', 'badge-num', 'badge-evo'],
+  reso_badges: ['reso-ready', 'reso-awaiting', 'reso-achieved'],
+  // ---- §5A C-1 天赋树节点（22 唯一帧；双点位/四顶点共用）----
+  q_a: ['tree-q-a'],
+  q_b: ['tree-q-b'],
+  q_c: ['tree-q-c'],
+  q_d: ['tree-q-d'],
+  q_e: ['tree-q-e'],
+  q_f1: ['tree-q-f1'],
+  q_f2: ['tree-q-f2'],
+  q_f3: ['tree-q-f3'],
+  q_s1: ['tree-q-s1'],
+  q_s3: ['tree-q-s3'],
+  q_s4: ['tree-q-s4'],
+  a_attack: ['tree-a-atk'],
+  a_attack_2: ['tree-a-atk'],
+  a_damage: ['tree-a-dmg'],
+  a_damage_2: ['tree-a-dmg'],
+  a_attack_speed: ['tree-a-aspd'],
+  a_cooldown: ['tree-a-cdr'],
+  a_xp_gain: ['tree-a-exp'],
+  a_xp_gain_2: ['tree-a-exp'],
+  a_magnet: ['tree-a-magnet'],
+  a_magnet_2: ['tree-a-magnet'],
+  a_life: ['tree-a-hp'],
+  a_life_2: ['tree-a-hp'],
+  a_move_speed: ['tree-a-spd'],
+  a_heal_efficiency: ['tree-a-heal'],
+  a_pickup_radius: ['tree-a-pickup'],
+  br_edmund_top: ['tree-peak'],
+  br_cassandra_top: ['tree-peak'],
+  br_violet_top: ['tree-peak'],
+  br_galvan_top: ['tree-peak'],
+  relic_icons: [
+    'relic-icon-mooneclipse', 'relic-icon-bloodtide', 'relic-icon-twelvelamps',
+    'relic-icon-silvertide', 'relic-icon-wolfspirit',
+  ],
+  xw_emblems: [
+    'exw-emblem-lantern', 'exw-emblem-revolver', 'exw-emblem-twinblade', 'exw-emblem-longbow',
+    'exw-emblem-bell', 'exw-emblem-cross', 'exw-emblem-axe', 'exw-emblem-horn',
+  ],
+  relic_reliquary: ['relic-reliquary'],
+  relic_moonfall: ['relic-mooneclipse'],
+  relic_bloodtide: ['relic-bloodtide'],
+  relic_twelve_lamps: ['relic-twelvelamps'],
+  relic_silver_tide: ['relic-silvertide'],
+  relic_wolf_spirit: ['relic-wolfspirit'],
   // ---- §6 特效 / 行为标记 / 拾取（共享帧）----
   fx_shared: ['p-circle', 'p-ring', 'p-streak', 'gem'],
   skill_rings: ['skill-ring-edmund', 'skill-ring-cassandra', 'skill-ring-violet', 'skill-ring-galvan'],
@@ -129,6 +188,7 @@ const CHARACTERS_CONTENT_IDS: readonly string[] = [
   'wpn_a_1', 'wpn_a_2', 'wpn_a_3', 'wpn_a_4', 'wpn_a_5',
   'wpn_b_1', 'wpn_b_2', 'wpn_b_3', 'wpn_c_1', 'wpn_c_2', 'wpn_c_3', 'wpn_d_1', 'wpn_d_2', 'wpn_d_3',
   'evo_moonwrath', 'evo_silverblast', 'evo_seraphring', 'evo_totaleclipse', 'evo_bloodsea', 'evo_batstorm', 'evo_packleader',
+  'xw_revolver', 'xw_longbow', 'xw_twinblades', 'xw_bell', 'xw_horn',
   'enemy_g1_1', 'enemy_g1_2', 'enemy_g1_3', 'enemy_g1_4', 'enemy_g1_5', 'enemy_g1_6', 'enemy_g1_7', 'enemy_g1_8',
   'enemy_g2_1', 'enemy_g2_2', 'enemy_g2_3', 'enemy_g2_4', 'enemy_g2_5',
   'enemy_g3_1', 'enemy_g3_2', 'enemy_g3_3', 'enemy_g3_4',
@@ -138,11 +198,28 @@ const CHARACTERS_CONTENT_IDS: readonly string[] = [
 /** 世界渲染/特效帧（effects 图集） */
 const EFFECTS_CONTENT_IDS: readonly string[] = [
   'shared_map', 'map_graveyard', 'map_cathedral', 'map_den', 'fx_shared', 'skill_rings', 'markers',
+  'relic_reliquary', 'relic_moonfall', 'relic_bloodtide', 'relic_twelve_lamps', 'relic_silver_tide', 'relic_wolf_spirit',
 ] as const;
 
-/** UI 图标帧（ui 图集） */
+/** HUD / 升级卡等（ui 图集；不含 512 立绘、不含 C-1～C-3） */
 const UI_CONTENT_IDS: readonly string[] = [
   'upg_icons', 'wslot_icons', 'skill_icons', 'hud_skillbtn', 'codex_events', 'chest',
+  'hud_extra', 'sticons', 'seats', 'badges', 'reso_badges',
+] as const;
+
+/** 专武选择卡 512 立绘（ui-portraits；从 ui 拆出以免 2048² 撑满） */
+const UI_PORTRAITS_CONTENT_IDS: readonly string[] = [
+  'xw_cards',
+] as const;
+
+/** C-1～C-3 槽位图标（ui-slots · 桌面 64 / 移动运行时缩到 48） */
+const UI_SLOTS_CONTENT_IDS: readonly string[] = [
+  'q_a', 'q_b', 'q_c', 'q_d', 'q_e', 'q_f1', 'q_f2', 'q_f3', 'q_s1', 'q_s3', 'q_s4',
+  'a_attack', 'a_attack_2', 'a_damage', 'a_damage_2', 'a_attack_speed', 'a_cooldown',
+  'a_xp_gain', 'a_xp_gain_2', 'a_magnet', 'a_magnet_2', 'a_life', 'a_life_2',
+  'a_move_speed', 'a_heal_efficiency', 'a_pickup_radius',
+  'br_edmund_top', 'br_cassandra_top', 'br_violet_top', 'br_galvan_top',
+  'relic_icons', 'xw_emblems',
 ] as const;
 
 function collectFrames(contentIds: readonly string[], claimed: Set<string>): readonly string[] {
@@ -160,9 +237,8 @@ function collectFrames(contentIds: readonly string[], claimed: Set<string>): rea
 }
 
 /**
- * 图集 key → 帧名列表（E1-S7 注册表导出；对齐 architecture §5.1 三图集）。
- * 分区不重不漏：共享帧（如 decal-bloodpool）归属首个需要的图集；effects 在前
- * 保证地面贴花/世界渲染帧进入 effects 图集，实体帧进入 characters，图标进 ui。
+ * 图集 key → 帧名列表。分区不重不漏：共享帧归属首个需要的图集。
+ * 战斗：effects → characters。UI：hud `ui` / 立绘 `ui-portraits` / C-1～C-3 `ui-slots`。
  */
 export const FRAME_REGISTRY: readonly AtlasFrameGroup[] = (() => {
   const claimed = new Set<string>();
@@ -170,6 +246,8 @@ export const FRAME_REGISTRY: readonly AtlasFrameGroup[] = (() => {
     { atlas: 'effects', frames: collectFrames(EFFECTS_CONTENT_IDS, claimed) },
     { atlas: 'characters', frames: collectFrames(CHARACTERS_CONTENT_IDS, claimed) },
     { atlas: 'ui', frames: collectFrames(UI_CONTENT_IDS, claimed) },
+    { atlas: 'ui-portraits', frames: collectFrames(UI_PORTRAITS_CONTENT_IDS, claimed) },
+    { atlas: 'ui-slots', frames: collectFrames(UI_SLOTS_CONTENT_IDS, claimed) },
   ];
 })();
 

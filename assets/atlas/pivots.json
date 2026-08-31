@@ -75,11 +75,11 @@
     },
     "enemy-bat-v": {
       "x": 0.5,
-      "y": 0.9125
+      "y": 0.9375
     },
     "enemy-bat": {
       "x": 0.5,
-      "y": 0.9125
+      "y": 0.9375
     },
     "enemy-beetle-v": {
       "x": 0.5,
@@ -99,11 +99,11 @@
     },
     "enemy-cupbearer-v": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9141
     },
     "enemy-cupbearer": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9141
     },
     "enemy-fleshmass-v": {
       "x": 0.5,
@@ -139,11 +139,11 @@
     },
     "enemy-penitent-v": {
       "x": 0.5,
-      "y": 0.9375
+      "y": 0.9427
     },
     "enemy-penitent": {
       "x": 0.5,
-      "y": 0.9375
+      "y": 0.9427
     },
     "enemy-shadowwolf-v": {
       "x": 0.5,
@@ -528,6 +528,586 @@
     "chest": {
       "x": 0.5,
       "y": 0.5
+    },
+    "enemy-bonethrower": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-bonethrower-v": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-decayedknight": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-decayedknight-v": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "exw-card-lantern": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-revolver": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-twinblade": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-longbow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-bell": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-cross": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-axe": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-card-horn": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-reliquary": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-mooneclipse": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-bloodtide": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-twelvelamps": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-silvertide": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-wolfspirit": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "summon-oathkeeper": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "summon-oathkeeper-tombstone": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "summon-oathkeeper-v": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "summon-moonwolf": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "summon-moonwolf-v": {
+      "x": 0.5,
+      "y": 0.9271
+    },
+    "proj-revolver": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "proj-longbow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "proj-twinblade": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "hud-revive": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "hud-merit-glow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "reso-ready": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "reso-awaiting": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "reso-achieved": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "sticon-hard": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "sticon-soft": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "sticon-vuln": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "seat-p1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "seat-p2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "seat-p3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "seat-p4": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "seat-p5": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "badge-mech": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "badge-num": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "badge-evo": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-a": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-b": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-c": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-d": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-e": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-f1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-f2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-f3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-s1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-s3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-q-s4": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-atk": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-dmg": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-aspd": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-cdr": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-exp": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-magnet": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-hp": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-spd": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-heal": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-a-pickup": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "tree-peak": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-icon-mooneclipse": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-icon-bloodtide": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-icon-twelvelamps": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-icon-silvertide": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "relic-icon-wolfspirit": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-lantern": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-revolver": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-twinblade": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-longbow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-bell": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-cross": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-axe": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "exw-emblem-horn": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "enemy-stonewolf-broken": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "enemy-stonewolf-broken-v": {
+      "x": 0.5,
+      "y": 0.9427
+    },
+    "wslot-proj-crossbow": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-proj-blunderbuss": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-proj-boomerang": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-proj-javelin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-orb-thorn": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-aura-barrier": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-ring-bloodpool": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-ring-holyfire": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-summon-bat": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-summon-hound": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-beam-chain": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-moonwrath": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-silverblast": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-seraphring": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-totaleclipse": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-bloodsea": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-batstorm": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "wslot-super-packleader": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-4": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-5": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-6": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-7": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-8": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-g-9": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-a1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-a2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-a3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-b1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-b2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-b3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-c1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-c2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-c3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-d1": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-d2": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-w-d3": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-scope": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-holy": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-tome": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-silver": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-pact": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-bone": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-key-grail": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-cd-edmund": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-charge-edmund": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-effect-edmund": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-cd-cassandra": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-charge-cassandra": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-effect-cassandra": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-cd-violet": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-charge-violet": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-effect-violet": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-cd-galvan": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-charge-galvan": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "upg-a-effect-galvan": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "player-walk-a": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player-walk-b": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-walk-a": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-walk-b": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-violet-walk-a": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "hero-violet-walk-b": {
+      "x": 0.5,
+      "y": 0.9141
+    },
+    "hero-galvan-walk-a": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-galvan-walk-b": {
+      "x": 0.5,
+      "y": 0.9297
     }
   }
 }

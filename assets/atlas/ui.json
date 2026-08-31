@@ -1,10 +1,850 @@
 {
   "frames": [
     {
-      "filename": "hud-skillbtn",
+      "filename": "upg-a-cd-cassandra",
       "frame": {
         "x": 0,
         "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-cd-edmund",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-cd-galvan",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-cd-violet",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-charge-cassandra",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-charge-edmund",
+      "frame": {
+        "x": 640,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-charge-galvan",
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-charge-violet",
+      "frame": {
+        "x": 896,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-effect-cassandra",
+      "frame": {
+        "x": 0,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-effect-edmund",
+      "frame": {
+        "x": 128,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-effect-galvan",
+      "frame": {
+        "x": 256,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-a-effect-violet",
+      "frame": {
+        "x": 384,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-1",
+      "frame": {
+        "x": 512,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-2",
+      "frame": {
+        "x": 640,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-3",
+      "frame": {
+        "x": 768,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-4",
+      "frame": {
+        "x": 896,
+        "y": 128,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-5",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-6",
+      "frame": {
+        "x": 128,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-7",
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-8",
+      "frame": {
+        "x": 384,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-g-9",
+      "frame": {
+        "x": 512,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-bone",
+      "frame": {
+        "x": 640,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-grail",
+      "frame": {
+        "x": 768,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-holy",
+      "frame": {
+        "x": 896,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-pact",
+      "frame": {
+        "x": 0,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-scope",
+      "frame": {
+        "x": 128,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-silver",
+      "frame": {
+        "x": 256,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-key-tome",
+      "frame": {
+        "x": 384,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-a1",
+      "frame": {
+        "x": 512,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-a2",
+      "frame": {
+        "x": 640,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-a3",
+      "frame": {
+        "x": 768,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-b1",
+      "frame": {
+        "x": 896,
+        "y": 384,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-b2",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-b3",
+      "frame": {
+        "x": 128,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-c1",
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-c2",
+      "frame": {
+        "x": 384,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-c3",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-d1",
+      "frame": {
+        "x": 640,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-d2",
+      "frame": {
+        "x": 768,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "upg-w-d3",
+      "frame": {
+        "x": 896,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hud-skillbtn",
+      "frame": {
+        "x": 0,
+        "y": 640,
         "w": 96,
         "h": 96
       },
@@ -25,7 +865,7 @@
       "filename": "codex-event-1",
       "frame": {
         "x": 96,
-        "y": 0,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -46,7 +886,7 @@
       "filename": "codex-event-2",
       "frame": {
         "x": 160,
-        "y": 0,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -67,7 +907,7 @@
       "filename": "codex-event-3",
       "frame": {
         "x": 224,
-        "y": 0,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -88,7 +928,7 @@
       "filename": "codex-event-4",
       "frame": {
         "x": 288,
-        "y": 0,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -109,7 +949,7 @@
       "filename": "codex-event-5",
       "frame": {
         "x": 352,
-        "y": 0,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -130,7 +970,7 @@
       "filename": "codex-event-6",
       "frame": {
         "x": 416,
-        "y": 0,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -150,8 +990,8 @@
     {
       "filename": "skill-cassandra",
       "frame": {
-        "x": 0,
-        "y": 96,
+        "x": 480,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -171,8 +1011,8 @@
     {
       "filename": "skill-edmund",
       "frame": {
-        "x": 64,
-        "y": 96,
+        "x": 544,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -192,8 +1032,8 @@
     {
       "filename": "skill-galvan",
       "frame": {
-        "x": 128,
-        "y": 96,
+        "x": 608,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -213,8 +1053,50 @@
     {
       "filename": "skill-violet",
       "frame": {
-        "x": 192,
-        "y": 96,
+        "x": 672,
+        "y": 640,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-aura-barrier",
+      "frame": {
+        "x": 736,
+        "y": 640,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-beam-chain",
+      "frame": {
+        "x": 800,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -234,8 +1116,29 @@
     {
       "filename": "wslot-missile",
       "frame": {
-        "x": 256,
-        "y": 96,
+        "x": 864,
+        "y": 640,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-orb-thorn",
+      "frame": {
+        "x": 928,
+        "y": 640,
         "w": 64,
         "h": 64
       },
@@ -255,8 +1158,134 @@
     {
       "filename": "wslot-orb",
       "frame": {
+        "x": 0,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-proj-blunderbuss",
+      "frame": {
+        "x": 64,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-proj-boomerang",
+      "frame": {
+        "x": 128,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-proj-crossbow",
+      "frame": {
+        "x": 192,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-proj-javelin",
+      "frame": {
+        "x": 256,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-ring-bloodpool",
+      "frame": {
         "x": 320,
-        "y": 96,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-ring-holyfire",
+      "frame": {
+        "x": 384,
+        "y": 736,
         "w": 64,
         "h": 64
       },
@@ -276,8 +1305,8 @@
     {
       "filename": "wslot-shockwave",
       "frame": {
-        "x": 384,
-        "y": 96,
+        "x": 448,
+        "y": 736,
         "w": 64,
         "h": 64
       },
@@ -293,6 +1322,531 @@
         "w": 64,
         "h": 64
       }
+    },
+    {
+      "filename": "wslot-summon-bat",
+      "frame": {
+        "x": 512,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-summon-hound",
+      "frame": {
+        "x": 576,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-batstorm",
+      "frame": {
+        "x": 640,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-bloodsea",
+      "frame": {
+        "x": 704,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-moonwrath",
+      "frame": {
+        "x": 768,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-packleader",
+      "frame": {
+        "x": 832,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-seraphring",
+      "frame": {
+        "x": 896,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-silverblast",
+      "frame": {
+        "x": 960,
+        "y": 736,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "wslot-super-totaleclipse",
+      "frame": {
+        "x": 0,
+        "y": 800,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "badge-evo",
+      "frame": {
+        "x": 992,
+        "y": 640,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "badge-mech",
+      "frame": {
+        "x": 64,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "badge-num",
+      "frame": {
+        "x": 96,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "seat-p1",
+      "frame": {
+        "x": 128,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "seat-p2",
+      "frame": {
+        "x": 160,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "seat-p3",
+      "frame": {
+        "x": 192,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "seat-p4",
+      "frame": {
+        "x": 224,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "seat-p5",
+      "frame": {
+        "x": 256,
+        "y": 800,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "hud-merit-glow",
+      "frame": {
+        "x": 288,
+        "y": 800,
+        "w": 24,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 24,
+        "h": 24
+      }
+    },
+    {
+      "filename": "hud-revive",
+      "frame": {
+        "x": 312,
+        "y": 800,
+        "w": 24,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 24,
+        "h": 24
+      }
+    },
+    {
+      "filename": "sticon-hard",
+      "frame": {
+        "x": 336,
+        "y": 800,
+        "w": 24,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 24,
+        "h": 24
+      }
+    },
+    {
+      "filename": "sticon-soft",
+      "frame": {
+        "x": 360,
+        "y": 800,
+        "w": 24,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 24,
+        "h": 24
+      }
+    },
+    {
+      "filename": "sticon-vuln",
+      "frame": {
+        "x": 384,
+        "y": 800,
+        "w": 24,
+        "h": 24
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 24
+      },
+      "sourceSize": {
+        "w": 24,
+        "h": 24
+      }
+    },
+    {
+      "filename": "reso-achieved",
+      "frame": {
+        "x": 408,
+        "y": 800,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "reso-awaiting",
+      "frame": {
+        "x": 424,
+        "y": 800,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "reso-ready",
+      "frame": {
+        "x": 440,
+        "y": 800,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
     }
   ],
   "meta": {
@@ -301,11 +1855,171 @@
     "image": "ui.png",
     "format": "RGBA8888",
     "size": {
-      "w": 512,
-      "h": 512
+      "w": 1024,
+      "h": 1024
     },
     "scale": 1,
     "framePivots": {
+      "upg-a-cd-cassandra": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-cd-edmund": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-cd-galvan": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-cd-violet": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-charge-cassandra": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-charge-edmund": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-charge-galvan": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-charge-violet": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-effect-cassandra": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-effect-edmund": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-effect-galvan": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-a-effect-violet": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-1": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-2": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-3": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-4": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-5": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-6": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-7": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-8": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-g-9": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-bone": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-grail": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-holy": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-pact": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-scope": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-silver": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-key-tome": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-a1": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-a2": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-a3": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-b1": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-b2": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-b3": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-c1": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-c2": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-c3": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-d1": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-d2": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "upg-w-d3": {
+        "x": 0.5,
+        "y": 0.5
+      },
       "hud-skillbtn": {
         "x": 0.5,
         "y": 0.5
@@ -350,7 +2064,19 @@
         "x": 0.5,
         "y": 0.5
       },
+      "wslot-aura-barrier": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-beam-chain": {
+        "x": 0.5,
+        "y": 0.5
+      },
       "wslot-missile": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-orb-thorn": {
         "x": 0.5,
         "y": 0.5
       },
@@ -358,7 +2084,131 @@
         "x": 0.5,
         "y": 0.5
       },
+      "wslot-proj-blunderbuss": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-proj-boomerang": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-proj-crossbow": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-proj-javelin": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-ring-bloodpool": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-ring-holyfire": {
+        "x": 0.5,
+        "y": 0.5
+      },
       "wslot-shockwave": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-summon-bat": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-summon-hound": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-batstorm": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-bloodsea": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-moonwrath": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-packleader": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-seraphring": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-silverblast": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "wslot-super-totaleclipse": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "badge-evo": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "badge-mech": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "badge-num": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "seat-p1": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "seat-p2": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "seat-p3": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "seat-p4": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "seat-p5": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "hud-merit-glow": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "hud-revive": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "sticon-hard": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "sticon-soft": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "sticon-vuln": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "reso-achieved": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "reso-awaiting": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "reso-ready": {
         "x": 0.5,
         "y": 0.5
       }

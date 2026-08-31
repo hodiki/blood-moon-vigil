@@ -5,7 +5,7 @@
  * 检查：
  * 1. 注册表 ⊆ 交付集且无多余名（ALL_FRAMES 每个帧名都在 content-id-frame-map 交付集内）。
  * 2. 保留帧名未改名（RESERVED_FRAMES ⊆ 交付集）。
- * 3. 注册表去重 / 三图集分区不重不漏（并集 = ALL_FRAMES）。
+ * 3. 注册表去重 / 图集分区不重不漏（并集 = ALL_FRAMES）。
  * 4. 同步导出 `frame-registry.json`（与 export 脚本同源，确定性输出）。
  *
  * 任一检查失败 → 打印差异并 exit 1（CI 门禁；无多余名 / 无缺失）。
@@ -46,7 +46,7 @@ if (reservedMissing.length > 0) {
 // ---- 检查 3：去重 + 三图集分区不重不漏 ----
 const atlasNames = FRAME_REGISTRY.flatMap((g) => g.frames);
 if (new Set(atlasNames).size !== ALL_FRAMES.length || atlasNames.length !== ALL_FRAMES.length) {
-  fail('三图集注册表分区存在重复/遗漏（并集 ≠ ALL_FRAMES）');
+  fail('图集注册表分区存在重复/遗漏（并集 ≠ ALL_FRAMES）');
 }
 if (new Set(FRAME_REGISTRY.map((g) => g.atlas)).size !== FRAME_REGISTRY.length) {
   fail('图集 key 重复');

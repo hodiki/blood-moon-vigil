@@ -1,10 +1,17 @@
 // layout.mjs — P-6：动画族共享缩放 / 脚底对齐 / 时间轴门禁 / pivot 元数据
 // 不写入 Phaser 帧级 pivot 字段（会自动 setOrigin，打乱现有碰撞中心）。
 
-const VARIANT_RE = /-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b)$/;
+const VARIANT_RE = /-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b|broken|tombstone)$/;
 
+/** 循环剥后缀：`enemy-stonewolf-broken-v` → `enemy-stonewolf`（只 replace 一次会停在 `-broken`）。 */
 export function familyKey(frameName) {
-  return frameName.replace(VARIANT_RE, '');
+  let s = frameName;
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(VARIANT_RE, '');
+  } while (s !== prev);
+  return s;
 }
 
 /**
@@ -23,6 +30,8 @@ export function isCenteredFxFrame(frameName) {
   if (frameName.startsWith('p-')) return true;
   if (frameName.startsWith('decal-')) return true;
   if (frameName.startsWith('wslot-') || frameName.startsWith('hud-') || frameName.startsWith('upg-') || frameName.startsWith('codex-')) return true;
+  if (frameName.startsWith('relic-') || frameName.startsWith('exw-card-') || frameName.startsWith('exw-emblem-') || frameName.startsWith('sticon-')) return true;
+  if (frameName.startsWith('tree-') || frameName.startsWith('seat-') || frameName.startsWith('badge-') || frameName.startsWith('reso-')) return true;
   if (frameName === 'decor-church-glasslight' || frameName === 'chest') return true;
   return frameName === 'missile' || frameName === 'shockwave' || frameName === 'gem' || frameName === 'heal';
 }
@@ -31,8 +40,10 @@ export function isAnimationVariant(frameName) {
   return VARIANT_RE.test(frameName);
 }
 
-/** idle 呼吸 / 技能姿态 / Boss 出场 / 基帧 */
+/** idle 呼吸 / 技能姿态 / Boss 出场 / 破甲 / 墓碑 / 基帧 */
 export function variantKind(frameName) {
+  if (frameName.includes('-broken')) return 'broken';
+  if (frameName.includes('-tombstone')) return 'tombstone';
   if (frameName.endsWith('-entrance')) return 'entrance';
   if (/-(?:skill-a|skill-b|skill-c)$/.test(frameName)) return 'skill';
   if (/-(?:walk-a|walk-b)$/.test(frameName)) return 'walk';
@@ -42,7 +53,7 @@ export function variantKind(frameName) {
 
 /** 四足 / 低重心：脚底允许 1px */
 export function isQuadrupedFamily(family) {
-  return /(?:hound|greywolf|shadowwolf|stonewolf|beetle|bat|fleshmass|fenrir)$/.test(family);
+  return /(?:hound|greywolf|shadowwolf|stonewolf|moonwolf|beetle|bat|fleshmass|fenrir)$/.test(family);
 }
 
 /** 无落地脚（幽灵等）：脚底允许 1px，避免 1px 量化误杀 */
@@ -52,7 +63,7 @@ export function isFloatingFamily(family) {
 
 /** 犬科冲刺姿态面积门禁放宽到 20% */
 export function isCanineFamily(family) {
-  return /(?:hound|greywolf|shadowwolf|stonewolf|fenrir)$/.test(family);
+  return /(?:hound|greywolf|shadowwolf|stonewolf|moonwolf|fenrir)$/.test(family);
 }
 
 /**
@@ -66,10 +77,15 @@ export function temporalLimits(family, specW, variantName = '') {
   let footMax = (isQuadrupedFamily(family) || isFloatingFamily(family)) ? 1 : 0;
   let areaMax = isCanineFamily(family) ? 0.2 : 0.15;
 
-  if (kind === 'skill') {
+  if (kind === 'skill' || kind === 'tombstone') {
     hypotMax = specW >= 240 ? 12 : specW >= 96 ? 8 : 6;
     footMax += 1;
     areaMax = Math.max(areaMax, 0.25);
+  } else if (kind === 'broken') {
+    // 剥甲：姿态仍锁脚，面积允许到 30%（岩甲脱落）
+    hypotMax = specW >= 240 ? 12 : specW >= 96 ? 8 : 6;
+    footMax += 1;
+    areaMax = Math.max(areaMax, 0.3);
   } else if (kind === 'walk') {
     hypotMax = specW >= 240 ? 6 : specW >= 96 ? 4 : 3;
     areaMax = Math.max(areaMax, 0.2);

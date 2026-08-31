@@ -33,7 +33,11 @@ export const FRAME_DELIVERY_SET: readonly string[] = [
   'enemy-bat', 'enemy-bat-v', 'enemy-cupbearer', 'enemy-cupbearer-v',
   'enemy-fleshmass', 'enemy-fleshmass-v', 'enemy-penitent', 'enemy-penitent-v',
   'enemy-greywolf', 'enemy-greywolf-v', 'enemy-shadowwolf', 'enemy-shadowwolf-v',
-  'enemy-stonewolf', 'enemy-stonewolf-v', 'enemy-wolfhunter', 'enemy-wolfhunter-v',
+  'enemy-stonewolf', 'enemy-stonewolf-v', 'enemy-stonewolf-broken', 'enemy-stonewolf-broken-v', 'enemy-wolfhunter', 'enemy-wolfhunter-v',
+  // §2 专武弹体 / 召唤（gdd-exclusive-weapons；卡片见 §5）
+  'proj-revolver', 'proj-longbow', 'proj-twinblade',
+  'summon-oathkeeper', 'summon-oathkeeper-v', 'summon-oathkeeper-tombstone',
+  'summon-moonwolf', 'summon-moonwolf-v',
   // §3 Boss（4）
   'enemy-boss', 'enemy-boss-v',
   'boss-cardinal', 'boss-cardinal-v', 'boss-cardinal-entrance',
@@ -65,10 +69,29 @@ export const FRAME_DELIVERY_SET: readonly string[] = [
   // §5 主动技图标 ×4 / 按钮 / 图鉴 / 宝箱
   'skill-edmund', 'skill-cassandra', 'skill-violet', 'skill-galvan',
   'hud-skillbtn',
+  'hud-revive', 'hud-merit-glow',
+  'sticon-hard', 'sticon-soft', 'sticon-vuln',
+  'seat-p1', 'seat-p2', 'seat-p3', 'seat-p4', 'seat-p5',
+  'badge-mech', 'badge-num', 'badge-evo',
+  'reso-ready', 'reso-awaiting', 'reso-achieved',
+  'exw-card-lantern', 'exw-card-revolver', 'exw-card-twinblade', 'exw-card-longbow',
+  'exw-card-bell', 'exw-card-cross', 'exw-card-axe', 'exw-card-horn',
   'codex-event-1', 'codex-event-2', 'codex-event-3', 'codex-event-4', 'codex-event-5', 'codex-event-6',
   'chest',
   // §6 特效 / 行为标记 / 拾取（共享帧）
   'p-circle', 'p-ring', 'p-streak', 'gem',
   'skill-ring-edmund', 'skill-ring-cassandra', 'skill-ring-violet', 'skill-ring-galvan',
   'marker-aura', 'marker-rune', 'marker-warningline', 'marker-stun', 'marker-slow', 'marker-mark',
+  'relic-reliquary',
+  'relic-mooneclipse', 'relic-bloodtide', 'relic-twelvelamps', 'relic-silvertide', 'relic-wolfspirit',
+  // §5A C-1～C-3（ui-slots · 35）
+  'tree-q-a', 'tree-q-b', 'tree-q-c', 'tree-q-d', 'tree-q-e',
+  'tree-q-f1', 'tree-q-f2', 'tree-q-f3', 'tree-q-s1', 'tree-q-s3', 'tree-q-s4',
+  'tree-a-atk', 'tree-a-dmg', 'tree-a-aspd', 'tree-a-cdr', 'tree-a-exp',
+  'tree-a-magnet', 'tree-a-hp', 'tree-a-spd', 'tree-a-heal', 'tree-a-pickup',
+  'tree-peak',
+  'relic-icon-mooneclipse', 'relic-icon-bloodtide', 'relic-icon-twelvelamps',
+  'relic-icon-silvertide', 'relic-icon-wolfspirit',
+  'exw-emblem-lantern', 'exw-emblem-revolver', 'exw-emblem-twinblade', 'exw-emblem-longbow',
+  'exw-emblem-bell', 'exw-emblem-cross', 'exw-emblem-axe', 'exw-emblem-horn',
 ] as const;
