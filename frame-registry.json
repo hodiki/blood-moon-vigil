@@ -47,7 +47,13 @@
         "marker-warningline",
         "marker-stun",
         "marker-slow",
-        "marker-mark"
+        "marker-mark",
+        "relic-reliquary",
+        "relic-mooneclipse",
+        "relic-bloodtide",
+        "relic-twelvelamps",
+        "relic-silvertide",
+        "relic-wolfspirit"
       ]
     },
     {
@@ -90,6 +96,14 @@
         "super-bloodsea",
         "super-batstorm",
         "super-packleader",
+        "proj-revolver",
+        "proj-longbow",
+        "proj-twinblade",
+        "summon-oathkeeper",
+        "summon-oathkeeper-v",
+        "summon-oathkeeper-tombstone",
+        "summon-moonwolf",
+        "summon-moonwolf-v",
         "enemy-zombie",
         "enemy-zombie-v",
         "enemy-hound",
@@ -122,6 +136,8 @@
         "enemy-shadowwolf-v",
         "enemy-stonewolf",
         "enemy-stonewolf-v",
+        "enemy-stonewolf-broken",
+        "enemy-stonewolf-broken-v",
         "enemy-wolfhunter",
         "enemy-wolfhunter-v",
         "enemy-boss",
@@ -212,7 +228,76 @@
         "codex-event-4",
         "codex-event-5",
         "codex-event-6",
-        "chest"
+        "chest",
+        "hud-revive",
+        "hud-merit-glow",
+        "sticon-hard",
+        "sticon-soft",
+        "sticon-vuln",
+        "seat-p1",
+        "seat-p2",
+        "seat-p3",
+        "seat-p4",
+        "seat-p5",
+        "badge-mech",
+        "badge-num",
+        "badge-evo",
+        "reso-ready",
+        "reso-awaiting",
+        "reso-achieved"
+      ]
+    },
+    {
+      "atlas": "ui-portraits",
+      "frames": [
+        "exw-card-lantern",
+        "exw-card-revolver",
+        "exw-card-twinblade",
+        "exw-card-longbow",
+        "exw-card-bell",
+        "exw-card-cross",
+        "exw-card-axe",
+        "exw-card-horn"
+      ]
+    },
+    {
+      "atlas": "ui-slots",
+      "frames": [
+        "tree-q-a",
+        "tree-q-b",
+        "tree-q-c",
+        "tree-q-d",
+        "tree-q-e",
+        "tree-q-f1",
+        "tree-q-f2",
+        "tree-q-f3",
+        "tree-q-s1",
+        "tree-q-s3",
+        "tree-q-s4",
+        "tree-a-atk",
+        "tree-a-dmg",
+        "tree-a-aspd",
+        "tree-a-cdr",
+        "tree-a-exp",
+        "tree-a-magnet",
+        "tree-a-hp",
+        "tree-a-spd",
+        "tree-a-heal",
+        "tree-a-pickup",
+        "tree-peak",
+        "relic-icon-mooneclipse",
+        "relic-icon-bloodtide",
+        "relic-icon-twelvelamps",
+        "relic-icon-silvertide",
+        "relic-icon-wolfspirit",
+        "exw-emblem-lantern",
+        "exw-emblem-revolver",
+        "exw-emblem-twinblade",
+        "exw-emblem-longbow",
+        "exw-emblem-bell",
+        "exw-emblem-cross",
+        "exw-emblem-axe",
+        "exw-emblem-horn"
       ]
     }
   ],
@@ -305,6 +390,24 @@
     "evo_packleader": [
       "super-packleader"
     ],
+    "xw_revolver": [
+      "proj-revolver"
+    ],
+    "xw_longbow": [
+      "proj-longbow"
+    ],
+    "xw_twinblades": [
+      "proj-twinblade"
+    ],
+    "xw_bell": [
+      "summon-oathkeeper",
+      "summon-oathkeeper-v",
+      "summon-oathkeeper-tombstone"
+    ],
+    "xw_horn": [
+      "summon-moonwolf",
+      "summon-moonwolf-v"
+    ],
     "enemy_g1_1": [
       "enemy-zombie",
       "enemy-zombie-v"
@@ -367,7 +470,9 @@
     ],
     "enemy_g3_3": [
       "enemy-stonewolf",
-      "enemy-stonewolf-v"
+      "enemy-stonewolf-v",
+      "enemy-stonewolf-broken",
+      "enemy-stonewolf-broken-v"
     ],
     "enemy_g3_4": [
       "enemy-wolfhunter",
@@ -514,6 +619,167 @@
     "chest": [
       "chest"
     ],
+    "xw_cards": [
+      "exw-card-lantern",
+      "exw-card-revolver",
+      "exw-card-twinblade",
+      "exw-card-longbow",
+      "exw-card-bell",
+      "exw-card-cross",
+      "exw-card-axe",
+      "exw-card-horn"
+    ],
+    "hud_extra": [
+      "hud-revive",
+      "hud-merit-glow"
+    ],
+    "sticons": [
+      "sticon-hard",
+      "sticon-soft",
+      "sticon-vuln"
+    ],
+    "seats": [
+      "seat-p1",
+      "seat-p2",
+      "seat-p3",
+      "seat-p4",
+      "seat-p5"
+    ],
+    "badges": [
+      "badge-mech",
+      "badge-num",
+      "badge-evo"
+    ],
+    "reso_badges": [
+      "reso-ready",
+      "reso-awaiting",
+      "reso-achieved"
+    ],
+    "q_a": [
+      "tree-q-a"
+    ],
+    "q_b": [
+      "tree-q-b"
+    ],
+    "q_c": [
+      "tree-q-c"
+    ],
+    "q_d": [
+      "tree-q-d"
+    ],
+    "q_e": [
+      "tree-q-e"
+    ],
+    "q_f1": [
+      "tree-q-f1"
+    ],
+    "q_f2": [
+      "tree-q-f2"
+    ],
+    "q_f3": [
+      "tree-q-f3"
+    ],
+    "q_s1": [
+      "tree-q-s1"
+    ],
+    "q_s3": [
+      "tree-q-s3"
+    ],
+    "q_s4": [
+      "tree-q-s4"
+    ],
+    "a_attack": [
+      "tree-a-atk"
+    ],
+    "a_attack_2": [
+      "tree-a-atk"
+    ],
+    "a_damage": [
+      "tree-a-dmg"
+    ],
+    "a_damage_2": [
+      "tree-a-dmg"
+    ],
+    "a_attack_speed": [
+      "tree-a-aspd"
+    ],
+    "a_cooldown": [
+      "tree-a-cdr"
+    ],
+    "a_xp_gain": [
+      "tree-a-exp"
+    ],
+    "a_xp_gain_2": [
+      "tree-a-exp"
+    ],
+    "a_magnet": [
+      "tree-a-magnet"
+    ],
+    "a_magnet_2": [
+      "tree-a-magnet"
+    ],
+    "a_life": [
+      "tree-a-hp"
+    ],
+    "a_life_2": [
+      "tree-a-hp"
+    ],
+    "a_move_speed": [
+      "tree-a-spd"
+    ],
+    "a_heal_efficiency": [
+      "tree-a-heal"
+    ],
+    "a_pickup_radius": [
+      "tree-a-pickup"
+    ],
+    "br_edmund_top": [
+      "tree-peak"
+    ],
+    "br_cassandra_top": [
+      "tree-peak"
+    ],
+    "br_violet_top": [
+      "tree-peak"
+    ],
+    "br_galvan_top": [
+      "tree-peak"
+    ],
+    "relic_icons": [
+      "relic-icon-mooneclipse",
+      "relic-icon-bloodtide",
+      "relic-icon-twelvelamps",
+      "relic-icon-silvertide",
+      "relic-icon-wolfspirit"
+    ],
+    "xw_emblems": [
+      "exw-emblem-lantern",
+      "exw-emblem-revolver",
+      "exw-emblem-twinblade",
+      "exw-emblem-longbow",
+      "exw-emblem-bell",
+      "exw-emblem-cross",
+      "exw-emblem-axe",
+      "exw-emblem-horn"
+    ],
+    "relic_reliquary": [
+      "relic-reliquary"
+    ],
+    "relic_moonfall": [
+      "relic-mooneclipse"
+    ],
+    "relic_bloodtide": [
+      "relic-bloodtide"
+    ],
+    "relic_twelve_lamps": [
+      "relic-twelvelamps"
+    ],
+    "relic_silver_tide": [
+      "relic-silvertide"
+    ],
+    "relic_wolf_spirit": [
+      "relic-wolfspirit"
+    ],
     "fx_shared": [
       "p-circle",
       "p-ring",
@@ -599,6 +865,14 @@
     "super-bloodsea",
     "super-batstorm",
     "super-packleader",
+    "proj-revolver",
+    "proj-longbow",
+    "proj-twinblade",
+    "summon-oathkeeper",
+    "summon-oathkeeper-v",
+    "summon-oathkeeper-tombstone",
+    "summon-moonwolf",
+    "summon-moonwolf-v",
     "enemy-zombie",
     "enemy-zombie-v",
     "enemy-hound",
@@ -631,6 +905,8 @@
     "enemy-shadowwolf-v",
     "enemy-stonewolf",
     "enemy-stonewolf-v",
+    "enemy-stonewolf-broken",
+    "enemy-stonewolf-broken-v",
     "enemy-wolfhunter",
     "enemy-wolfhunter-v",
     "enemy-boss",
@@ -745,6 +1021,71 @@
     "codex-event-5",
     "codex-event-6",
     "chest",
+    "exw-card-lantern",
+    "exw-card-revolver",
+    "exw-card-twinblade",
+    "exw-card-longbow",
+    "exw-card-bell",
+    "exw-card-cross",
+    "exw-card-axe",
+    "exw-card-horn",
+    "hud-revive",
+    "hud-merit-glow",
+    "sticon-hard",
+    "sticon-soft",
+    "sticon-vuln",
+    "seat-p1",
+    "seat-p2",
+    "seat-p3",
+    "seat-p4",
+    "seat-p5",
+    "badge-mech",
+    "badge-num",
+    "badge-evo",
+    "reso-ready",
+    "reso-awaiting",
+    "reso-achieved",
+    "tree-q-a",
+    "tree-q-b",
+    "tree-q-c",
+    "tree-q-d",
+    "tree-q-e",
+    "tree-q-f1",
+    "tree-q-f2",
+    "tree-q-f3",
+    "tree-q-s1",
+    "tree-q-s3",
+    "tree-q-s4",
+    "tree-a-atk",
+    "tree-a-dmg",
+    "tree-a-aspd",
+    "tree-a-cdr",
+    "tree-a-exp",
+    "tree-a-magnet",
+    "tree-a-hp",
+    "tree-a-spd",
+    "tree-a-heal",
+    "tree-a-pickup",
+    "tree-peak",
+    "relic-icon-mooneclipse",
+    "relic-icon-bloodtide",
+    "relic-icon-twelvelamps",
+    "relic-icon-silvertide",
+    "relic-icon-wolfspirit",
+    "exw-emblem-lantern",
+    "exw-emblem-revolver",
+    "exw-emblem-twinblade",
+    "exw-emblem-longbow",
+    "exw-emblem-bell",
+    "exw-emblem-cross",
+    "exw-emblem-axe",
+    "exw-emblem-horn",
+    "relic-reliquary",
+    "relic-mooneclipse",
+    "relic-bloodtide",
+    "relic-twelvelamps",
+    "relic-silvertide",
+    "relic-wolfspirit",
     "p-circle",
     "p-ring",
     "p-streak",
