@@ -279,7 +279,13 @@ export function rollGroup(
   if (state.bossTimeTriggered || state.boss4OnField) {
     return { rolled: false, cost: 0, pending: null, reason: 'gate' };
   }
-  const due = state.lastRollAt === null || state.time >= state.lastRollAt + state.nextInterval;
+  // QA-FIX（NV-INTEG-FIX ⑤）：原实现初始 nextInterval=0 使首掷（t≈0）与次掷（60~90s）
+  // 都落在 chance=0 窗口被浪费（首次可成组 ≥120s，6 分钟局期望仅 ~2 组，GDD 锚 4~7）。
+  // 修复：首掷（lastRollAt===null）对齐 S1 末窗口起点（100s，概率 0.3 起效区），
+  // 次掷起恢复 60~90s 节奏位；lastRollAt 在 due 通过后立即刷新，节奏位语义不变。
+  const due = state.lastRollAt === null
+    ? state.time >= FORMATION_RULES.S1_END_WINDOW_START
+    : state.time >= state.lastRollAt + state.nextInterval;
   if (!due) return { rolled: false, cost: 0, pending: null, reason: 'gate' };
   // 掷点命中 → 刷新节奏（无论后续是否成组，节奏位推进；MN-19 b 掷点口径）
   state.lastRollAt = state.time;

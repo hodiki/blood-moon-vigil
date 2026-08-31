@@ -226,7 +226,18 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
   }
 
   private aimAngle(player: { x: number; y: number }, enemies: readonly Enemy[]): number {
-    const target = enemies.find((e) => e.active);
+    // QA-FIX（NV-INTEG-FIX ⑥）：原实现取数组第一个活跃敌（池序固定 → 永远锁同一只），
+    // 改为最近活跃敌（每帧重选，与 homing-missile 目标语义一致）。
+    let target: Enemy | null = null;
+    let bestDist = Number.POSITIVE_INFINITY;
+    for (const e of enemies) {
+      if (!e.active) continue;
+      const d = (e.x - player.x) ** 2 + (e.y - player.y) ** 2;
+      if (d < bestDist) {
+        bestDist = d;
+        target = e;
+      }
+    }
     if (!target) return 0;
     return Math.atan2(target.y - player.y, target.x - player.x);
   }

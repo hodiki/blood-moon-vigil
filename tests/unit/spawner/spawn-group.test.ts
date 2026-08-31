@@ -229,6 +229,17 @@ describe('同屏与预算约束（F-2 / §③-1 方阵预算预扣）', () => {
     state.time = 150; // 未到 190
     expect(rollGroup(state, CTX, mulberry32(1)).rolled).toBe(false);
   });
+
+  it('NV-INTEG-FIX ⑤：首掷对齐 S1 末窗口（<100s 未到期 = gate；不浪费掷点在 chance=0 区间）', () => {
+    const state = createGroupSchedulerState();
+    state.time = 60; // S1 前段：概率恒 0，不应消费节奏位
+    expect(rollGroup(state, CTX, mulberry32(1)).reason).toBe('gate');
+    expect(state.lastRollAt).toBeNull();
+    state.time = FORMATION_RULES.S1_END_WINDOW_START; // 100s 到期
+    const r = rollGroup(state, CTX, mulberry32(1));
+    expect(r.reason).not.toBe('gate'); // 到期后必然进入掷点（chance/pool-empty 等为有效掷）
+    expect(state.lastRollAt).toBe(FORMATION_RULES.S1_END_WINDOW_START);
+  });
 });
 
 describe('宝藏护卫特例（spawner-v2 §③-5 / 每局 ≤1）', () => {

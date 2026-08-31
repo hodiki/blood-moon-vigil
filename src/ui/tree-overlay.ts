@@ -147,7 +147,7 @@ export class TreeOverlay {
     const style = document.createElement('style');
     style.id = 'bmv-tree-styles';
     style.textContent = `
-      .bmv-tree { position: absolute; inset: 0; z-index: 75; display: flex; align-items: center; justify-content: center; }
+      .bmv-tree { position: absolute; inset: 0; z-index: 75; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
       .bmv-tree-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.85); }
       .bmv-tree-panel {
         position: relative; width: 640px; max-width: calc(100vw - 16px); max-width: calc(100dvw - 16px);

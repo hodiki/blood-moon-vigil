@@ -91,6 +91,9 @@ export class EnemySpawner {
 
   /** W-8 等级滞后宽容：玩家等级提供器（PlayScene 注入 XpManager.level；缺省 = 不启用宽容） */
   playerLevelProvider: (() => number) | null = null;
+
+  /** QA-FIX（NV-INTEG-FIX ⑤）：方阵掷点观测钩子（?qa=1 时由 PlayScene 注入 console 上报） */
+  groupRollLogger?: (info: { time: number; rolled: boolean; reason?: string; formationId?: string; cost: number }) => void;
   /** W-8 c 案 HP 联动系数（难度域裁决后回填；缺省未启用） */
   caseHpLink: number | undefined = undefined;
 
@@ -232,6 +235,14 @@ export class EnemySpawner {
     this.groupCtx.playerX = this.player.x;
     this.groupCtx.playerY = this.player.y;
     const roll = rollGroup(groups, this.groupCtx, Math.random);
+    // QA-FIX（NV-INTEG-FIX ⑤）观测点：?qa=1 时上报每次掷点结果（含被拒原因），验证节奏修复
+    this.groupRollLogger?.({
+      time: groups.time,
+      rolled: roll.rolled,
+      reason: roll.reason,
+      formationId: roll.pending?.formationId,
+      cost: roll.cost,
+    });
     if (roll.rolled && roll.cost > 0) {
       this.budgetAcc = Math.max(0, this.budgetAcc - roll.cost); // 成组预扣
       if (roll.pending) {
