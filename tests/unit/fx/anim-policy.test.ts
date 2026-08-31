@@ -10,11 +10,18 @@ describe('anim 朝向与步态策略（TA：idle 变体不当 9fps 走路）', (
     expect(facingFlipX(-(FACING_DEADZONE + 1), false)).toBe(true);
   });
 
-  it('defaultFacesRight：仅守夜人启用，避免朝左原图月步', () => {
+  it('defaultFacesRight：四角色启用（NV-INTEG-FIX P1 扩表），敌人不翻转避免月步', () => {
     expect(defaultFacesRight('player')).toBe(true);
     expect(defaultFacesRight('player-v')).toBe(true);
-    expect(defaultFacesRight('hero-cassandra')).toBeNull();
+    expect(defaultFacesRight('player-skill-a')).toBe(true);
+    // NV-INTEG-FIX P1：四角色帧表补齐（含变体后缀剥离）
+    expect(defaultFacesRight('hero-edmund')).toBe(true);
+    expect(defaultFacesRight('hero-cassandra')).toBe(true);
+    expect(defaultFacesRight('hero-cassandra-v')).toBe(true);
+    expect(defaultFacesRight('hero-violet-skill-a')).toBe(true);
+    expect(defaultFacesRight('hero-galvan')).toBe(true);
     expect(defaultFacesRight('enemy-zombie')).toBeNull();
+    expect(defaultFacesRight('enemy-stonewolf-broken-v')).toBeNull();
   });
 
   it('walkCycleFrames：无 -walk-a/b 则不建 move（回落 idle）', () => {

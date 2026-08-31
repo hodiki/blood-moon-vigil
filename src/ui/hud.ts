@@ -29,6 +29,10 @@ import {
 } from '@/ui/hud-state';
 import { renderIconSvg, weaponIconKeyForId } from '@/ui/icons';
 import { FRAME_IMG_BASE, preferFrameImg } from '@/ui/frame-img';
+import { FRAME_BY_CONTENT_ID } from '@/config/frame-registry';
+
+/** NV-INTEG-FIX P1：共鸣徽记四态（resonance-engine.ResonanceBadgeState 值集；HUD 不 import 引擎） */
+export type HudResonanceBadgeState = 'none' | 'ready-highlight' | 'awaiting-key' | 'achieved';
 
 const ESC_HINT_SECONDS = 5;
 
@@ -67,6 +71,8 @@ export class Hud {
   /** M1b 主动技：冷却转圈遮罩（conic-gradient 径向遮罩，pillars §6.3 HUD） */
   private readonly skillCdEl: HTMLElement | null;
   private readonly skillHandler: (() => void) | null;
+  /** NV-INTEG-FIX P1：动态武器槽激活后置非 null（apply() 跳过固定三槽 active 切换） */
+  private slots: HTMLElement[] | null = null;
   private lastSkillCdFrac = -1;
   private readonly offFns: Array<() => void> = [];
   private escHintTimer: number | null = null;
@@ -96,6 +102,7 @@ export class Hud {
       <div class="bmv-hud-status">
         <div class="bmv-hud-ammo" hidden></div>
         <div class="bmv-hud-revive" hidden></div>
+        <div class="bmv-hud-reso" hidden></div>
       </div>
     `;
     host.appendChild(this.root);
@@ -181,6 +188,11 @@ export class Hud {
     if (this.skillEl) this.skillEl.hidden = !visible;
   }
 
+  /** NV-INTEG-FIX P0-2：专武选择后技能名联动（aria-label；桌面无按钮为 no-op） */
+  setSkillName(name: string): void {
+    if (this.skillEl) this.skillEl.setAttribute('aria-label', name);
+  }
+
   /** M1b 主动技：冷却转圈（剩余/总 CD → conic-gradient 径向遮罩；就绪=0 全透明） */
   setSkillCooldown(remainingSeconds: number, totalSeconds: number): void {
     if (!this.skillCdEl) return;
@@ -221,6 +233,53 @@ export class Hud {
     el.textContent = `复活 ×${count}`;
   }
 
+  /**
+   * NV-INTEG-FIX P1：动态武器槽（拥有集合驱动扩槽；帧缺失回落通用 SVG）。
+   * 帧 = wslot-<图集帧名>（FRAME_BY_CONTENT_ID[id][0]；evo_* 帧名自带 super- 前缀）；
+   * 专武无 wslot 帧 → exw-emblem-<slug>（twinblades 帧名单数截断）。
+   */
+  setWeaponSlots(ids: readonly string[]): void {
+    const row = this.root.querySelector('.bmv-hud-weapons') as HTMLElement | null;
+    if (!row) return;
+    row.innerHTML = '';
+    this.slots = ids.map((id) => {
+      const el = document.createElement('div');
+      el.className = 'bmv-hud-weapon active';
+      el.dataset.weapon = id;
+      el.title = id;
+      el.innerHTML = renderIconSvg('weapon-01');
+      const frame = Hud.slotFrameForId(id);
+      if (frame) preferFrameImg(el, frame);
+      row.appendChild(el);
+      return el;
+    });
+  }
+
+  /** 武器 id → 槽位帧名（无帧返回 null） */
+  private static slotFrameForId(id: string): string | null {
+    if (id.startsWith('xw_')) {
+      const slug = id.slice(3).replace(/twinblades$/, 'twinblade');
+      return `exw-emblem-${slug}`;
+    }
+    const base = FRAME_BY_CONTENT_ID[id]?.[0];
+    return base ? `wslot-${base}` : null;
+  }
+
+  /** NV-INTEG-FIX P1：共鸣徽记四态（reso-ready/awaiting/achieved 帧；none = 隐藏） */
+  setResonanceBadge(state: HudResonanceBadgeState): void {
+    const el = this.root.querySelector('.bmv-hud-reso') as HTMLElement | null;
+    if (!el) return;
+    if (state === 'none') {
+      el.hidden = true;
+      return;
+    }
+    const frame = state === 'achieved' ? 'reso-achieved' : state === 'ready-highlight' ? 'reso-ready' : 'reso-awaiting';
+    const label = state === 'achieved' ? '共鸣' : state === 'ready-highlight' ? '可共鸣' : '待取钥';
+    el.hidden = false;
+    el.innerHTML = `<span class="bmv-hud-reso-text">${label}</span>`;
+    preferFrameImg(el, frame);
+  }
+
   setSkillCharges(count: number): void {
     if (!this.skillEl) return;
     const el = this.skillEl.querySelector('.bmv-hud-skill-charges') as HTMLElement | null;
@@ -244,9 +303,12 @@ export class Hud {
     this.xpFillEl.style.width = `${xpFillFraction(s) * 100}%`;
     this.hpNumEl.textContent = `${Math.ceil(s.hp)}/${s.maxHp}`;
     this.hpFillEl.style.width = `${hpFillFraction(s) * 100}%`;
-    this.weaponEls.missile.classList.toggle('active', s.weapons.missile);
-    this.weaponEls.orbit.classList.toggle('active', s.weapons.orbit);
-    this.weaponEls.shockwave.classList.toggle('active', s.weapons.shockwave);
+    // NV-INTEG-FIX P1：动态武器槽接管后固定三槽已移除（守卫防 detached 节点空切换）
+    if (!this.slots) {
+      this.weaponEls.missile.classList.toggle('active', s.weapons.missile);
+      this.weaponEls.orbit.classList.toggle('active', s.weapons.orbit);
+      this.weaponEls.shockwave.classList.toggle('active', s.weapons.shockwave);
+    }
 
     // Boss 顶部血条（art-bible §3：黑底/红填充/1px 白边；E8 §⑦ 桌面 60% / 移动 50%）
     const bossVisible = s.bossHp !== null && s.bossMaxHp !== null;
@@ -376,6 +438,14 @@ export class Hud {
         pointer-events: none;
       }
       .bmv-hud-skill-charges[hidden] { display: none; }
+      /* NV-INTEG-FIX P1：共鸣徽记（右上武器槽下方；36px 帧 + 文字兜底） */
+      .bmv-hud-reso {
+        position: absolute; right: 24px; top: 82px;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .bmv-hud-reso[hidden] { display: none; }
+      .bmv-hud-reso img.bmv-frame-img { display: block; width: 36px; height: 36px; image-rendering: pixelated; }
+      .bmv-hud-reso-text { font-size: 12px; color: #54E6C9; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
       .bmv-hud-esc-hint {
         position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
         font-size: 16px; color: #A9B4C4;

@@ -98,6 +98,31 @@ export function buildHeroCardStates(unlock: StartOverlayOptions['unlock']): Hero
   });
 }
 
+/**
+ * NV-INTEG-FIX P2：codexPrerequisite 语义键 → 真实图鉴状态解析
+ * （talent-tree codexPrerequisite 4 值：血月化身 / 四角色 / 条目数 25 / 40；
+ *  entryId 规则 = codex.ts `codex_hero_${id}` / `codex_event_6`，save.codexUnlocked 单一数据源）
+ */
+function resolveCodexPrerequisite(
+  prereq: NonNullable<import('@/config/balance/talent-tree').TalentNodeConfig['codexPrerequisite']>,
+  save: SaveData,
+): boolean {
+  switch (prereq) {
+    case 'codex_moon_avatar':
+      return save.codexUnlocked.includes('codex_event_6');
+    case 'codex_heroes_all':
+      return ['edmund', 'cassandra', 'violet', 'galvan'].every((h) =>
+        save.codexUnlocked.includes(`codex_hero_${h}`),
+      );
+    case 'codex_entries_25':
+      return save.codexUnlocked.length >= 25;
+    case 'codex_entries_40':
+      return save.codexUnlocked.length >= 40;
+    default:
+      return false;
+  }
+}
+
 export function createStartOverlay(
   onStart: () => void,
   opts: StartOverlayOptions = {
@@ -160,6 +185,8 @@ export function createStartOverlay(
       points: save.meritPoints,
       purchases: save.treeState.purchases,
       pureInGame: save.pureInGame,
+      // NV-INTEG-FIX P2：codexPrerequisite 真查询（原缺省恒真 → 图鉴前置节点全部可点）
+      codexQuery: (prereq) => resolveCodexPrerequisite(prereq, save),
       isMobile: detectIsMobile(),
       onStateChange: (purchases, pointsSpent, pointsRemaining) => {
         save.treeState = { unlockedNodeIds: Object.keys(purchases), purchases, pointsSpent };

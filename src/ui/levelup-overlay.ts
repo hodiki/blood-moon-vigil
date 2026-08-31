@@ -13,6 +13,7 @@
 
 import { GameEvents, GameEvent } from '@/core/events';
 import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
+import { preferFrameImg } from '@/ui/frame-img';
 
 /** B6-W3 卡类徽记（gdd-talent-tree §⑧ / upgrade-pool-v3 §3.1）：按 id 前缀映射卡类名 */
 export function cardCategoryBadge(upgradeId: string | undefined): string {
@@ -24,6 +25,19 @@ export function cardCategoryBadge(upgradeId: string | undefined): string {
   if (upgradeId.startsWith('up_w_')) return '通武强化';
   if (upgradeId.startsWith('up_g_')) return '全局';
   return '';
+}
+
+/**
+ * NV-INTEG-FIX P1：升级卡内容 ID → upg-* 图标帧名（frame-registry upg_icons ×40；
+ * content-id-frame-map §106 映射规则 up_g_1→upg-g-1 / up_w_a1→upg-w-a1 /
+ * key_scope→upg-key-scope / up_a_cd→upg-a-cd）。无帧 id（mc_* 与 up_d_*）返回 null = 文字兜底。
+ */
+export function upgradeFrameForId(upgradeId: string | undefined): string | null {
+  if (!upgradeId) return null;
+  if (upgradeId.startsWith('up_d_')) return null;
+  if (upgradeId.startsWith('up_')) return `upg-${upgradeId.slice(3).replace(/_/g, '-')}`;
+  if (upgradeId.startsWith('key_')) return `upg-${upgradeId.replace(/_/g, '-')}`;
+  return null;
 }
 
 const DEFAULT_TIMEOUT_SECONDS = 30;
@@ -120,8 +134,9 @@ export class LevelUpOverlay {
       const option = this.optionsV2?.[i];
       if (!option) return;
       const star = option.unlockVariant ? '★' : '';
+      // NV-INTEG-FIX P1：图标区优先贴 upg-* 帧（加载失败保留文字兜底，preferFrameImg 语义）
       const iconInner =
-        `<div class="bmv-upgrade-icon bmv-v2-icon">${escapeHtml(option.effectText)}${star ? '<div class="bmv-star">' + star + '</div>' : ''}</div>`;
+        `<div class="bmv-upgrade-icon bmv-v2-icon"><span class="bmv-v2-icon-text">${escapeHtml(option.effectText)}</span>${star ? '<div class="bmv-star">' + star + '</div>' : ''}</div>`;
       // 席位角标（P1~P5 保底席位命中 = related；gdd-talent-tree §⑧）+ 卡类徽记（id 前缀映射）
       const seatBadge = option.related ? '<div class="bmv-seat-badge">保底</div>' : '';
       const category = cardCategoryBadge(option.upgradeId);
@@ -135,6 +150,12 @@ export class LevelUpOverlay {
       `;
       // 卡面底色分型（asset-spec §1.6：机制蓝紫 / 数值金）
       card.classList.add(option.cardKind === 'amber-gold' ? 'bmv-numeric-card' : 'bmv-mechanic-card');
+      // NV-INTEG-FIX P1：upg-* 帧贴图（40 帧图标池；帧缺失/404 时 span 文字自动保留）
+      const frame = upgradeFrameForId(option.upgradeId);
+      if (frame) {
+        const iconHost = card.querySelector('.bmv-v2-icon');
+        if (iconHost) preferFrameImg(iconHost as HTMLElement, frame);
+      }
     });
   }
 
@@ -282,6 +303,12 @@ export class LevelUpOverlay {
         font-size: 20px; font-weight: 700; color: #F2F5F9;
         background: #0B0E14; border: 2px solid #2A3346; border-radius: 10px;
         position: relative;
+      }
+      /* NV-INTEG-FIX P1：upg-* 帧贴图（铺满图标区；404 时 span 文字兜底可见） */
+      .bmv-v2-icon img.bmv-frame-img {
+        display: block; width: 100%; height: 100%;
+        object-fit: contain; image-rendering: pixelated;
+        border-radius: 8px;
       }
       .bmv-evo-icon {
         display: flex; align-items: center; justify-content: center;

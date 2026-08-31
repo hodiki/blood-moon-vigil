@@ -44,6 +44,8 @@ export function facingFlipX(vx: number, current: boolean, deadzone = FACING_DEAD
 export function defaultFacesRight(visualFrame: string): boolean | null {
   const base = visualFrame.replace(/-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b)$/, '');
   if (base === 'player') return true;
+  // NV-INTEG-FIX P1：四角色帧表补齐（原仅守夜人 player → 其余三角色不翻转、朝向错位；变体后缀剥离后统一登记）
+  if (base === 'hero-edmund' || base === 'hero-cassandra' || base === 'hero-violet' || base === 'hero-galvan') return true;
   return null;
 }
 
