@@ -67,6 +67,8 @@ export class FxManager {
   private readonly orbitRingSecondary: Phaser.GameObjects.Image;
   /** TASK-36 蓄力脉冲提示环（冲击波最后 2s 呼吸；随 fxTrails 开关） */
   private readonly chargePulse: Phaser.GameObjects.Image;
+  /** NV-INTEG-FIX P0-5：提灯灯环（守夜人选中破旧提灯后常驻可见；⑦「领域不可见」补口） */
+  private readonly lanternAura: Phaser.GameObjects.Image;
   private readonly moon: Phaser.GameObjects.Image;
   private readonly vignette: Phaser.GameObjects.Image;
   /** 飞弹拖尾节流累计（ms） */
@@ -133,6 +135,14 @@ export class FxManager {
       .setAlpha(FX.SHOCKWAVE_CHARGE_PULSE_ALPHA)
       .setDisplaySize(FX.SHOCKWAVE_CHARGE_PULSE_RADIUS * 2, FX.SHOCKWAVE_CHARGE_PULSE_RADIUS * 2)
       .setTint(hexToRgbInt(FX_COLORS.shockwave))
+      .setVisible(false);
+
+    // NV-INTEG-FIX P0-5：提灯灯环（暗金 p-ring，半径随质变卡 auraRadius 联动；静态 Image 零粒子成本）
+    this.lanternAura = scene.add
+      .image(0, 0, 'fx-ambient', 'p-ring')
+      .setDepth(87)
+      .setAlpha(0.22)
+      .setTint(hexToRgbInt(FX_COLORS.upgradeGold))
       .setVisible(false);
 
     // 血月天幕（屏幕空间常驻；桌面 190 / 移动 120）
@@ -222,6 +232,34 @@ export class FxManager {
     // TASK-36 双层轨道环内环：细暗反向慢旋
     this.orbitRingSecondary.setPosition(player.x, player.y).setVisible(visible);
     if (visible) this.orbitRingSecondary.angle += FX.ORBIT_RING_SECONDARY_SPIN_DEG * dt;
+  }
+
+  /**
+   * NV-INTEG-FIX P0-5：提灯灯环 tick（跟随玩家 + 半径联动质变卡 auraRadius；随专武门控显隐）。
+   * 灯环为领域可读性核心（⑦ 实测不可见项），不随 fxTrails 降级关闭（静态 1 Image，成本可忽略）。
+   */
+  tickLanternAura(player: FxPosLike, visible: boolean, radius: number): void {
+    this.lanternAura.setPosition(player.x, player.y).setDisplaySize(radius * 2, radius * 2).setVisible(visible);
+  }
+
+  /**
+   * NV-INTEG-FIX P0-5：圣徒左轮 tracer（fired 事件 → 月银曳光弹）。
+   * 即时结算伤害已在上游生效（exclusive-math），本弹体纯表现（B6 欠账「即时结算无弹体」补口）；
+   * 方向 = 最近活跃敌（与 projectile-weapon aimAngle 同语义），无敌时向上直射。
+   */
+  spawnRevolverTracer(player: FxPosLike, enemies: readonly FxPosLike[]): void {
+    if (!this.cfg.fxBursts) return;
+    let angle = -Math.PI / 2;
+    let best = Number.POSITIVE_INFINITY;
+    for (const e of enemies) {
+      const d = (e.x - player.x) ** 2 + (e.y - player.y) ** 2;
+      if (d < best) {
+        best = d;
+        angle = Math.atan2(e.y - player.y, e.x - player.x);
+      }
+    }
+    const speed = 420; // EXCLUSIVE_WEAPONS.xw_revolver.params.speed 锚（视觉同速）
+    this.spawnParticle('p-streak', player.x, player.y, FX_COLORS.dash, Math.cos(angle) * speed, Math.sin(angle) * speed, 2.5, 0.35);
   }
 
   /** TASK-36 环绕球尾迹：每球每节流拍发 1 颗原地淡出冷青光点（速度 0），球体绕行留下光之环 */

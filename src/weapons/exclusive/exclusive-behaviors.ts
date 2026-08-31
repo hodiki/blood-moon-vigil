@@ -74,6 +74,14 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
     this.enabled = enabled;
   }
 
+  /** NV-INTEG-FIX P0-5：门控只读（PlayScene 灯环可见性等视觉层判定用） */
+  get isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  /** NV-INTEG-FIX P0-5：结算事件视觉钩子（fired/burst/... → FxManager 弹体/粒子；B6 欠账的可见化补口） */
+  onEvents?: (events: string[], ctx: WeaponUpdateContext) => void;
+
   /** 质变卡参数写回（顺序解锁校验在升级池层；此处只收 machine） */
   applyMutationCard(machine: Record<string, number>): void {
     this.machine = { ...this.machine, ...machine };
@@ -136,6 +144,8 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
       },
     });
     this.totalDamage += result.damageDealt;
+    // NV-INTEG-FIX P0-5：本帧事件上抛视觉层（左轮 tracer 等；即时结算近似的表现补口）
+    if (result.events.length > 0 && this.onEvents) this.onEvents(result.events, ctx);
   }
 }
 

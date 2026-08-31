@@ -343,6 +343,16 @@ export class WeaponSystem {
     for (const behavior of Object.values(this.exclusiveBehaviors)) {
       this.registry.register(behavior as unknown as WeaponBehavior);
     }
+    // NV-INTEG-FIX P0-5：专武结算事件 → 视觉层（B6 欠账「即时结算无弹体」的可见化补口）
+    for (const [id, behavior] of Object.entries(this.exclusiveBehaviors)) {
+      (behavior as unknown as {
+        onEvents?: (events: string[], ctx: WeaponUpdateContext) => void;
+      }).onEvents = (events, ctx) => {
+        if (id === 'xw_revolver' && events.includes('fired')) {
+          this.fx.spawnRevolverTracer(ctx.player, ctx.enemies as readonly Enemy[]);
+        }
+      };
+    }
     // B4-W2 R-6：十字落点爆炸 → 余焰登记（共鸣达成后生效）
     let lastNow = 0;
     const crossBehavior = this.exclusiveBehaviors.xw_cross as unknown as { onExplode?: (x: number, y: number) => void };
