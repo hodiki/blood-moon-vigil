@@ -37,16 +37,21 @@ export type DerivativeSkillId =
   | 'dv_blood_rage'      // 血月狂化（巨斧落选）
   | 'dv_wolf_charge';    // 月啸冲锋（号角落选）
 
-/** 专武 → 衍生技映射（§4.8；选择 X → 落选 Y → 技 = Y 的衍生技形态） */
+/**
+ * 专武 → 衍生技映射（§4.8；统一语义：键 = 选中者，值 = **落选者**的技形态）。
+ * NV-INTEG-FIX ③ 修正：原表 cassandra/violet/galvan 三对 6 条写成「键=该武→自己的技」，
+ * 与表头语义及 DERIVATIVE_SKILLS[*].sourceExclusiveId 冲突（仅 edmund 对正确）。
+ * 校验式：EXCLUSIVE_TO_DERIVATIVE[chosen] 的 sourceExclusiveId === rejectedExclusive(chosen)。
+ */
 export const EXCLUSIVE_TO_DERIVATIVE: Record<ExclusiveWeaponId, DerivativeSkillId> = {
-  xw_lantern: 'dv_revolver_burst',
-  xw_revolver: 'dv_lantern_flash',
-  xw_twinblades: 'dv_blood_dash',
-  xw_longbow: 'dv_moon_snipe',
-  xw_bell: 'dv_requiem',
-  xw_cross: 'dv_holy_judgment',
-  xw_axe: 'dv_blood_rage',
-  xw_horn: 'dv_wolf_charge',
+  xw_lantern: 'dv_revolver_burst',    // 选提灯 → 左轮落选 → 圣徒左轮技
+  xw_revolver: 'dv_lantern_flash',    // 选左轮 → 提灯落选 → 破旧提灯技
+  xw_twinblades: 'dv_moon_snipe',     // 选双刃 → 长弓落选 → 月痕狙击
+  xw_longbow: 'dv_blood_dash',        // 选长弓 → 双刃落选 → 血影突袭
+  xw_bell: 'dv_holy_judgment',        // 选圣铃 → 十字落选 → 圣辉审判
+  xw_cross: 'dv_requiem',             // 选十字 → 圣铃落选 → 安魂曲
+  xw_axe: 'dv_wolf_charge',           // 选巨斧 → 号角落选 → 月啸冲锋
+  xw_horn: 'dv_blood_rage',           // 选号角 → 巨斧落选 → 血月狂化
 };
 
 /** 角色双专武表（§4.1~4.7：每角色 2 把） */

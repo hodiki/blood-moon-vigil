@@ -19,7 +19,9 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
+import { computeLoadout } from '@/weapons/loadout';
+import { resonanceBadgeState } from '@/weapons/resonance/resonance-engine';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
@@ -86,6 +88,7 @@ import { NarrativeDispatcher } from '@/narratives/narrative-dispatcher';
 import { DEFAULT_NARRATIVE_BINDINGS } from '@/narratives/narrative-bindings';
 import { SHOW_OPEN_BANNER, prologueScreensForMap } from '@/narratives/narratives';
 import { PrologueOverlay, createPrologueOverlay } from '@/ui/prologue-overlay';
+import { ExclusiveSelectOverlay } from '@/ui/exclusive-select-overlay';
 
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
@@ -235,6 +238,8 @@ export class PlayScene extends Phaser.Scene {
   private codexToastPending = false;
   /** M3 序章屏（narratives-spec §3）：点击开始后进入战斗前展示（PROLOGUE 态；通用 + 地图序章） */
   private prologue!: PrologueOverlay;
+  /** NV-INTEG-FIX P0-2：专武 2 选 1 插页（EXCLUSIVE_SELECT 态；序章后、进战斗前） */
+  private exclusiveSelect!: ExclusiveSelectOverlay;
   /** M3 结算日志条：本局开局图鉴已解锁数（结算 delta = 局终 snapshot − 开局数，codex-ui-spec §6） */
   private codexUnlockedAtStart = 0;
 
@@ -246,6 +251,8 @@ export class PlayScene extends Phaser.Scene {
 
   // E4-S5 性能基准状态
   private readonly isBench: boolean;
+  /** NV-INTEG-FIX ⑤：?qa=1 观测模式（方阵掷点日志钩子；照 smoke/bench URL 参数模式） */
+  private readonly isQa: boolean;
   private benchFps = new FpsMonitor();
   private benchStartedAt = 0;
   private benchDone = false;
@@ -258,6 +265,7 @@ export class PlayScene extends Phaser.Scene {
       typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
     this.isSmoke = params.has('smoke');
     this.isBench = params.has('bench');
+    this.isQa = params.has('qa');
   }
 
   create(): void {
@@ -349,8 +357,9 @@ export class PlayScene extends Phaser.Scene {
     this.eliteDirector = new EliteSkillDirector();
     this.telegraphs = new TelegraphLayer(this);
     // W-4 守誓者运行时（FQ-2：修女选圣铃开局自带；墓碑回血 sink = 玩家回血钳上限）
+    // NV-INTEG-FIX ③：原条件 ownedWeaponIds.includes('xw_bell') 在 create 期恒 false（圣铃开局
+    // 自带但专武入册在此之后）→ 启用判定改为「修女 && 选中圣铃」，随专武选择结果联动（见下）。
     this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y);
-    this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && this.ownedWeaponIds.includes('xw_bell' as unknown as WeaponId));
     // W-14：宝藏落地监听（实体由 PlayScene 持有；拾取 = MN-21 offer 直发）
     GameEvents.on(GameEvent.TreasureDropped, (args: unknown) => {
       const p = args as { x: number; y: number };
@@ -368,8 +377,19 @@ export class PlayScene extends Phaser.Scene {
     this.xp.setMagnetRadiusBonus(this.player.stats.magnetRadiusBonus);
     this.xp.addPickupRadiusBonus(this.player.stats.pickupRadiusBonus); // B5 属性 A-10 拾取半径
     this.upgradeState = new UpgradeState();
-    // B3-W1：当前专武默认角色对第一把（正式 2 选 1 选择演出 = B6 接入点；树根 Q-a 宿主语义）
+    // B3-W1：当前专武默认角色对第一把（正式 2 选 1 选择演出 = 本批 P0-2 插页；树根 Q-a 宿主语义）
     this.currentExclusiveId = HERO_EXCLUSIVE_PAIRS[this.heroId][0];
+    // NV-INTEG-FIX ③：守誓者启用 = 修女且选中圣铃（默认第一把路径即时生效；选择回调再联动）
+    this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && this.currentExclusiveId === 'xw_bell');
+    // NV-INTEG-FIX ⑤：?qa=1 方阵掷点观测（每次掷点结果/被拒原因 → console，验证节奏修复）
+    if (this.isQa) {
+      this.spawner.groupRollLogger = (info) => {
+        const detail = info.rolled
+          ? `formation=${info.formationId} cost=${info.cost}`
+          : `reason=${info.reason ?? 'gate'}`;
+        console.info(`[qa][formation] t=${info.time.toFixed(1)}s rolled=${info.rolled} ${detail}`);
+      };
+    }
     // B5-W4 Q-b 伴灯：开局自带配对共鸣通武（GT-7 全额；未配对普通形态入场，P2 取钥后升格共鸣）
     const treePair = resonancePairByExclusive(this.currentExclusiveId);
     if (treeApp.mutations.companionWeapon && treePair && !this.ownedWeaponIds.includes(treePair.commonWeaponId)) {
@@ -438,6 +458,9 @@ export class PlayScene extends Phaser.Scene {
       onActiveSkill: () => this.tryCastActiveSkill(), // 移动端技能按钮 → 同一释放入口
     });
     if (this.cfg.isMobile) this.hud.setSkillCharges(this.derivativeController.chargeCount);
+    // NV-INTEG-FIX P1：HUD 动态武器槽初始同步（初始通武 + Q-b/Q-d 预发 + 默认专武）
+    this.refreshHudWeaponSlots();
+    this.refreshResonanceBadge();
     // QA-FIX-3 修复 3（R3 T-F40「装备 +20 HP 开局仍显示 100」）：HUD 只消费 hp:changed 事件、
     // 初始态硬编码 100/100，而功绩加成在 HUD 装配前已写入 PlayerStats —— 装配后立即同步一次
     // 实际数值（装备 merit_hp 时 120/120 起步可见；无功绩时为幂等 100/100）。
@@ -458,17 +481,29 @@ export class PlayScene extends Phaser.Scene {
     // （update() RUNNING 短路保证 elapsedSeconds 恒 0）。完成后 → RUNNING + 开局横幅（C-1 开关）。
     this.prologue = createPrologueOverlay({ isMobile: () => this.cfg.isMobile });
     const prologueScreens = prologueScreensForMap(this.mapId);
-    if (this.isSmoke || this.isBench || prologueScreens.length === 0) {
-      // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）/ 无序章句：
-      // 跳过序章直接进战斗（与既有开局横幅行为一致）
+    // NV-INTEG-FIX P0-2：专武 2 选 1 插页（EXCLUSIVE_SELECT → RUNNING；smoke/bench 跳过保确定性）
+    this.exclusiveSelect = new ExclusiveSelectOverlay(getOverlayHost(), {
+      onChoose: (chosen) => {
+        this.applyExclusiveSelection(chosen);
+        this.state.set(GamePhase.RUNNING); // 选择完成 → 世界恢复（applyPhase RUNNING）
+        if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
+      },
+    });
+    if (this.isSmoke || this.isBench) {
+      // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）：
+      // 跳过序章与专武选择直接进战斗（确定性：默认角色对第一把）
       this.state.set(GamePhase.RUNNING);
       if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
     } else {
-      this.prologue.show(prologueScreens, () => {
-        this.state.set(GamePhase.RUNNING); // 序章完成 → 世界恢复（applyPhase RUNNING）
-        // 开局横幅（spec §3 开局 5s；C-1 show_open_banner 开关：与序章屏同文案时按开关控制是否双弹）
-        if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
-      });
+      // 真实局：序章屏（如有）→ 专武 2 选 1 → 进战斗；无序章句时直接进选择页
+      const startExclusiveSelect = () => {
+        this.state.set(GamePhase.EXCLUSIVE_SELECT);
+        this.exclusiveSelect.show(this.heroId);
+      };
+      if (prologueScreens.length === 0) startExclusiveSelect();
+      else {
+        this.prologue.show(prologueScreens, startExclusiveSelect);
+      }
     }
 
     // Phase 6 音频：新一局 BGM 心跳重置回 60 + 事件接线（audio-bible §4）
@@ -616,11 +651,11 @@ export class PlayScene extends Phaser.Scene {
     this.hud.setReviveCharges(this.treeReviveRemaining > 0 ? this.treeReviveRemaining : null);
     // 2) 敌潮生成（budget(t) 秒制累加；6:00 自动触发 onBossTime）
     this.spawner.update(dt);
-    // 3) 敌人 AI（朝玩家移动 + 攻击计时）+ TASK-28 敌型动画（普通 3 敌 idle/move，Boss 恒 idle）
+    // 3) 敌人 AI（朝玩家移动 + 攻击计时）
     //    M1b：now 秒时间戳供眩晕判定（updateMovement 内冻结移动）
+    //    动画在精英技能换装之后 tick（石甲狼破甲同帧切 `enemy-stonewolf-broken`）
     this.enemyPool.eachActive((e) => {
       e.updateMovement(dt, this.player, now);
-      tickEnemyAnim(e);
     });
     // W-1 特殊行为 AI（光环攻速/侍僧召唤/猎手冲锋；冲锋速度覆盖在 updateMovement 之后）
     this.aiDirector.update(dt, now, this.player, this.oathkeeper.friendlyTarget());
@@ -628,6 +663,9 @@ export class PlayScene extends Phaser.Scene {
     this.stepCompanion(dt, now);
     // W-16 精英技能运行时（五精英 + MN-20 打断；技能伤走 player.hurt 独立结算）
     this.stepEliteSkills(dt, now);
+    this.enemyPool.eachActive((e) => {
+      tickEnemyAnim(e);
+    });
     // W-15 Boss 五槽运行时消费（普攻基底/技能伤桩/召唤 noXp/阶段 2 霸体）
     this.stepBossSkillRuntime(dt, now);
     // W-14 宝藏拾取（40px；MN-21 offer 直发；TTL 30s §⑥-5）
@@ -674,6 +712,15 @@ export class PlayScene extends Phaser.Scene {
     this.fx.tickOrbitRing(this.player, this.weaponSystem.orbit.unlocked, realDt);
     this.fx.tickOrbitTrails(this.weaponSystem.orbit, realDt); // TASK-36 环绕球尾迹
     this.fx.tickGemTrails(this.gemPool, this.player, this.xp.magnetRadius, realDt);
+    // NV-INTEG-FIX P0-5：提灯灯环可见化（守夜人选中破旧提灯时常驻；半径联动质变卡 auraRadius）
+    const lanternBehavior = this.weaponSystem.exclusiveBehaviors['xw_lantern'] as unknown as
+      { isEnabled?: boolean; machine: Record<string, number> } | undefined;
+    if (lanternBehavior?.isEnabled) {
+      const baseRadius = EXCLUSIVE_WEAPONS['xw_lantern'].params.radius ?? 90;
+      this.fx.tickLanternAura(this.player, true, lanternBehavior.machine['auraRadius'] ?? baseRadius);
+    } else {
+      this.fx.tickLanternAura(this.player, false, 0);
+    }
     // TASK-36 冲击波蓄力脉冲提示（最后 2s 呼吸）
     this.fx.tickShockwaveCharge(this.player, this.weaponSystem.shockwave.cooldownRemaining, realDt);
     const shockwaveActive = this.weaponSystem.shockwave.active;
@@ -830,7 +877,7 @@ export class PlayScene extends Phaser.Scene {
         // W-4 实体化：血渍减速区（60px/2s，工程锚；演出 = telegraph 层暗红圆）
         this.bloodstains.push({ x: ev.x, y: ev.y, until: now + 2 });
       }
-      // 'interrupted'（演出/音效挂点 W-13 内容批）/'armor-broken'（白闪演出）
+      // 'interrupted'（演出/音效挂点 W-13）/'armor-broken'（白闪/崩落粒子后置；换装已由 director 写 visualFrame）
     }
   }
 
@@ -1327,6 +1374,8 @@ export class PlayScene extends Phaser.Scene {
     } finally {
       // E4-S1 HUD：升级写回后 HP 变化（如 maxHp+20 同时回 20）
       GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      // NV-INTEG-FIX P1：取钥/共鸣达成 → 徽记四态联动
+      this.refreshResonanceBadge();
       this.state.set(GamePhase.RUNNING); // 恢复世界（applyPhase + 输入向量归零）
       // B5-W3 Q-f 串联：elite offer 队列未清空 → 下一发（同帧连发语义经链式结算）
       if (this.eliteOfferQueue > 0) {
@@ -1405,6 +1454,27 @@ export class PlayScene extends Phaser.Scene {
       this.weaponSystem.unlockWeapon(wid as Parameters<WeaponSystem['unlockWeapon']>[0]);
       GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: wid, name: wid });
     }
+    // NV-INTEG-FIX P1：解锁 → HUD 动态槽扩列
+    this.refreshHudWeaponSlots();
+  }
+
+  /** NV-INTEG-FIX P1：HUD 动态武器槽刷新（拥有集合 + 当前专武去重合成） */
+  private refreshHudWeaponSlots(): void {
+    const ids = [...this.ownedWeaponIds];
+    if (!ids.includes(this.currentExclusiveId as unknown as WeaponId)) {
+      ids.push(this.currentExclusiveId as unknown as WeaponId);
+    }
+    this.hud.setWeaponSlots(ids);
+  }
+
+  /** NV-INTEG-FIX P1：共鸣徽记四态刷新（专武 ∧ 钥 ∧ 达成 → HUD 徽记） */
+  private refreshResonanceBadge(): void {
+    const badge = resonanceBadgeState(
+      this.currentExclusiveId,
+      (keyId) => this.upgradeState.hasKey(keyId),
+      this.weaponSystem.resonance.isAchievedForExclusive(this.currentExclusiveId),
+    );
+    this.hud.setResonanceBadge(badge);
   }
 
 
@@ -1429,6 +1499,7 @@ export class PlayScene extends Phaser.Scene {
   private applyPhase(phase: GamePhase): void {
     switch (phase) {
       case GamePhase.PROLOGUE:
+      case GamePhase.EXCLUSIVE_SELECT: // NV-INTEG-FIX P0-2：专武选择页同冻结（世界/输入/动画）
       case GamePhase.LEVEL_UP:
       case GamePhase.PAUSED:
         this.physics.pause();
@@ -1448,6 +1519,32 @@ export class PlayScene extends Phaser.Scene {
         this.inputSource.setEnabled(false);
         break;
     }
+  }
+
+  /**
+   * NV-INTEG-FIX P0-2：专武选择装配（单一汇聚点）。
+   * 选择回调与 smoke/bench 默认路径共用：applyLoadout 开专武门控（⑦根因修复：原全仓无调用点，
+   * 8 专武恒 disabled）+ Q-b 伴灯共鸣通武 + 衍生技重建（EXCLUSIVE_TO_DERIVATIVE 键 = 选中者）
+   * + HUD 技名联动 + 守誓者（FQ-2 修女选圣铃）。
+   */
+  private applyExclusiveSelection(chosen: ExclusiveWeaponId): void {
+    this.currentExclusiveId = chosen;
+    const loadout = computeLoadout(this.heroId, chosen, HEROES[this.heroId].initialWeapon);
+    if (loadout) this.weaponSystem.applyLoadout(loadout);
+    // B5-W4 Q-b 伴灯：开局自带配对共鸣通武（GT-7 全额；同名不重复发放——与 Q-d 同名去重）
+    const treePair = resonancePairByExclusive(chosen);
+    if (this.treeApp?.mutations.companionWeapon && treePair && !this.ownedWeaponIds.includes(treePair.commonWeaponId)) {
+      this.ownedWeaponIds.push(treePair.commonWeaponId);
+      this.weaponSystem.unlockWeapon(treePair.commonWeaponId);
+    }
+    // B5-W4 衍生技装配（落选专武转化技）：重建控制器 + HUD 技名/图标联动
+    this.derivativeController = new DerivativeSkillController(EXCLUSIVE_TO_DERIVATIVE[chosen]);
+    this.hud.setSkillName(DERIVATIVE_SKILLS[EXCLUSIVE_TO_DERIVATIVE[chosen]].name);
+    // W-4 守誓者：修女选圣铃开局自带（FQ-2）
+    this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && chosen === 'xw_bell');
+    // NV-INTEG-FIX P1：HUD 动态槽 + 共鸣徽记随选择联动
+    this.refreshHudWeaponSlots();
+    this.refreshResonanceBadge();
   }
 
   /** 暂停菜单刷新（PAUSED 进入/开关切换后同步 UI 状态） */
@@ -1498,6 +1595,7 @@ export class PlayScene extends Phaser.Scene {
     this.unbindNarratives = null;
     this.narratives?.destroy();
     this.prologue?.destroy();
+    this.exclusiveSelect?.destroy();
     this.rareChest?.destroy();
     this.rareChest = null;
     this.requiemRingTimer?.remove(false);

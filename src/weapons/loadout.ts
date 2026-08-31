@@ -25,10 +25,13 @@ export function rejectedExclusive(heroId: string, chosen: ExclusiveWeaponId): Ex
   return pair.find((w) => w !== chosen) ?? null;
 }
 
-/** 落选专武 → 衍生技（选择层直接查询；非法组合 = null） */
+/** 落选专武 → 衍生技（选择层直接查询；非法组合 = null）
+ *  QA-FIX（NV-INTEG-FIX ③）：EXCLUSIVE_TO_DERIVATIVE 的键 = **选中者**（§4.8 注释
+ *  「选择 X → 落选 Y → 技 = Y 的衍生技形态」，dv id 注释同证），原实现先取 rejected
+ *  再查表属二次转换 → 返回了选中者自己的技形态。修正为直查 chosen。 */
 export function derivativeForChoice(heroId: string, chosen: ExclusiveWeaponId): DerivativeSkillId | null {
-  const rejected = rejectedExclusive(heroId, chosen);
-  return rejected ? EXCLUSIVE_TO_DERIVATIVE[rejected] : null;
+  if (!isValidChoice(heroId, chosen)) return null;
+  return EXCLUSIVE_TO_DERIVATIVE[chosen];
 }
 
 /** loadout 汇聚结果（WeaponSystem.applyLoadout 的入参契约） */
@@ -52,7 +55,8 @@ export interface LoadoutResult {
 export function computeLoadout(heroId: string, chosen: ExclusiveWeaponId, initialCommonWeapon: WeaponId): LoadoutResult | null {
   if (!isValidChoice(heroId, chosen)) return null;
   const rejected = rejectedExclusive(heroId, chosen)!;
-  const derivativeId = EXCLUSIVE_TO_DERIVATIVE[rejected];
+  // QA-FIX（NV-INTEG-FIX ③）：同 derivativeForChoice —— 表键 = 选中者，直查 chosen
+  const derivativeId = EXCLUSIVE_TO_DERIVATIVE[chosen];
   const enabled = [...new Set<WeaponId>([initialCommonWeapon])];
   return { exclusiveId: chosen, rejectedId: rejected, derivativeId, initialCommonWeapon, enabledWeaponIds: enabled };
 }

@@ -4,8 +4,10 @@
  * 纯逻辑类，不 import Phaser；PlayScene 通过 onChange 挂接副作用
  * （physics/tweens/粒子/输入冻结），单测可直接断言状态矩阵。
  *
- * 状态矩阵（CM §5 联动表 + ADR-003 + M3 序章）：
- *   PROLOGUE → RUNNING              （序章屏完成/跳过；M3 序章期间不开始计时/生成器）
+ * 状态矩阵（CM §5 联动表 + ADR-003 + M3 序章 + NV-INTEG-FIX 专武选择）：
+ *   PROLOGUE → RUNNING | EXCLUSIVE_SELECT（序章屏完成/跳过；M3 序章期间不开始计时/生成器；
+ *                                      专武 2 选 1 = PROLOGUE 后插页，smoke/bench 直通 RUNNING）
+ *   EXCLUSIVE_SELECT → RUNNING       （专武选择完成 → applyLoadout → 进战斗）
  *   RUNNING  → LEVEL_UP | PAUSED | GAMEOVER
  *   LEVEL_UP → RUNNING              （选卡完成 / 30s 超时）
  *   PAUSED   → RUNNING              （恢复）
@@ -15,6 +17,8 @@
 export enum GamePhase {
   /** M3 序章屏（点击「开始」后进入战斗前；世界冻结、不开始计时/生成器） */
   PROLOGUE = 'PROLOGUE',
+  /** NV-INTEG-FIX P0-2：专武 2 选 1 插页（序章后、进战斗前；世界冻结，双卡 DOM 覆盖层） */
+  EXCLUSIVE_SELECT = 'EXCLUSIVE_SELECT',
   RUNNING = 'RUNNING',
   LEVEL_UP = 'LEVEL_UP',
   PAUSED = 'PAUSED',
@@ -22,7 +26,8 @@ export enum GamePhase {
 }
 
 const TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
-  [GamePhase.PROLOGUE]: [GamePhase.RUNNING],
+  [GamePhase.PROLOGUE]: [GamePhase.RUNNING, GamePhase.EXCLUSIVE_SELECT],
+  [GamePhase.EXCLUSIVE_SELECT]: [GamePhase.RUNNING],
   [GamePhase.RUNNING]: [GamePhase.LEVEL_UP, GamePhase.PAUSED, GamePhase.GAMEOVER],
   [GamePhase.LEVEL_UP]: [GamePhase.RUNNING],
   [GamePhase.PAUSED]: [GamePhase.RUNNING],
