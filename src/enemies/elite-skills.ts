@@ -96,3 +96,12 @@ export function interruptCd(params: EliteSkillParams): number {
 export function stoneWolfBroken(armorRemaining: number): boolean {
   return armorRemaining <= 0;
 }
+
+/** 石甲期外观（ENEMY_CONFIGS.enemy_g3_3.frame） */
+export const STONE_WOLF_FRAME = 'enemy-stonewolf';
+/** 破甲期外观（G-4；同族剥甲，缺帧时 tick 保持上一 idle） */
+export const STONE_WOLF_BROKEN_FRAME = 'enemy-stonewolf-broken';
+
+export function stoneWolfCostumeFrame(broken: boolean): typeof STONE_WOLF_FRAME | typeof STONE_WOLF_BROKEN_FRAME {
+  return broken ? STONE_WOLF_BROKEN_FRAME : STONE_WOLF_FRAME;
+}

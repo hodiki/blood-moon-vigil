@@ -6,6 +6,9 @@ import {
   interruptCd,
   stoneWolfArmorSplit,
   stoneWolfBroken,
+  stoneWolfCostumeFrame,
+  STONE_WOLF_FRAME,
+  STONE_WOLF_BROKEN_FRAME,
   STONE_WOLF_STONE_PHASE,
   STONE_WOLF_BROKEN_PHASE,
 } from '@/enemies/elite-skills';
@@ -66,6 +69,8 @@ describe('W-16 五精英技能参数（gdd-enemies-v3 §③-4 锚）', () => {
     expect(STONE_WOLF_BROKEN_PHASE.intervalDiv).toBeCloseTo(1.4, 6);
     expect(stoneWolfBroken(0)).toBe(true);
     expect(stoneWolfBroken(1)).toBe(false);
+    expect(stoneWolfCostumeFrame(false)).toBe(STONE_WOLF_FRAME);
+    expect(stoneWolfCostumeFrame(true)).toBe(STONE_WOLF_BROKEN_FRAME);
   });
 });
 
@@ -137,12 +142,42 @@ describe('精英技能运行时（触发→蓄力→释放→硬直；位移覆�
     const e = fakeElite('enemy_g3_3', 0, 0);
     e.maxHp = 400;
     e.hp = 300; // 石甲期（>160 阈值）
+    e.visualFrame = STONE_WOLF_FRAME;
     step(dir, e, 0.2);
     expect(e.speed).toBeCloseTo(36, 6);
+    expect(e.visualFrame).toBe(STONE_WOLF_FRAME);
     e.hp = 100; // 破甲
     const events = step(dir, e, 0.2);
     expect(e.speed).toBeCloseTo(45 * 1.35, 6);
+    expect(e.visualFrame).toBe(STONE_WOLF_BROKEN_FRAME);
     expect(events.some((ev) => ev.type === 'armor-broken')).toBe(true);
+  });
+
+  it('石甲狼：池复用 spawnGeneration 重置破甲态与外观', () => {
+    const dir = new EliteSkillDirector();
+    const e = fakeElite('enemy_g3_3', 0, 0);
+    e.maxHp = 400;
+    e.hp = 100;
+    e.visualFrame = STONE_WOLF_FRAME;
+    e.spawnGeneration = 1;
+    const brokenEvents = step(dir, e, 0.2);
+    expect(e.visualFrame).toBe(STONE_WOLF_BROKEN_FRAME);
+    expect(brokenEvents.some((ev) => ev.type === 'armor-broken')).toBe(true);
+
+    e.spawnGeneration = 2;
+    e.hp = 400;
+    e.speed = 45;
+    e.attackInterval = 1.8;
+    e.visualFrame = STONE_WOLF_FRAME;
+    const reused = step(dir, e, 0.2);
+    expect(e.speed).toBeCloseTo(36, 6);
+    expect(e.visualFrame).toBe(STONE_WOLF_FRAME);
+    expect(reused.some((ev) => ev.type === 'armor-broken')).toBe(false);
+
+    e.hp = 100;
+    const again = step(dir, e, 0.2);
+    expect(e.visualFrame).toBe(STONE_WOLF_BROKEN_FRAME);
+    expect(again.some((ev) => ev.type === 'armor-broken')).toBe(true);
   });
 });
 

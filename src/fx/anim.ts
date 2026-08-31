@@ -37,12 +37,24 @@ export function facingFlipX(vx: number, current: boolean, deadzone = FACING_DEAD
   return current;
 }
 
+const VARIANT_SUFFIX_RE = /-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b|broken|tombstone)$/;
+
+function stripVariantSuffixes(visualFrame: string): string {
+  let s = visualFrame;
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(VARIANT_SUFFIX_RE, '');
+  } while (s !== prev);
+  return s;
+}
+
 /**
  * 原图默认是否朝右。批次 1 朝向不统一（犬/尸多朝左，守夜人偏右），
  * 未登记的实体不翻转，避免月步。美术统一朝右后把表扩全。
  */
 export function defaultFacesRight(visualFrame: string): boolean | null {
-  const base = visualFrame.replace(/-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b)$/, '');
+  const base = stripVariantSuffixes(visualFrame);
   if (base === 'player') return true;
   // NV-INTEG-FIX P1：四角色帧表补齐（原仅守夜人 player → 其余三角色不翻转、朝向错位；变体后缀剥离后统一登记）
   if (base === 'hero-edmund' || base === 'hero-cassandra' || base === 'hero-violet' || base === 'hero-galvan') return true;
@@ -85,7 +97,8 @@ export function createCharacterAnims(scene: Phaser.Scene): void {
       key.endsWith('-skill-c') ||
       key.endsWith('-entrance') ||
       key.endsWith('-walk-a') ||
-      key.endsWith('-walk-b')
+      key.endsWith('-walk-b') ||
+      key.endsWith('-tombstone')
     ) {
       continue;
     }
@@ -128,11 +141,16 @@ function playVisual(sprite: Phaser.GameObjects.Sprite, base: string, moving: boo
   const idle = idleAnimKey(base);
   const move = moveAnimKey(base);
   const scene = sprite.scene;
-  if (boss || !scene.anims.exists(move)) {
-    if (scene.anims.exists(idle)) playEntity(sprite, idle);
+  if (!boss && scene.anims.exists(move)) {
+    playEntity(sprite, moving ? move : idle);
     return;
   }
-  playEntity(sprite, moving ? move : idle);
+  if (scene.anims.exists(idle)) {
+    playEntity(sprite, idle);
+    return;
+  }
+  // 有静帧无 idle 对（缺 `-v`）→ 钉住该帧；完全缺帧 → no-op，保留上一动画（石甲狼破甲未进仓时不闪 __MISSING）
+  if (hasCharacterFrame(scene, base)) holdFrame(sprite, base);
 }
 
 /** 玩家：技能姿态叠层优先（不挡移动）；否则 idle（无 walk 帧时移动也播 idle）+ flipX */

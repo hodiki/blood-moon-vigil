@@ -22,6 +22,8 @@ import type { Player } from '@/player/player';
 let ENEMY_INSTANCE_SEQ = 0;
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
+  /** 敌人恒为动态 Arcade 刚体（spawn 时 enable+setCircle+reset；无 StaticBody 用例）——收窄以满足 EliteEnemyLike.body */
+  declare body: Phaser.Physics.Arcade.Body | null;
   /** W-1：实例 ID（EnemyAiDirector 同源召唤计数键） */
   readonly instanceId = ++ENEMY_INSTANCE_SEQ;
   /** W-6/MN-4 词缀 ID（精英 tank 槽 180s 起单词缀；方阵成员恒 null——F-8 互斥） */
@@ -29,6 +31,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   kind: EnemyKindId = 'zombie';
   /** 当前外观帧（M4：tick 按此播 idle/move，避免 15 敌被播回 wolf/zombie 剪影） */
   visualFrame = 'enemy-zombie';
+  /** 池复用代数：每次 spawn* +1；精英技能 WeakMap 按此丢弃上一命状态 */
+  spawnGeneration = 0;
   /** E3-S1 内容 ID（15 敌；旧 kind 三敌/Boss 为 null） */
   enemyId: EnemyId | null = null;
   maxHp = 0;
@@ -115,6 +119,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** 从池取出：按面板重置字段并激活（ADR-001 组件式数据字段） */
   spawn(kind: EnemyKindId, x: number, y: number): void {
+    this.spawnGeneration += 1;
     const panel = enemyPanel(kind);
     this.kind = kind;
     this.enemyId = null;
@@ -164,6 +169,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     y: number,
     opts?: { hpMult?: number },
   ): void {
+    this.spawnGeneration += 1;
     this.enemyId = cfg.id;
     this.kind = runtimeKindForEnemyId(cfg.id);
     // W-8 面板链：HP = 基础面板 × hpMult（scale(t)×c 案联动×宽容，由生成侧组装；
@@ -213,6 +219,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * ccProfile = BossConfig.ccProfile ?? { tier:'boss' }（MN-9 覆写：芬里厄减速 ×0.5 / 化身易伤免疫）。
    */
   spawnByBossConfig(cfg: import('@/config/balance').BossConfig, x: number, y: number): void {
+    this.spawnGeneration += 1;
     this.enemyId = null;
     this.kind = 'boss';
     this.maxHp = cfg.hp;

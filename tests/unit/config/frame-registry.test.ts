@@ -39,6 +39,16 @@ describe('帧名注册表 diff（content-id-frame-map §8 验收 1）', () => {
     expect(FRAME_BY_CONTENT_ID.wslot_icons).toHaveLength(21);
     expect(FRAME_BY_CONTENT_ID.codex_events).toHaveLength(6);
     expect(FRAME_BY_CONTENT_ID.markers).toHaveLength(6);
+    expect(FRAME_BY_CONTENT_ID.enemy_g1_7).toEqual(['enemy-decayedknight', 'enemy-decayedknight-v']);
+    expect(FRAME_BY_CONTENT_ID.enemy_g1_8).toEqual(['enemy-bonethrower', 'enemy-bonethrower-v']);
+    expect(FRAME_BY_CONTENT_ID.enemy_g3_3).toContain('enemy-stonewolf-broken');
+    expect(FRAME_BY_CONTENT_ID.xw_cards).toHaveLength(8);
+    expect(FRAME_BY_CONTENT_ID.relic_reliquary).toEqual(['relic-reliquary']);
+    expect(FRAME_BY_CONTENT_ID.xw_bell).toContain('summon-oathkeeper-tombstone');
+    expect(FRAME_BY_CONTENT_ID.q_a).toEqual(['tree-q-a']);
+    expect(FRAME_BY_CONTENT_ID.a_attack_2).toEqual(['tree-a-atk']);
+    expect(FRAME_BY_CONTENT_ID.relic_icons).toHaveLength(5);
+    expect(FRAME_BY_CONTENT_ID.xw_emblems).toHaveLength(8);
   });
 
   it('保留帧名未改名：RESERVED_FRAMES 全部在注册表内，且逐名与 §7.3 一致', () => {
@@ -57,11 +67,15 @@ describe('帧名注册表 diff（content-id-frame-map §8 验收 1）', () => {
     }
   });
 
-  it('三图集注册表导出（characters/effects/ui）帧名不重不漏，并集 = ALL_FRAMES', () => {
+  it('图集分区不重不漏（characters/effects/ui/ui-portraits/ui-slots），并集 = ALL_FRAMES', () => {
     const atlasNames = FRAME_REGISTRY.flatMap((g) => g.frames);
     expect(new Set(atlasNames).size).toBe(ALL_FRAMES.length);
     expect(atlasNames.length).toBe(ALL_FRAMES.length);
-    expect(new Set(FRAME_REGISTRY.map((g) => g.atlas))).toEqual(new Set(['characters', 'effects', 'ui']));
+    expect(new Set(FRAME_REGISTRY.map((g) => g.atlas))).toEqual(
+      new Set(['characters', 'effects', 'ui', 'ui-portraits', 'ui-slots']),
+    );
+    expect(FRAME_REGISTRY.find((g) => g.atlas === 'ui-portraits')?.frames).toHaveLength(8);
+    expect(FRAME_REGISTRY.find((g) => g.atlas === 'ui-slots')?.frames).toHaveLength(35);
   });
 
   it('配置表帧名全部在注册表内（balance 类表 ↔ 帧名注册表闭合）', () => {

@@ -6,6 +6,7 @@
  *
  * - 位移类事件（冲刺/后撤步）返回 velocity 覆盖，由调用方写 body（引擎层零 Phaser）
  * - 石甲狼：无主动技能；石甲分池（hp 阈值判定破甲）+ 双阶段面板 + 石甲期减速 ×0.5（ccProfile）
+ *   破甲切 `visualFrame` → `enemy-stonewolf-broken`（缺帧 tick 保持石甲 idle）；池复用靠 spawnGeneration
  * - 伤害结算：调用方消费 skill-damage 事件走 player.hurt（技能伤独立字段语义）
  * - MN-20：windup 期命中眩晕 → 打断（末段 0.3s 锁定窗内不打断但消耗 ICD——ICD 在施加侧），
  *   打断 = 取消攻击 + CD ×50%
@@ -16,6 +17,7 @@ import {
   eliteInterruptible,
   interruptCd,
   stoneWolfBroken,
+  stoneWolfCostumeFrame,
   STONE_WOLF_STONE_PHASE,
   STONE_WOLF_BROKEN_PHASE,
   type EliteSkillParams,
@@ -36,8 +38,14 @@ export interface EliteEnemyLike {
   speed: number;
   baseAttackInterval: number;
   attackInterval: number;
-  /** 位移覆盖写入口（Arcade Body；setVelocity） */
-  body?: { setVelocity(x: number, y: number): void };
+  /** 当前外观帧（石甲狼破甲换装；Enemy 必有） */
+  visualFrame?: string;
+  /**
+   * 池复用代数（Enemy.spawn* 递增）。WeakMap 按对象身份，复用实例必须靠代数丢弃上一命技能状态。
+   */
+  spawnGeneration?: number;
+  /** 位移覆盖写入口（Arcade Body；setVelocity）。Enemy.body 可为 null（无 Body 实体期），消费端统一走 ?. */
+  body?: { setVelocity(x: number, y: number): void } | null;
 }
 
 /** 单帧位移覆盖（调用方写 body.setVelocity；null = 不覆盖） */
@@ -51,7 +59,7 @@ export type EliteSkillEvent =
   | { type: 'skill-damage'; eliteId: EnemyId; damage: number; x: number; y: number }
   | { type: 'interrupted'; eliteId: EnemyId }
   | { type: 'bloodstain'; x: number; y: number }
-  | { type: 'armor-broken'; x: number; y: number }
+  | { type: 'armor-broken'; x: number; y: number; elite: EliteEnemyLike }
   | { type: 'velocity'; override: EliteVelocityOverride };
 
 /** telegraph 演出查询（W-13 消费；null = 无预警） */
@@ -76,6 +84,8 @@ interface EliteState {
   wanderClock: number;
   /** 石甲/破甲面板已应用的相位（防重复应用） */
   armorPhaseApplied: 'stone' | 'broken' | null;
+  /** 与 EliteEnemyLike.spawnGeneration 对齐；不一致则重建状态 */
+  spawnGeneration: number;
 }
 
 export class EliteSkillDirector {
@@ -269,7 +279,7 @@ export class EliteSkillDirector {
     const broken = elite.hp <= bodyThreshold || state.armorBroken;
     if (broken && !state.armorBroken) {
       state.armorBroken = true;
-      events.push({ type: 'armor-broken', x: elite.x, y: elite.y });
+      events.push({ type: 'armor-broken', x: elite.x, y: elite.y, elite });
     }
     const phase = broken ? 'broken' : 'stone';
     if (state.armorPhaseApplied !== phase) {
@@ -279,6 +289,7 @@ export class EliteSkillDirector {
       const baseSpeed = 45;
       elite.speed = baseSpeed * (broken ? STONE_WOLF_BROKEN_PHASE.speedMult : STONE_WOLF_STONE_PHASE.speedMult);
       elite.attackInterval = elite.baseAttackInterval * (broken ? 1 / STONE_WOLF_BROKEN_PHASE.intervalDiv : STONE_WOLF_STONE_PHASE.intervalMult);
+      elite.visualFrame = stoneWolfCostumeFrame(broken);
       void stats;
     }
     if (stoneWolfBroken(state.armorBroken ? 0 : elite.hp - bodyThreshold)) {
@@ -298,9 +309,20 @@ export class EliteSkillDirector {
   }
 
   private stateFor(e: EliteEnemyLike): EliteState {
+    const gen = e.spawnGeneration ?? 0;
     let s = this.states.get(e);
-    if (!s) {
-      s = { phase: 'idle', phaseElapsed: 0, cdRemaining: 0, lockedDir: null, shotsFired: 0, armorBroken: false, wanderClock: 0, armorPhaseApplied: null };
+    if (!s || s.spawnGeneration !== gen) {
+      s = {
+        phase: 'idle',
+        phaseElapsed: 0,
+        cdRemaining: 0,
+        lockedDir: null,
+        shotsFired: 0,
+        armorBroken: false,
+        wanderClock: 0,
+        armorPhaseApplied: null,
+        spawnGeneration: gen,
+      };
       this.states.set(e, s);
     }
     return s;

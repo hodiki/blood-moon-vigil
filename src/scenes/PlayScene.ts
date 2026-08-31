@@ -38,7 +38,7 @@ import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { Enemy } from '@/enemies/enemy';
 import { Boss } from '@/enemies/boss';
 import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
-import { EliteSkillDirector } from '@/enemies/elite-skill-runtime';
+import { EliteSkillDirector, type EliteEnemyLike } from '@/enemies/elite-skill-runtime';
 import { OathkeeperRuntime } from '@/weapons/companion/oathkeeper-runtime';
 import { TelegraphLayer } from '@/fx/telegraph-layer';
 import {
@@ -676,7 +676,7 @@ export class PlayScene extends Phaser.Scene {
     // W-13 telegraph 演出同步（精英预警/阵纹/Boss 施法圈；移动端线宽 +1px §⑦）
     {
       const eliteTel: import('@/enemies/elite-skill-runtime').EliteTelegraph[] = [];
-      const eliteList: Array<{ x: number; y: number; hp: number; maxHp: number; enemyId: EnemyId | null; cc: import('@/combat/status/status-engine').StatusState; speed: number; baseAttackInterval: number; attackInterval: number }> = [];
+      const eliteList: EliteEnemyLike[] = [];
       this.enemyPool.eachActive((e) => {
         if (e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') eliteList.push(e);
       });
@@ -862,7 +862,7 @@ export class PlayScene extends Phaser.Scene {
 
   /** W-16：精英技能逐帧推进 + 事件消费（伤害/位移/telegraph 由各消费端承接） */
   private stepEliteSkills(dt: number, now: number): void {
-    const elites: Array<{ x: number; y: number; hp: number; maxHp: number; enemyId: EnemyId | null; cc: import('@/combat/status/status-engine').StatusState; speed: number; baseAttackInterval: number; attackInterval: number }> = [];
+    const elites: EliteEnemyLike[] = [];
     this.enemyPool.eachActive((e) => {
       if (e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') elites.push(e);
     });
