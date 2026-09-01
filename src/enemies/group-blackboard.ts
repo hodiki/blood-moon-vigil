@@ -128,6 +128,9 @@ export function createGroupBlackboard(
   };
 }
 
+/** 组解散原因（P1-13：宝石簇结算口径——wiped/banner-broken = 完整击破 → 掉簇；depart/external = 离场/清场 → 不掉） */
+export type DissolveCause = 'wiped' | 'depart' | 'banner-broken' | 'external';
+
 /** 组事件（调用方消费：召唤生成/治疗结算/宝藏落地/黑板清理） */
 export type GroupEvent =
   | { type: 'ritual-start'; groupId: string }
@@ -139,7 +142,16 @@ export type GroupEvent =
   | { type: 'treasure-dropped'; groupId: string }
   | { type: 'aggro'; groupId: string }
   | { type: 'depart'; groupId: string }
-  | { type: 'dissolved'; groupId: string }
+  | {
+      type: 'dissolved';
+      groupId: string;
+      /** 阵配置 ID（解散后黑板即注销，奖励结算按事件载荷查 FORMATIONS） */
+      formationId: FormationId;
+      cause: DissolveCause;
+      /** 解散结算锚（最后阵亡成员/离场位置；纯黑板层无位置 → 由运行时增补） */
+      x?: number;
+      y?: number;
+    }
   // —— 内容批六阵事件（W-B 遗留补全；演出/个体结算消费）——
   | { type: 'ambush-crouch'; groupId: string }
   | { type: 'ambush-pounce'; groupId: string }
@@ -267,7 +279,7 @@ function stepBanner(board: GroupBlackboard, dt: number, events: GroupEvent[]): v
       // 插旗被打断 → 旗报废：阵解散（斩旗前置失败态；§⑥-1 各阵解散条件逐阵定义）
       board.dissolved = true;
       events.push({ type: 'banner-broken', groupId: board.groupId });
-      events.push({ type: 'dissolved', groupId: board.groupId });
+      events.push({ type: 'dissolved', groupId: board.groupId, formationId: board.formationId, cause: 'banner-broken' });
       return;
     }
     if (board.phaseElapsed >= BANNER_CONFIG.plant) {
@@ -409,7 +421,7 @@ export function notifyMemberKilled(board: GroupBlackboard, slotIndex: number): G
   const events: GroupEvent[] = [];
   if (board.members.every((x) => !x.alive) && board.resummonedAlive === 0) {
     board.dissolved = true;
-    events.push({ type: 'dissolved', groupId: board.groupId });
+    events.push({ type: 'dissolved', groupId: board.groupId, formationId: board.formationId, cause: 'wiped' });
   }
   return events;
 }

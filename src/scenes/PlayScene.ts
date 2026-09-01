@@ -52,7 +52,7 @@ import { BossSkillRuntime, type BossSkillPorts } from '@/enemies/boss-skill-runt
 import { corruptHealMultFor } from '@/config/balance';
 import { moonAvatarTriggerDue } from '@/enemies/boss-math';
 import { WeaponSystem } from '@/weapons/weapon-system';
-import { EnemySpawner } from '@/spawner/enemy-spawner';
+import { EnemySpawner, splitGemCluster } from '@/spawner/enemy-spawner';
 import { XpGem } from '@/xp/xp-gem';
 import { XpManager } from '@/xp/xp-manager';
 import { HealPickup } from '@/xp/heal-pickup';
@@ -448,6 +448,16 @@ export class PlayScene extends Phaser.Scene {
 
     // E3 成长闭环：经验 / 升级池 / 覆盖层
     this.xp = new XpManager(this.gemPool, this.player);
+    // P1-13 F-6：方阵完整击破宝石簇（普通阵 5~10 / 骑士团 15~20；拆 3~5 颗散布落地）
+    this.spawner.onFormationReward = (x, y, lo, hi) => {
+      const total = lo + Math.floor(Math.random() * (hi - lo + 1));
+      const parts = splitGemCluster(total);
+      const count = parts.length;
+      parts.forEach((v, i) => {
+        const a = (i / count) * Math.PI * 2;
+        this.xp.dropGem(v, x + Math.cos(a) * 18, y + Math.sin(a) * 18);
+      });
+    };
     // E4-S1 守夜人「提灯圣辉」：经验磁力 +20px（专属被动；非守夜人为 0）
     this.xp.setMagnetRadiusBonus(this.player.stats.magnetRadiusBonus);
     this.xp.addPickupRadiusBonus(this.player.stats.pickupRadiusBonus); // B5 属性 A-10 拾取半径
@@ -748,6 +758,8 @@ export class PlayScene extends Phaser.Scene {
     });
     // W-1 特殊行为 AI（光环攻速/侍僧召唤/猎手冲锋；冲锋速度覆盖在 updateMovement 之后）
     this.aiDirector.update(dt, now, this.player, this.oathkeeper.friendlyTarget());
+    // P1-12 方阵个体 AI（围猎环游/低伏/扑击 + 骑士团蓄势/冲锋/硬直；速度覆写在 updateMovement 之后当帧生效）
+    this.spawner.stepFormationMemberAI(dt, now);
     // P0-1 圣物：祭坛占位交互 + HUD CD 环（每帧刷新；数值变化 <0.5% 时 HUD 内部跳过重绘）
     this.stepAltar(dt, now);
     this.syncRelicHud(now);

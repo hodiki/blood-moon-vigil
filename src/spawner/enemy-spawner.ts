@@ -46,8 +46,14 @@ import {
   type GroupSchedulerState,
   type GroupRollContext,
 } from '@/spawner/spawn-group';
-import { MAP_CONFIGS, FORMATIONS, type FormationId } from '@/config/balance';
+import { MAP_CONFIGS, FORMATIONS, FORMATION_RULES, type FormationId } from '@/config/balance';
 import { FormationRuntime } from '@/enemies/formation-runtime';
+import {
+  FormationMemberAI,
+  applyBannerRout,
+  type MemberAiPorts,
+  type MemberAiGroupInput,
+} from '@/enemies/formation-member-ai';
 import { applyPanelScale } from '@/enemies/panel-scale';
 import { rollAffix, AFFIXES, type AffixId } from '@/config/balance';
 import type { GroupMemberState } from '@/enemies/group-blackboard';
@@ -69,6 +75,11 @@ export class EnemySpawner {
    * enemyId 在预约时即从地图 tank 槽位池抽取（M2 收口：保底厚血 = 该图坦克槽敌种）。
    */
   private pendingTank: { x: number; y: number; remaining: number; enemyId: EnemyId } | null = null;
+  /**
+   * P1-13 F-1 伴随精英：骑士团落地同屏无精英 → 预约 1 只（tank 槽精英池；落地延迟工程锚 1.5s）。
+   * 词缀互斥不适用本体（FORMATION_RULES.KNIGHT_ESCORT_ELITE）。
+   */
+  private pendingEscort: { x: number; y: number; remaining: number } | null = null;
   private stopped = false;
   /** 场景时间戳秒（scene.time.now/1000 等效；update 由 PlayScene RUNNING 秒制驱动） */
   private time_now = 0;
@@ -81,6 +92,22 @@ export class EnemySpawner {
   private readonly groups: GroupSchedulerState | null;
   /** W-B/W-11 组黑板运行时（与 groups 同生命周期；enableFormations 时创建） */
   private readonly formationRuntime: FormationRuntime | null;
+  /** P1-12 方阵个体 AI 运行时（围猎环游/低伏/扑击 + 骑士团冲锋/硬直；速度覆写在 updateMovement 之后） */
+  private readonly memberAI = new FormationMemberAI();
+  /** P1-12 个体 AI 副作用端口（velocity 覆写 + 血旗溃散 applyStatus） */
+  private readonly memberPorts: MemberAiPorts = {
+    setVelocity: (entity, vx, vy) => {
+      const body = (entity as unknown as { body?: { setVelocity(x: number, y: number): void } | null }).body;
+      body?.setVelocity(vx, vy);
+    },
+    rout: (entity) => {
+      const e = entity as Enemy;
+      // 血旗成员均为普通敌（enemy_g2_1 增援 / 阵成员），CC 抗性走缺省画像
+      e.cc = applyBannerRout(e.cc, this.time_now);
+    },
+  };
+  /** P1-13 F-6：方阵完整击破（wiped/斩旗）宝石簇回调（PlayScene 注入 XpManager 落地） */
+  onFormationReward: ((x: number, y: number, xpMin: number, xpMax: number) => void) | null = null;
   /** 组生成掷点上下文（惰性组装；环带按图双端覆盖） */
   private readonly groupCtx: GroupRollContext;
 
@@ -127,10 +154,12 @@ export class EnemySpawner {
     this.t += dt;
     // TASK-39 E2 屠夫预警：预约厚血倒计时（随世界冻结 pause，dt 由 PlayScene RUNNING 秒制驱动）
     this.tickPendingTank(dt);
+    this.tickPendingEscort(dt);
     // E4-S3：6:00 准时触发（±0.1s，RV-C8）——停止生成 + 回调（PlayScene 清场 + Boss 出场）
     if (bossTriggerDue(this.t, SPAWNER.BOSS_TIME)) {
       this.stopped = true;
       this.pendingTank = null; // 收束后不落地
+      this.pendingEscort = null; // P1-13：伴随精英预约同收
       if (this.groups) onBossTimeGroups(this.groups); // W-A §⑥-4：丢弃未落地预约
       this.onBossTime?.();
       return;
@@ -145,6 +174,7 @@ export class EnemySpawner {
   stop(): void {
     this.stopped = true;
     this.pendingTank = null;
+    this.pendingEscort = null;
     if (this.groups) clearGroupQueues(this.groups); // W-A §⑥-2：方阵预约/在场组全清
     this.treasureMovers = [];
   }
@@ -220,6 +250,18 @@ export class EnemySpawner {
     GameEvents.emit(GameEvent.TankSpawned, { x: p.x, y: p.y });
   }
 
+  /** P1-13 F-1：伴随精英预约倒计时归零 → 环带点落地（tank 槽精英池；allowAffix 词缀走 180s 门） */
+  private tickPendingEscort(dt: number): void {
+    if (!this.pendingEscort) return;
+    this.pendingEscort.remaining -= dt;
+    if (this.pendingEscort.remaining > 0) return;
+    const p = this.pendingEscort;
+    this.pendingEscort = null;
+    const weights = weightedWeightsForStage(this.mapId, stageForTime(this.t));
+    const id = pickEnemyIdForMap(this.mapId, weights, rForSlot('tank', weights), Math.random(), this.t);
+    this.spawnOneById(id, p.x, p.y, this.t, true);
+  }
+
   /**
    * W-A/W-10 方阵组生成 tick：掷点（成组预扣）→ 分帧落地（≤5 只/帧，maxEnemies 节流不丢组）。
    * 预扣 = rollGroup 成本从 budgetAcc 扣除（计入总盘会计 ≤25%）；落地走 spawnOneById
@@ -282,6 +324,13 @@ export class EnemySpawner {
           }
         }
         this.formationRuntime.registerGroup(land.groupId, land.formationId as FormationId, states);
+        // P1-13 F-1 伴随精英：骑士团落地同屏无精英 → 预约 1 只（1.5s 后环带落地；词缀互斥不适用本体）
+        if (
+          shouldReserveKnightEscort(land.formationId, this.hasEliteOnField(), this.pendingEscort !== null)
+        ) {
+          const pos = this.spawnRingPosition();
+          this.pendingEscort = { x: pos.x, y: pos.y, remaining: 1.5 };
+        }
         GameEvents.emit(GameEvent.FormationLanded, {
           groupId: land.groupId,
           formationId: land.formationId,
@@ -320,12 +369,14 @@ export class EnemySpawner {
     }
   }
 
-  /** W-B 黑板推进与事件副作用消费（召唤生成 noXp 实体 / 治疗结算 / 解散清理） */
+  /** W-B 黑板推进与事件副作用消费（召唤生成 noXp 实体 / 治疗结算 / 宝石簇 / 个体 AI 触发） */
   private stepFormations(dt: number): void {
     const runtime = this.formationRuntime;
     if (!runtime || runtime.groupCount === 0) return;
     const now = this.time_now;
     for (const ev of runtime.stepAll(dt, now)) {
+      // P1-12：组级事件转发个体 AI（扑击/冲锋触发；速度覆写在 PlayScene updateMovement 之后步进）
+      this.memberAI.onGroupEvent(ev, now);
       switch (ev.type) {
         case 'summon': {
           // 组召唤实体：noXp=true（F-4 全量）；生成点 = 仪式主体位（缺省玩家环带）
@@ -342,6 +393,13 @@ export class EnemySpawner {
         case 'heal':
           runtime.healMember(ev.groupId, ev.targetSlotIndex, ev.amount);
           break;
+        case 'banner-broken': {
+          // P1-12 斩旗溃散：组内全员（含 noXp 增援）减速 50%/3s（BANNER_CONFIG；status-engine 通道）
+          for (const { entity } of runtime.memberEntities(ev.groupId)) {
+            this.memberPorts.rout(entity);
+          }
+          break;
+        }
         case 'ritual-start':
         case 'ritual-interrupted':
         case 'ritual-complete':
@@ -352,13 +410,55 @@ export class EnemySpawner {
           GameEvents.emit(GameEvent.TreasureDropped, { x: pos.x, y: pos.y });
           break;
         }
+        case 'dissolved': {
+          // P1-13 F-6：完整击破（全灭/斩旗）→ rewardGemCluster 宝石簇 5~20 XP；离场/清场不掉
+          if (ev.cause === 'wiped' || ev.cause === 'banner-broken') {
+            const [lo, hi] = FORMATIONS[ev.formationId].rewardGemCluster;
+            const at = ev.x !== undefined && ev.y !== undefined ? { x: ev.x, y: ev.y } : this.groupAlivePosition(ev.groupId);
+            this.onFormationReward?.(at.x, at.y, lo, hi);
+          }
+          break;
+        }
         case 'aggro':
         case 'depart':
-        case 'dissolved':
           // 演出/宝藏实体/横穿 AI 消费点（W-13/W-14 内容批）；黑板状态已生效
           break;
       }
     }
+    runtime.purgeDissolved(); // banner-broken 残留黑板清理（成员实体访问延迟到本消费口）
+  }
+
+  /**
+   * P1-12 方阵个体 AI 步进（公开口；PlayScene 在 updateMovement 之后调用——
+   * updateMovement 每帧重写 body.velocity，覆写须在其后才能当帧生效）。
+   */
+  stepFormationMemberAI(dt: number, now: number): void {
+    const runtime = this.formationRuntime;
+    if (!runtime || runtime.groupCount === 0) return;
+    const groups: MemberAiGroupInput[] = [];
+    for (const groupId of runtime.activeGroupIds()) {
+      const board = runtime.boardFor(groupId);
+      if (!board || board.dissolved) continue;
+      groups.push({
+        groupId,
+        behavior: board.behavior,
+        phase: board.phase,
+        dissolved: board.dissolved,
+        members: runtime.memberEntities(groupId),
+        playerX: this.player.x,
+        playerY: this.player.y,
+      });
+    }
+    if (groups.length > 0) this.memberAI.step(dt, now, groups, this.memberPorts);
+  }
+
+  /** P1-13 F-1：同屏精英扫描（含 tank 槽精英；清场接口回收 inactive 不计入） */
+  private hasEliteOnField(): boolean {
+    let elite = false;
+    this.enemyPool.eachActive((e) => {
+      if (!elite && e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') elite = true;
+    });
+    return elite;
   }
 
   /** 组内任一存活成员位置（宝藏落地锚；无 → 玩家环带点） */
@@ -491,4 +591,29 @@ export class EnemySpawner {
     if (affix) enemy.xp = Math.round(enemy.xp * 1.2 * 100) / 100;
     return enemy;
   }
+}
+
+/**
+ * P1-13 F-1 伴随精英预约判据（纯函数；eliteOnField 由调用方扫描注入）：
+ * 仅腐朽骑士团（高威胁阵）落地且同屏无精英、无在途预约时预约 1 只。
+ */
+export function shouldReserveKnightEscort(formationId: string, eliteOnField: boolean, pending: boolean): boolean {
+  return formationId === 'f_decayed_knights' && FORMATION_RULES.KNIGHT_ESCORT_ELITE && !eliteOnField && !pending;
+}
+
+/**
+ * P1-13 F-6：宝石簇拆分（总数 → 3~5 颗；每颗 ≥1；和恒等于 total；测试可注入 rng）。
+ * 落地散布（角度均分 18px 半径）由消费口（PlayScene onFormationReward）执行。
+ */
+export function splitGemCluster(total: number, rng: () => number = Math.random): number[] {
+  const count = Math.min(total, 3 + Math.floor(rng() * 3)); // 3~5 颗（total<3 时按 total 拆单颗）
+  const base = Math.floor(total / count);
+  let rem = total - base * count;
+  const out: number[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const v = base + (rem > 0 ? 1 : 0);
+    if (rem > 0) rem -= 1;
+    out.push(v);
+  }
+  return out;
 }

@@ -10,13 +10,17 @@
  * - P0-6 Boss 技能消费运行时（boss-skill-runtime）：zone 几何自结算（扇形/环形留缝/
  *   落点圈/走廊/冲锋线/持续场/引力圈），每 Boss ≥2 可解形状，禁全图 dist 桩；
  *   幻影走专用口（HP1 + noXp + 接触伤按表，不行尸面板）
+ * - P1-12 方阵个体 AI（formation-member-ai）：围猎两翼环游/低伏冻结/扑击直线可躲、
+ *   血旗斩旗溃散减速 50%/3s、骑士团蓄势驻停→跟踪 0.3s 锁向冲锋→落空硬直 1s
+ * - P1-13 方阵解散口径：dissolved 事件 cause（wiped/banner-broken/depart/external）+
+ *   rewardGemCluster 宝石簇拆分 + KNIGHT_ESCORT_ELITE 伴随精英预约判据
  *
  * 分层纪律：全部为运行时用例（纯函数/状态机/装配层协作），不依赖 Phaser 场景。
  */
 
 import { describe, it, expect } from 'vitest';
 import { ENEMY_CONFIGS, type EnemyId, type BossId, type BossSlot } from '@/config/balance';
-import { BOSS_SKILL_TABLES } from '@/config/balance';
+import { BOSS_SKILL_TABLES, FORMATIONS, FORMATION_RULES } from '@/config/balance';
 import {
   specialBehaviorFor,
   lungeDashDuration,
@@ -29,6 +33,23 @@ import { EliteSkillDirector, type EliteEnemyLike } from '@/enemies/elite-skill-r
 import { BossSkillRuntime, type BossSkillPorts } from '@/enemies/boss-skill-runtime';
 import { createBossSkillState, type BossSkillState } from '@/enemies/boss-skill-engine';
 import { ELITE_SKILLS, ELITE_SKILL_UNLOCK_SECONDS } from '@/enemies/elite-skills';
+import {
+  FormationMemberAI,
+  applyBannerRout,
+  AMBUSH_MEMBER_AI,
+  KNIGHTS_TRACK_SECONDS,
+  type MemberAiGroupInput,
+  type MemberEntityLike,
+  type MemberAiPorts,
+} from '@/enemies/formation-member-ai';
+import {
+  createGroupBlackboard,
+  notifyMemberDamaged,
+  stepGroupBlackboard,
+  TREASURE_AGGRO_SECONDS,
+} from '@/enemies/group-blackboard';
+import { FormationRuntime, type GroupMemberLike } from '@/enemies/formation-runtime';
+import { shouldReserveKnightEscort, splitGemCluster } from '@/spawner/enemy-spawner';
 import type { ArcadePoolLike } from '@/core/object-pools';
 
 // ============================================================================
@@ -553,5 +574,286 @@ describe('P0-6 Boss 技能消费运行时（每 Boss ≥2 可解形状，禁全�
     expect(shapesFor('boss_2').size).toBeGreaterThanOrEqual(2); // arc/circle/field/corridor
     expect(shapesFor('boss_3').size).toBeGreaterThanOrEqual(2); // arc + corridor（dash/扑击）
     expect(shapesFor('boss_4').size).toBeGreaterThanOrEqual(2); // arc/circle/ring
+  });
+});
+
+// ============================================================================
+// P1-12 方阵个体 AI（formation-member-ai：围猎环游/低伏/扑击、血旗溃散、骑士团冲锋）
+// ============================================================================
+
+/** 成员替身（MemberEntityLike 最小形状 + id 可观测） */
+interface FakeMember {
+  id: string;
+  x: number;
+  y: number;
+}
+
+function makeMember(id: string, x: number, y: number): FakeMember {
+  return { id, x, y };
+}
+
+function makeMemberPorts(): { ports: MemberAiPorts; vel: Array<{ id: string; vx: number; vy: number }>; routs: string[]; reg: (e: MemberEntityLike, id: string) => void } {
+  const vel: Array<{ id: string; vx: number; vy: number }> = [];
+  const routs: string[] = [];
+  const ids = new Map<MemberEntityLike, string>();
+  return {
+    vel,
+    routs,
+    reg: (e, id) => {
+      ids.set(e, id);
+    },
+    ports: {
+      setVelocity(e, vx, vy) {
+        vel.push({ id: ids.get(e) ?? '?', vx, vy });
+      },
+      rout(e) {
+        routs.push(ids.get(e) ?? '?');
+      },
+    },
+  };
+}
+
+function groupInput(
+  groupId: string,
+  behavior: string,
+  phase: string,
+  members: Array<[number, FakeMember | null]>,
+  player: { x: number; y: number },
+): MemberAiGroupInput {
+  return {
+    groupId,
+    behavior,
+    phase,
+    dissolved: false,
+    members: members.map(([slotIndex, e]) => ({ slotIndex, entity: e })),
+    playerX: player.x,
+    playerY: player.y,
+  };
+}
+
+describe('P1-12 围猎个体 AI（两翼环游 / 低伏冻结 / 扑击直线可躲）', () => {
+  it('engage 相位两翼反向环游：速度切向（⊥ 指向玩家方向）、速率 = orbitSpeed 160', () => {
+    const ai = new FormationMemberAI();
+    const { ports, vel, reg } = makeMemberPorts();
+    const m0 = makeMember('m0', 200, 0); // slot 0 → 左翼
+    const m1 = makeMember('m1', 0, 200); // slot 1 → 右翼（反向）
+    reg(m0, 'm0');
+    reg(m1, 'm1');
+    const player = { x: 0, y: 0 };
+    ai.step(1 / 60, 0, [groupInput('g', 'ambush', 'engage', [[0, m0], [1, m1]], player)], ports);
+    const v0 = vel.find((v) => v.id === 'm0')!;
+    const v1 = vel.find((v) => v.id === 'm1')!;
+    // 环带中值 200px：径向修正 0，纯切向
+    expect(v0.vx).toBeCloseTo(0, 6);
+    expect(v0.vy).toBeCloseTo(AMBUSH_MEMBER_AI.orbitSpeed, 6); // (200,0) 处切向 +y
+    expect(v1.vx).toBeCloseTo(AMBUSH_MEMBER_AI.orbitSpeed, 6); // (0,200) 处切向 +x（反向翼）
+    expect(v1.vy).toBeCloseTo(0, 6);
+    // 包抄（非直追）：速度与「指向玩家」向量正交
+    expect(v0.vx * 200 + v0.vy * 0).toBeCloseTo(0, 6);
+  });
+
+  it('环带外径向修正：260px 远 → 向内收拢分量；低伏（ritual 相位）全员冻结', () => {
+    const ai = new FormationMemberAI();
+    const { ports, vel, reg } = makeMemberPorts();
+    const m = makeMember('m', 260, 0);
+    reg(m, 'm');
+    const player = { x: 0, y: 0 };
+    ai.step(1 / 60, 0, [groupInput('g', 'ambush', 'engage', [[0, m]], player)], ports);
+    const v = vel.find((x) => x.id === 'm')!;
+    expect(v.vx).toBeLessThan(0); // 径向向内（收拢）
+    // 低伏：phase = ritual（crouch 0.3s）→ 速度 0
+    const out2 = makeMemberPorts();
+    out2.reg(m, 'm');
+    ai.step(1 / 60, 1, [groupInput('g', 'ambush', 'ritual', [[0, m]], player)], out2.ports);
+    expect(out2.vel.find((x) => x.id === 'm')).toEqual({ id: 'm', vx: 0, vy: 0 });
+  });
+
+  it('扑击：首帧锁向直线突进 320px/s（玩家后续移动不改变方向 = 可走位躲开），0.6s 后回环游', () => {
+    const ai = new FormationMemberAI();
+    const { ports, vel, reg } = makeMemberPorts();
+    const m = makeMember('m', 200, 0);
+    reg(m, 'm');
+    ai.onGroupEvent({ type: 'ambush-pounce', groupId: 'g' }, 0);
+    ai.step(1 / 60, 0.01, [groupInput('g', 'ambush', 'engage', [[0, m]], { x: 0, y: 0 })], ports);
+    expect(vel[0]).toEqual({ id: 'm', vx: -AMBUSH_MEMBER_AI.pounceSpeed, vy: 0 });
+    // 玩家垂直闪避后方向仍锁定（直线冲程，走位可躲）
+    vel.length = 0;
+    ai.step(1 / 60, 0.2, [groupInput('g', 'ambush', 'engage', [[0, m]], { x: 0, y: 400 })], ports);
+    expect(vel[0]!.vx).toBeCloseTo(-AMBUSH_MEMBER_AI.pounceSpeed, 6);
+    expect(vel[0]!.vy).toBeCloseTo(0, 6);
+    // 0.6s 窗口结束 → 回环游（切向）
+    vel.length = 0;
+    ai.step(1 / 60, 0.7, [groupInput('g', 'ambush', 'engage', [[0, m]], { x: 0, y: 400 })], ports);
+    const v = vel[0]!;
+    expect(Math.hypot(v.vx, v.vy)).toBeCloseTo(AMBUSH_MEMBER_AI.orbitSpeed, 6);
+  });
+});
+
+describe('P1-12 骑士团个体 AI（蓄势驻停 → 跟踪 0.3s 锁向冲锋 → 落空硬直 1s）', () => {
+  it('warn 期蓄势驻停（速度 0）；冲锋期全员同向 500px/s；硬直期速度 0；硬直结束不覆写', () => {
+    const ai = new FormationMemberAI();
+    const { ports, vel, reg } = makeMemberPorts();
+    const m = makeMember('m', 0, 0);
+    reg(m, 'm');
+    const input = () => groupInput('g', 'knights', 'engage', [[0, m]], { x: 100, y: 0 });
+    ai.onGroupEvent({ type: 'knights-charge-warn', groupId: 'g' }, 0);
+    ai.step(1 / 60, 0.01, [input()], ports); // 警告 0.6s 内：蓄势驻停
+    expect(vel[0]).toEqual({ id: 'm', vx: 0, vy: 0 });
+    ai.onGroupEvent({ type: 'knights-charge', groupId: 'g' }, 0.6);
+    ai.step(1 / 60, 0.7, [input()], ports); // 冲锋：600px @500px/s
+    expect(vel.find((v) => v.id === 'm' && v.vx === 500 && v.vy === 0)).toBeDefined();
+    ai.step(1 / 60, 1.9, [input()], ports); // 冲锋 1.2s 结束 → 硬直 1s（速度 0）
+    expect(vel.some((v) => v.id === 'm' && v.vx === 0 && v.vy === 0 && vel.indexOf(v) > 1)).toBe(true);
+    const writes = vel.length;
+    ai.step(1 / 60, 3.0, [input()], ports); // 硬直结束 → 不覆写（默认追踪交还 updateMovement）
+    expect(vel.length).toBe(writes);
+  });
+
+  it('跟踪 0.3s 后锁向：跟踪窗内玩家移动改向、锁定后玩家移动不改向（直线冲锋可躲）', () => {
+    const ai = new FormationMemberAI();
+    const { ports, vel, reg } = makeMemberPorts();
+    const m = makeMember('m', 0, 0);
+    reg(m, 'm');
+    ai.onGroupEvent({ type: 'knights-charge-warn', groupId: 'g' }, 0);
+    // 跟踪窗（<0.3s）：玩家 (100,0) → dir (1,0)；再 (0,100) → dir (0,1)
+    ai.step(1 / 60, 0.01, [groupInput('g', 'knights', 'engage', [[0, m]], { x: 100, y: 0 })], ports);
+    ai.step(1 / 60, 0.1, [groupInput('g', 'knights', 'engage', [[0, m]], { x: 0, y: 100 })], ports);
+    // 跟踪窗过（0.3s 锚）：玩家回 (100,0) 不再改向 → 锁定 dir (0,1)
+    expect(KNIGHTS_TRACK_SECONDS).toBe(0.3);
+    ai.step(1 / 60, 0.5, [groupInput('g', 'knights', 'engage', [[0, m]], { x: 100, y: 0 })], ports);
+    ai.onGroupEvent({ type: 'knights-charge', groupId: 'g' }, 0.6);
+    ai.step(1 / 60, 0.7, [groupInput('g', 'knights', 'engage', [[0, m]], { x: 100, y: 0 })], ports);
+    const v = vel.find((x) => x.id === 'm' && x.vx === 0 && x.vy === KNIGHTS_CONFIG_SPEED())!;
+    expect(v).toBeDefined(); // 锁向 = 最后跟踪方向 (0,1) × 500
+  });
+});
+
+/** KNIGHTS_CONFIG.chargeSpeed 访问助手（避免顶层 import 常量与锚重复） */
+function KNIGHTS_CONFIG_SPEED(): number {
+  return 500; // §③-6 阵 8 锚：600px @500px/s
+}
+
+describe('P1-12 血旗斩旗溃散（applyBannerRout：slow 50% / 3s）', () => {
+  it('空状态 → slow { value 0.5, until now+3, source banner-rout }（status-engine 通道）', () => {
+    const cc = { stun: null, slow: null, vulnerable: null, stunIcdReadyAt: 0 };
+    const next = applyBannerRout(cc, 10);
+    expect(next.slow).not.toBeNull();
+    expect(next.slow!.value).toBe(0.5);
+    expect(next.slow!.until).toBeCloseTo(13, 6);
+    expect(next.slow!.source).toBe('banner-rout');
+  });
+
+  it('叠加规则走引擎：已有更强减速（0.7）不被 0.5 覆盖', () => {
+    const cc = { stun: null, slow: { until: 100, value: 0.7, source: 'other' }, vulnerable: null, stunIcdReadyAt: 0 };
+    const next = applyBannerRout(cc, 10);
+    expect(next.slow!.value).toBe(0.7);
+    expect(next.slow!.until).toBe(100);
+  });
+
+  it('黑板链路：插旗期受击 ≥1 → banner-broken + dissolved(cause banner-broken)', () => {
+    const board = createGroupBlackboard('g_b', 'f_blood_banner', 'banner', [
+      { slotIndex: 0, enemyId: 'enemy_g2_1', role: 'body', alive: true },
+    ]);
+    const events = [...notifyMemberDamaged(board, 0), ...stepGroupBlackboard(board, 0.1, { now: 0 })];
+    expect(events.some((e) => e.type === 'banner-broken')).toBe(true);
+    const d = events.find((e) => e.type === 'dissolved');
+    expect(d && 'cause' in d && d.cause === 'banner-broken').toBe(true);
+    expect(d && 'formationId' in d && d.formationId === 'f_blood_banner').toBe(true);
+    expect(board.dissolved).toBe(true);
+  });
+});
+
+// ============================================================================
+// P1-13 方阵解散口径（dissolved cause + rewardGemCluster + KNIGHT_ESCORT_ELITE）
+// ============================================================================
+
+function fakeGroupEntity(x: number, y: number): GroupMemberLike {
+  return { x, y, hp: 10, maxHp: 10, cc: { stun: null, slow: null, vulnerable: null, stunIcdReadyAt: 0 } };
+}
+
+describe('P1-13 dissolved 事件口径（cause + formationId + 结算锚）', () => {
+  it('全灭（wiped）：最后阵亡成员位置随事件增补（宝石簇结算锚）', () => {
+    const rt = new FormationRuntime();
+    rt.registerGroup('g_w', 'f_hunting_ambush', [
+      { slotIndex: 0, enemyId: 'enemy_g1_1', role: 'body', alive: true },
+      { slotIndex: 1, enemyId: 'enemy_g1_1', role: 'body', alive: true },
+    ]);
+    rt.bindMember('g_w', 0, fakeGroupEntity(100, 50), () => {});
+    rt.bindMember('g_w', 1, fakeGroupEntity(140, 60), () => {});
+    expect(rt.onMemberKilled('g_w', 0)).toHaveLength(0); // 未全灭
+    const events = rt.onMemberKilled('g_w', 1);
+    const d = events.find((e) => e.type === 'dissolved');
+    expect(d).toBeDefined();
+    expect(d && 'cause' in d && d.cause === 'wiped').toBe(true);
+    expect(d && 'x' in d && d.x === 140 && d.y === 60).toBe(true);
+    expect(rt.groupCount).toBe(0); // 自动注销
+  });
+
+  it('宝藏护卫到点离场（depart）：不掉宝石簇口径；外部清场（external）', () => {
+    const rt = new FormationRuntime();
+    rt.registerGroup('g_t', 'f_treasure_guard', [
+      { slotIndex: 0, enemyId: 'enemy_g1_1', role: 'carrier', alive: true },
+      { slotIndex: 1, enemyId: 'enemy_g1_1', role: 'carrier', alive: true },
+      { slotIndex: 2, enemyId: 'enemy_g1_1', role: 'escort', alive: true },
+    ]);
+    rt.bindMember('g_t', 0, fakeGroupEntity(0, 0), () => {});
+    rt.bindMember('g_t', 1, fakeGroupEntity(10, 0), () => {});
+    rt.bindMember('g_t', 2, fakeGroupEntity(20, 0), () => {});
+    rt.onMemberKilled('g_t', 0);
+    rt.onMemberKilled('g_t', 1); // 驮尸全灭 → aggro（escort 仍活，不解散）
+    rt.stepAll(0.1, 0);
+    const events = rt.stepAll(TREASURE_AGGRO_SECONDS + 0.1, 10); // 追击到点 → depart
+    const d = events.find((e) => e.type === 'dissolved');
+    expect(d && 'cause' in d && d.cause === 'depart').toBe(true);
+    expect(rt.groupCount).toBe(0);
+    // 外部清场
+    rt.registerGroup('g_x', 'f_hunt_pack', [{ slotIndex: 0, enemyId: 'enemy_g1_1', role: 'body', alive: true }]);
+    const ev2 = rt.dissolve('g_x');
+    expect(ev2[0] && 'cause' in ev2[0] && ev2[0].cause === 'external').toBe(true);
+  });
+
+  it('成员实体访问（memberEntities）：本体 + 召唤增援均可枚举（斩旗溃散消费面）', () => {
+    const rt = new FormationRuntime();
+    rt.registerGroup('g_m', 'f_blood_banner', [{ slotIndex: 0, enemyId: 'enemy_g2_1', role: 'body', alive: true }]);
+    rt.bindMember('g_m', 0, fakeGroupEntity(1, 2), () => {});
+    rt.bindSummon('g_m', fakeGroupEntity(3, 4)); // noXp 增援
+    expect(rt.memberEntities('g_m')).toHaveLength(2);
+    expect(rt.groupPosition('g_m')).toEqual({ x: 1, y: 2 });
+    // banner-broken 路径：黑板置 dissolved 但注销延迟（溃散需访问成员实体）→ purgeDissolved 清理
+    notifyMemberDamaged(rt.boardFor('g_m')!, 0);
+    rt.stepAll(0.1, 0);
+    expect(rt.boardFor('g_m')!.dissolved).toBe(true);
+    expect(rt.groupCount).toBe(1); // 消费窗内保留
+    rt.purgeDissolved();
+    expect(rt.groupCount).toBe(0);
+  });
+});
+
+describe('P1-13 宝石簇拆分与伴随精英预约判据（纯函数）', () => {
+  it('splitGemCluster：和恒等于 total、3~5 颗、每颗 ≥1', () => {
+    for (const total of [5, 7, 10, 15, 20]) {
+      for (const rng of [() => 0, () => 0.5, () => 0.99]) {
+        const parts = splitGemCluster(total, rng);
+        expect(parts.length).toBeGreaterThanOrEqual(3);
+        expect(parts.length).toBeLessThanOrEqual(5);
+        expect(parts.reduce((s, v) => s + v, 0)).toBe(total);
+        for (const v of parts) expect(v).toBeGreaterThanOrEqual(1);
+      }
+    }
+  });
+
+  it('rewardGemCluster 锚：普通阵 [5,10] / 腐朽骑士团 [15,20]（完整击破高档）', () => {
+    expect(FORMATIONS.f_hunting_ambush.rewardGemCluster).toEqual([5, 10]);
+    expect(FORMATIONS.f_blood_banner.rewardGemCluster).toEqual([5, 10]);
+    expect(FORMATIONS.f_decayed_knights.rewardGemCluster).toEqual([15, 20]);
+  });
+
+  it('shouldReserveKnightEscort：仅骑士团 + 同屏无精英 + 无在途预约', () => {
+    expect(FORMATION_RULES.KNIGHT_ESCORT_ELITE).toBe(true);
+    expect(shouldReserveKnightEscort('f_decayed_knights', false, false)).toBe(true);
+    expect(shouldReserveKnightEscort('f_decayed_knights', true, false)).toBe(false); // 同屏已有精英
+    expect(shouldReserveKnightEscort('f_decayed_knights', false, true)).toBe(false); // 预约在途
+    expect(shouldReserveKnightEscort('f_blood_banner', false, false)).toBe(false); // 非高威胁阵
+    expect(shouldReserveKnightEscort('f_hunting_ambush', false, false)).toBe(false);
   });
 });

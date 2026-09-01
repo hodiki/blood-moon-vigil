@@ -48,6 +48,33 @@ export class FormationRuntime {
     return this.groups.size;
   }
 
+  /** 在场全部组 ID（个体 AI 步进遍历；P1-12） */
+  activeGroupIds(): string[] {
+    return [...this.groups.keys()];
+  }
+
+  /** 组内已绑定实体访问（个体 AI 消费；含召唤增援——数组下标即槽位） */
+  memberEntities(groupId: string): Array<{ slotIndex: number; entity: GroupMemberLike }> {
+    const entry = this.groups.get(groupId);
+    if (!entry) return [];
+    const out: Array<{ slotIndex: number; entity: GroupMemberLike }> = [];
+    entry.members.forEach((entity, slotIndex) => {
+      if (entity) out.push({ slotIndex, entity });
+    });
+    return out;
+  }
+
+  /** 组内首个存活成员位置（解散结算锚；无实体 → null） */
+  groupPosition(groupId: string): { x: number; y: number } | null {
+    const entry = this.groups.get(groupId);
+    if (!entry) return null;
+    for (const s of entry.board.members) {
+      const m = entry.members[s.slotIndex];
+      if (m && s.alive) return { x: m.x, y: m.y };
+    }
+    return null;
+  }
+
   boardFor(groupId: string): GroupBlackboard | undefined {
     return this.groups.get(groupId)?.board;
   }
@@ -74,13 +101,19 @@ export class FormationRuntime {
     return notifyMemberDamaged(entry.board, slotIndex);
   }
 
-  /** 成员击杀路由（成员槽置亡；全灭 → 解散 + 自动注销） */
+  /** 成员击杀路由（成员槽置亡；全灭 → 解散 + 自动注销；解散事件增补最后阵亡位置 = 宝石簇结算锚） */
   onMemberKilled(groupId: string, slotIndex: number): GroupEvent[] {
     const entry = this.groups.get(groupId);
     if (!entry) return [];
+    const last = entry.members[slotIndex];
     const events = notifyMemberKilled(entry.board, slotIndex);
     entry.members[slotIndex] = null; // 实体回收，解除引用
-    if (entry.board.dissolved) this.groups.delete(groupId);
+    if (entry.board.dissolved) {
+      this.groups.delete(groupId);
+      return events.map((ev) =>
+        ev.type === 'dissolved' && last ? { ...ev, x: last.x, y: last.y } : ev,
+      );
+    }
     return events;
   }
 
@@ -116,9 +149,10 @@ export class FormationRuntime {
         findHealTarget: (board: GroupBlackboard): number | null => findInjuredAlly(entry, board),
       };
       events.push(...stepGroupBlackboard(entry.board, dt, ctx));
-      // 到点离场 → 注销（宝藏护卫 depart；横穿 AI 属内容批 W-14）
+      // 到点离场 → 注销（宝藏护卫 depart；横穿 AI 属内容批 W-14）；解散事件增补离场位置
       if (entry.board.phase === 'depart') {
-        events.push({ type: 'dissolved', groupId });
+        const at = this.groupPosition(groupId);
+        events.push({ type: 'dissolved', groupId, formationId: entry.board.formationId, cause: 'depart', x: at?.x, y: at?.y });
         this.groups.delete(groupId);
       }
     }
@@ -131,7 +165,17 @@ export class FormationRuntime {
     if (!entry) return [];
     entry.board.dissolved = true;
     this.groups.delete(groupId);
-    return [{ type: 'dissolved', groupId }];
+    return [{ type: 'dissolved', groupId, formationId: entry.board.formationId, cause: 'external' }];
+  }
+
+  /**
+   * 已解散组黑板的残留清理（banner-broken 路径：黑板置 dissolved 但实体尚未消费完事件——
+   * 斩旗溃散需在事件消费口访问成员实体，故注销延迟到消费侧调用本方法）。
+   */
+  purgeDissolved(): void {
+    for (const [groupId, entry] of [...this.groups]) {
+      if (entry.board.dissolved) this.groups.delete(groupId);
+    }
   }
 
   /** 组内本体存活 body 数（追猎仪式触发判据；测试/遥测） */
