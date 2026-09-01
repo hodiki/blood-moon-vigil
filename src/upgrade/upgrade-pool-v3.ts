@@ -41,6 +41,8 @@ export interface UpgradePoolV3Context extends Omit<UpgradePoolV2Context, 'isEvol
   upgradeCount: number;
   /** P4 是否已取（单局 1 次） */
   derivativeUpgradeTaken: boolean;
+  /** P1-11 Q-s4 双灯并祀：P4 卡前移（绕过 8~14 窗口直接进池；仍受「未取」约束） */
+  derivativeUpgradePrereq?: boolean;
 }
 
 /** 质变卡 id（mc_<w>_<order>） */
@@ -112,11 +114,13 @@ export function buildV3Candidates(
       continue;
     }
     // 主动技强化：仅当前衍生技那张（NW-4）；P0-8 修复：窗口外（P4_WINDOW 8~14）直接不进池——
-    // 不只靠 P4 席位兜底，否则错过窗口后卡仍可随机进三选一，违反 GDD「错过本局不再出现」
+    // 不只靠 P4 席位兜底，否则错过窗口后卡仍可随机进三选一，违反 GDD「错过本局不再出现」。
+    // P1-11 Q-s4 双灯并祀：旗激活时 P4 卡前移（绕过窗口；「已取」约束不变）
     if (id.startsWith('up_d_')) {
       const [p4Lo, p4Hi] = UPGRADE_POOL_V3_RULES.P4_WINDOW;
+      const bypassWindow = ctx.derivativeUpgradePrereq === true;
       const inP4Window = ctx.upgradeCount >= p4Lo && ctx.upgradeCount <= p4Hi;
-      if (DERIVATIVE_UPGRADE_MAP[ctx.derivativeId] === id && !ctx.derivativeUpgradeTaken && inP4Window) {
+      if (DERIVATIVE_UPGRADE_MAP[ctx.derivativeId] === id && !ctx.derivativeUpgradeTaken && (bypassWindow || inP4Window)) {
         pool.push({ kind: 'upgrade', upgradeId: id, item, weight: 1 });
       }
       continue;
@@ -190,7 +194,8 @@ export function pickP2KeyCandidate(
 function p4Candidate(ctx: UpgradePoolV3Context, pool: UpgradeV2Candidate[]): UpgradeV2Candidate | null {
   const [lo, hi] = UPGRADE_POOL_V3_RULES.P4_WINDOW;
   if (ctx.derivativeUpgradeTaken) return null;
-  if (ctx.upgradeCount < lo || ctx.upgradeCount > hi) return null; // 窗口外不出现
+  // P1-11 Q-s4：P4 卡前移——绕过 8~14 窗口（「已取」约束不变）
+  if (!ctx.derivativeUpgradePrereq && (ctx.upgradeCount < lo || ctx.upgradeCount > hi)) return null; // 窗口外不出现
   const id = DERIVATIVE_UPGRADE_MAP[ctx.derivativeId];
   return pool.find((c) => c.upgradeId === id) ?? null;
 }

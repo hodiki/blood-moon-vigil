@@ -27,6 +27,8 @@ export interface WeaponUpdateContext {
   damageMultiplier: number;
   /** B4-W3 钥被动派生（key_nail 重击类冷却 ×0.92 等；未装配 = undefined） */
   keyPassives?: import('@/upgrade/upgrade-apply-v2').KeyPassiveState;
+  /** P1-8/P1-9 天赋攻速+冷却 与 Q-s1 窗口的区间乘区（发射间隔 ×该值；<1 更快；未传 = 1） */
+  intervalMultiplier?: number;
 }
 
 /** 武器行为统一接口（gdd-weapons-v2 §3.0 / E2-S1）

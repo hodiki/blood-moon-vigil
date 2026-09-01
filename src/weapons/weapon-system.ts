@@ -14,7 +14,7 @@
 import Phaser from 'phaser';
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
-import { WEAPONS, type WeaponId } from '@/config/balance';
+import { WEAPONS, TALENT_COOLDOWN_FLOOR, type WeaponId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
 import { splitSubDamageMultiplier } from '@/upgrade/upgrade-apply';
@@ -70,6 +70,8 @@ export class MissileWeaponBehavior implements WeaponBehavior {
   private split = 0;
   private pierce = 0;
   private cooldownMultiplier = 1;
+  /** P1-8 天赋区间乘区（攻速 +x% 与冷却 −x% 合成；冷却侧受 TALENT_COOLDOWN_FLOOR 下限保护） */
+  private talentIntervalMult = 1;
   /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0） */
   private focusedCooldownMultiplier = 1;
   /** E4-S4 钥被动（key_tome 冷却 ×0.9 / key_silver 伤害 ×1.12；key_scope 射程对追踪弹不接线——
@@ -110,6 +112,12 @@ export class MissileWeaponBehavior implements WeaponBehavior {
     this.cooldownMultiplier = multiplier;
   }
 
+  /** P1-8 滤月余辉属性区间乘区：攻速 +x%（间隔 ÷(1+x)）与冷却 −x%（下限 TALENT_COOLDOWN_FLOOR）合成 */
+  applyTalentIntervals(attackSpeedPct: number, cooldownPct: number): void {
+    const cooldownMult = Math.max(1 - cooldownPct, TALENT_COOLDOWN_FLOOR);
+    this.talentIntervalMult = cooldownMult / (1 + attackSpeedPct);
+  }
+
   /** M3-DESIGN-1 专精疾射：独立冷却乘区（×0.88^stack；非目标 1.0；乘法叠加于全局冷却） */
   applyFocusedCooldown(multiplier: number): void {
     this.focusedCooldownMultiplier = multiplier;
@@ -132,7 +140,8 @@ export class MissileWeaponBehavior implements WeaponBehavior {
     const mult = ctx.damageMultiplier;
     this.cooldown = tickCooldown(this.cooldown, ctx.dt);
     if (isCooldownReady(this.cooldown)) {
-      this.cooldown = this.missileCooldownSeconds() * this.cooldownMultiplier * this.focusedCooldownMultiplier * this.keyCooldownMult;
+      // P1-8/P1-9：talentIntervalMult（天赋攻速/冷却）× ctx.intervalMultiplier（Q-s1 30s 窗口）
+      this.cooldown = this.missileCooldownSeconds() * this.cooldownMultiplier * this.focusedCooldownMultiplier * this.keyCooldownMult * this.talentIntervalMult * (ctx.intervalMultiplier ?? 1);
       this.tryFireMissile(mult, ctx.enemies);
     }
     const homingCtx = { enemies: ctx.enemies as readonly TargetLike[] };
@@ -306,6 +315,8 @@ export class WeaponSystem {
   readonly evolution = new EvolutionState();
   /** E4-S4：被动钥数值效果派生（key_* 7；超武合成条件 2 由 UpgradeState.hasKey 提供） */
   private keyPassives: KeyPassiveState = emptyKeyPassiveState();
+  /** P1-8 天赋区间乘区（冷却下限保护 / 攻速除法合成；供 ctx.intervalMultiplier 基值） */
+  private talentIntervalMult = 1;
 
   constructor(
     scene: Phaser.Scene,
@@ -434,6 +445,13 @@ export class WeaponSystem {
     this.shockwave.setCooldownMultiplier(multiplier);
   }
 
+  /** P1-8 滤月余辉天赋区间乘区：攻速 +x% / 冷却 −x%（冷却侧下限保护）——通武主力（飞弹/冲击波）消费 */
+  applyTalentIntervals(attackSpeedPct: number, cooldownPct: number): void {
+    const cooldownMult = Math.max(1 - cooldownPct, TALENT_COOLDOWN_FLOOR);
+    this.talentIntervalMult = cooldownMult / (1 + attackSpeedPct);
+    this.missile.applyTalentIntervals(attackSpeedPct, cooldownPct);
+  }
+
   /** E2-S8：武器类强化写回广播（up_w_a1~d3）—— 由 upgrade-apply 调用 */
   applyClassUpgrade(stacks: { a1: number; a2: number; a3: number; b1: number; b2: number; b3: number; c1: number; c2: number; c3: number; d1: number; d2: number; d3: number }): void {
     this.registry.applyClassUpgrade(stacks);
@@ -543,7 +561,7 @@ export class WeaponSystem {
     return SUPER_WEAPON_EVOLUTION[weaponId] !== undefined && classStacks >= 3 && hasKey;
   }
 
-  update(dt: number, now: number, windowDamageMult = 1): void {
+  update(dt: number, now: number, windowDamageMult = 1, windowIntervalMult = 1): void {
     this.setNow(now);
     this.refreshEnemies(now);
     const mult = this.player.stats.totalDamageMultiplier * windowDamageMult; // B5-W3 Q-s1 窗口乘区（独立结算）
@@ -555,6 +573,7 @@ export class WeaponSystem {
       enemies: this.activeEnemies,
       damageMultiplier: mult,
       keyPassives: this.keyPassives,
+      intervalMultiplier: this.talentIntervalMult * windowIntervalMult, // P1-8 天赋 × P1-9 Q-s1 窗口
     };
     // 注册表统一遍历（既有 3 武器 + 新武器四类）
     this.registry.each((behavior) => behavior.update(ctx));

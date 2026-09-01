@@ -107,6 +107,8 @@ export class XpManager {
   private magnetRadiusBonus = 0;
   /** E4-S4 升级池 up_g_9：拾取半径附加 px（+40px ×2，与磁力叠加） */
   private pickupRadiusBonus = 0;
+  /** P1-8 滤月余辉经验获取乘区（1 + 天赋 xpGainPct；默认 1） */
+  private xpGainMult = 1;
   /** 跨阈值但尚未进入选卡流程的升级次数（大宝石一次连升） */
   private pendingLevelUps = 0;
 
@@ -163,8 +165,10 @@ export class XpManager {
    * 返回本次新增升级次数（0 或 ≥1）。
    */
   addXp(amount: number): number {
-    this.xp += amount;
-    this.xpGained += amount; // M3 真机埋点：拾取累计（含升级消耗，口径 = 拾取总量）
+    // P1-8 滤月余辉经验获取 +x%（天赋 A-5/A-5Ⅱ）：实际入账 = 拾取量 × 乘区
+    const gained = amount * this.xpGainMult;
+    this.xp += gained;
+    this.xpGained += gained; // M3 真机埋点：拾取累计（含升级消耗，口径 = 有效获取总量）
     let ups = 0;
     while (this.xp >= needXp(this.level) && this.level < XP.MAX_LEVEL) {
       this.xp -= needXp(this.level);
@@ -173,6 +177,11 @@ export class XpManager {
       ups += 1;
     }
     return ups;
+  }
+
+  /** P1-8 天赋经验获取乘区（1 + xpGainPct；默认 1） */
+  setXpGainMultiplier(mult: number): void {
+    this.xpGainMult = mult;
   }
 
   /** 消费一个挂起升级并 emit level:up；无挂起返回 false（PlayScene 恢复 RUNNING 后调用） */

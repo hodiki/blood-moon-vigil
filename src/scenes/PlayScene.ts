@@ -239,6 +239,10 @@ export class PlayScene extends Phaser.Scene {
   private eliteOfferQueue = 0;
   /** Q-s1：开局窗口截止局时 s（-1 = 未点亮） */
   private treeS1UntilElapsed = -1;
+  /** P1-8：滤月余辉经验获取乘区（1 + 天赋 xpGainPct；applyTreeToStats 写入、XpManager 装配后应用） */
+  private treeXpGainMult = 1;
+  /** P1-11 Q-s4 双灯并祀：P4 卡前移旗（树应用写回） */
+  private treeS4Active = false;
   /** B6-W4 up_d_rage 失控边缘：累计延长 s（上限 3） */
   private rageExtraSeconds = 0;
   /** Q-s3：遗言余烬（首次 HP 归零事件 + 终局折算） */
@@ -405,6 +409,7 @@ export class PlayScene extends Phaser.Scene {
     this.treeEliteOffers = treeApp.mutations.eliteOffers;
     this.treeS3Active = treeApp.mutations.emberOnDeath;
     this.treeS1UntilElapsed = treeApp.mutations.openingWindow ? 30 : -1;
+    this.treeS4Active = treeApp.mutations.derivativeUpgradePrereq; // P1-11 Q-s4：P4 卡前移旗
     // B6-W5 树节奏遥测：质变节点点亮数（mutation flags 真值计数）
     this.stats.setTreeMutationCount(Object.values(treeApp.mutations).filter(Boolean).length);
     // B5-W3 复活判定序挂钩（gdd-talent-tree §⑥-3；Q-c/Q-e 判定序最低优先级）
@@ -448,6 +453,7 @@ export class PlayScene extends Phaser.Scene {
 
     // E3 成长闭环：经验 / 升级池 / 覆盖层
     this.xp = new XpManager(this.gemPool, this.player);
+    this.xp.setXpGainMultiplier(this.treeXpGainMult); // P1-8：applyTreeToStats 早于 XpManager 装配，此处补挂乘区
     // P1-13 F-6：方阵完整击破宝石簇（普通阵 5~10 / 骑士团 15~20；拆 3~5 颗散布落地）
     this.spawner.onFormationReward = (x, y, lo, hi) => {
       const total = lo + Math.floor(Math.random() * (hi - lo + 1));
@@ -799,7 +805,7 @@ export class PlayScene extends Phaser.Scene {
       this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossZones, this.cfg.isMobile ? 1 : 0, this.bloodstains, lungeTel);
     }
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
-    this.weaponSystem.update(dt, now, this.s1WindowDamageMult());
+    this.weaponSystem.update(dt, now, this.s1WindowDamageMult(), this.s1WindowIntervalMult());
     // 5) 经验宝石磁吸/拾取（E3-S1）
     this.xp.update(dt);
     // 5b) M3 治疗道具拾取（精英/Boss 保底；拾取即治疗 + emit）
@@ -1487,6 +1493,12 @@ export class PlayScene extends Phaser.Scene {
     return this.spawner.elapsedSeconds <= this.treeS1UntilElapsed ? 1.2 : 1;
   }
 
+  /** P1-9 Q-s1 银炉预热：窗口内发射间隔 ÷1.2（攻速 +20%），与天赋区间乘区在 ctx 内合成 */
+  private s1WindowIntervalMult(): number {
+    if (this.treeS1UntilElapsed < 0) return 1;
+    return this.spawner.elapsedSeconds <= this.treeS1UntilElapsed ? 1 / 1.2 : 1;
+  }
+
   /** B5-W2 结算页「余辉行」数据接口（B6 渲染）：s3 终局折算 +2 余辉 */
   getTreeMeritBonus(): number {
     return this.treeS3MeritBonus;
@@ -1537,6 +1549,8 @@ export class PlayScene extends Phaser.Scene {
       upgradeCount: this.upgradeChoiceCount,
       // P0-8 修复：栈里存的是升级 id（up_d_*），不是技能 id（dv_*）——经 DERIVATIVE_UPGRADE_MAP 换算后查询
       derivativeUpgradeTaken: this.upgradeState.stackOf(DERIVATIVE_UPGRADE_MAP[EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId]]) >= 1,
+      // P1-11 Q-s4 双灯并祀：P4 卡前移旗（树应用写回）
+      derivativeUpgradePrereq: this.treeS4Active,
     };
   }
 
@@ -1574,7 +1588,9 @@ export class PlayScene extends Phaser.Scene {
     if (a.magnetRadius > 0) stats.magnetRadiusBonus += a.magnetRadius;
     if (a.pickupRadius > 0) stats.pickupRadiusBonus += a.pickupRadius;
     if (a.healEfficiencyPct > 0) stats.healBoostMultiplier += a.healEfficiencyPct;
-    // 属性攻速/冷却机制实装登记：折算已计入三桶断言（模拟批次校准）；B6 全局乘区接线
+    // P1-8：攻速/冷却 → WeaponSystem 区间乘区（冷却下限 TALENT_COOLDOWN_FLOOR）；XP → 延迟乘区（XpManager 装配在后）
+    if (a.attackSpeedPct > 0 || a.cooldownPct > 0) this.weaponSystem.applyTalentIntervals(a.attackSpeedPct, a.cooldownPct);
+    this.treeXpGainMult = 1 + a.xpGainPct;
   }
 
   /**
