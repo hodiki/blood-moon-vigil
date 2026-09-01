@@ -205,24 +205,33 @@ function p4Candidate(ctx: UpgradePoolV3Context, pool: UpgradeV2Candidate[]): Upg
  * 每轮三选一保证 1 张保底卡占 1 席；多项同席加权抽样（random 注入）。
  * P1~P5 全空 → null（调用方回退 up_g_1）。
  */
+export function matchGuaranteeSeatV3(
+  state: { hasKey(keyId: string): boolean; classUpgradeTotalFor(cls: WeaponClass): number },
+  ctx: UpgradePoolV3Context,
+  pool: UpgradeV2Candidate[],
+  random: () => number = Math.random,
+): { candidate: UpgradeV2Candidate; seat: 'P1' | 'P2' | 'P3' | 'P4' | 'P5' } | null {
+  const p1 = p1Candidate(ctx, pool);
+  if (p1) return { candidate: p1, seat: 'P1' };
+  const p2 = pickP2KeyCandidate(state, ctx, pool);
+  if (p2) return { candidate: p2, seat: 'P2' };
+  // P3 已拥有通武强化（非解锁变体、未满层；通用卡 up_w_g* 为全局类目不占 P3——§4.4 通用行口径）
+  const p3 = weightedPick(pool.filter((c) => c.upgradeId!.startsWith('up_w_') && !c.upgradeId!.startsWith('up_w_g') && !c.unlockVariant), random);
+  if (p3) return { candidate: p3, seat: 'P3' };
+  const p4 = p4Candidate(ctx, pool);
+  if (p4) return { candidate: p4, seat: 'P4' };
+  const p5 = weightedPick(pool.filter((c) => !!c.unlockVariant), random);
+  if (p5) return { candidate: p5, seat: 'P5' };
+  return null;
+}
+
 export function pickGuaranteeCandidateV3(
   state: { hasKey(keyId: string): boolean; classUpgradeTotalFor(cls: WeaponClass): number },
   ctx: UpgradePoolV3Context,
   pool: UpgradeV2Candidate[],
   random: () => number = Math.random,
 ): UpgradeV2Candidate | null {
-  const p1 = p1Candidate(ctx, pool);
-  if (p1) return p1;
-  const p2 = pickP2KeyCandidate(state, ctx, pool);
-  if (p2) return p2;
-  // P3 已拥有通武强化（非解锁变体、未满层；通用卡 up_w_g* 为全局类目不占 P3——§4.4 通用行口径）
-  const p3 = weightedPick(pool.filter((c) => c.upgradeId!.startsWith('up_w_') && !c.upgradeId!.startsWith('up_w_g') && !c.unlockVariant), random);
-  if (p3) return p3;
-  const p4 = p4Candidate(ctx, pool);
-  if (p4) return p4;
-  const p5 = weightedPick(pool.filter((c) => !!c.unlockVariant), random);
-  if (p5) return p5;
-  return null;
+  return matchGuaranteeSeatV3(state, ctx, pool, random)?.candidate ?? null;
 }
 
 function weightedPick(candidates: UpgradeV2Candidate[], random: () => number): UpgradeV2Candidate | null {
@@ -261,10 +270,11 @@ export function rollThreeV3(
   const picks: UpgradeV2Option[] = [];
   const remaining = [...pool];
 
-  const guarantee = pickGuaranteeCandidateV3(state, ctx, pool, random);
+  const guarantee = matchGuaranteeSeatV3(state, ctx, pool, random);
   if (guarantee) {
-    picks.push({ ...optionFromCandidate(guarantee), related: true }); // 保底卡恒 build 相关
-    const gi = remaining.findIndex((c) => c === guarantee);
+    // 保底卡恒 build 相关；P2-2：席位号透传（升级卡角标 P1~P5 明示）
+    picks.push({ ...optionFromCandidate(guarantee.candidate), related: true, seat: guarantee.seat });
+    const gi = remaining.findIndex((c) => c === guarantee.candidate);
     if (gi >= 0) remaining.splice(gi, 1);
   }
 

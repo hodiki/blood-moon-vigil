@@ -138,7 +138,10 @@ export class LevelUpOverlay {
       const iconInner =
         `<div class="bmv-upgrade-icon bmv-v2-icon"><span class="bmv-v2-icon-text">${escapeHtml(option.effectText)}</span>${star ? '<div class="bmv-star">' + star + '</div>' : ''}</div>`;
       // 席位角标（P1~P5 保底席位命中 = related；gdd-talent-tree §⑧）+ 卡类徽记（id 前缀映射）
-      const seatBadge = option.related ? '<div class="bmv-seat-badge">保底</div>' : '';
+      // P2-2（NV-REVIEW-FIX-F）：按席位号明示「P1 保底」…「P5 保底」，替代泛「保底」
+      const seatBadge = option.related
+        ? `<div class="bmv-seat-badge">${option.seat ? `${option.seat} 保底` : '保底'}</div>`
+        : '';
       const category = cardCategoryBadge(option.upgradeId);
       const catBadge = category ? `<div class="bmv-cat-badge">${escapeHtml(category)}</div>` : '';
       card.innerHTML = `

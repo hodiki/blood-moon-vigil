@@ -79,6 +79,11 @@ export interface UpgradeV2Option {
    * rollThreeV2 按保底席位判定写回；RunStats.recordUpgradeOffered 统计 relatedCardShare。
    */
   related?: boolean;
+  /**
+   * P2-2（NV-REVIEW-FIX-F）：保底席位号（P1~P5，gdd-upgrade-pool-v3 §⑧-3 裁决序）。
+   * rollThreeV3 保底命中时写回（v3）；v2 旧轨不写。升级卡席位角标按此明示，替代泛「保底」。
+   */
+  seat?: 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
 }
 
 /** 标签 → 是否通过（仅当前角色 / 持有类 / 所有人） */

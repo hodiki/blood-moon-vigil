@@ -265,8 +265,8 @@ export const FORMATION_RULES = {
   /** 伴随生成：落地时周围普通生成权重瞬时 +20%（持续 10s 锚） */
   ACCOMPANY_WEIGHT_BOOST: 0.2,
   ACCOMPANY_DURATION_SECONDS: 10,
-  /** 每局次数锚（观察项 S-8；不作硬上限） */
-  RUNS_PER_GAME_ANCHOR: [4, 7] as const,
+  /** 每局次数锚（观察项 S-8；不作硬上限）。P2-6（NV-REVIEW-FIX-F）：对齐 GDD v1.1「3~4」 */
+  RUNS_PER_GAME_ANCHOR: [3, 4] as const,
   /** 高威胁阵（骑士团）伴随精英预约：落地时同屏无精英 → 预约 1 只（词缀互斥不适用本体） */
   KNIGHT_ESCORT_ELITE: true,
 } as const;

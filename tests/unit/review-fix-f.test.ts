@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ACTIVE_SKILLS } from '@/config/balance';
+import type { UpgradePoolV3Context } from '@/upgrade/upgrade-pool-v3';
 
 /**
  * NV-REVIEW-FIX-F W-F2：双轨隔离收口（EG-2 归档不删）不可达断言。
@@ -125,5 +126,91 @@ describe('W-F3 BUG-6 音频：unlock 失败后手势常驻节流 resume', () => 
     expect(s).toContain("window.addEventListener('keydown', tryResume, { passive: true })");
     expect(s).toContain('< 800'); // 节流窗口
     expect(s).toContain('this.uninstallGestureRetry()'); // destroy 拆装
+  });
+});
+
+// —— W-F4 P2-6：方阵局内次数锚对齐 GDD v1.1 ——
+
+describe('W-F4 P2-6 方阵每局次数锚 [4,7] → [3,4]（GDD v1.1）', () => {
+  it('FORMATION_RULES.RUNS_PER_GAME_ANCHOR = [3, 4]', async () => {
+    const { FORMATION_RULES } = await import('@/config/balance');
+    expect(FORMATION_RULES.RUNS_PER_GAME_ANCHOR).toEqual([3, 4]);
+  });
+});
+
+// —— W-F4 P2-2：升级卡席位角标 P1~P5 明示 ——
+
+describe('W-F4 P2-2 保底席位号透传与角标明示', () => {
+  it('rollThreeV3：P1 席位命中 → 选项带 seat="P1"（30~60s 窗口 + 质变卡 1 未取）', async () => {
+    const { rollThreeV3 } = await import('@/upgrade/upgrade-pool-v3');
+    const { UpgradeState } = await import('@/upgrade/upgrade-pool');
+    const ctx = {
+      heroId: 'hero_edmund',
+      ownedWeaponIds: ['wpn_a_1'],
+      runTimeSeconds: 45, // P1 窗口（30~60s）
+      exclusiveId: 'xw_lantern',
+      derivativeId: 'dv_revolver_burst',
+      takenMutationOrders: [],
+      upgradeCount: 1,
+      derivativeUpgradeTaken: false,
+    } as UpgradePoolV3Context;
+    const options = rollThreeV3(new UpgradeState(), ctx, () => 0.42);
+    expect(options.some((o) => o.seat === 'P1' && o.related)).toBe(true);
+  });
+
+  it('matchGuaranteeSeatV3：空池 → null（回退 up_g_1 路径，无席位号）', async () => {
+    const { matchGuaranteeSeatV3 } = await import('@/upgrade/upgrade-pool-v3');
+    const { UpgradeState } = await import('@/upgrade/upgrade-pool');
+    const ctx = {
+      heroId: 'hero_edmund',
+      ownedWeaponIds: [],
+      runTimeSeconds: 45,
+      exclusiveId: 'xw_lantern',
+      derivativeId: 'dv_revolver_burst',
+      takenMutationOrders: [],
+      upgradeCount: 1,
+      derivativeUpgradeTaken: false,
+    } as UpgradePoolV3Context;
+    expect(matchGuaranteeSeatV3(new UpgradeState(), ctx, [])).toBeNull();
+  });
+
+  it('levelup-overlay：席位角标按 P1~P5 明示（`${seat} 保底`），related 无席位回退「保底」', () => {
+    const s = srcOf('ui/levelup-overlay.ts');
+    expect(s).toContain('${option.seat ? `${option.seat} 保底` : \'保底\'}');
+  });
+});
+
+// —— W-F4：PlayScene 拆分后模块协作接线守卫（W-F1 回归护栏） ——
+
+describe('W-F4 模块协作：PlayScene × run/* 八模块装配接线', () => {
+  const MODULES = [
+    'BenchSmokeRunner',
+    'BossSkillConsumer',
+    'ExclusiveRunAssembler',
+    'RelicFieldRunner',
+    'UpgradeFlowController',
+    'DerivativeCastBridge',
+    'KillLootConsumer',
+    'TreeApplier',
+  ] as const;
+
+  it('八模块全部实例化且 attach 端口装配（端口注入 DI 模式一致）', () => {
+    const s = srcOf('scenes/PlayScene.ts');
+    for (const m of MODULES) {
+      expect(s.includes(`new ${m}(`), `PlayScene 缺少 ${m} 实例化`).toBe(true);
+      expect(s.includes('.attach({'), 'attach 端口块在位').toBe(true);
+    }
+    expect(s.includes(`new ${'TreeApplier'}()`)).toBe(true);
+  });
+
+  it('enemy:killed 事件经闭包转发至 KillLootConsumer（M7 后场景不再自持击杀逻辑）', () => {
+    const s = srcOf('scenes/PlayScene.ts');
+    expect(s).toContain('GameEvents.on(GameEvent.EnemyKilled, (args: unknown) => this.killLoot.onEnemyKilled(args), this)');
+    // 场景内不得残留搬移方法体（击杀消费/图鉴功绩计数/预警/宝箱）
+    expect(s.includes('private onEnemyKilled(')).toBe(false);
+    expect(s.includes('private dropRareChest(')).toBe(false);
+    expect(s.includes('private onTankWarning(')).toBe(false);
+    expect(s.includes('private judgePlayerRevive(')).toBe(false);
+    expect(s.includes('private applyTreeToStats(')).toBe(false);
   });
 });
