@@ -111,9 +111,12 @@ export function buildV3Candidates(
       }
       continue;
     }
-    // 主动技强化：仅当前衍生技那张（NW-4）
+    // 主动技强化：仅当前衍生技那张（NW-4）；P0-8 修复：窗口外（P4_WINDOW 8~14）直接不进池——
+    // 不只靠 P4 席位兜底，否则错过窗口后卡仍可随机进三选一，违反 GDD「错过本局不再出现」
     if (id.startsWith('up_d_')) {
-      if (DERIVATIVE_UPGRADE_MAP[ctx.derivativeId] === id && !ctx.derivativeUpgradeTaken) {
+      const [p4Lo, p4Hi] = UPGRADE_POOL_V3_RULES.P4_WINDOW;
+      const inP4Window = ctx.upgradeCount >= p4Lo && ctx.upgradeCount <= p4Hi;
+      if (DERIVATIVE_UPGRADE_MAP[ctx.derivativeId] === id && !ctx.derivativeUpgradeTaken && inP4Window) {
         pool.push({ kind: 'upgrade', upgradeId: id, item, weight: 1 });
       }
       continue;

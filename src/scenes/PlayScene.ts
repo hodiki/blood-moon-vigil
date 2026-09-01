@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, DERIVATIVE_UPGRADE_MAP, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
 import { computeLoadout, defaultExclusiveFor } from '@/weapons/loadout';
 import { resonanceBadgeState } from '@/weapons/resonance/resonance-engine';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
@@ -1535,7 +1535,8 @@ export class PlayScene extends Phaser.Scene {
       derivativeId: EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId],
       takenMutationOrders: this.takenMutationOrders(),
       upgradeCount: this.upgradeChoiceCount,
-      derivativeUpgradeTaken: this.upgradeState.stackOf(EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId]) >= 1,
+      // P0-8 修复：栈里存的是升级 id（up_d_*），不是技能 id（dv_*）——经 DERIVATIVE_UPGRADE_MAP 换算后查询
+      derivativeUpgradeTaken: this.upgradeState.stackOf(DERIVATIVE_UPGRADE_MAP[EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId]]) >= 1,
     };
   }
 
@@ -1698,7 +1699,9 @@ export class PlayScene extends Phaser.Scene {
       takeCard2(this.mutationPipeline, this.spawner.elapsedSeconds);
       this.stats.recordMutationTaken(2, this.spawner.elapsedSeconds);
     } else {
-      onUpgradeChosenForPipeline(this.mutationPipeline, this.mutationChannels, this.spawner.elapsedSeconds);
+      // P1-2 修复：兜底 N 渠道的 granted 此前被丢弃——卡 2 就绪即发放（首精英渠道 L1256 同款消费）
+      const pipelineResult = onUpgradeChosenForPipeline(this.mutationPipeline, this.mutationChannels, this.spawner.elapsedSeconds);
+      if (pipelineResult.granted) this.applyMutationCard2();
     }
     const item = poolItemByIdV3(upId);
     if (item) this.stats.recordUpgradeChosen(0, item.name, this.spawner.elapsedSeconds);

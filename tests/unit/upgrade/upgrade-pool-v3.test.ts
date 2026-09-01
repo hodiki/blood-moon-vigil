@@ -103,14 +103,22 @@ describe('B3-W1 池构成（gdd-upgrade-pool-v3 §3.1/§4；验收判据 1/3）'
     }
   });
 
-  it('单局可选 ≤30：默认上下文构建候选池（9 全局 + 1 质变卡 + 8 钥 + 8 通武强化(持 A 类) + 1 主动技 = 27）', () => {
+  it('单局可选 ≤30：默认上下文（第 1 次升级，P4 窗外）构建候选池（9 全局 + 1 质变卡 + 8 钥 + 8 通武强化(持 A 类) + 0 主动技 = 26）', () => {
+    // P0-8 修复后：第 1 次升级在 P4 窗口（8~14）外，主动技强化卡不进池（GDD「错过本局不再出现」的前半段）
     const ctx = makeCtx({ ownedWeaponIds: ['wpn_a_1'] });
     const pool = buildV3Candidates(makeState(), ctx);
     expect(pool.length).toBeLessThanOrEqual(UPGRADE_POOL_V3_LIMITS.PER_RUN_MAX);
     // 持有 A 类（飞弹）→ A1/A2 以强化形态出现；B/C/D 未持有但有可解锁武器 → 解锁变体 6 项 + 通用 2
-    expect(pool.length).toBe(9 + 1 + 8 + (2 + 6 + 2) + 1);
+    expect(pool.length).toBe(9 + 1 + 8 + (2 + 6 + 2) + 0);
     // 卡 2 不进三选一（赠送制，验收判据 4）
     expect(pool.some((c) => c.upgradeId === 'mc_lantern_2')).toBe(false);
+  });
+
+  it('单局可选 ≤30：P4 窗口内（第 10 次升级）候选池含主动技卡（9+1+8+10+1 = 29）', () => {
+    const ctx = makeCtx({ ownedWeaponIds: ['wpn_a_1'], upgradeCount: 10 });
+    const pool = buildV3Candidates(makeState(), ctx);
+    expect(pool.length).toBeLessThanOrEqual(UPGRADE_POOL_V3_LIMITS.PER_RUN_MAX);
+    expect(pool.length).toBe(9 + 1 + 8 + (2 + 6 + 2) + 1);
   });
 
   it('非当前专武质变卡不入池（反例红线）', () => {
@@ -352,5 +360,35 @@ describe('B3-W4 写回（v3 扩展层）', () => {
     applyUpgradeByIdV3(state, targets, 'key_nail', ctx);
     expect(keyCalls[0]?.rangeMult).toBeCloseTo(1.21); // 钥派生（无射程钥 =1）× 通用强化 1.21（两层 g1，applyV3 折叠）
     expect(keyCalls[0]?.heavyCooldownMult).toBeCloseTo(0.92); // 葬仪铁钉独立字段（重击类消费留 B4）
+  });
+});
+
+describe('NV-REVIEW-FIX P0-8：P4 卡 id 修正与窗口外剔除（项目审查结论 §4）', () => {
+  const upDRevolver = DERIVATIVE_UPGRADE_MAP['dv_revolver_burst']; // 'up_d_revolver'
+
+  it('P4 卡已取（derivativeUpgradeTaken=true）→ 候选池不含 up_d_*（P4 席位与随机池双闸）', () => {
+    const pool = buildV3Candidates(makeState(), makeCtx({ derivativeUpgradeTaken: true, upgradeCount: 10 }));
+    expect(pool.some((c) => c.upgradeId === upDRevolver)).toBe(false);
+  });
+
+  it('upgradeCount 超窗（>14）且未取 → 候选池不含 up_d_*（错过本局不再出现，不只靠 P4 席位）', () => {
+    const pool = buildV3Candidates(makeState(), makeCtx({ upgradeCount: 15 }));
+    expect(pool.some((c) => c.upgradeId === upDRevolver)).toBe(false);
+  });
+
+  it('窗口内（第 10 次升级）且未取 → 候选池含 up_d_*（防止过度剔除回归）', () => {
+    const pool = buildV3Candidates(makeState(), makeCtx({ upgradeCount: 10 }));
+    expect(pool.some((c) => c.upgradeId === upDRevolver)).toBe(true);
+  });
+
+  it('窗口边界：第 8 次与第 14 次在窗内，第 7 次与第 15 次在窗外', () => {
+    for (const count of [8, 14]) {
+      const pool = buildV3Candidates(makeState(), makeCtx({ upgradeCount: count }));
+      expect(pool.some((c) => c.upgradeId === upDRevolver)).toBe(true);
+    }
+    for (const count of [7, 15]) {
+      const pool = buildV3Candidates(makeState(), makeCtx({ upgradeCount: count }));
+      expect(pool.some((c) => c.upgradeId === upDRevolver)).toBe(false);
+    }
   });
 });
