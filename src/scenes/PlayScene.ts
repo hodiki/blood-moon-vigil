@@ -277,13 +277,9 @@ export class PlayScene extends Phaser.Scene {
     const treeApp = computeTreeApplication(treeLedger, this.pureInGame);
     this.treeApp = treeApp;
     this.treeApplier.attach({
-      player: () => this.player,
-      runStats: () => this.stats,
-      weaponSystem: () => this.weaponSystem,
-      exw: (id) => this.exw(id),
-      reviveCharges: () => this.treeReviveRemaining,
+      player: () => this.player, runStats: () => this.stats, weaponSystem: () => this.weaponSystem,
+      exw: (id) => this.exw(id), reviveCharges: () => this.treeReviveRemaining, s3Active: () => this.treeS3Active,
       spendReviveCharge: () => { this.treeReviveRemaining -= 1; },
-      s3Active: () => this.treeS3Active,
       dropGem: (xp, x, y) => this.xp.dropGem(xp, x, y),
     });
     this.treeApplier.applyToStats(treeApp);
@@ -549,8 +545,7 @@ export class PlayScene extends Phaser.Scene {
     // M3 序章屏（spec §3）：通用序章（n_prologue_common）+ 地图序章（按 mapId 选句），
     // 每屏 ≤3 句、固定 3s 自动进入、可点击跳过；初始 PROLOGUE 态 → 序章期间不开始计时/生成器
     // （update() RUNNING 短路保证 elapsedSeconds 恒 0）。完成后 → RUNNING + 开局横幅（C-1 开关）。
-    // BUG-4（P1-16 / NV-REVIEW-FIX-F）：自动推进 timer 改 Phaser Scene clock（随相位冻结/
-    // 场景销毁），替代 window.setTimeout；PROLOGUE 相位内 Esc 由序章消费（prologue-overlay）。
+    // BUG-4（P1-16）：序章 timer 改 Phaser clock（随相位冻结）；Esc 由序章消费
     this.prologue = createPrologueOverlay({
       isMobile: () => this.cfg.isMobile,
       clock: { delay: (ms, cb) => this.time.delayedCall(ms, cb) },
