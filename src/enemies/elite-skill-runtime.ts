@@ -14,6 +14,7 @@
 
 import {
   ELITE_SKILLS,
+  ELITE_SKILL_UNLOCK_SECONDS,
   eliteInterruptible,
   interruptCd,
   stoneWolfBroken,
@@ -97,8 +98,15 @@ interface EliteState {
 
 export class EliteSkillDirector {
   private states = new WeakMap<EliteEnemyLike, EliteState>();
+  /** P0-5 局时门控（runTimeSeconds < 180 精英不进 windup，只走厚血接触） */
+  private runTimeSeconds = Number.POSITIVE_INFINITY;
 
-  update(dt: number, now: number, player: { x: number; y: number }, elites: EliteEnemyLike[]): EliteSkillEvent[] {
+  /**
+   * P0-5：runTimeSeconds = 本局局时 s（spawner.elapsedSeconds；缺省 Infinity = 沙盘/测试不设门）。
+   * < 180 只走厚血接触；180s 前已在场的精英到点后下一次触发检查才进 windup（不追溯切形态）。
+   */
+  update(dt: number, now: number, player: { x: number; y: number }, elites: EliteEnemyLike[], runTimeSeconds = Number.POSITIVE_INFINITY): EliteSkillEvent[] {
+    this.runTimeSeconds = runTimeSeconds;
     const events: EliteSkillEvent[] = [];
     for (const elite of elites) {
       if (!elite.enemyId) continue;
@@ -308,6 +316,8 @@ export class EliteSkillDirector {
   }
 
   private enterWindup(elite: EliteEnemyLike, params: EliteSkillParams, state: EliteState, player: { x: number; y: number }): void {
+    // P0-5 技能门（轨③ 180s）：门内只走厚血接触，不进 windup（telegraph 亦不出现）
+    if (this.runTimeSeconds < ELITE_SKILL_UNLOCK_SECONDS) return;
     state.phase = 'windup';
     state.phaseElapsed = 0;
     // 蓄力开始瞬间锁定方向与距离（畸体：固定方向固定距离；其余朝玩家）

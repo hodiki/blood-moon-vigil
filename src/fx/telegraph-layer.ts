@@ -25,7 +25,11 @@ export class TelegraphLayer {
     this.gfx = scene.add.graphics().setDepth(5);
   }
 
-  /** 每帧全量重绘（清空 → 按当前 telegraphs 绘制） */
+  /**
+   * 每帧全量重绘（清空 → 按当前 telegraphs 绘制）。
+   * lungeTelegraphs（P0-4 突袭三敌）：短突进线（90px 蓄身渐亮）——与冲锋猎手
+   * 300px 警告线同族异形（短距离 + 无第二段警告相位，手感可区分）。
+   */
   sync(
     eliteTelegraphs: EliteTelegraph[],
     pendingFormations: Array<{ x: number; y: number; progress: number }>,
@@ -33,8 +37,21 @@ export class TelegraphLayer {
     lineWidthBonus: number,
     /** W-4 血渍减速区（忏悔者弹着点；暗红地面污染，60px/2s） */
     bloodstains: Array<{ x: number; y: number; until: number }> = [],
+    /** P0-4 突袭型蓄身预警（方向锁定段渐亮；形状 = 危险范围） */
+    lungeTelegraphs: Array<{ x: number; y: number; angle: number; alpha: number; range: number }> = [],
   ): void {
     this.gfx.clear();
+    // —— P0-4 突袭型蓄身预警（先画：衬在最底层，与精英预警不互斥）——
+    for (const l of lungeTelegraphs) {
+      const a = Math.max(0.12, Math.min(0.9, l.alpha));
+      const ex = l.x + Math.cos(l.angle) * l.range;
+      const ey = l.y + Math.sin(l.angle) * l.range;
+      this.gfx.lineStyle(2 + lineWidthBonus, COLOR_DANGER, a);
+      this.gfx.beginPath();
+      this.gfx.moveTo(l.x, l.y);
+      this.gfx.lineTo(ex, ey);
+      this.gfx.strokePath();
+    }
     // —— 精英技能 telegraph ——
     for (const t of eliteTelegraphs) {
       const a = Math.max(0.12, t.alpha); // 渐亮下限（可读性）

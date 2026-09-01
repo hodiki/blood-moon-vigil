@@ -28,12 +28,12 @@ import {
  * 面板断言见 enemy-config.test（E1-S3）；本文件补「运行时行为」断言（M2-S3 验收门）。
  */
 
-describe('特殊行为表（gdd-enemies-v3 §③-3 收口：3 类在册；MN-15/MN-17 退役 2 类）', () => {
-  it('恰好 3 类行为（MN-15 亡魂 phase 撤销 / MN-17 忏悔者 ranged 升格 W-16 精英技能）', () => {
+describe('特殊行为表（gdd-enemies-v3 §③-3 收口：3 类特殊 + P0-4 突袭 lunge 三敌；MN-15/MN-17 退役 2 类）', () => {
+  it('6 条行为条目（3 特殊 + P0-4 突袭 lunge ×3；MN-15 亡魂 phase 撤销 / MN-17 忏悔者 ranged 升格）', () => {
     const ids = Object.keys(ENEMY_BEHAVIORS) as EnemyId[];
-    expect(ids).toEqual(['enemy_g1_5', 'enemy_g2_3', 'enemy_g3_4']);
+    expect(ids).toEqual(['enemy_g1_5', 'enemy_g2_3', 'enemy_g3_4', 'enemy_g1_2', 'enemy_g2_2', 'enemy_g3_2']);
     const kinds = Object.values(ENEMY_BEHAVIORS).map((b) => b.kind).sort();
-    expect(kinds).toEqual(['aura', 'charge', 'summon']);
+    expect(kinds).toEqual(['aura', 'charge', 'lunge', 'lunge', 'lunge', 'summon']);
   });
 
   it('MN-15 亡魂叙事化退役：相位接线撤销（无 phase 条目）+ 生成池移除标记', () => {
@@ -61,15 +61,15 @@ describe('特殊行为表（gdd-enemies-v3 §③-3 收口：3 类在册；MN-15/
     expect(specialBehaviorFor('enemy_g3_3')).toBeNull(); // 石甲狼=厚血精英
   });
 
-  it('特殊行为敌人每地图 ≤2 种且各图恰 1 种（gdd-enemies-v3 §③-3 定稿构成）', () => {
+  it('特殊行为敌人每地图 ≤2 种（gdd-enemies-v3 §③-3：各图 1 特殊 + 1 突袭 = 恰 2）', () => {
     const byMap = new Map<MapId, number>();
     for (const id of Object.keys(ENEMY_BEHAVIORS) as EnemyId[]) {
       const map = ENEMY_CONFIGS[id].map;
       byMap.set(map, (byMap.get(map) ?? 0) + 1);
     }
-    expect(byMap.get('map_graveyard')).toBe(1); // 尸巫（光环）
-    expect(byMap.get('map_cathedral')).toBe(1); // 圣杯侍僧（召唤）
-    expect(byMap.get('map_den')).toBe(1); // 狼裔猎手（冲锋）
+    expect(byMap.get('map_graveyard')).toBe(2); // 尸巫（光环）+ 血犬（突袭）
+    expect(byMap.get('map_cathedral')).toBe(2); // 圣杯侍僧（召唤）+ 血蝠（突袭）
+    expect(byMap.get('map_den')).toBe(2); // 狼裔猎手（冲锋）+ 暗影狼（突袭）
   });
 
   it('特殊行为敌均有明确反制字段（集火/走位/打断，支柱 3 可检验含义③）', () => {
@@ -84,8 +84,8 @@ describe('E3-S2 相位（血蝠 tier=air 同语义 §3.2；亡魂已退役 MN-15
     expect(passesObstacles('enemy_g1_4')).toBe(false);
   });
 
-  it('血蝠 tier=air：空中=相位障碍无效（行为表无 phase 条目但穿越障碍）', () => {
-    expect(specialBehaviorFor('enemy_g2_2')).toBeNull();
+  it('血蝠 tier=air：空中=相位障碍无效（P0-4 起行为条目 = lunge 突袭，非 phase）', () => {
+    expect(specialBehaviorFor('enemy_g2_2')?.kind).toBe('lunge'); // P0-4 突袭接线
     expect(ENEMY_CONFIGS.enemy_g2_2.tier).toBe('air');
     expect(passesObstacles('enemy_g2_2')).toBe(true);
   });

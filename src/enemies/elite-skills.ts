@@ -15,6 +15,14 @@
 
 import type { EnemyId } from '@/config/balance';
 
+/**
+ * P0-5 精英技能化门控（gdd-spawner-v2 §5.4 轨③ / gdd-enemies-v3 §⑥-6）：
+ * 局时 < 180s 精英 = 厚血无技能（不进 windup）；180s 起技能化 + 词缀。
+ * 已在场精英不追溯切形态（§⑥-6 可读性红线）：本门控逐帧判定，到点后下一次
+ * 触发距离检查才进入 windup = 「下一循环才开技能」语义。
+ */
+export const ELITE_SKILL_UNLOCK_SECONDS = 180;
+
 /** 精英技能相位（统一状态机） */
 export type EliteSkillPhase = 'idle' | 'windup' | 'warning' | 'active' | 'recover';
 

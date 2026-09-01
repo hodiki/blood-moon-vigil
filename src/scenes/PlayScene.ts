@@ -725,7 +725,7 @@ export class PlayScene extends Phaser.Scene {
     this.stepPersistentFields(dt, now);
     // W-4 守誓者步进（跟随/墓碑/重召唤/撕咬）+ 血渍区/幻影到期
     this.stepCompanion(dt, now);
-    // W-16 精英技能运行时（五精英 + MN-20 打断；技能伤走 player.hurt 独立结算）
+    // W-16 精英技能运行时（五精英 + MN-20 打断 + P0-5 180s 技能门；技能伤走 player.hurt 独立结算）
     this.stepEliteSkills(dt, now);
     this.enemyPool.eachActive((e) => {
       tickEnemyAnim(e);
@@ -737,12 +737,16 @@ export class PlayScene extends Phaser.Scene {
     // W-3 MN-12：血月化身稀有触发（270s 后 5%/判定，1s 节拍工程锚；once；BOSS_TIME 前独立）
     this.tickAvatarTrigger(dt);
     this.markers.sync(this.enemyPool, this.player, now);
-    // W-13 telegraph 演出同步（精英预警/阵纹/Boss 施法圈；移动端线宽 +1px §⑦）
+    // W-13 telegraph 演出同步（精英预警/阵纹/Boss 施法圈；移动端线宽 +1px §⑦）+ P0-4 突袭蓄身预警
     {
       const eliteTel: import('@/enemies/elite-skill-runtime').EliteTelegraph[] = [];
       const eliteList: EliteEnemyLike[] = [];
+      const lungeTel: Array<{ x: number; y: number; angle: number; alpha: number; range: number }> = [];
       this.enemyPool.eachActive((e) => {
-        if (e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') eliteList.push(e);
+        if (!e.enemyId) return;
+        if (ENEMY_CONFIGS[e.enemyId].tier === 'elite') eliteList.push(e);
+        const lt = this.aiDirector.lungeTelegraphOf(e);
+        if (lt) lungeTel.push(lt);
       });
       for (const e of eliteList) {
         const t = this.eliteDirector.telegraphOf(e, this.player);
@@ -753,7 +757,7 @@ export class PlayScene extends Phaser.Scene {
       const bossCast = casting && bossRef?.active
         ? { x: this.player.x, y: this.player.y, range: 90, progress: 1 - Math.max(0, casting.fireAt - now) / 1.0 }
         : null;
-      this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossCast, this.cfg.isMobile ? 1 : 0, this.bloodstains);
+      this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossCast, this.cfg.isMobile ? 1 : 0, this.bloodstains, lungeTel);
     }
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
     this.weaponSystem.update(dt, now, this.s1WindowDamageMult());
@@ -1036,13 +1040,13 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  /** W-16：精英技能逐帧推进 + 事件消费（伤害/位移/telegraph 由各消费端承接） */
+  /** W-16：精英技能逐帧推进 + 事件消费（伤害/位移/telegraph 由各消费端承接）；P0-5 局时门控 */
   private stepEliteSkills(dt: number, now: number): void {
     const elites: EliteEnemyLike[] = [];
     this.enemyPool.eachActive((e) => {
       if (e.enemyId && ENEMY_CONFIGS[e.enemyId].tier === 'elite') elites.push(e);
     });
-    const events = this.eliteDirector.update(dt, now, this.player, elites);
+    const events = this.eliteDirector.update(dt, now, this.player, elites, this.spawner.elapsedSeconds);
     for (const ev of events) {
       if (ev.type === 'skill-damage') {
         this.hurtPlayer(ev.damage, now); // 技能伤独立字段（经守誓者转移路由）

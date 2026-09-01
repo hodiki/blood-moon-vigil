@@ -202,19 +202,51 @@ export interface ChargeBehaviorConfig {
   /** 冲刺持续 s（工程常量：0.4s ≈ 200px 突进；GDD 未列，标记为工程参数） */
   dashDuration: number;
 }
+/**
+ * P0-4 突袭型三敌前扑模板（gdd-enemies-v3 §③-3 档 2「惩罚失误」）：
+ * 跟随追击；进入触发距离 → 蓄身 0.25s（方向锁定，横移即落空）→ 90px 定向突进 @300px/s
+ * → CD 2.5s 不二连；落空 0.5s 硬直。与冲锋猎手（charge 周期制长线）手感可区分：
+ * lunge = 短蓄力短距离 CD 制贴身惩罚；charge = 长警告线直线冲刺。
+ */
+export interface LungeBehaviorConfig {
+  kind: 'lunge';
+  /** 突袭触发距离 px（100，§③-3 档 2） */
+  triggerDist: number;
+  /** 蓄身时长 s（0.25，方向锁定段） */
+  windup: number;
+  /** 突进距离 px（90，§③-3 档 2） */
+  dashDistance: number;
+  /** 突进速度 px/s（300，§③-3 档 2） */
+  dashSpeed: number;
+  /** 突进后 CD s（2.5 不二连） */
+  cd: number;
+  /** 落空硬直 s（0.5，§③-3 档 2） */
+  missStagger: number;
+}
 export type EnemyBehaviorConfig =
   | PhaseBehaviorConfig
   | AuraBehaviorConfig
   | SummonBehaviorConfig
   | RangedBehaviorConfig
-  | ChargeBehaviorConfig;
+  | ChargeBehaviorConfig
+  | LungeBehaviorConfig;
 
-/** 特殊行为表（gdd-enemies-v2 §3.1~3.3；无条目 = 普通敌） */
+/** 突袭模板参数（gdd-enemies-v3 §③-3 档 2 三敌通用锚：100px / 0.25s / 90px@300px/s / CD 2.5s） */
+export const LUNGE_TEMPLATE: LungeBehaviorConfig = {
+  kind: 'lunge', triggerDist: 100, windup: 0.25, dashDistance: 90, dashSpeed: 300, cd: 2.5, missStagger: 0.5,
+};
+
+/** 特殊行为表（gdd-enemies-v2 §3.1~3.3 + v3 §③-3 档 2 突袭；无条目 = 普通敌） */
 export const ENEMY_BEHAVIORS: Partial<Record<EnemyId, EnemyBehaviorConfig>> = {
   // MN-15：亡魂相位接线撤销（退役不入池，条目删除）；MN-17：忏悔者普通远程退役（行为升格 W-16 精英技能）
   enemy_g1_5: { kind: 'aura', radius: 120, attackSpeedBonus: 0.2, maxStacks: 3 }, // 尸巫：光环
   enemy_g2_3: { kind: 'summon', interval: 5, summonedId: 'enemy_g2_1', summonCap: 3 }, // 圣杯侍僧
   enemy_g3_4: { kind: 'charge', interval: 6, windup: 0.5, warning: 0.15, dashSpeed: 500, dashDuration: 0.4 }, // 狼裔猎手
+  // P0-4 突袭型三敌（gdd-enemies-v3 §③-3 档 2）：血犬/血蝠/暗影狼共用 LUNGE_TEMPLATE
+  // （面板微调只差 unlockAt 60/75/90；突袭参数三敌通用锚）
+  enemy_g1_2: { ...LUNGE_TEMPLATE }, // 血犬
+  enemy_g2_2: { ...LUNGE_TEMPLATE }, // 血蝠
+  enemy_g3_2: { ...LUNGE_TEMPLATE }, // 暗影狼
 };
 
 /**

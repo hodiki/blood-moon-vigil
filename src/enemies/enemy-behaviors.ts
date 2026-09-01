@@ -19,6 +19,7 @@ import {
   type SummonBehaviorConfig,
   type RangedBehaviorConfig,
   type ChargeBehaviorConfig,
+  type LungeBehaviorConfig,
   type EnemyId,
 } from '@/config/balance';
 
@@ -29,6 +30,7 @@ export type {
   SummonBehaviorConfig,
   RangedBehaviorConfig,
   ChargeBehaviorConfig,
+  LungeBehaviorConfig,
 } from '@/config/balance';
 
 /** 取特殊行为配置（无 = 普通敌） */
@@ -157,4 +159,32 @@ export function warningLineAlpha(b: ChargeBehaviorConfig, cycleElapsed: number):
 /** 冲锋期速度（dash 500px/s，其余 0） */
 export function chargeSpeedFor(b: ChargeBehaviorConfig, phase: ChargePhase): number {
   return phase === 'dash' ? b.dashSpeed : 0;
+}
+
+// ---- lunge（P0-4 突袭三敌：血犬/血蝠/暗影狼，gdd-enemies-v3 §③-3 档 2）----
+
+/** 突袭相位（事件驱动 CD 制，与 charge 周期制区分） */
+export type LungePhase = 'idle' | 'windup' | 'dash' | 'stagger';
+
+/** 触发判定：CD 就绪 + 进入触发距离（§③-3 档 2「进入 100px 内 → 突进」） */
+export function lungeShouldTrigger(b: LungeBehaviorConfig, dist: number, cdRemaining: number): boolean {
+  return cdRemaining <= 0 && dist <= b.triggerDist;
+}
+
+/** 突进时长 s（90px @300px/s = 0.3s；由距离/速度派生，不单列字段） */
+export function lungeDashDuration(b: LungeBehaviorConfig): number {
+  return b.dashDistance / b.dashSpeed;
+}
+
+/** 突袭期速度：dash = dashSpeed / 其余相位 0（windup 蓄身冻结、stagger 硬直） */
+export function lungeSpeedFor(b: LungeBehaviorConfig, phase: LungePhase): number {
+  return phase === 'dash' ? b.dashSpeed : 0;
+}
+
+/** 蓄身预警透明度（telegraph 演出消费：0.25s 由淡到亮 0.2→0.9；非 windup/dash 返回 0） */
+export function lungeTelegraphAlpha(b: LungeBehaviorConfig, phase: LungePhase, phaseElapsed: number): number {
+  if (phase === 'dash') return 0.9;
+  if (phase !== 'windup') return 0;
+  const t = b.windup > 0 ? phaseElapsed / b.windup : 1;
+  return 0.2 + 0.7 * Math.max(0, Math.min(1, t));
 }
