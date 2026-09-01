@@ -26,8 +26,6 @@ import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
 import { hexToRgbInt } from '@/utils/math';
-import { collectSmokeResult, writeSmokeResult, SMOKE_FRAMES_COUNT } from '@/utils/smoke';
-import { FpsMonitor, estimateDrawCalls, writeBenchResult } from '@/utils/perf';
 import type { InputSource } from '@/input/input-source';
 import { KeyboardInput } from '@/input/keyboard-input';
 import { TouchInput } from '@/input/touch-input';
@@ -95,6 +93,7 @@ import { RelicDirector } from '@/relics/relic-runtime';
 import type { RelicEffectContext } from '@/relics/relic-engine';
 import { hitEnemy } from '@/combat/damage';
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
+import { BenchSmokeRunner } from '@/scenes/run/bench-smoke-runner';
 
 /**
  * P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：GDD §4.7 未给攻速数值 → 工程锚 ×1.25（待模拟校准）。
@@ -115,7 +114,6 @@ const ALTAR_OFFSET_PX = 260;
 const BENCH_TIME_SCALE = 20;
 /** W-3：化身判定窗口上界（= BOSS_TIME 360s；spawner-v2 §⑥-5 同帧常规优先口径） */
 const BOSS_TIME_GATE = 360;
-const BENCH_DURATION_MS = 36_000;
 
 interface EnemyKilledPayload {
   enemyType: string;
@@ -313,30 +311,8 @@ export class PlayScene extends Phaser.Scene {
   private relicDrUntil = 0;
   private relicDrAmount = 0;
 
-  // 冒烟自检状态
-  private smokeStartedAt = 0;
-  private smokeFrames = 0;
-  private smokeWritten = false;
-  private readonly isSmoke: boolean;
-
-  // E4-S5 性能基准状态
-  private readonly isBench: boolean;
-  /** NV-INTEG-FIX ⑤：?qa=1 观测模式（方阵掷点日志钩子；照 smoke/bench URL 参数模式） */
-  private readonly isQa: boolean;
-  private benchFps = new FpsMonitor();
-  private benchStartedAt = 0;
-  private benchDone = false;
-  private benchPeakEnemies = 0;
-  private benchPeakBullets = 0;
-
-  constructor() {
-    super('Play');
-    const params =
-      typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-    this.isSmoke = params.has('smoke');
-    this.isBench = params.has('bench');
-    this.isQa = params.has('qa');
-  }
+  // 冒烟 / 基准 / QA 运行模式（W-F1 拆分：状态与判定逻辑搬入 run/bench-smoke-runner）
+  private readonly runModes = new BenchSmokeRunner();
 
   create(): void {
     this.cfg = getRuntimeConfig(detectIsMobile());
@@ -482,7 +458,7 @@ export class PlayScene extends Phaser.Scene {
     // NV-INTEG-FIX ③：守誓者启用 = 修女且选中圣铃（默认第一把路径即时生效；选择回调再联动）
     this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && this.currentExclusiveId === 'xw_bell');
     // NV-INTEG-FIX ⑤：?qa=1 方阵掷点观测（每次掷点结果/被拒原因 → console，验证节奏修复）
-    if (this.isQa) {
+    if (this.runModes.qa) {
       this.spawner.groupRollLogger = (info) => {
         const detail = info.rolled
           ? `formation=${info.formationId} cost=${info.cost}`
@@ -595,7 +571,7 @@ export class PlayScene extends Phaser.Scene {
         if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
       },
     });
-    if (this.isSmoke || this.isBench) {
+    if (this.runModes.smoke || this.runModes.bench) {
       // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）：
       // 跳过序章与专武选择 UI 直接进战斗；**装配照走默认角色对第一把**（P1-1：
       // 旧实现跳过 applyExclusiveSelection → 8 专武恒 disabled，QA 会误判「专武未做」）。
@@ -698,30 +674,34 @@ export class PlayScene extends Phaser.Scene {
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
 
     // E4-S5 基准模式：三武器全开 + 玩家免死 + 36s 峰值压力（生成器 20× 加速到 6:00 收束）
-    if (this.isBench) {
+    if (this.runModes.bench) {
       this.weaponSystem.orbit.unlock();
       this.weaponSystem.shockwave.unlock();
       this.player.stats.maxHp = Number.MAX_SAFE_INTEGER;
       this.player.stats.hp = Number.MAX_SAFE_INTEGER;
-      this.benchStartedAt = performance.now();
-      this.benchFps.reset();
+      this.runModes.beginBench();
     }
 
-    if (this.isSmoke) {
-      this.smokeStartedAt = performance.now();
+    if (this.runModes.smoke) {
+      this.runModes.beginSmoke();
     }
+
+    // 运行模式端口注入（smoke/bench 断言依赖在 update 期才解引用；W-F1 拆分）
+    this.runModes.attach({
+      sceneReady: () => this.state.get() === GamePhase.RUNNING && this.player.active,
+      activeEnemies: () => this.enemyPool.activeCount,
+      activeBullets: () => this.weaponSystem.missilePool.activeCount,
+      playerActive: () => this.player.active,
+      orbCount: () => this.weaponSystem.orbit.orbCount,
+      shockwaveActive: () => this.weaponSystem.shockwave.active,
+      fxActive: () => this.fx.activeCount > 0,
+      isMobile: () => this.cfg.isMobile,
+    });
   }
 
   update(_time: number, delta: number): void {
-    // E4-S5 基准：持续记录帧率（不受状态机短路影响），36s 后写结果一次
-    if (this.isBench) {
-      this.benchFps.record(delta);
-      this.trackBenchPeaks();
-      if (!this.benchDone && performance.now() - this.benchStartedAt >= BENCH_DURATION_MS) {
-        this.benchDone = true;
-        this.finishBench();
-      }
-    }
+    // E4-S5 基准：持续记录帧率（不受状态机短路影响），36s 后写结果一次（run/bench-smoke-runner）
+    this.runModes.updateBench(delta);
 
     // Phase 6 音频：心跳 BPM 消费 spawner.elapsedSeconds（bible §1/§3：暂停/选卡降 4dB、GAMEOVER 静默）
     // 放在 RUNNING 短路之前 —— 暂停/选卡期心跳以冻结 BPM 继续低音量，保持氛围
@@ -735,7 +715,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.state.get() !== GamePhase.RUNNING) return; // ADR-003 短路：非 RUNNING 不做战斗逻辑
 
     let dt = clampDelta(delta); // 秒制、防跳怪（ARCH §3.5 / 预算表 #10）
-    if (this.isBench) dt *= BENCH_TIME_SCALE; // 基准：20× 时缩放模拟 6 分钟收束
+    if (this.runModes.bench) dt *= BENCH_TIME_SCALE; // 基准：20× 时缩放模拟 6 分钟收束
     const realDt = clampDelta(delta); // TASK-28：特效寿命用真实 dt（基准 20× 不加速视觉节奏）
     const now = this.time.now / 1000; // 秒时间戳（无敌帧/环绕球 CD/Boss 霸体）
 
@@ -859,7 +839,7 @@ export class PlayScene extends Phaser.Scene {
       GameEvents.emit(GameEvent.BossHpChanged, { hp: this.boss.hp, maxHp: this.boss.maxHp });
     }
 
-    if (this.isSmoke) this.tickSmoke();
+    this.runModes.tickSmoke();
   }
 
   /**
@@ -1575,7 +1555,7 @@ export class PlayScene extends Phaser.Scene {
     this.stats.recordEliteOffer(); // B6-W5 精英抽卡遥测（Q-f 串联每次）
     GameEvents.emit(GameEvent.UpgradeOffered, { options });
     this.fx.levelUpBurst(this.player.x, this.player.y);
-    if (this.isBench) {
+    if (this.runModes.bench) {
       const first = options[0];
       this.onUpgradeChosen({ optionId: first?.upgradeId ?? first?.evoId ?? 'up_g_1', index: 0, dwellSeconds: 0 });
       return;
@@ -1683,7 +1663,7 @@ export class PlayScene extends Phaser.Scene {
     GameEvents.emit(GameEvent.UpgradeOffered, { options });
     // TASK-28：升级三选一出现 —— 玩家位置金+冷青爆发（进入 LEVEL_UP 前）
     this.fx.levelUpBurst(this.player.x, this.player.y);
-    if (this.isBench) {
+    if (this.runModes.bench) {
       // 基准模式：自动选第 1 张，跳过 LEVEL_UP 暂停（保持 20× 时缩放连续）
       const first = options[0];
       this.onUpgradeChosen({ optionId: first?.upgradeId ?? first?.evoId ?? 'up_g_1', index: 0, dwellSeconds: 0 });
@@ -1832,7 +1812,7 @@ export class PlayScene extends Phaser.Scene {
 
   /** 暂停切换（Esc/P/移动暂停键；LEVEL_UP 期不响应，CM §5） */
   private togglePause(): void {
-    if (this.isBench) return; // 基准模式不暂停
+    if (this.runModes.bench) return; // 基准模式不暂停
     const cur = this.state.get();
     if (cur === GamePhase.RUNNING) this.state.set(GamePhase.PAUSED);
     else if (cur === GamePhase.PAUSED) this.state.set(GamePhase.RUNNING);
@@ -1957,59 +1937,5 @@ export class PlayScene extends Phaser.Scene {
     this.overlay.destroy();
     this.hud.destroy();
     this.results.destroy();
-  }
-
-  /** 内嵌自检：跑 N 帧后写入结果一次（tests/smoke/smoke-embed.ts 判定规则） */
-  private tickSmoke(): void {
-    if (this.smokeWritten) return;
-    this.smokeFrames += 1;
-    if (this.smokeFrames >= SMOKE_FRAMES_COUNT) {
-      this.smokeWritten = true;
-      const result = collectSmokeResult(
-        {
-          sceneReady: this.state.get() === GamePhase.RUNNING && this.player.active,
-          frame: this.smokeFrames,
-        },
-        this.smokeStartedAt,
-      );
-      writeSmokeResult(result);
-    }
-  }
-
-  // —— E4-S5 性能基准 ——
-
-  private trackBenchPeaks(): void {
-    const enemies = this.enemyPool.activeCount;
-    const bullets = this.weaponSystem.missilePool.activeCount;
-    if (enemies > this.benchPeakEnemies) this.benchPeakEnemies = enemies;
-    if (bullets > this.benchPeakBullets) this.benchPeakBullets = bullets;
-  }
-
-  /** 36s 峰值压力结束：聚合断言数据 → window.__BENCH_RESULT__（TASK-28：draw call 模型含 ambient/粒子组） */
-  private finishBench(): void {
-    const charactersActive =
-      this.benchPeakEnemies +
-      this.benchPeakBullets +
-      (this.player.active ? 1 : 0) +
-      this.weaponSystem.orbit.orbCount;
-    const effectsActive = this.weaponSystem.shockwave.active ? 1 : 0;
-    // TASK-28：ambient 组（血月/渐晕/贴花）常驻 1；粒子发射器计 extra pass（活跃时 1）
-    const ambientActive = 1;
-    const particlePasses = this.fx.activeCount > 0 ? 1 : 0;
-    const drawCallEstimate = estimateDrawCalls(
-      { characters: charactersActive, effects: effectsActive, ambient: ambientActive },
-      particlePasses,
-    );
-    writeBenchResult({
-      platform: this.cfg.isMobile ? 'mobile' : 'desktop',
-      avgFps: this.benchFps.avgFps,
-      minFps: this.benchFps.minFps,
-      frames: this.benchFps.sampleCount,
-      peakActiveEnemies: this.benchPeakEnemies,
-      peakActiveBullets: this.benchPeakBullets,
-      drawCallEstimate,
-      // TASK-31 收尾：36 真实秒 × 20× 时缩放 = 720 局时秒（2 局；6:00 Boss 收束覆盖）
-      simulatedGameSeconds: 720,
-    });
   }
 }
