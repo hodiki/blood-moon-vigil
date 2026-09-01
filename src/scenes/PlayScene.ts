@@ -39,14 +39,7 @@ import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
 import { EliteSkillDirector, type EliteEnemyLike } from '@/enemies/elite-skill-runtime';
 import { OathkeeperRuntime } from '@/weapons/companion/oathkeeper-runtime';
 import { TelegraphLayer } from '@/fx/telegraph-layer';
-import {
-  createBossSkillState,
-  clearBossSummons,
-  reportBossSummonKilled,
-  bossChargingNow,
-  type BossSkillState,
-} from '@/enemies/boss-skill-engine';
-import { BossSkillRuntime, type BossSkillPorts } from '@/enemies/boss-skill-runtime';
+import { BossSkillConsumer } from '@/scenes/run/boss-skill-consumer';
 import { corruptHealMultFor } from '@/config/balance';
 import { moonAvatarTriggerDue } from '@/enemies/boss-math';
 import { WeaponSystem } from '@/weapons/weapon-system';
@@ -160,8 +153,10 @@ export class PlayScene extends Phaser.Scene {
   /** Phase 6 音频：事件 → AudioManager 接线解绑（配合 resetGameEvents 纪律） */
   private unbindAudioEvents: (() => void) | null = null;
   private stats = new RunStats();
-  /** 当前 Boss（6:00 出场；null = 未出场） */
-  private boss: Boss | null = null;
+  /** 当前 Boss（6:00 出场；null = 未出场；持有方 = bossConsumer，原字段已搬移） */
+  private get boss(): Boss | null {
+    return this.bossConsumer.boss;
+  }
   /** TASK-28 特效管理器（粒子池 ≤ cfg.maxParticles + 血月/渐晕常驻） */
   private fx!: FxManager;
   /** 特殊行为标记（尸巫光环 / 猎手警告线 / 侍僧符文 / 状态小点） */
@@ -178,48 +173,14 @@ export class PlayScene extends Phaser.Scene {
   private eliteDirector!: EliteSkillDirector;
   /** W-13 telegraph 演出基座（扇形/预警圈/警告线/阵纹，程序化） */
   private telegraphs!: TelegraphLayer;
-  /** W-D/W-15 Boss 五槽运行时（PlayScene 消费；W-2 升级版接线） */
-  private bossSkills: BossSkillState | null = null;
-  /** P0-6：Boss 技能几何消费运行时（zone 自结算；场景只提供端口，stepBossSkillRuntime 变薄） */
-  private readonly bossRuntime = new BossSkillRuntime();
-  /** P0-6：Boss 技能端口（hurt/spawn/fx/位移；箭头捕获场景引用，调用期才解引用） */
-  private readonly bossPorts: BossSkillPorts = {
-    hurtPlayer: (damage, now) => {
-      this.hurtPlayer(damage, now); // 技能伤独立字段（经守誓者转移路由）
-    },
-    spawnSummon: (enemyId, x, y) => this.spawner.spawnRuntimeSummon(enemyId, x, y, PlayScene.BOSS_SUMMON_TAG),
-    spawnPhantom: (x, y, contactDamage, duration, now) => {
-      // P0-6：幻影专用口（HP1 + noXp + 接触伤按表；不行尸面板）；到期自散在 stepCompanion
-      const ph = this.spawner.spawnPhantom(x, y, PlayScene.BOSS_SUMMON_TAG, contactDamage);
-      if (ph) this.phantoms.push({ enemy: ph, until: now + duration });
-      return ph;
-    },
-    pullPlayerTo: (x, y, distance) => {
-      const dx = x - this.player.x;
-      const dy = y - this.player.y;
-      const len = Math.hypot(dx, dy) || 1;
-      this.player.setPosition(this.player.x + (dx / len) * distance, this.player.y + (dy / len) * distance);
-    },
-    setBossVelocity: (vx, vy) => {
-      (this.boss?.body as unknown as { setVelocity(x: number, y: number): void } | undefined)?.setVelocity(vx, vy);
-    },
-    clearBossVelocity: () => {
-      (this.boss?.body as unknown as { setVelocity(x: number, y: number): void } | undefined)?.setVelocity(0, 0);
-    },
-    onPhaseChanged: (now) => {
-      if (this.boss?.active) this.boss.graceUntil = now + 1; // 转阶段霸体 1s（不承伤）
-    },
-  };
-  /** MN-23：Boss 同源召唤 tag（死亡释放计数/死亡清场扫描键） */
-  private static readonly BOSS_SUMMON_TAG = 'boss_skills';
+  /** W-D/W-15 Boss 五槽运行时（消费端拆分到 run/boss-skill-consumer；场景只装配端口与步进） */
+  private readonly bossConsumer = new BossSkillConsumer();
   /** W-14 宝藏实体（驮尸全灭落地；拾取 = offer 直发 MN-21；TTL 30s） */
   private treasure: { x: number; y: number; age: number } | null = null;
   /** W-4 守誓者运行时（FQ-2：薇奥莱+圣铃开局自带；索敌切换/承伤转移/撕咬/墓碑） */
   private oathkeeper!: OathkeeperRuntime;
   /** W-4 血渍减速区（忏悔者弹着点；60px/2s/减速 15%，工程锚） */
   private bloodstains: Array<{ x: number; y: number; until: number }> = [];
-  /** W-4 月影幻影到期表（hp1 实体；到期自散 → 释放 Boss 同源召唤计数） */
-  private phantoms: Array<{ enemy: Enemy; until: number }> = [];
   /** W-3 MN-12：血月化身本局已触发（5% 判定 once；常规 Boss 优先口径 §⑥-5） */
   private avatarTriggeredThisRun = false;
   /** W-3：化身判定节拍（1s 一次；工程锚） */
@@ -399,6 +360,16 @@ export class PlayScene extends Phaser.Scene {
     this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId, true);
     // W-8 面板链：等级滞后宽容玩家等级来源 +（裁决后）c 案联动系数
     this.spawner.playerLevelProvider = () => this.xp.level;
+    // Boss 五槽消费端口（W-F1 拆分：run/boss-skill-consumer；闭包调用期解引用）
+    this.bossConsumer.attach({
+      hurtPlayer: (damage, now) => this.hurtPlayer(damage, now),
+      spawnSummon: (enemyId, x, y, tag) => this.spawner.spawnRuntimeSummon(enemyId, x, y, tag),
+      spawnPhantom: (x, y, tag, contactDamage) => this.spawner.spawnPhantom(x, y, tag, contactDamage),
+      bossBody: () => this.boss?.body as unknown as { setVelocity(x: number, y: number): void } | undefined,
+      player: () => this.player,
+      maxEnemies: () => this.cfg.maxEnemies,
+      enemyActiveCount: () => this.enemyPool.activeCount,
+    });
     // W-1 特殊行为 AI 运行时（召唤出口走 spawner 敌方技能召唤口：noXp 自动置位）
     this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
       this.spawner.spawnRuntimeSummon(id, x, y, tag),
@@ -791,8 +762,8 @@ export class PlayScene extends Phaser.Scene {
         const t = this.eliteDirector.telegraphOf(e, this.player);
         if (t) eliteTel.push(t);
       }
-      // P0-6：Boss 技能区视图（zone 形状 = 危险范围；boss 在场才有）
-      const bossZones = this.boss?.active ? this.bossRuntime.zoneViews(now) : [];
+      // P0-6：Boss 技能区视图（zone 形状 = 危险范围；boss 在场才有；消费端 boss-skill-consumer）
+      const bossZones = this.bossConsumer.zoneViews(now);
       this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossZones, this.cfg.isMobile ? 1 : 0, this.bloodstains, lungeTel);
     }
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
@@ -853,14 +824,11 @@ export class PlayScene extends Phaser.Scene {
   /** E4-S3 胜利终局（Boss 击杀） */
   private onBossDefeated(): void {
     // MN-23：Boss 死亡随 BOSS 清场（召唤物一并清除，不掉 XP——静默回收语义）
-    if (this.bossSkills) {
-      clearBossSummons(this.bossSkills);
+    this.bossConsumer.endFight((tag) => {
       this.enemyPool.eachActive((e) => {
-        if (e.groupId === PlayScene.BOSS_SUMMON_TAG) e.kill();
+        if (e.groupId === tag) e.kill();
       });
-      this.bossSkills = null;
-      this.bossRuntime.reset(); // P0-6：清残留技能区
-    }
+    });
     this.stats.recordBossDefeated(this.spawner.elapsedSeconds);
     // P0-1「Boss 击杀必掉 1 枚」保底补齐（Boss 出场已发则此处 no-op）
     if (this.relics.grantBossGuaranteed()) this.syncRelicHud(this.time.now / 1000);
@@ -1067,16 +1035,10 @@ export class PlayScene extends Phaser.Scene {
     this.bloodstains = this.bloodstains.filter((b) => now < b.until);
     const inBlood = this.bloodstains.some((b) => Math.hypot(b.x - this.player.x, b.y - this.player.y) <= 60);
     // P0-6：Boss 持续场（血池/血雾）减速并入同一乘区（取最强）
-    const fieldSlow = this.bossRuntime.externalSlowAt(this.player.x, this.player.y);
+    const fieldSlow = this.bossConsumer.externalSlowAt(this.player.x, this.player.y);
     this.player.stats.setExternalSlowMult(Math.min(inBlood ? 0.85 : 1, fieldSlow));
-    // 月影幻影到期自散（释放同源计数）
-    for (let i = this.phantoms.length - 1; i >= 0; i -= 1) {
-      const ph = this.phantoms[i]!;
-      if (now >= ph.until || !ph.enemy.active) {
-        if (ph.enemy.active) ph.enemy.kill();
-        this.phantoms.splice(i, 1);
-      }
-    }
+    // 月影幻影到期自散（释放同源计数；搬移至 run/boss-skill-consumer）
+    this.bossConsumer.stepPhantoms(now);
   }
 
   /** W-16：精英技能逐帧推进 + 事件消费（伤害/位移/telegraph 由各消费端承接）；P0-5 局时门控 */
@@ -1100,24 +1062,9 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  /** W-15/P0-6：Boss 五槽运行时 —— 调度在 boss-skill-engine，几何结算在 boss-skill-runtime；场景仅装配端口 */
+  /** W-15/P0-6：Boss 五槽运行时步进（调度/几何结算/端口装配已拆入 run/boss-skill-consumer） */
   private stepBossSkillRuntime(dt: number, now: number): void {
-    const boss = this.boss;
-    if (!boss?.active || !this.bossSkills) return;
-    // P1-18：芬里厄减速 ×0.5 仅在蓄力期（冲锋/扑击预警窗口）生效，离开窗口即清除
-    boss.setPhaseCcResistance(bossChargingNow(this.bossSkills) ? { slow: { durationMult: 0.5 } } : undefined);
-    this.bossRuntime.step(
-      this.bossSkills,
-      {
-        dt,
-        now,
-        hpRatio: boss.hp / boss.maxHp,
-        canSpawnMore: this.enemyPool.activeCount < this.cfg.maxEnemies,
-      },
-      boss,
-      this.player,
-      this.bossPorts,
-    );
+    this.bossConsumer.step(dt, now);
   }
 
   /** W-14：宝藏拾取（40px 拾取区；MN-21 三选一 offer 直发 1 次；TTL 30s） */
@@ -1164,8 +1111,7 @@ export class PlayScene extends Phaser.Scene {
     const by = this.player.y + Math.sin(angle) * BOSS.SPAWN_DISTANCE;
     avatar.spawnByBossConfig(BOSSES.boss_4, bx, by);
     avatar.beginGrace(now);
-    this.bossSkills = createBossSkillState('boss_4'); // 无阶段短战高密度
-    this.bossRuntime.reset(); // P0-6：换 Boss 清残留技能区
+    this.bossConsumer.beginSkills('boss_4', null); // 无阶段短战高密度；化身不改写常规 boss 引用（原语义）
     this.spawner.boss4OnField = true; // W-A F-2：化身在场方阵停掷
     this.tweens.add({
       targets: avatar,
@@ -1190,9 +1136,7 @@ export class PlayScene extends Phaser.Scene {
     // W-3/W-8 收口：Boss 面板单源化（BOSSES 表 + ccProfile 覆写；legacy spawn('boss') 退役）
     boss.spawnByBossConfig(bossCfg, bx, by);
     boss.beginGrace(now);
-    this.bossSkills = createBossSkillState(bossCfg.id); // W-15：五槽调度运行时
-    this.bossRuntime.reset(); // P0-6：换 Boss 清残留技能区
-    this.boss = boss;
+    this.bossConsumer.beginSkills(bossCfg.id, boss); // W-15：五槽调度运行时 + P0-6 清残留技能区
     const entranceFrame = bossEntranceFrameName(bossCfg.frame);
     if (hasCharacterFrame(this, entranceFrame)) {
       boss.entranceUntil = now + FX.BOSS_ENTRANCE_MS / 1000;
@@ -1233,9 +1177,7 @@ export class PlayScene extends Phaser.Scene {
     if (payload.groupId) {
       this.spawner.notifyGroupMemberKilled(payload);
       // MN-23：Boss 同源召唤死亡释放计数（上限 6/8 口径）
-      if (payload.groupId === PlayScene.BOSS_SUMMON_TAG && this.bossSkills) {
-        reportBossSummonKilled(this.bossSkills);
-      }
+      this.bossConsumer.onSummonKilled(payload.groupId);
     }
     // B6-W5 占比分母近似：击杀敌面板 HP 计入总伤害（1D/沙盘校准口径；精确伤害流留遥测批次）
     const cfg = payload.enemyId ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[payload.enemyId] ?? (BOSSES as Record<string, { hp?: number }>)[payload.enemyId] : undefined;
