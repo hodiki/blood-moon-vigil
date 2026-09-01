@@ -22,9 +22,25 @@ import { getOverlayHost } from '@/ui/overlay-host';
 /** 序章固定 3s（spec §1.2：序章/开局固定 3s，可点击跳过） */
 export const PROLOGUE_DEFAULT_DURATION_MS = 3000;
 
+/** 相位安全定时器句柄（Phaser.Time.TimerEvent 形状子集） */
+export interface PrologueTimerHandle {
+  remove(): void;
+}
+
+/**
+ * 序章时钟端口（BUG-4 / P1-16 / NV-REVIEW-FIX-F）：
+ * 自动推进 timer 从 window.setTimeout 改为 Phaser Scene clock（随场景生命周期销毁、
+ * 场景暂停即冻结）——setTimeout 脱离相位系统，场景重启后仍会触发 advance。
+ */
+export interface PrologueClock {
+  delay: (ms: number, cb: () => void) => PrologueTimerHandle;
+}
+
 export interface PrologueOverlayOptions {
   /** 每屏自动进入时长 ms（缺省 3000 = spec §3 固定 3s） */
   durationMs?: number;
+  /** 相位安全时钟（PlayScene 传 Phaser scene.time；BUG-4 后必传） */
+  clock?: PrologueClock;
   /** 移动端判定（缺省 false；仅供 CSS 类标记，字号红线由 overlay-scale 保证） */
   isMobile?: () => boolean;
 }
@@ -44,15 +60,17 @@ export class PrologueOverlay {
   private readonly root: HTMLElement;
   private readonly linesEl: HTMLElement;
   private readonly durationMs: number;
+  private readonly clock?: PrologueClock;
   private screens: readonly NarrativeText[] = [];
   private index = 0;
-  private timer: number | null = null;
+  private timer: PrologueTimerHandle | null = null;
   private onComplete: (() => void) | null = null;
   private readonly clickHandler: () => void;
   private readonly keyHandler: (e: KeyboardEvent) => void;
 
   constructor(host: HTMLElement, opts: PrologueOverlayOptions = {}) {
     this.durationMs = opts.durationMs ?? PROLOGUE_DEFAULT_DURATION_MS;
+    this.clock = opts.clock;
     // 注：opts.isMobile 为 API 预留（双端字号红线由 CSS 媒体查询 + overlay-scale 注入处理，
     // 组件内不再重复判定；见 ensureStyles 移动端分型）。
     this.ensureStyles(host);
@@ -74,8 +92,11 @@ export class PrologueOverlay {
     this.clickHandler = () => this.advance();
     this.root.addEventListener('click', this.clickHandler);
     // 键盘 Space/Enter 同样可跳过（桌面便捷；与点击同语义）
+    // BUG-4（P1-16）：Esc 也由序章消费（PROLOGUE 相位内 Esc = 推进/跳过当前屏），
+    // 防止 Esc 落到场景暂停切换（checkPause 相位无关 → togglePause 在 PROLOGUE 是 no-op，
+    // 键会被吞但无反馈；此处显式消费给出推进反馈，与点击同语义）。
     this.keyHandler = (e: KeyboardEvent) => {
-      if (e.key === ' ' || e.key === 'Enter') {
+      if (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
         e.preventDefault();
         this.advance();
       }
@@ -142,7 +163,13 @@ export class PrologueOverlay {
 
   private armTimer(): void {
     this.clearTimer();
-    this.timer = window.setTimeout(() => this.advance(), this.durationMs);
+    if (this.clock) {
+      this.timer = this.clock.delay(this.durationMs, () => this.advance());
+    } else if (typeof window !== 'undefined') {
+      // 兜底（无 Phaser 时钟的独立使用；运行时 PlayScene 始终传入）
+      const id = window.setTimeout(() => this.advance(), this.durationMs);
+      this.timer = { remove: () => window.clearTimeout(id) };
+    }
   }
 
   private finish(): void {
@@ -153,10 +180,8 @@ export class PrologueOverlay {
   }
 
   private clearTimer(): void {
-    if (this.timer !== null) {
-      window.clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.timer?.remove();
+    this.timer = null;
   }
 
   /** CSS 注入一次（ADR-004；全屏居中遮罩复用 levelup 暂停式遮罩；色板 token 来源 art-bible §2.4） */

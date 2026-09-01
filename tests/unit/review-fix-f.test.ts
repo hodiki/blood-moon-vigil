@@ -66,3 +66,64 @@ describe('W-F2 merit-overlay：运行时入口隐藏（树替代）', () => {
     }
   });
 });
+
+// —— W-F3 BUG-3：结算页矮视口（P1-15）——
+
+describe('W-F3 BUG-3 结算页矮视口：max-height 折回设计空间', () => {
+  it('1280×656（scale≈0.607）：修复后设计空间 max-height 渲染回视口高度 − 32px', () => {
+    // Phaser Scale.FIT：视口 1280×656（宽高比 1.951 > 16:9）→ 画布上下贴边、左右 letterbox
+    const fitScale = Math.min(1280 / 1920, 656 / 1080); // ≈ 0.6074（高受限）
+    const canvasW = 1920 * fitScale;
+    // computeOverlayLayout 公式镜像（overlay-scale.ts 模块本体 import Phaser，node 环境不可导入；
+    // scale = canvasRect.width / designWidth）
+    const layoutScale = canvasW / 1920;
+    expect(layoutScale).toBeCloseTo(0.6074, 3);
+    // 修复后 CSS：max-height = (100dvh − 32px) / scale（设计空间 px）
+    const designMax = (656 - 32) / layoutScale;
+    // 视觉高度 = 设计空间高度 × scale = 624px（= 视口 − 32；修复前 624 设计 px 只渲染 379px）
+    expect(designMax * layoutScale).toBeCloseTo(624, 0);
+    expect(designMax).toBeLessThanOrEqual(1080); // 不超过设计画布高度
+  });
+
+  it('results-overlay 源码：dvh/dvw 上限均 ÷ var(--bmv-overlay-scale, 1)（桌面 + 移动媒体查询）', () => {
+    const s = srcOf('ui/results-overlay.ts');
+    expect(s).toContain('max-width: calc((100dvw - 32px) / var(--bmv-overlay-scale, 1))');
+    expect(s).toContain('max-height: calc((100dvh - 32px) / var(--bmv-overlay-scale, 1))');
+    expect(s).toContain('max-height: calc(88dvh / var(--bmv-overlay-scale, 1))');
+    expect(s.includes('max-height: calc(100dvh - 32px)')).toBe(false); // 旧写法不得残留
+  });
+});
+
+// —— W-F3 BUG-4：序章 Esc / 相位安全定时器（P1-16）——
+
+describe('W-F3 BUG-4 序章：Phaser 时钟 + Esc 由序章消费', () => {
+  it('prologue-overlay：armTimer 走 clock 端口（window.setTimeout 仅作独立使用兜底）', () => {
+    const s = srcOf('ui/prologue-overlay.ts');
+    expect(s).toContain('this.timer = this.clock.delay(this.durationMs, () => this.advance())');
+    expect(s).toContain("e.key === 'Escape'"); // PROLOGUE 相位内 Esc 由序章消费（推进/跳过）
+  });
+
+  it('PlayScene：createPrologueOverlay 传入 Phaser Scene clock（随相位冻结/场景销毁）', () => {
+    const s = srcOf('scenes/PlayScene.ts');
+    expect(s).toContain('clock: { delay: (ms, cb) => this.time.delayedCall(ms, cb) }');
+  });
+
+  it('indexForAdvance 语义回归：末屏 -1、推进 +1（Esc 跳过与点击同路径）', async () => {
+    const { indexForAdvance } = await import('@/ui/prologue-overlay');
+    expect(indexForAdvance(0, 3)).toBe(1);
+    expect(indexForAdvance(2, 3)).toBe(-1);
+  });
+});
+
+// —— W-F3 BUG-6：音频手势 resume 重试（P1-17）——
+
+describe('W-F3 BUG-6 音频：unlock 失败后手势常驻节流 resume', () => {
+  it('audio-manager：pointerdown/keydown 常驻监听 + 800ms 节流 + destroy 拆装', () => {
+    const s = srcOf('audio/audio-manager.ts');
+    expect(s).toContain('installGestureRetry');
+    expect(s).toContain("window.addEventListener('pointerdown', tryResume, { passive: true })");
+    expect(s).toContain("window.addEventListener('keydown', tryResume, { passive: true })");
+    expect(s).toContain('< 800'); // 节流窗口
+    expect(s).toContain('this.uninstallGestureRetry()'); // destroy 拆装
+  });
+});

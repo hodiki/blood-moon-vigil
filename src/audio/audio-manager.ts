@@ -107,6 +107,12 @@ export class AudioManager {
   // —— 生命周期监听 ——
   private onVisibilityChange: (() => void) | null = null;
 
+  // —— BUG-6 手势 resume 重试（NV-REVIEW-FIX-F P1-17）——
+  /** pointerdown/keydown 常驻监听（unlock 失败后任意手势重试 resume） */
+  private gestureRetryHandlers: Array<() => void> = [];
+  /** 上次手势 resume 时刻（节流；performance.now() ms） */
+  private lastGestureResumeAt = 0;
+
   private storage: AudioStorage = {
     getItem: () => null,
     setItem: () => undefined,
@@ -132,6 +138,37 @@ export class AudioManager {
     this.teardownGraph();
     this.buildGraph(ctx, opts.isMobile ?? false);
     this.installLifecycleListeners(ctx);
+    this.installGestureRetry(ctx);
+  }
+
+  /**
+   * BUG-6（P1-17）：手势解锁失败后的常驻重试。
+   * 背景：浏览器自动播放策略下 unlock 可能失败（ctx 仍 suspended），此后无手势重试路径
+   * → 移动端整局静音。修复：pointerdown / keydown 常驻监听（passive），节流 800ms 调
+   * ctx.resume()（幂等、失败静默）。ctx 已 running 时零开销直接返回。
+   */
+  private installGestureRetry(ctx: AudioContext): void {
+    if (typeof window === 'undefined') return;
+    const tryResume = (): void => {
+      if (this.ctx !== ctx || ctx.state !== 'suspended') return;
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (now - this.lastGestureResumeAt < 800) return; // 节流：高频手势不刷 resume
+      this.lastGestureResumeAt = now;
+      ctx.resume().catch(() => undefined);
+    };
+    window.addEventListener('pointerdown', tryResume, { passive: true });
+    window.addEventListener('keydown', tryResume, { passive: true });
+    this.gestureRetryHandlers = [tryResume, tryResume];
+  }
+
+  /** 手势重试监听拆装（destroy 调用） */
+  private uninstallGestureRetry(): void {
+    if (typeof window === 'undefined') return;
+    for (const h of this.gestureRetryHandlers) {
+      window.removeEventListener('pointerdown', h);
+      window.removeEventListener('keydown', h);
+    }
+    this.gestureRetryHandlers = [];
   }
 
   /** 手势解锁（BootScene「点击开始」回调；幂等，移动端必须） */
@@ -162,6 +199,7 @@ export class AudioManager {
       this.onVisibilityChange = null;
     }
     if (this.ctx) this.ctx.onstatechange = null;
+    this.uninstallGestureRetry();
     this.teardownGraph();
     this.sound = null;
     this.ctx = null;

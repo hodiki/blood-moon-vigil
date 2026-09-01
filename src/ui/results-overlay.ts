@@ -294,9 +294,13 @@ export class ResultsOverlay {
         position: relative;
         width: 640px;
         max-width: calc(100vw - 32px);
-        max-width: calc(100dvw - 32px);
+        max-width: calc((100dvw - 32px) / var(--bmv-overlay-scale, 1));
         max-height: 760px;
-        max-height: calc(100dvh - 32px);
+        /* BUG-3（NV-REVIEW-FIX-F）：本层处于 transform:scale 的设计空间容器（overlay-scale
+           #ui-overlay 1920×1080 设计坐标）内，dvh/dvw 视口单位会被整体 scale 再乘——
+           矮视口（1280×656，scale≈0.607）下面板被压到 ~38% 可用高度。物理上限需 ÷
+           --bmv-overlay-scale 折回设计空间，使渲染后视觉高度 = 100dvh − 32px。 */
+        max-height: calc((100dvh - 32px) / var(--bmv-overlay-scale, 1));
         overflow-y: auto; /* TASK-21 Bug2：横屏矮视口内容可滚动不裁剪 */
         box-sizing: border-box;
         padding: 32px;
@@ -410,7 +414,7 @@ export class ResultsOverlay {
       @keyframes bmv-results-rise { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       /* 移动端（ux-spec §4：面板 92vw、统计竖排、Build max-height 220、按钮全宽竖排） */
       @media (max-width: 900px) {
-        .bmv-results-panel { width: 92vw; max-width: 100%; max-height: 88vh; max-height: 88dvh; padding: 20px; }
+        .bmv-results-panel { width: 92vw; max-width: 100%; max-height: 88vh; max-height: calc(88dvh / var(--bmv-overlay-scale, 1)); padding: 20px; }
         .bmv-results-title { font-size: 26px; }
         .bmv-results-row { font-size: 22px; }
         .bmv-results-rewards .bmv-results-row { font-size: 18px; }
