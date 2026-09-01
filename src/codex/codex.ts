@@ -4,17 +4,22 @@
  * 纯数据/纯逻辑（可脱离 Phaser 单测）：35+ 条目结构 + codex_unlock 五类幂等记录。
  * UI（守夜日志列表/档案卡）与叙事文本表 = M3 范围；本模块只做数据层与事件挂钩。
  *
- * 条目构成（gdd-codex §3.1）：角色 4 / 敌人 15 / Boss 4 / 武器 14 / 超武 7 / 事件 6。
+ * 条目构成（gdd-codex §3.1）：角色 4 / 敌人 17 / Boss 4 / 武器 14 / 超武 7 / 事件 6 / 共鸣形态 8。
  * 注：GDD 表头「合计 35」与分项和（4+15+4+14+7+6=50）不一致 —— 工程按分项全量落表
- * （50 条，R-C3-RULING 敌人 14→15 补守墓者），测试断言分项和并注明差异（M2 不改设计文档，仅数据层口径对齐分项）。
+ * （R-C3-RULING 敌人 14→15 补守墓者、gdd-enemies-v3 §③-2 15→16/17 增补）；测试断言分项和并注明差异。
+ *
+ * P2-4（NW-5 裁决）：新增共鸣形态条目 8 条（内容 ID 沿用共鸣后通武 wpn_b_* 等；
+ * frame-map v1.3 无共鸣形态独立立绘帧 → UI 程序化占位图 + 配对专武徽记，报告注明）；
+ * evo_* 条目**退役区**：数据保留不删，UI 超武页签分组标注「已退役」（EG-2 双轨收口）。
  *
  * 解锁记录（§3.2）：
  * - kill    ：首杀（enemy/boss）
  * - obtain  ：首次获得（weapon）
- * - evolve  ：首次进化（evo）
+ * - evolve  ：首次进化（evo；EG-2 后轨道退役，条目入退役区）
  * - progress：通关/解锁（hero/map/event）
  * - trigger ：首次触发（event：血月化身月坠 = 击杀）
- * 幂等：首杀/首获/首进化/首通不重复解锁；重开/换角色不重复。
+ * - resonance：共鸣达成（ResonanceState 提交后由 UpgradeFlowController 回写，P2-4）
+ * 幂等：首杀/首获/首进化/首通/共鸣不重复解锁；重开/换角色不重复。
  */
 
 import {
@@ -23,15 +28,19 @@ import {
   BOSSES,
   WEAPON_CONFIGS,
   EVOLUTIONS,
+  EXCLUSIVE_WEAPONS,
+  UPGRADE_POOL,
+  RESONANCE_PAIRS,
   type EnemyId,
   type WeaponId,
   type EvoId,
   type HeroId,
   type BossId,
+  type ResonancePairConfig,
 } from '@/config/balance';
 
-export type CodexCategory = 'hero' | 'enemy' | 'boss' | 'weapon' | 'evo' | 'event';
-export type CodexUnlockType = 'kill' | 'obtain' | 'evolve' | 'progress' | 'trigger';
+export type CodexCategory = 'hero' | 'enemy' | 'boss' | 'weapon' | 'evo' | 'event' | 'resonance';
+export type CodexUnlockType = 'kill' | 'obtain' | 'evolve' | 'progress' | 'trigger' | 'resonance';
 
 export interface CodexEntry {
   entryId: string; // codex_<category>_<id>
@@ -53,6 +62,21 @@ const EVENT_ENTRIES: readonly { entryId: string; name: string; condition: string
   { entryId: 'codex_event_5', name: '兽群', condition: '首通地图 3（狼穴）' },
   { entryId: 'codex_event_6', name: '血月化身', condition: '任意地图击杀血月化身' },
 ];
+
+/** 共鸣条目 id 前缀（P2-4：内容 ID 沿用共鸣后通武，如 codex_reso_wpn_b_1） */
+export const RESONANCE_ENTRY_PREFIX = 'codex_reso_';
+
+/** 共鸣触发条件可读文案（配对专武 + 共鸣钥名；codex 条目 condition 与详情抽屉共用） */
+export function resonanceConditionText(pair: ResonancePairConfig): string {
+  const exclusiveName = EXCLUSIVE_WEAPONS[pair.exclusiveId]?.name ?? pair.exclusiveId;
+  const keyName = UPGRADE_POOL.find((u) => u.id === pair.keyId)?.name ?? pair.keyId;
+  return `达成共鸣：${exclusiveName} × ${keyName}`;
+}
+
+/** 共鸣条目 entryId（内容 ID = 共鸣后通武 commonWeaponId） */
+export function resonanceEntryId(pair: ResonancePairConfig): string {
+  return `${RESONANCE_ENTRY_PREFIX}${pair.commonWeaponId}`;
+}
 
 /** 全量条目（由配置表派生；事件为静态表） */
 export function allCodexEntries(): CodexEntry[] {
@@ -88,6 +112,16 @@ export function allCodexEntries(): CodexEntry[] {
   for (const ev of EVENT_ENTRIES) {
     entries.push({ entryId: ev.entryId, category: 'event', name: ev.name, unlock: 'progress', condition: ev.condition });
   }
+  // 共鸣形态 8（P2-4：共鸣达成解锁；内容 ID 沿用共鸣后通武 wpn_b_* 等）
+  for (const pair of RESONANCE_PAIRS) {
+    entries.push({
+      entryId: resonanceEntryId(pair),
+      category: 'resonance',
+      name: pair.name,
+      unlock: 'resonance',
+      condition: resonanceConditionText(pair),
+    });
+  }
   return entries;
 }
 
@@ -98,11 +132,19 @@ export function codexEntryById(entryId: string): CodexEntry | null {
   return CODEX_ENTRIES.find((e) => e.entryId === entryId) ?? null;
 }
 
-/** 分项统计（gdd-codex §3.1；测试断言分项和 = 49，GDD 表头 35 为笔误口径） */
+/** 分项统计（gdd-codex §3.1 + P2-4 共鸣 8；测试断言分项和 = 60，GDD 表头 35 为笔误口径） */
 export function codexCategoryCounts(): Record<CodexCategory, number> {
-  const counts: Record<CodexCategory, number> = { hero: 0, enemy: 0, boss: 0, weapon: 0, evo: 0, event: 0 };
+  const counts: Record<CodexCategory, number> = { hero: 0, enemy: 0, boss: 0, weapon: 0, evo: 0, event: 0, resonance: 0 };
   for (const e of CODEX_ENTRIES) counts[e.category] += 1;
   return counts;
+}
+
+/**
+ * P2-4 退役区（NW-5 裁决 / EG-2 双轨收口）：evo_* 条目数据保留不删，
+ * UI 超武页签分组标注「已退役」。返回 true 的类别在 UI 渲染退役区分组头。
+ */
+export function isRetiredCategory(category: CodexCategory): boolean {
+  return category === 'evo';
 }
 
 /** 图鉴解锁追踪器（单会话内存态；持久化走 save.ts） */
@@ -140,9 +182,14 @@ export class CodexTracker {
     return this.record(`codex_wpn_${weaponId}`);
   }
 
-  /** 首次进化（evo） */
+  /** 首次进化（evo；EG-2 后轨道退役，条目入退役区保留） */
   recordEvolve(evoId: EvoId): boolean {
     return this.record(`codex_evo_${evoId}`);
+  }
+
+  /** P2-4 共鸣达成（ResonanceState 提交后回写；commonWeaponId = 共鸣后通武内容 ID） */
+  recordResonance(commonWeaponId: WeaponId): boolean {
+    return this.record(`${RESONANCE_ENTRY_PREFIX}${commonWeaponId}`);
   }
 
   /** 首通/解锁（progress：hero/map/event） */

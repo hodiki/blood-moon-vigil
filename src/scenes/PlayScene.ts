@@ -364,6 +364,12 @@ export class PlayScene extends Phaser.Scene {
       treeS4Active: () => this.treeS4Active,
       refreshResonanceBadge: () => this.exclusiveRun.refreshResonanceBadge(),
       onWeaponUnlocked: (w) => this.onWeaponUnlocked(w),
+      // P2-4：共鸣达成 → 共鸣形态图鉴条目解锁（幂等；toast 同帧合并）
+      onResonanceAchieved: (commonWeaponId) => {
+        if (this.codex.recordResonance(commonWeaponId as Parameters<CodexTracker['recordResonance']>[0])) {
+          this.codexToastPending = true;
+        }
+      },
       setR5Sanctuary: (v) => {
         this.r5SanctuaryAchieved = v;
       },

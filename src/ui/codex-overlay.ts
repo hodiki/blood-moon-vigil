@@ -18,6 +18,9 @@ import { getOverlayHost } from '@/ui/overlay-host';
 import {
   CODEX_ENTRIES,
   codexCategoryCounts,
+  isRetiredCategory,
+  resonanceConditionText,
+  resonanceEntryId,
   type CodexCategory,
   type CodexEntry,
 } from '@/codex/codex';
@@ -33,6 +36,7 @@ import {
   EVOLUTIONS,
   HEROES,
   BOSSES,
+  RESONANCE_PAIRS,
   type HeroId,
   type BossId,
   type EnemyId,
@@ -54,17 +58,18 @@ export function codexCardState(entry: CodexEntry, unlocked: ReadonlySet<string>)
   return unlocked.has(entry.entryId) ? 'unlocked' : 'locked';
 }
 
-/** 6 页签（spec §3） */
+/** 7 页签（spec §3 + P2-4 共鸣形态页签；evo 退役区在页签内分组标注） */
 export const CODEX_TABS: readonly { category: CodexCategory; label: string }[] = [
   { category: 'hero', label: '角色' },
   { category: 'enemy', label: '敌人' },
   { category: 'boss', label: 'Boss' },
   { category: 'weapon', label: '武器' },
+  { category: 'resonance', label: '共鸣' },
   { category: 'evo', label: '超武' },
   { category: 'event', label: '事件' },
 ] as const;
 
-/** 分项总数（角色 4/敌人 15/Boss 4/武器 14/超武 7/事件 6 = 50；codex.ts 数据层口径） */
+/** 分项总数（角色 4/敌人 17/Boss 4/武器 14/共鸣 8/超武 7/事件 6 = 60；codex.ts 数据层口径） */
 export function codexTabCounts(): Record<CodexCategory, number> {
   return codexCategoryCounts();
 }
@@ -97,7 +102,8 @@ const GLYPH_COLORS: Record<CodexCategory, string> = {
   enemy: '#8C2F2F', // 暗红（亡者剪影）
   boss: '#FF3B3B', // 猩红金
   weapon: '#54E6C9', // 冷青
-  evo: '#FFC93C', // 金（稀有/超武）
+  resonance: '#8FB8FF', // 月幽蓝（共鸣形态占位；词根色编码见 gdd-resonance §⑧）
+  evo: '#FFC93C', // 金（稀有/超武；已退役区）
   event: '#A9B4C4', // 灰蓝（档案）
 };
 
@@ -106,6 +112,8 @@ const GLYPH_SHAPES: Record<CodexCategory, string> = {
   enemy: '<circle cx="32" cy="24" r="12"/><path d="M32 38 L32 56 M20 44 L44 44 M24 62 L32 50 L40 62" stroke-width="4" fill="none"/>',
   boss: '<circle cx="32" cy="26" r="12"/><path d="M20 42 L32 58 L44 42 M26 62 L32 52 L38 62" stroke-width="4" fill="none"/>',
   weapon: '<path d="M22 52 L40 20 M40 20 L52 32 M40 20 L34 14 M40 20 L46 26" stroke-width="4" fill="none"/>',
+  // P2-4：共鸣形态无独立立绘帧（frame-map v1.3）——程序化占位图（双环谐振）+ 专武徽记角标
+  resonance: '<circle cx="32" cy="32" r="15" stroke-width="3" fill="none"/><circle cx="32" cy="32" r="6"/><path d="M32 10 L32 17 M32 47 L32 54 M10 32 L17 32 M47 32 L54 32" stroke-width="3" fill="none"/>',
   evo: '<path d="M32 14 L38 28 L52 30 L41 40 L44 54 L32 46 L20 54 L23 40 L12 30 L26 28 Z" />',
   event: '<rect x="18" y="16" width="28" height="36" rx="4"/><path d="M24 28 L40 28 M24 36 L40 36 M24 44 L34 44" stroke-width="3" fill="none"/>',
 };
@@ -116,6 +124,14 @@ export function codexGlyphSvg(category: CodexCategory, size = 64): string {
     <rect width="64" height="64" rx="12" fill="#131722"/>
     <g stroke="${color}" stroke-linejoin="round" stroke-linecap="round">${GLYPH_SHAPES[category]}</g>
   </svg>`;
+}
+
+/** P2-4：共鸣条目配对专武徽记帧（frame-map §5A.3 exw-emblem-*；xw_lantern → exw-emblem-lantern）。
+ *  共鸣形态无独立立绘帧（frame-map v1.3）→ 占位图 + 徽记；帧缺失由 preferFrameImg 兜底 SVG。 */
+export function resonanceEmblemFrame(entry: CodexEntry): string | null {
+  if (entry.category !== 'resonance') return null;
+  const pair = RESONANCE_PAIRS.find((p) => resonanceEntryId(p) === entry.entryId);
+  return pair ? `exw-emblem-${pair.exclusiveId.slice(3)}` : null;
 }
 
 // —— 覆盖层 ——
@@ -239,6 +255,13 @@ export class CodexOverlay {
 
   private renderCategory(category: CodexCategory): void {
     this.grid.innerHTML = '';
+    // P2-4 退役区（NW-5）：evo_* 数据保留不删，分组头标注「已退役」
+    if (isRetiredCategory(category)) {
+      const note = document.createElement('div');
+      note.className = 'bmv-codex-retired-note';
+      note.textContent = '已退役 · 超武进化轨道归档（EG-2 双轨收口；数据保留，由共鸣/质变卡双轨替代）';
+      this.grid.appendChild(note);
+    }
     const entries = CODEX_ENTRIES.filter((e) => e.category === category);
     for (const entry of entries) {
       const card = document.createElement('div');
@@ -251,7 +274,14 @@ export class CodexOverlay {
       } else if (state === 'locked') {
         card.innerHTML = `<div class="bmv-codex-card-glyph">${codexGlyphSvg(category)}<div class="bmv-codex-q">？</div></div><div class="bmv-codex-card-name">？？？</div><div class="bmv-codex-card-condition">${codexConditionText(entry)}</div>`;
       } else {
-        card.innerHTML = `<div class="bmv-codex-card-glyph">${codexGlyphSvg(category)}</div><div class="bmv-codex-card-name">${entry.name}</div><div class="bmv-codex-card-tag">${this.tagText(entry)}</div>`;
+        // P2-4：共鸣条目加配对专武徽记角标（占位图 + 徽记）
+        const badge = resonanceEmblemFrame(entry)
+          ? '<div class="bmv-codex-reso-badge" aria-hidden="true"></div>'
+          : '';
+        card.innerHTML = `<div class="bmv-codex-card-glyph">${codexGlyphSvg(category)}${badge}</div><div class="bmv-codex-card-name">${entry.name}</div><div class="bmv-codex-card-tag">${this.tagText(entry)}</div>`;
+        const badgeEl = card.querySelector('.bmv-codex-reso-badge') as HTMLElement | null;
+        const emblemFrame = resonanceEmblemFrame(entry);
+        if (badgeEl && emblemFrame) preferFrameImg(badgeEl, emblemFrame);
       }
       const glyph = card.querySelector('.bmv-codex-card-glyph') as HTMLElement | null;
       const frame = state === 'hidden' ? null : codexIconFrame(entry);
@@ -297,6 +327,10 @@ export class CodexOverlay {
       case 'weapon': {
         const id = entry.entryId.replace('codex_wpn_', '') as WeaponId;
         return WEAPON_CONFIGS[id]?.powerTag ?? null;
+      }
+      case 'resonance': {
+        // P2-4：共鸣形态词根色（gdd-resonance §④ powerTag）
+        return RESONANCE_PAIRS.find((p) => resonanceEntryId(p) === entry.entryId)?.powerTag ?? null;
       }
       default:
         return null;
@@ -434,6 +468,24 @@ export class CodexOverlay {
         max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
       .bmv-codex-card-tag { margin-top: 2px; font-size: 11px; color: #54E6C9; }
+      /* P2-4 退役区（NW-5）：evo 分组头 + 共鸣徽记角标 */
+      .bmv-codex-retired-note {
+        grid-column: 1 / -1;
+        padding: 6px 10px;
+        font-size: 12px; color: #FFC93C;
+        background: rgba(255, 201, 60, 0.08);
+        border: 1px dashed rgba(255, 201, 60, 0.4);
+        border-radius: 6px;
+      }
+      .bmv-codex-reso-badge {
+        position: absolute; right: -4px; bottom: -4px;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: #131722;
+        border: 1px solid #2A3346;
+        overflow: hidden;
+      }
+      .bmv-codex-reso-badge img.bmv-frame-img { width: 20px; height: 20px; object-fit: contain; image-rendering: pixelated; display: block; }
       .bmv-codex-card-condition {
         margin-top: 6px; font-size: 11px; color: #6A7280; text-align: center;
         line-height: 1.3;
@@ -573,6 +625,20 @@ export function detailFor(entry: CodexEntry): { label: string; value: string }[]
         { label: '合成', value: `${WEAPON_CONFIGS[evo.wpnId]?.name ?? evo.wpnId} + ${evo.keyId}` },
         { label: '等效 DPS', value: String(evo.baseDps) },
         { label: '行为质变', value: evo.effect },
+      ];
+    }
+    case 'resonance': {
+      // P2-4：共鸣形态档案（gdd-resonance §④ 八字段模板节选）
+      const pair = RESONANCE_PAIRS.find((p) => resonanceEntryId(p) === entry.entryId);
+      if (!pair) return [];
+      return [
+        { label: '名称', value: `共鸣·${pair.name}` },
+        { label: '触发条件', value: resonanceConditionText(pair) },
+        { label: '形态变化', value: pair.visual },
+        { label: '行为变化', value: pair.behavior },
+        { label: '伤害频率', value: pair.damageNote },
+        { label: '控制效果', value: pair.control },
+        { label: '词根', value: pair.powerTag },
       ];
     }
     default:

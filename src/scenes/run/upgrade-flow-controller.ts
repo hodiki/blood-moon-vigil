@@ -67,6 +67,8 @@ export interface UpgradeFlowPorts {
   refreshResonanceBadge: () => void;
   /** 武器解锁出口（E4-S5/E4-S6：解锁 + 图鉴 + HUD 槽扩列） */
   onWeaponUnlocked: (weaponId: string) => void;
+  /** P2-4 共鸣达成图鉴回写（ResonanceState 提交后解锁共鸣形态条目，幂等） */
+  onResonanceAchieved: (commonWeaponId: string) => void;
   /** P1-5 R-5 圣域达成标记（场景字段，refreshSanctuaryOverlap 每帧消费） */
   setR5Sanctuary: (v: boolean) => void;
 }
@@ -268,6 +270,8 @@ export class UpgradeFlowController {
       if (pair) {
         // 共鸣达成遥测（达成率/各对选取分布，GDD §⑧-6）
         p.runStats().recordResonance(pair.id, p.elapsed());
+        // P2-4：共鸣形态图鉴条目解锁（codex_reso_<commonWeaponId>，幂等）
+        p.onResonanceAchieved(pair.commonWeaponId);
         GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: pair.commonWeaponId, name: `共鸣·${pair.name}` });
         // P1-5 R-5 圣域重叠区收拢：弃全局 DR +8pp，改帧级重叠判定（壁垒光环与铃域均玩家居中
         // → 几何重叠 ≡ 双武启用；dynamicDamageReductionPct 由 refreshSanctuaryOverlap 每帧写）
