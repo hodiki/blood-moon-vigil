@@ -2,8 +2,10 @@
  * xp/xp-manager.ts —— 经验累计与升级曲线（ARCH §2 / S6 / E3-S1/S2）
  *
  * 纯函数层（test-framework §1.2，可脱离 Phaser 单测）：
- * - needXp(level) = 5 + 3×(level−1)（upgrade-pool §③，首级 5 点约 30s）
- * - cumulativeXpToReach(level)：到某级累计需求（Lv30 = 1363；含第 30 级 = 1455）
+ * - needXp(level)：XP_CASE 两段式（NV-BATCH-G G4，SC-2 终裁 c-标准 4/3/6——
+ *   need(1)=needFirst=4；第 2~4 级增量 earlyStep=3；第 5 级起增量 lateStep=6。
+ *   与 tools/sim/xp-cases.ts needXpCase 逐值一致，公式同构）
+ * - cumulativeXpToReach(level)：到某级累计需求
  * - stepGem：磁吸/拾取单步（80px 磁吸 / 16px 拾取 / 320px/s 磁吸速度）
  *
  * XpManager（Phaser 装配）：遍历宝石池做磁吸/拾取 → addXp 累加 →
@@ -11,7 +13,7 @@
  * （由 PlayScene 在 RUNNING 恢复后消费，支持一次大宝石连升多级的链式触发）。
  */
 
-import { XP, GEM } from '@/config/balance';
+import { XP, XP_CASE, GEM } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import type { XpGem } from '@/xp/xp-gem';
 
@@ -27,12 +29,21 @@ export interface GemPlayerLike {
   y: number;
 }
 
-/** need(n) = 5 + 3×(n−1)：从 level 升到 level+1 所需经验（upgrade-pool §③） */
+/**
+ * XP_CASE 两段式 needXp（NV-BATCH-G G4 冻结；与 tools/sim/xp-cases.ts needXpCase 逐值一致）：
+ * need(1) = needFirst；第 2~4 级增量 = earlyStep（X1 前段加速）；第 5 级起增量 = lateStep（X2 加陡）。
+ * 公式与沙盘同构：needFirst + step×(level−1) −（level>4 时 (lateStep−earlyStep)×3 抹平前段差）。
+ */
 export function needXp(level: number): number {
-  return XP.BASE_NEED + XP.NEED_STEP * (level - 1);
+  if (level <= 1) return XP_CASE.needFirst;
+  return (
+    XP_CASE.needFirst +
+    (level <= 4 ? XP_CASE.earlyStep : XP_CASE.lateStep) * (level - 1) -
+    (level <= 4 ? 0 : (XP_CASE.lateStep - XP_CASE.earlyStep) * 3)
+  );
 }
 
-/** 累计到某级所需经验（sum need(1..level-1)）；Lv30 = 1363（design-review-e2 §3 口径） */
+/** 累计到某级所需经验（sum need(1..level-1)）；c-标准档 Lv30 = 163（两段式 4/3/6 口径） */
 export function cumulativeXpToReach(level: number): number {
   let total = 0;
   for (let n = 1; n < level; n += 1) total += needXp(n);

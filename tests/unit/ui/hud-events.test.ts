@@ -16,7 +16,7 @@ import { formatSeconds } from '@/ui/results-overlay';
  */
 
 describe('HUD 状态归约器（E4-S1 事件流）', () => {
-  it('初始：LV1 / 0xp / needXp(1)=5 / HP 100/100 / 仅飞弹可用 / 无 Boss', () => {
+  it('初始：LV1 / 0xp / needXp(1)=4（NV-BATCH-G c-标准）/ HP 100/100 / 仅飞弹可用 / 无 Boss', () => {
     const s = createInitialHudState();
     expect(s.level).toBe(1);
     expect(s.xp).toBe(0);
@@ -31,7 +31,7 @@ describe('HUD 状态归约器（E4-S1 事件流）', () => {
     let s = createInitialHudState();
     s = reduceHudState(s, GameEvent.GemCollected, { amount: 3 });
     expect(s.xp).toBe(3);
-    expect(xpFillFraction(s)).toBeCloseTo(3 / 5, 6);
+    expect(xpFillFraction(s)).toBeCloseTo(3 / 4, 6); // need(1)=4（NV-BATCH-G c-标准）
     s = reduceHudState(s, GameEvent.GemCollected, { amount: 2 });
     expect(xpFillFraction(s)).toBe(1); // 满条（升级由 level:up 归零）
   });

@@ -29,6 +29,7 @@ import {
 import {
   BUDGET_PIECEWISE_ENDPOINTS,
   BUDGET_WAVE,
+  XP_CASE,
 } from '@/config/balance';
 import {
   weightedWeightsForStage,
@@ -586,6 +587,11 @@ export class EnemySpawner {
       }
     }
     enemy.spawnByConfig(cfg, x, y, { hpMult });
+    // NV-BATCH-G G5：敌 XP ×0.55 生成侧单源乘区（XP_CASE.enemyXpMult，sim-freeze-recommendation §②；
+    // 与 tools/sim/sim-run.ts `cfg.xp × enemyXpMult` 逐值一致，不取整保同值；
+    // 精英经本口同样吃 XP 下调（沙盘同口径），Boss 走 spawnByBossConfig 独立曲线不吃；
+    // 词缀 XP ×1.2 在其后再乘（下方），禁止在他处重复乘区）
+    enemy.xp = cfg.xp * XP_CASE.enemyXpMult;
     // 迅捷：移速/攻速倍率（在狼穴移速加权后应用）
     if (affix && AFFIXES[affix].speedMult) enemy.speed *= AFFIXES[affix].speedMult!;
     if (affix && AFFIXES[affix].attackIntervalMult) {

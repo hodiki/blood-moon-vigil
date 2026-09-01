@@ -3,17 +3,20 @@ import { needXp, cumulativeXpToReach, stepGem, XpManager, type GemLike, type Gem
 import { GameEvents, GameEvent } from '@/core/events';
 import { XP, GEM } from '@/config/balance';
 
-describe('need(n) 升级曲线（upgrade-pool §③ / E3-S1）', () => {
-  it('need(1)=5, need(2)=8, need(3)=11（序列 5,8,11…）', () => {
-    expect(needXp(1)).toBe(5);
-    expect(needXp(2)).toBe(8);
-    expect(needXp(3)).toBe(11);
-    expect(needXp(30)).toBe(92); // 5 + 3×29
+describe('need(n) 升级曲线（NV-BATCH-G G4：XP_CASE c-标准两段式 4/3/6，与 tools/sim needXpCase 逐值一致）', () => {
+  it('need(1)=4, need(2)=7, need(3)=10（前段增量 3）；need(5)=19 起 +6（中后段加陡）', () => {
+    expect(needXp(1)).toBe(4);
+    expect(needXp(2)).toBe(7); // +3
+    expect(needXp(3)).toBe(10); // +3
+    expect(needXp(4)).toBe(13); // +3（前 3 级增量）
+    expect(needXp(5)).toBe(19); // +6（中后段）
+    expect(needXp(6)).toBe(25); // +6
+    expect(needXp(30)).toBe(169); // 4 + 6×29 − 3×3
   });
 
-  it('Lv30 累计 1363 点（不含第 30 级）/ 含第 30 级 1455（口径与 epics/design-review 一致）', () => {
-    expect(cumulativeXpToReach(30)).toBe(1363);
-    expect(cumulativeXpToReach(31)).toBe(1455);
+  it('Lv30 累计 2309 点（不含第 30 级）/ 含第 30 级 2478（c-标准两段式口径；旧 5+3n 曲线为 1363/1455 归档）', () => {
+    expect(cumulativeXpToReach(30)).toBe(2309);
+    expect(cumulativeXpToReach(31)).toBe(2478);
   });
 });
 
@@ -144,9 +147,9 @@ describe('XpManager 经验累计与升级消费（E3-S1/S2）', () => {
     expect(gem.deactivateCalls).toBe(1);
   });
 
-  it('addXp 跨阈值升级：5 点 → Lv2，need(2)=8', () => {
+  it('addXp 跨阈值升级：4 点 → Lv2（need(1)=4），xp 余额清零', () => {
     const m = makeManager();
-    const ups = m.addXp(5);
+    const ups = m.addXp(4);
     expect(ups).toBe(1);
     expect(m.level).toBe(2);
     expect(m.xp).toBe(0);
@@ -162,9 +165,9 @@ describe('XpManager 经验累计与升级消费（E3-S1/S2）', () => {
     expect(m.xpGained).toBe(1376); // 13 + 1363
   });
 
-  it('大额宝石一次连升（1363 点 → Lv30）且挂起升级逐个消费', () => {
+  it('大额宝石一次连升（cumulativeXpToReach(30)=2309 点 → Lv30）且挂起升级逐个消费', () => {
     const m = makeManager();
-    const ups = m.addXp(1363);
+    const ups = m.addXp(2309);
     expect(ups).toBe(29);
     expect(m.level).toBe(30);
 
