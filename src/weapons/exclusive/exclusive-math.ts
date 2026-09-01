@@ -678,10 +678,17 @@ export interface HornState {
   summonTimer: number;
   wolves: MoonWolf[];
   totalDamage: number;
+  /**
+   * R-8 锁存请求（NV-P2-ZERO 接线，gdd-resonance §⑦-2）：月狼召唤请求被猎犬外部占位顶掉时
+   * 置 true（仅 wolves.length < maxWolves 即「被外部顶掉」时锁存；自身满员仍静默丢弃不锁存）；
+   * 槽位释放（猎犬死亡/超时 → externalOccupants 回落）后下一步进立即消费重召，不等 12s 节拍。
+   * 一次性消费（1 次防连刷）。
+   */
+  latchedRequest: boolean;
 }
 
 export function createHornState(): HornState {
-  return { summonTimer: 0, wolves: [], totalDamage: 0 };
+  return { summonTimer: 0, wolves: [], totalDamage: 0, latchedRequest: false };
 }
 
 /** 号角帧步进（月狼贴身玩家自动索敌；狼位置 = 玩家附近虚拟——视觉实体 B6 欠账）。
@@ -700,22 +707,36 @@ export function stepHorn(
   const base = EXCLUSIVE_WEAPONS.xw_horn.params;
   const maxWolves = machine['maxWolves'] ?? base.summonMax!;
 
+  // R-8 召唤体构造（节拍路径与锁存释放路径共用）
+  const summonWolf = () => {
+    state.wolves.push({
+      until: now + base.summonDuration!,
+      attackTimer: 0,
+      rageUntil: (machine['rageDuration'] ?? 0) > 0 ? now + machine['rageDuration']! : 0,
+    });
+    result.events.push('howl');
+    // 卡 2：吹号长啸全体狂化 6s
+    if ((machine['rageDamageMult'] ?? 0) > 0) {
+      for (const w of state.wolves) w.rageUntil = Math.max(w.rageUntil, now + (machine['rageDuration'] ?? 6));
+    }
+  };
+
   state.summonTimer -= dt;
   if (state.summonTimer <= 0) {
     state.summonTimer = base.summonInterval!;
     if (state.wolves.length + externalOccupants < maxWolves) {
-      // 召唤请求：场上限静默丢弃（§6.1-2 满员不排队）
-      state.wolves.push({
-        until: now + base.summonDuration!,
-        attackTimer: 0,
-        rageUntil: (machine['rageDuration'] ?? 0) > 0 ? now + machine['rageDuration']! : 0,
-      });
-      result.events.push('howl');
-      // 卡 2：吹号长啸全体狂化 6s
-      if ((machine['rageDamageMult'] ?? 0) > 0) {
-        for (const w of state.wolves) w.rageUntil = Math.max(w.rageUntil, now + (machine['rageDuration'] ?? 6));
-      }
+      summonWolf();
+    } else if (state.wolves.length < maxWolves) {
+      // R-8 锁存（NV-P2-ZERO，§⑦-2）：请求被猎犬外部占位顶掉（自身未满）——
+      // 槽位释放后立即消费重召，替代旧行为「丢弃后干等下个 summonInterval（12s 节拍）」
+      state.latchedRequest = true;
     }
+    // 自身满员（wolves.length ≥ maxWolves）→ 满员不排队，静默丢弃且不锁存（§6.1-2 原语义）
+  }
+  // R-8 锁存释放：槽位空闲（猎犬死亡/超时 → externalOccupants 回落）→ 立即重召（一次性消费，防连刷）
+  if (state.latchedRequest && state.wolves.length + externalOccupants < maxWolves) {
+    state.latchedRequest = false;
+    summonWolf();
   }
 
   for (let i = state.wolves.length - 1; i >= 0; i -= 1) {

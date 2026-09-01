@@ -4,6 +4,7 @@
  * 覆盖：
  * - P2-3a 共鸣预告徽记四态透传（decorateResonanceBadges 纯函数 + onLevelUp roll 结果透传）
  * - P2-3b 共鸣达成 0.8s 定格演出触发（consumeUpgradeChoice → showResonanceFreeze 端口）
+ * - R-8 latch 锁存释放（stepHorn 槽位释放立即重召，不等 12s 节拍）
  */
 
 import { describe, it, expect } from 'vitest';
@@ -22,6 +23,7 @@ import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
 import type { WeaponSystem } from '@/weapons/weapon-system';
 import type { RunStats } from '@/stats/run-stats';
 import type { ExclusiveWeaponId, UpgradeId } from '@/config/balance';
+import { stepHorn, createHornState, hornWolfCount, type HornState } from '@/weapons/exclusive/exclusive-math';
 
 // ============================================================================
 // P2-3a · 共鸣预告徽记四态透传
@@ -172,3 +174,76 @@ function makeController(opts: { onShowV2?: (o: UpgradeV2Option[]) => void; elaps
   controller.buildTargets();
   return { controller, freezeCalls, resonance };
 }
+
+// ============================================================================
+// R-8 · latch 锁存释放（满员丢狼 → 槽位释放立即重召，不等 12s 节拍）
+// ============================================================================
+
+// 简易目标/玩家桩（stepHorn 只读 x/y/active/hp）
+function makeTarget(x: number, y: number) {
+  return { x, y, active: true, hp: 1000, radius: 12, kill: () => {} };
+}
+function makePlayer() {
+  return { x: 0, y: 0, hp: 100, maxHp: 100 };
+}
+
+describe('NV-P2-ZERO · R-8 latch 锁存释放（gdd-resonance §⑦-2 猎犬消失瞬间释放）', () => {
+  const MACHINE = { maxWolves: 2 }; // 卡 1 前基础场上限 2
+
+  it('满员（猎犬占位）吹号 → 请求锁存（latchedRequest = true），狼数不变', () => {
+    const state = createHornState();
+    stepHorn(state, 0.01, 0, makePlayer(), [], 1, MACHINE, 1); // 0 狼 + 1 占位 < 2 → 正常召 1 头
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.01, makePlayer(), [], 1, MACHINE, 1); // 1+1 = 2 满且被外部顶掉 → 锁存
+    expect(state.wolves).toHaveLength(1);
+    expect(state.latchedRequest).toBe(true);
+  });
+
+  it('槽位释放（猎犬消失 externalOccupants 1→0）→ 锁存请求立即生效，不等 summonInterval 12s', () => {
+    const state = createHornState();
+    stepHorn(state, 0.01, 0, makePlayer(), [], 1, MACHINE, 1); // 召 1 头
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.01, makePlayer(), [], 1, MACHINE, 1); // 满 → 锁存
+    expect(state.latchedRequest).toBe(true);
+    // 猎犬消失（外部占位 0）：仅推进 0.01s（远小于 12s 节拍）→ 立即补狼
+    stepHorn(state, 0.01, 0.02, makePlayer(), [makeTarget(50, 0)], 1, MACHINE, 0);
+    expect(state.wolves).toHaveLength(2);
+    expect(state.latchedRequest).toBe(false);
+  });
+
+  it('防连刷语义：自身满员再吹不锁存（静默丢弃 §6.1-2 原语义不变）', () => {
+    const state = createHornState();
+    stepHorn(state, 0.01, 0, makePlayer(), [], 1, MACHINE, 0);
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.01, makePlayer(), [], 1, MACHINE, 0);
+    expect(state.wolves).toHaveLength(2);
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.02, makePlayer(), [], 1, MACHINE, 0);
+    expect(state.wolves).toHaveLength(2);
+    expect(state.latchedRequest).toBe(false);
+  });
+
+  it('锁存跨多个失败节拍保持；槽位释放后一次性消费', () => {
+    const state = createHornState();
+    stepHorn(state, 0.01, 0, makePlayer(), [], 1, MACHINE, 0); // 第 1 头正常召出
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.01, makePlayer(), [], 1, MACHINE, 1); // 1+1 满 → 锁存
+    expect(state.latchedRequest).toBe(true);
+    // 连续多个节拍猎犬仍在 → 保持锁存、狼数不变
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.02, makePlayer(), [], 1, MACHINE, 1);
+    state.summonTimer = 0;
+    stepHorn(state, 0.01, 0.03, makePlayer(), [], 1, MACHINE, 1);
+    expect(state.wolves).toHaveLength(1);
+    expect(state.latchedRequest).toBe(true);
+    // 猎犬消失 → 立即补到 2 头（锁存一次消费）
+    stepHorn(state, 0.01, 0.04, makePlayer(), [], 1, MACHINE, 0);
+    expect(state.wolves).toHaveLength(2);
+    expect(hornWolfCount(state, 0.05)).toBe(2);
+  });
+
+  it('HornState 契约：latchedRequest 初始 false', () => {
+    const state: HornState = createHornState();
+    expect(state.latchedRequest).toBe(false);
+  });
+});
