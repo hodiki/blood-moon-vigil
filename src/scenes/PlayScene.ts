@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, DERIVATIVE_UPGRADE_MAP, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, DERIVATIVE_UPGRADE_MAP, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, } from '@/config/balance';
 import { defaultExclusiveFor } from '@/weapons/loadout';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
@@ -82,8 +82,7 @@ import { SHOW_OPEN_BANNER, prologueScreensForMap } from '@/narratives/narratives
 import { PrologueOverlay, createPrologueOverlay } from '@/ui/prologue-overlay';
 import { ExclusiveSelectOverlay } from '@/ui/exclusive-select-overlay';
 import { RelicDirector } from '@/relics/relic-runtime';
-import type { RelicEffectContext } from '@/relics/relic-engine';
-import { hitEnemy } from '@/combat/damage';
+import { RelicFieldRunner } from '@/scenes/run/relic-field-runner';
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
 import { BenchSmokeRunner } from '@/scenes/run/bench-smoke-runner';
 import { ExclusiveRunAssembler } from '@/scenes/run/exclusive-run-assembler';
@@ -94,11 +93,6 @@ import { ExclusiveRunAssembler } from '@/scenes/run/exclusive-run-assembler';
  */
 const WOLF_FRENZY_DURATION_SECONDS = 4;
 const WOLF_FRENZY_ATTACK_SPEED_MULT = 1.25;
-/** P0-1 祭坛占位：局内 150s 落一次可交互点（最小实现；交互半径 60px，ALTAR_CHANCE 0.5） */
-const ALTAR_SPAWN_SECONDS = 150;
-const ALTAR_INTERACT_RADIUS = 60;
-const ALTAR_OFFSET_PX = 260;
-
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
  * TASK-31 收尾（rhythm-pace-adj §6）：BENCH_DURATION_MS 60_000→36_000，
@@ -260,15 +254,8 @@ export class PlayScene extends Phaser.Scene {
   private judgmentAura: { perSec: number; until: number } | null = null;
   /** P1-14 月啸冲锋「加尔文狂化 4s（攻速）」窗口（与血月狂化 6s 分列，不再串台） */
   private frenzyUntil = -Infinity;
-  /** P0-1 圣物局内运行时（Boss 渠道保底 1 + 祭坛概率第 2；CD 240s / 每枚 1 次） */
-  private relics = new RelicDirector();
-  /** P0-1 祭坛占位（地图事件最小实现：单次交互点，走 ALTAR_CHANCE 概率第 2 枚） */
-  private altar: { x: number; y: number; marker: Phaser.GameObjects.Arc | null; used: boolean } | null = null;
-  /** P0-1 银潮汐落场银雨（8s 灼烧场；伤害段不进 DPS 预算主线） */
-  private silverRain: { x: number; y: number; radius: number; dps: number; until: number } | null = null;
-  /** P0-1 十二灯誓约：承伤 −20% 窗口（到期从 PlayerStats 减伤池扣回） */
-  private relicDrUntil = 0;
-  private relicDrAmount = 0;
+  /** P0-1 圣物/祭坛/持续场运行时（W-F1 拆分：run/relic-field-runner） */
+  private readonly relicFields = new RelicFieldRunner(new RelicDirector());
 
   // 冒烟 / 基准 / QA 运行模式（W-F1 拆分：状态与判定逻辑搬入 run/bench-smoke-runner）
   private readonly runModes = new BenchSmokeRunner();
@@ -307,10 +294,7 @@ export class PlayScene extends Phaser.Scene {
     this.avatarKillsThisRun = 0;
     this.codexToastPending = false;
     // P0-1 圣物层 per-run 复位（scene.restart 复用实例；祭坛标记要显式销毁防残留在场）
-    this.relics.reset();
-    this.altar?.marker?.destroy();
-    this.altar = null;
-    this.silverRain = null;
+    this.relicFields.resetRun();
     // P1-14 衍生技持续段 per-run 复位（审判光环 / 月啸狂化 / 蓄力目标集）
     this.judgmentAura = null;
     this.frenzyUntil = -Infinity;
@@ -388,6 +372,26 @@ export class PlayScene extends Phaser.Scene {
       },
       preselectedWeapon: () => (this.saveData?.preselectedWeapon ?? null) as WeaponId | null,
       hasKey: (keyId) => this.upgradeState.hasKey(keyId),
+    });
+    // 圣物/祭坛/持续场端口（W-F1 拆分：run/relic-field-runner）
+    this.relicFields.attach({
+      isRunning: () => this.state.get() === GamePhase.RUNNING,
+      nowSeconds: () => this.time.now / 1000,
+      playerX: () => this.player.x,
+      playerY: () => this.player.y,
+      stats: () => this.player.stats,
+      eachActiveEnemy: (fn) => this.enemyPool.eachActive(fn),
+      fx: () => this.fx,
+      hud: () => this.hud,
+      elapsedSeconds: () => this.spawner.elapsedSeconds,
+      mapSize: () => MAP_CONFIGS[this.mapId],
+      addAltarMarker: (x, y) => {
+        const marker = this.add.circle(x, y, 26, 0x54e6c9, 0.28);
+        marker.setStrokeStyle(2, 0x54e6c9);
+        marker.setDepth(20);
+        return marker;
+      },
+      recordRelicDamage: (amount) => this.stats.recordRelicDamage(amount),
     });
     // W-1 特殊行为 AI 运行时（召唤出口走 spawner 敌方技能召唤口：noXp 自动置位）
     this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
@@ -515,7 +519,7 @@ export class PlayScene extends Phaser.Scene {
       onPauseToggle: () => this.togglePause(),
       onActiveSkill: () => this.tryCastActiveSkill(), // 移动端技能按钮 → 同一释放入口
       // P0-1 圣物：移动端第二技能钮（桌面走 Q 键，见 inputSource.onRelicSkill）
-      onRelicSkill: () => this.tryUseRelic(),
+      onRelicSkill: () => this.relicFields.tryUseRelic(),
     });
     if (this.cfg.isMobile) this.hud.setSkillCharges(this.derivativeController.chargeCount);
     // NV-INTEG-FIX P1：HUD 动态武器槽初始同步（初始通武 + Q-b/Q-d 预发 + 默认专武）
@@ -646,7 +650,7 @@ export class PlayScene extends Phaser.Scene {
     // M1b 主动技：桌面 Space/Shift + 移动端按钮统一走 tryCastActiveSkill（相位门禁在场景层）
     this.inputSource.onActiveSkill(() => this.tryCastActiveSkill());
     // P0-1 圣物：独立键（桌面 Q / 移动端第二技能钮）→ tryUseRelic
-    this.inputSource.onRelicSkill(() => this.tryUseRelic());
+    this.inputSource.onRelicSkill(() => this.relicFields.tryUseRelic());
 
     // 防泄漏：场景关闭时清事件总线 + 输入
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
@@ -736,10 +740,11 @@ export class PlayScene extends Phaser.Scene {
     // P1-12 方阵个体 AI（围猎环游/低伏/扑击 + 骑士团蓄势/冲锋/硬直；速度覆写在 updateMovement 之后当帧生效）
     this.spawner.stepFormationMemberAI(dt, now);
     // P0-1 圣物：祭坛占位交互 + HUD CD 环（每帧刷新；数值变化 <0.5% 时 HUD 内部跳过重绘）
-    this.stepAltar(dt, now);
-    this.syncRelicHud(now);
-    // P0-1 银潮汐落场银雨 + P1-14 审判光环持续段
-    this.stepPersistentFields(dt, now);
+    this.relicFields.stepAltar(now);
+    this.relicFields.syncRelicHud(now);
+    // P1-14 审判光环持续段 + P0-1 银潮汐落场银雨（W-F1 拆分 relic-field-runner）
+    this.stepJudgmentAura(dt, now);
+    this.relicFields.stepFields(dt, now);
     // W-4 守誓者步进（跟随/墓碑/重召唤/撕咬）+ 血渍区/幻影到期
     this.stepCompanion(dt, now);
     // W-16 精英技能运行时（五精英 + MN-20 打断 + P0-5 180s 技能门；技能伤走 player.hurt 独立结算）
@@ -838,7 +843,7 @@ export class PlayScene extends Phaser.Scene {
     });
     this.stats.recordBossDefeated(this.spawner.elapsedSeconds);
     // P0-1「Boss 击杀必掉 1 枚」保底补齐（Boss 出场已发则此处 no-op）
-    if (this.relics.grantBossGuaranteed()) this.syncRelicHud(this.time.now / 1000);
+    if (this.relicFields.relics.grantBossGuaranteed()) this.relicFields.syncRelicHud(this.time.now / 1000);
     // E4-S6 图鉴 progress：首通地图 → 事件条目（墓地→起源/守夜会；教堂→血廷；狼穴→兽群）
     if (this.saveData) {
       const isNewClear = recordMapCleared(this.saveData, this.mapId);
@@ -913,117 +918,17 @@ export class PlayScene extends Phaser.Scene {
     return this.player.hurt(remaining, now);
   }
 
-  /**
-   * P0-1 圣物释放入口（桌面 Q / 移动端第二技能钮 → 同一入口；相位门禁在场景层）。
-   * 取第一枚可用（未用过 + CD 就绪）→ useRelic（used 置位 + CD 240s + 效果结算）。
-   */
-  private tryUseRelic(): void {
-    if (this.state.get() !== GamePhase.RUNNING) return;
-    const now = this.time.now / 1000;
-    const id = this.relics.tryUse(now, this.buildRelicEffectContext(now));
-    if (!id) return;
-    this.syncRelicHud(now);
-    // 演出（≥1.5s 全屏级；本批用现有特效层做 1.5s 级可见反馈，精致化归 B6 表现批）
-    this.fx.lanternFlash(this.player.x, this.player.y, 260);
-    if (RELICS[id].powerTag === 'BEAST') this.fx.rageBurst(this.player.x, this.player.y);
-  }
-
-  /** P0-1 圣物效果上下文（敌集合 + 伤害/回血/减伤/银雨端口；走唯一伤害入口 hitEnemy） */
-  private buildRelicEffectContext(now: number): RelicEffectContext {
-    const enemies: Array<{ readonly active: boolean; hp: number }> = [];
-    this.enemyPool.eachActive((e) => enemies.push(e));
-    return {
-      player: { x: this.player.x, y: this.player.y },
-      enemies: enemies as unknown as RelicEffectContext['enemies'],
-      healSink: (amount: number) => {
-        const applied = this.player.stats.heal(amount);
-        if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-      },
-      damageReductionSink: (pct, duration) => {
-        this.player.stats.addDamageReduction(pct);
-        this.relicDrUntil = now + duration;
-        this.relicDrAmount = pct;
-      },
-      damageSink: (target, amount) => {
-        const before = (target as { hp: number }).hp;
-        hitEnemy(target as unknown as { hp: number; kill(): void }, amount, now);
-        this.stats.recordRelicDamage(Math.max(0, before - (target as { hp: number }).hp));
-      },
-      // P0-1 银潮汐落场银雨（GDD 尾章 #4；禁止空技能）
-      silverRainSink: (radius, dps, duration) => {
-        this.silverRain = { x: this.player.x, y: this.player.y, radius, dps, until: now + duration };
-      },
-    };
-  }
-
-  /** P0-1 HUD 同步（CD 环 + 剩余次数 1~2；未持有圣物 = 隐藏） */
-  private syncRelicHud(now: number): void {
-    const slot = this.relics.nextUsableAt(now) ?? this.relics.slotsAt(now)[0] ?? null;
-    this.hud.setRelic(slot ? { name: slot.name, cdRemaining: slot.cdRemaining, cdSeconds: slot.cdSeconds } : null, this.relics.usesLeft());
-  }
-
-  /** P0-1 祭坛占位：局内一次性可交互点（ALTAR_CHANCE 概率第 2 枚；不足 = 祭坛冷熄） */
-  private stepAltar(dt: number, now: number): void {
-    void dt;
-    if (this.altar) {
-      if (this.altar.used) return;
-      const near = Math.hypot(this.player.x - this.altar.x, this.player.y - this.altar.y) <= ALTAR_INTERACT_RADIUS;
-      if (!near) return;
-      this.altar.used = true;
-      this.altar.marker?.destroy();
-      this.altar.marker = null;
-      const rolled = this.relics.interactAltar();
-      // 祭坛占位无文本表（叙事句归内容批）：命中 = 金光爆点 + HUD 出槽，未中 = 冷熄（无反馈）
-      if (rolled.granted && rolled.relic) this.fx.levelUpBurst(this.altar.x, this.altar.y);
-      this.syncRelicHud(now);
+  /** P1-14 审判光环持续段（圣辉审判衍生技：5s × 3 HP/s，跟随玩家；拆分后由场景暂管） */
+  private stepJudgmentAura(dt: number, now: number): void {
+    if (!this.judgmentAura) return;
+    if (now >= this.judgmentAura.until) {
+      this.judgmentAura = null;
       return;
     }
-    if (this.spawner.elapsedSeconds < ALTAR_SPAWN_SECONDS) return;
-    const cfg = MAP_CONFIGS[this.mapId];
-    const angle = this.spawner.elapsedSeconds % (Math.PI * 2);
-    const x = Math.max(40, Math.min(cfg.width - 40, this.player.x + Math.cos(angle) * ALTAR_OFFSET_PX));
-    const y = Math.max(40, Math.min(cfg.height - 40, this.player.y + Math.sin(angle) * ALTAR_OFFSET_PX));
-    const marker = this.add.circle(x, y, 26, 0x54e6c9, 0.28);
-    marker.setStrokeStyle(2, 0x54e6c9);
-    marker.setDepth(20);
-    this.altar = { x, y, marker, used: false };
+    const applied = this.player.stats.heal(this.judgmentAura.perSec * dt);
+    if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
   }
 
-  /** P0-1 银潮汐落场银雨 + P1-14 审判光环：持续段伤害/治疗（1s 结算节拍，工程锚） */
-  private stepPersistentFields(dt: number, now: number): void {
-    // 审判光环（圣辉审判衍生技：5s × 3 HP/s，跟随玩家）
-    if (this.judgmentAura) {
-      if (now >= this.judgmentAura.until) this.judgmentAura = null;
-      else {
-        const applied = this.player.stats.heal(this.judgmentAura.perSec * dt);
-        if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-      }
-    }
-    // 银雨（银潮汐圣物：8s 灼烧场；伤害计入圣物占比遥测，红线 <5%）
-    if (this.silverRain) {
-      if (now >= this.silverRain.until) this.silverRain = null;
-      else {
-        const field = this.silverRain;
-        const rSq = field.radius * field.radius;
-        this.enemyPool.eachActive((e) => {
-          if (!e.active || e.hp <= 0) return;
-          const dx = e.x - field.x;
-          const dy = e.y - field.y;
-          if (dx * dx + dy * dy > rSq) return;
-          const before = e.hp;
-          hitEnemy(e as unknown as { hp: number; kill(): void }, field.dps * dt, now);
-          this.stats.recordRelicDamage(Math.max(0, before - e.hp));
-          this.fx.orbitHit(e.x, e.y, now); // 银光爆点（GDD 尾章「对血族类生成银光爆点」演出）
-        });
-      }
-    }
-    // 十二灯誓约承伤减免窗口到期复位（RELIC 效果由减伤池承载）
-    if (this.relicDrUntil > 0 && now >= this.relicDrUntil) {
-      this.relicDrUntil = 0;
-      this.player.stats.addDamageReduction(-this.relicDrAmount);
-      this.relicDrAmount = 0;
-    }
-  }
   private stepCompanion(dt: number, now: number): void {
     // 守誓者（撕咬目标 = 敌池最近敌；咬死走 Enemy.kill 全链路）
     const biteTargets: Array<{ x: number; y: number; hp: number; kill(): void }> = [];
@@ -1164,7 +1069,7 @@ export class PlayScene extends Phaser.Scene {
     // TASK-28：Boss 出场特效 —— 猩红金冲击环 + 金点爆发 + 屏幕震动（移动端震动关闭）
     this.fx.bossEntrance(bx, by);
     // P0-1 圣物保底 1 枚：Boss 渠道发牌（进 Boss 战即可释放；详见 RelicDirector.grantBossGuaranteed 的偏离说明）
-    if (this.relics.grantBossGuaranteed()) this.syncRelicHud(now);
+    if (this.relicFields.relics.grantBossGuaranteed()) this.relicFields.syncRelicHud(now);
     if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
     // M3 叙事：Boss 登场按 bossId 分句（spec §5/§6 bottom-banner；narrative-bindings 路由）
     GameEvents.emit(GameEvent.BossSpawned, { bossHp: boss.hp, bossId: MAP_CONFIGS[this.mapId].boss });
