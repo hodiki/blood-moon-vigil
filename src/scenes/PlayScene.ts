@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type HeroId, type MapId, type WeaponId, } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, DERIVATIVE_SKILLS, type HeroId, type MapId, type WeaponId, } from '@/config/balance';
 import { defaultExclusiveFor } from '@/weapons/loadout';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
@@ -50,7 +50,6 @@ import { HealManager } from '@/xp/heal-manager';
 import { UpgradeState } from '@/upgrade/upgrade-pool';
 import { DerivativeSkillController } from '@/active-skill/derivative/derivative-controller';
 import { computeTreeApplication, ledgerFromSaveData, type TreeApplication } from '@/progression/tree-state';
-import { judgeRevive, talentReviveHpPct, talentReviveInvulnSeconds, talentReviveKnockbackPx } from '@/progression/revive';
 import { resonancePairByExclusive } from '@/config/balance';
 import { resonanceSanctuaryBonus } from '@/weapons/resonance/resonance-math';
 import { playerEnemyContact, type ContactEnemy } from '@/combat/contact';
@@ -85,6 +84,7 @@ import { ExclusiveRunAssembler } from '@/scenes/run/exclusive-run-assembler';
 import { UpgradeFlowController, type UpgradeChosenPayload } from '@/scenes/run/upgrade-flow-controller';
 import { DerivativeCastBridge } from '@/scenes/run/derivative-cast-bridge';
 import { KillLootConsumer } from '@/scenes/run/kill-loot-consumer';
+import { TreeApplier } from '@/scenes/run/tree-applier';
 
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
@@ -155,24 +155,17 @@ export class PlayScene extends Phaser.Scene {
   // B5-W3 树质变节点运行时状态
   /** Q-c/Q-e：天赋复活剩余次数 */
   private treeReviveRemaining = 0;
-  private treeRevivesUsed = 0;
   /** Q-f1/f2/f3：首精英额外 offer 次数与消费标记 */
   private treeEliteOffers = 0;
   private treeEliteOfferConsumed = false;
   /** Q-s1：开局窗口截止局时 s（-1 = 未点亮） */
   private treeS1UntilElapsed = -1;
-  /** P1-7 支线墓碑回血加值暂存（applyTreeToStats 写入；oathkeeper 装配在后，create 末尾写入 machine） */
-  private treeTombHealBonus = 0;
   /** P1-5 R-5 圣域达成标记（refreshSanctuaryOverlap 每帧据此写 dynamicDamageReductionPct） */
   private r5SanctuaryAchieved = false;
-  /** P1-8：滤月余辉经验获取乘区（1 + 天赋 xpGainPct；applyTreeToStats 写入、XpManager 装配后应用） */
-  private treeXpGainMult = 1;
   /** P1-11 Q-s4 双灯并祀：P4 卡前移旗（树应用写回） */
   private treeS4Active = false;
   /** Q-s3：遗言余烬（首次 HP 归零事件 + 终局折算） */
   private treeS3Active = false;
-  private treeS3EmberUsed = false;
-  private treeS3MeritBonus = 0;
   /** 当前树应用快照（HUD/结算数据接口） */
   private treeApp: TreeApplication | null = null;
   /** 安魂曲第二环 delayedCall（场景销毁时移除） */
@@ -191,6 +184,8 @@ export class PlayScene extends Phaser.Scene {
   private pureInGame = false;
   /** 击杀消费/掉落/图鉴/预警/宝箱（W-F1 拆分：run/kill-loot-consumer） */
   private readonly killLoot = new KillLootConsumer();
+  /** 天赋树写回与复活判定（W-F1 拆分：run/tree-applier） */
+  private readonly treeApplier = new TreeApplier();
   /** M3 轻叙事：局内事件 → 文本表 → DOM 覆盖层（narrative-framework §5/§7；宿主 #ui-overlay） */
   private narratives!: NarrativeDispatcher;
   private unbindNarratives: (() => void) | null = null;
@@ -281,7 +276,17 @@ export class PlayScene extends Phaser.Scene {
     const treeLedger = ledgerFromSaveData(this.saveData);
     const treeApp = computeTreeApplication(treeLedger, this.pureInGame);
     this.treeApp = treeApp;
-    this.applyTreeToStats(treeApp);
+    this.treeApplier.attach({
+      player: () => this.player,
+      runStats: () => this.stats,
+      weaponSystem: () => this.weaponSystem,
+      exw: (id) => this.exw(id),
+      reviveCharges: () => this.treeReviveRemaining,
+      spendReviveCharge: () => { this.treeReviveRemaining -= 1; },
+      s3Active: () => this.treeS3Active,
+      dropGem: (xp, x, y) => this.xp.dropGem(xp, x, y),
+    });
+    this.treeApplier.applyToStats(treeApp);
     this.treeReviveRemaining = treeApp.mutations.reviveCharges;
     this.treeEliteOffers = treeApp.mutations.eliteOffers;
     this.treeS3Active = treeApp.mutations.emberOnDeath;
@@ -290,7 +295,7 @@ export class PlayScene extends Phaser.Scene {
     // B6-W5 树节奏遥测：质变节点点亮数（mutation flags 真值计数）
     this.stats.setTreeMutationCount(Object.values(treeApp.mutations).filter(Boolean).length);
     // B5-W3 复活判定序挂钩（gdd-talent-tree §⑥-3；Q-c/Q-e 判定序最低优先级）
-    this.player.reviveHandler = (now) => this.judgePlayerRevive(now);
+    this.player.reviveHandler = (now) => this.treeApplier.judgePlayerRevive(now);
     // M2 收口：生成器按当前地图装配（槽位池/权重覆盖/移速加权，E3-S7）
     this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId, true);
     // W-8 面板链：等级滞后宽容玩家等级来源 +（裁决后）c 案联动系数
@@ -458,8 +463,8 @@ export class PlayScene extends Phaser.Scene {
     // 自带但专武入册在此之后）→ 启用判定改为「修女 && 选中圣铃」，随专武选择结果联动（见下）。
     this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y);
     // P1-7 支线墓碑回血：applyTreeToStats 早于守誓者装配 → 暂存加值在此写入 machine（+1 HP/s ×层数）
-    if (this.treeTombHealBonus > 0) {
-      this.oathkeeper.state.machine['tombHealFlatBonus'] = this.treeTombHealBonus;
+    if (this.treeApplier.tombHealBonus > 0) {
+      this.oathkeeper.state.machine['tombHealFlatBonus'] = this.treeApplier.tombHealBonus;
     }
     // P0-7c 圣铃治疗同源落点：每 8s 铃响治疗「自身 **与** 守誓者」8 HP（旧实现只写玩家 HP）。
     // 挂在行为层 onHeal 上（与 healSink 同量同源）；未启用守誓者时 healCompanion 内部短路。
@@ -479,7 +484,7 @@ export class PlayScene extends Phaser.Scene {
 
     // E3 成长闭环：经验 / 升级池 / 覆盖层
     this.xp = new XpManager(this.gemPool, this.player);
-    this.xp.setXpGainMultiplier(this.treeXpGainMult); // P1-8：applyTreeToStats 早于 XpManager 装配，此处补挂乘区
+    this.xp.setXpGainMultiplier(this.treeApplier.xpGainMult); // P1-8：applyTreeToStats 早于 XpManager 装配，此处补挂乘区
     // P1-13 F-6：方阵完整击破宝石簇（普通阵 5~10 / 骑士团 15~20；拆 3~5 颗散布落地）
     this.spawner.onFormationReward = (x, y, lo, hi) => {
       const total = lo + Math.floor(Math.random() * (hi - lo + 1));
@@ -1076,79 +1081,12 @@ export class PlayScene extends Phaser.Scene {
 
   /** B5-W2 结算页「余辉行」数据接口（B6 渲染）：s3 终局折算 +2 余辉 */
   getTreeMeritBonus(): number {
-    return this.treeS3MeritBonus;
+    return this.treeApplier.meritBonus;
   }
 
   /** B5-W2 树应用快照（B6 HUD 复活次数指示 / 开局阵容来源徽记消费） */
   getTreeApplication(): TreeApplication | null {
     return this.treeApp;
-  }
-
-  /** B5-W3 复活判定序挂钩（护盾→圣物预留→天赋复活→死亡；s3 遗言余烬随死亡事件结算） */
-  private judgePlayerRevive(_now: number): { revived: boolean; hpPct: number; invulnSeconds: number; knockback: number } | null {
-    const verdict = judgeRevive({
-      shieldAvailable: false, // up_g_8 护盾在 absorbDamage 上游消费（未死路径），此处为死局判定
-      relicFreeDeathAvailable: false, // 圣物级免死接口预留（当前圣物池无）
-      talentChargesRemaining: this.treeReviveRemaining,
-      talentRevivesUsed: this.treeRevivesUsed,
-    });
-    if (verdict === 'talent') {
-      const hpPct = talentReviveHpPct(this.treeRevivesUsed);
-      this.treeRevivesUsed += 1;
-      this.treeReviveRemaining -= 1;
-      this.stats.recordTalentRevive(); // B6-W5 复活触发遥测（HUD 复活次数同源）
-      // Q-s3：被复活来源救回 → 原地掉落余烬宝石（首次 HP 归零事件）
-      if (this.treeS3Active && !this.treeS3EmberUsed) {
-        this.treeS3EmberUsed = true;
-        this.xp.dropGem(TALENT_S3_EMBER.XP, this.player.x, this.player.y);
-      }
-      return { revived: true, hpPct, invulnSeconds: talentReviveInvulnSeconds(), knockback: talentReviveKnockbackPx() };
-    }
-    if (verdict === 'death' && this.treeS3Active && !this.treeS3EmberUsed) {
-      // Q-s3：无复活来源终局 → 宝石折算 +2 余辉（遗言化作传承；结算页数据接口）
-      this.treeS3EmberUsed = true;
-      this.treeS3MeritBonus = TALENT_S3_EMBER.MERIT_NO_REVIVE;
-    }
-    return null;
-  }
-
-  /** B5-W4 树应用写回（A-2：属性段进 PlayerStats；调用时序 = XpManager 装配前，QA-FIX-3 纪律沿袭） */
-  private applyTreeToStats(app: TreeApplication): void {
-    const a = app.attributes;
-    const stats = this.player.stats;
-    if (a.maxHp > 0) {
-      stats.maxHp += a.maxHp;
-      stats.hp += a.maxHp;
-    }
-    // 伤害桶：伤害 % + 攻击 flat 折算（+2 基础伤 ≈ +2% 等效锚；逐武器斜率差异待模拟 GDD §4.2 A-1）
-    const damagePct = a.damagePct + a.attackFlat * 0.01;
-    if (damagePct > 0) stats.addDamageBonus(damagePct);
-    if (a.moveSpeedPct > 0) stats.addMoveSpeedPctBonus(a.moveSpeedPct);
-    if (a.magnetRadius > 0) stats.magnetRadiusBonus += a.magnetRadius;
-    if (a.pickupRadius > 0) stats.pickupRadiusBonus += a.pickupRadius;
-    if (a.healEfficiencyPct > 0) stats.healBoostMultiplier += a.healEfficiencyPct;
-    // P1-8：攻速/冷却 → WeaponSystem 区间乘区（冷却下限 TALENT_COOLDOWN_FLOOR）；XP → 延迟乘区（XpManager 装配在后）
-    if (a.attackSpeedPct > 0 || a.cooldownPct > 0) this.weaponSystem.applyTalentIntervals(a.attackSpeedPct, a.cooldownPct);
-    this.treeXpGainMult = 1 + a.xpGainPct;
-    // P1-7 角色支线接线（§4.3 轻规格；machine 锚消费）：
-    // - 受击移速/击杀回血/狂化移速 → PlayerStats 专属字段（窗口语义由消费点保证）
-    if (a.hitMoveSpeedPct > 0) stats.hitSpeedBoostBonusPct += a.hitMoveSpeedPct;
-    if (a.killHealFlat > 0) stats.killHealBonus += a.killHealFlat;
-    if (a.rageMoveSpeedPct > 0) stats.rageSpeedBonusPct += a.rageMoveSpeedPct;
-    // - 范围 +5%（灯环/领域类）→ 提灯/圣铃 machine['areaPct']（stepLantern/stepBell 半径乘区）
-    if (a.areaPct > 0) {
-      for (const id of ['xw_lantern', 'xw_bell'] as const) {
-        const b = this.exw(id);
-        b.machine['areaPct'] = (b.machine['areaPct'] ?? 0) + a.areaPct;
-      }
-    }
-    // - 吸血效 +25% → 血契双刃 machine['healPerHitPct']（stepTwinblades 命中回复乘区）
-    if (a.lifestealHealPct > 0) {
-      const tb = this.exw('xw_twinblades');
-      tb.machine['healPerHitPct'] = (tb.machine['healPerHitPct'] ?? 0) + a.lifestealHealPct;
-    }
-    // - 墓碑回血 +1 HP/s → 守誓者 machine（oathkeeper 装配在 applyTreeToStats 之后 → 暂存字段，create 末尾写入）
-    if (a.tombHealFlat > 0) this.treeTombHealBonus += a.tombHealFlat;
   }
 
   /** P1-5 R-5 圣域重叠区帧级判定（每帧调用；几何锚：壁垒光环与铃音领域均玩家居中
@@ -1177,8 +1115,6 @@ export class PlayScene extends Phaser.Scene {
     // NV-INTEG-FIX P1：解锁 → HUD 动态槽扩列
     this.exclusiveRun.refreshHudWeaponSlots();
   }
-
-
 
   /** 暂停切换（Esc/P/移动暂停键；LEVEL_UP 期不响应，CM §5） */
   private togglePause(): void {
