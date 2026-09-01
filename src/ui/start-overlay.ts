@@ -29,7 +29,7 @@ import {
 import { saveKey, type SaveData } from '@/stats/save';
 import { detectIsMobile } from '@/utils/device';
 import { CodexOverlay, createCodexOverlay } from '@/ui/codex-overlay';
-import { TreeOverlay, createTreeOverlay } from '@/ui/tree-overlay';
+import { TreeOverlay, createTreeOverlay, unlockedCommonWeaponIds, preselectDisabledWeaponIds } from '@/ui/tree-overlay';
 import { NP } from '@/narratives/narratives';
 
 export interface StartOverlay {
@@ -187,6 +187,19 @@ export function createStartOverlay(
       pureInGame: save.pureInGame,
       // NV-INTEG-FIX P2：codexPrerequisite 真查询（原缺省恒真 → 图鉴前置节点全部可点）
       codexQuery: (prereq) => resolveCodexPrerequisite(prereq, save),
+      // P1-10 Q-d 预选通武（gdd-talent-tree §④-1 Q-d；解锁口径 = 图鉴首次获得）
+      preselect: {
+        current: save.preselectedWeapon,
+        heroId: getSelectedHero(),
+        unlockedWeaponIds: unlockedCommonWeaponIds(save.codexUnlocked),
+        disabledWeaponIds: preselectDisabledWeaponIds(getSelectedHero(), (save.treeState.purchases['q_b'] ?? 0) >= 1),
+        onChange: (weaponId) => {
+          save.preselectedWeapon = weaponId;
+          // 与 onStateChange 同口径持久化（主菜单层无 storage 注入 → 直接 localStorage 同键 v3）
+          const platform = detectIsMobile() ? 'mobile' : 'desktop';
+          window.localStorage.setItem(saveKey(platform), JSON.stringify(save));
+        },
+      },
       isMobile: detectIsMobile(),
       onStateChange: (purchases, pointsSpent, pointsRemaining) => {
         save.treeState = { unlockedNodeIds: Object.keys(purchases), purchases, pointsSpent };

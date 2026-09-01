@@ -33,6 +33,13 @@ import {
   createTwinbladesState, stepTwinblades,
 } from '@/weapons/exclusive/exclusive-math';
 import { createOathkeeperState, becomeTombstone, tickTombstone } from '@/weapons/companion/oathkeeper';
+import {
+  unlockedCommonWeaponIds,
+  preselectDisabledWeaponIds,
+} from '@/ui/tree-overlay';
+import { HERO_EXCLUSIVE_PAIRS, HEROES } from '@/config/balance';
+import { resonancePairByExclusive } from '@/config/balance';
+import { emptySave, parseSave } from '@/stats/save';
 
 // ============================================================================
 // 测试替身
@@ -249,5 +256,60 @@ describe('NV-REVIEW-FIX D-3 · 专武 machine 支线消费', () => {
     let healed = 0;
     tickTombstone(state, 1, 1, player, (h) => { healed += h; return h; });
     expect(healed).toBeCloseTo(4); // (2 + 2) × 1s
+  });
+});
+
+// ============================================================================
+// NV-REVIEW-FIX D-4 · Q-d 预选通武（P1-10；gdd-talent-tree §④-1 Q-d / §⑦-1-2）
+// ============================================================================
+
+describe('NV-REVIEW-FIX D-4 · Q-d 预选通武解锁口径', () => {
+  it('解锁口径 = 图鉴首次获得（codexUnlocked 含 codex_wpn_<id>，entryId 为 codex_wpn_wpn_* 双前缀真实格式）；非武器条目不计入', () => {
+    // 真实存档格式：codex.ts 对武器 entryId = `codex_wpn_${weaponId}`，weaponId = 'wpn_a_1' 等
+    const ids = unlockedCommonWeaponIds([
+      'codex_wpn_wpn_a_1',
+      'codex_wpn_wpn_b_3',
+      'codex_hero_edmund',
+      'codex_event_1',
+    ]);
+    expect(ids).toHaveLength(2);
+    expect(ids).toContain('wpn_a_1');
+    expect(ids).toContain('wpn_b_3');
+    // 防回归：旧口径误写单 wpn 前缀的条目不应计入
+    expect(unlockedCommonWeaponIds(['codex_wpn_a_1', 'codex_wpn_b_3'])).toHaveLength(0);
+  });
+
+  it('存档为空 → 解锁列表为空（UI 显示「尚无已解锁通武」提示）', () => {
+    expect(unlockedCommonWeaponIds([])).toHaveLength(0);
+  });
+
+  it('预选存档字段 round-trip：写 preselectedWeapon 后 parseSave 保留（v3 校验链）', () => {
+    const save = emptySave();
+    save.preselectedWeapon = 'wpn_c_2';
+    const parsed = parseSave(JSON.stringify(save));
+    expect(parsed.preselectedWeapon).toBe('wpn_c_2');
+    // 非法值回退 null（宽松校验 §6.1）
+    const bad = parseSave(JSON.stringify({ ...save, preselectedWeapon: 42 }));
+    expect(bad.preselectedWeapon).toBeNull();
+  });
+});
+
+describe('NV-REVIEW-FIX D-4 · 预选槽同名禁选（§⑦-1-2 不重复发放）', () => {
+  it('角色初始通武恒禁选（开局必得同名）', () => {
+    for (const hero of ['hero_edmund', 'hero_cassandra', 'hero_violet', 'hero_galvan'] as const) {
+      const disabled = preselectDisabledWeaponIds(hero, false);
+      expect(disabled).toContain(HEROES[hero].initialWeapon);
+    }
+  });
+
+  it('Q-b 点亮时：2 把候选专武的配对共鸣通武禁选（伴灯带入，2 选 1 树界面未知 → 两把一律禁）', () => {
+    const disabled = preselectDisabledWeaponIds('hero_edmund', true);
+    expect(disabled).toContain('wpn_a_1'); // 初始通武
+    for (const exclusiveId of HERO_EXCLUSIVE_PAIRS.hero_edmund) {
+      const pair = resonancePairByExclusive(exclusiveId);
+      expect(disabled).toContain(pair!.commonWeaponId);
+    }
+    // Q-b 未点亮 → 只禁初始通武（伴灯不带入，配对通武可选）
+    expect(preselectDisabledWeaponIds('hero_edmund', false)).toEqual(['wpn_a_1']);
   });
 });

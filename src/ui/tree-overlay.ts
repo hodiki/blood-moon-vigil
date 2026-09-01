@@ -11,13 +11,59 @@
 import {
   TALENT_TREE,
   TALENT_TOTAL_COST_RANGE,
+  WEAPON_CONFIGS,
+  HERO_EXCLUSIVE_PAIRS,
+  HEROES,
   type TalentNodeConfig,
   type TalentNodeId,
+  type HeroId,
+  type WeaponId,
 } from '@/config/balance';
+import { resonancePairByExclusive } from '@/config/balance';
 import {
   unlockNode, canUnlockNode, respec, totalSpent, treeTotalCost,
   type TreeLedger, type CodexQuery,
 } from '@/progression/tree-state';
+
+// ============================================================================
+// Q-d 预选通武（P1-10：gdd-talent-tree §④-1 Q-d / §⑦-1-2；纯函数供单测）
+// ============================================================================
+
+/** 已解锁通武 id 列表（解锁口径 = 图鉴首次获得：save.codexUnlocked 含 codex_wpn_<id>） */
+export function unlockedCommonWeaponIds(codexUnlocked: readonly string[]): WeaponId[] {
+  return (Object.keys(WEAPON_CONFIGS) as WeaponId[]).filter((id) => codexUnlocked.includes(`codex_wpn_${id}`));
+}
+
+/**
+ * 预选槽禁选集（同名不重复发放，§⑦-1-2）：
+ * - 角色初始通武（开局必得，恒禁选）；
+ * - Q-b 已点亮时：该角色 2 把候选专武的配对共鸣通武（伴灯会带入，禁选防重复；
+ *   2 选 1 在局内进行，树界面未知选择 → 两把候选一律禁选）。
+ */
+export function preselectDisabledWeaponIds(heroId: HeroId, companionLit: boolean): WeaponId[] {
+  const disabled = new Set<WeaponId>([HEROES[heroId].initialWeapon]);
+  if (companionLit) {
+    for (const exclusiveId of HERO_EXCLUSIVE_PAIRS[heroId]) {
+      const pair = resonancePairByExclusive(exclusiveId);
+      if (pair) disabled.add(pair.commonWeaponId);
+    }
+  }
+  return [...disabled];
+}
+
+/** Q-d 预选段 UI 数据（TreeOverlay 消费；写回走 onChange → save.preselectedWeapon） */
+export interface PreselectOptions {
+  /** 当前预选（save.preselectedWeapon） */
+  current: string | null;
+  /** 当前角色（禁选集按角色派生） */
+  heroId: HeroId;
+  /** 解锁通武列表（unlockedCommonWeaponIds 派生；空 = 提示尚无可选） */
+  unlockedWeaponIds: readonly WeaponId[];
+  /** 禁选集（preselectDisabledWeaponIds 派生；置灰 + 提示「开局同名不重复」） */
+  disabledWeaponIds: readonly WeaponId[];
+  /** 选择变更（选同一把 = 取消；null = 清空） */
+  onChange: (weaponId: WeaponId | null) => void;
+}
 
 export interface TreeOverlayOptions {
   /** 余辉余额（save.meritPoints） */
@@ -28,6 +74,8 @@ export interface TreeOverlayOptions {
   pureInGame: boolean;
   /** 图鉴前置查询（GT-12；未接 codex 时传恒真） */
   codexQuery?: CodexQuery;
+  /** Q-d 预选通武段（P1-10；缺省 = 不渲染预选区） */
+  preselect?: PreselectOptions;
   isMobile: boolean;
   /** 状态写回（PlayScene/StartOverlay 持久化 save.treeState/meritPoints） */
   onStateChange?: (purchases: Record<string, number>, pointsSpent: number, pointsRemaining: number) => void;
@@ -40,10 +88,14 @@ export class TreeOverlay {
   private readonly pointsEl: HTMLElement;
   private readonly spentEl: HTMLElement;
   private ledger: TreeLedger;
+  /** Q-d 预选本地镜像（onChange 写回后同步；重渲染数据源） */
+  private preselectCurrent: WeaponId | null = null;
   private readonly opts: TreeOverlayOptions;
 
   constructor(host: HTMLElement, opts: TreeOverlayOptions) {
     this.opts = opts;
+    // save.preselectedWeapon 为宽松 string（§6.1），此处收窄为 WeaponId 视图（非法值不影响 UI，仅不匹配任何项）
+    this.preselectCurrent = (opts.preselect?.current as WeaponId | null) ?? null;
     this.ledger = {
       points: opts.points,
       purchases: { ...opts.purchases, q_a: 1 }, // 树根默认习得
@@ -120,6 +172,7 @@ export class TreeOverlay {
           </button>`;
       }
     }
+    html += this.renderPreselect();
     this.listEl.innerHTML = html;
     this.pointsEl.textContent = String(this.ledger.points);
     for (const btn of Array.from(this.listEl.querySelectorAll('.bmv-tree-node.available'))) {
@@ -129,6 +182,50 @@ export class TreeOverlay {
           this.persist();
           this.renderList();
         }
+      });
+    }
+    this.bindPreselectEvents();
+  }
+
+  /** Q-d 预选通武段（点亮 Q-d 后出现；未点亮提示预览，§④-1 Q-d / §⑦-1-2） */
+  private renderPreselect(): string {
+    const pre = this.opts.preselect;
+    if (!pre) return '';
+    const lit = (this.ledger.purchases['q_d'] ?? 0) >= 1;
+    if (!lit) {
+      return `<div class="bmv-tree-group-title">预选通武 · 携行旧兵（未点亮 Q-d）</div>
+        <div class="bmv-tree-preselect-hint">点亮「携行旧兵」后可预选 1 把已解锁通武进局即得。</div>`;
+    }
+    if (pre.unlockedWeaponIds.length === 0) {
+      return `<div class="bmv-tree-group-title">预选通武 · 携行旧兵</div>
+        <div class="bmv-tree-preselect-hint">尚无已解锁通武——图鉴「首次获得」任意武器后可预选。</div>`;
+    }
+    let html = `<div class="bmv-tree-group-title">预选通武 · 携行旧兵（进局即得 · 点击选中/再点取消）</div>`;
+    for (const id of pre.unlockedWeaponIds) {
+      const cfg = WEAPON_CONFIGS[id];
+      const disabled = pre.disabledWeaponIds.includes(id);
+      const selected = this.preselectCurrent === id;
+      const cls = disabled ? 'disabled' : selected ? 'selected' : '';
+      const note = disabled ? '开局同名不重复' : selected ? '已预选' : '';
+      html += `
+        <button class="bmv-tree-preselect-item ${cls}" type="button" data-weapon="${id}" ${disabled ? 'disabled' : ''}>
+          <span class="bmv-tree-preselect-name">${cfg.name}</span>
+          <span class="bmv-tree-preselect-note">${note}</span>
+        </button>`;
+    }
+    return html;
+  }
+
+  /** 预选项事件绑定（禁选 = 灰显不响应；选中再点 = 取消） */
+  private bindPreselectEvents(): void {
+    const pre = this.opts.preselect;
+    if (!pre) return;
+    for (const btn of Array.from(this.listEl.querySelectorAll('.bmv-tree-preselect-item:not(.disabled)'))) {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.weapon as WeaponId;
+        this.preselectCurrent = this.preselectCurrent === id ? null : id;
+        pre.onChange(this.preselectCurrent);
+        this.renderList();
       });
     }
   }
@@ -183,6 +280,18 @@ export class TreeOverlay {
       .bmv-tree-node-name { font-size: 15px; font-weight: 700; min-width: 96px; }
       .bmv-tree-node-desc { font-size: 12px; color: #A9B4C4; flex: 1; }
       .bmv-tree-node-cost { font-size: 13px; color: #FFC93C; }
+      .bmv-tree-preselect-hint { font-size: 12px; color: #6A7280; margin: 4px 0 8px; }
+      .bmv-tree-preselect-item {
+        display: flex; align-items: center; gap: 10px;
+        width: 100%; min-height: 44px; box-sizing: border-box;
+        background: #0B0E14; border: 1px solid #2A3346; border-radius: 8px;
+        padding: 6px 10px; margin-bottom: 4px; text-align: left; cursor: pointer; color: #F2F5F9;
+      }
+      .bmv-tree-preselect-item.selected { border-color: #FFC93C; }
+      .bmv-tree-preselect-item.disabled { opacity: 0.4; cursor: default; }
+      .bmv-tree-preselect-item:disabled { cursor: default; }
+      .bmv-tree-preselect-name { font-size: 14px; font-weight: 700; }
+      .bmv-tree-preselect-note { font-size: 12px; color: #A9B4C4; margin-left: auto; }
     `;
     host.appendChild(style);
   }
