@@ -5,9 +5,12 @@
  * - P2-3a 共鸣预告徽记四态透传（decorateResonanceBadges 纯函数 + onLevelUp roll 结果透传）
  * - P2-3b 共鸣达成 0.8s 定格演出触发（consumeUpgradeChoice → showResonanceFreeze 端口）
  * - R-8 latch 锁存释放（stepHorn 槽位释放立即重召，不等 12s 节拍）
+ * - merit-overlay 退役归档 grep 守卫（src/_archived 快照原则 EG-2）
  */
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { UpgradeState } from '@/upgrade/upgrade-pool';
 import { PlayerStats } from '@/player/player-stats';
@@ -245,5 +248,52 @@ describe('NV-P2-ZERO · R-8 latch 锁存释放（gdd-resonance §⑦-2 猎犬消
   it('HornState 契约：latchedRequest 初始 false', () => {
     const state: HornState = createHornState();
     expect(state.latchedRequest).toBe(false);
+  });
+});
+
+// ============================================================================
+// merit-overlay 模块退役归档 grep 守卫（src/_archived 快照原则 EG-2；W-F2 收尾）
+// ============================================================================
+
+const SRC_ROOT = join(import.meta.dirname ?? '.', '..', '..', 'src');
+
+function listTsFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) {
+      if (name === '_archived') continue; // 归档快照不参与运行时守卫
+      out.push(...listTsFiles(p));
+    } else if (name.endsWith('.ts')) {
+      out.push(p);
+    }
+  }
+  return out;
+}
+
+describe('NV-P2-ZERO · merit-overlay 模块退役收尾', () => {
+  it('src/ui/merit-overlay.ts 已移入 src/_archived/（运行时路径不存在）', () => {
+    expect(() => statSync(join(SRC_ROOT, 'ui', 'merit-overlay.ts'))).toThrow();
+    expect(statSync(join(SRC_ROOT, '_archived', 'merit-overlay.ts')).isFile()).toBe(true);
+  });
+
+  it('grep 守卫：运行时（src/**，_archived 除外）零 import merit-overlay / MeritOverlay', () => {
+    const offenders: string[] = [];
+    for (const f of listTsFiles(SRC_ROOT)) {
+      const src = readFileSync(f, 'utf8');
+      if (src.includes('ui/merit-overlay') || src.includes('MeritOverlay')) offenders.push(f);
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('单测同步归档：tests/unit/ui/merit-overlay.test.ts → tests/archived/（vitest include 不含 archived）', () => {
+    expect(() => statSync(join(SRC_ROOT, '..', 'tests', 'unit', 'ui', 'merit-overlay.test.ts'))).toThrow();
+    expect(statSync(join(SRC_ROOT, '..', 'tests', 'archived', 'merit-overlay.test.ts')).isFile()).toBe(true);
+  });
+
+  it('存档迁移链不动：save.ts meritPoints / meritEquipped 管线字段保留', () => {
+    const save = readFileSync(join(SRC_ROOT, 'stats', 'save.ts'), 'utf8');
+    expect(save).toContain('meritPoints');
+    expect(save).toContain('meritEquipped');
   });
 });
