@@ -28,6 +28,18 @@ export function cardCategoryBadge(upgradeId: string | undefined): string {
 }
 
 /**
+ * P2-3（NV-P2-ZERO）：共鸣预告徽记渲染数据（gdd-resonance §⑧ 卡面预告 + hud.ts 四态视觉惯例）：
+ * ready-highlight →「可共鸣」冷青高亮；awaiting-key →「待取钥」灰态；achieved →「共鸣」徽记帧。
+ * 与 hud.setResonanceBadge 同帧名（reso-ready / reso-awaiting / reso-achieved）。
+ */
+export function resonanceBadgeVisual(state: 'none' | 'ready-highlight' | 'awaiting-key' | 'achieved'): { label: string; frame: string } | null {
+  if (state === 'ready-highlight') return { label: '可共鸣', frame: 'reso-ready' };
+  if (state === 'awaiting-key') return { label: '待取钥', frame: 'reso-awaiting' };
+  if (state === 'achieved') return { label: '共鸣', frame: 'reso-achieved' };
+  return null;
+}
+
+/**
  * NV-INTEG-FIX P1：升级卡内容 ID → upg-* 图标帧名（frame-registry upg_icons ×40；
  * content-id-frame-map §106 映射规则 up_g_1→upg-g-1 / up_w_a1→upg-w-a1 /
  * key_scope→upg-key-scope / up_a_cd→upg-a-cd）。无帧 id（mc_* 与 up_d_*）返回 null = 文字兜底。
@@ -144,13 +156,22 @@ export class LevelUpOverlay {
         : '';
       const category = cardCategoryBadge(option.upgradeId);
       const catBadge = category ? `<div class="bmv-cat-badge">${escapeHtml(category)}</div>` : '';
+      // P2-3（NV-P2-ZERO）：共鸣预告徽记（仅共鸣钥卡透传四态；none/undefined 不渲染）
+      const resoBadge = option.resonanceBadge ? resonanceBadgeVisual(option.resonanceBadge) : null;
+      const resoBadgeEl = resoBadge
+        ? `<div class="bmv-reso-badge bmv-reso-${option.resonanceBadge}"><span class="bmv-reso-badge-text">${resoBadge.label}</span></div>`
+        : '';
       card.innerHTML = `
-        ${seatBadge}${catBadge}
+        ${seatBadge}${catBadge}${resoBadgeEl}
         ${iconInner}
         <div class="bmv-upgrade-title">${escapeHtml(option.name)}</div>
         <div class="bmv-upgrade-desc">${escapeHtml(option.desc)}</div>
         <div class="bmv-upgrade-effect">${escapeHtml(option.effectText)}</div>
       `;
+      if (resoBadge) {
+        const badgeHost = card.querySelector('.bmv-reso-badge');
+        if (badgeHost) preferFrameImg(badgeHost as HTMLElement, resoBadge.frame);
+      }
       // 卡面底色分型（asset-spec §1.6：机制蓝紫 / 数值金）
       card.classList.add(option.cardKind === 'amber-gold' ? 'bmv-numeric-card' : 'bmv-mechanic-card');
       // NV-INTEG-FIX P1：upg-* 帧贴图（40 帧图标池；帧缺失/404 时 span 文字自动保留）
@@ -333,6 +354,25 @@ export class LevelUpOverlay {
         background: #0B0E14; border: 1px solid #54E6C9; border-radius: 6px;
         padding: 1px 6px;
       }
+      /* P2-3（NV-P2-ZERO）：共鸣预告徽记四态（hud.bmv-hud-reso 视觉惯例镜像：帧图 + 状态色） */
+      .bmv-reso-badge {
+        position: absolute; bottom: -10px; left: -10px;
+        width: 34px; height: 34px;
+        display: flex; align-items: center; justify-content: center;
+        background: #0B0E14; border-radius: 6px;
+      }
+      .bmv-reso-badge img.bmv-frame-img { width: 100%; height: 100%; image-rendering: pixelated; }
+      .bmv-reso-badge-text {
+        position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
+        font-size: 11px; font-weight: 700; white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.9); pointer-events: none;
+      }
+      .bmv-reso-ready-highlight { border: 2px solid #54E6C9; box-shadow: 0 0 8px rgba(84,230,201,0.8); }
+      .bmv-reso-ready-highlight .bmv-reso-badge-text { color: #54E6C9; }
+      .bmv-reso-awaiting-key { border: 2px solid #4A5468; filter: grayscale(0.6); opacity: 0.75; }
+      .bmv-reso-awaiting-key .bmv-reso-badge-text { color: #A9B4C4; }
+      .bmv-reso-achieved { border: 2px solid #B06AF0; box-shadow: 0 0 8px rgba(176,106,240,0.8); }
+      .bmv-reso-achieved .bmv-reso-badge-text { color: #B06AF0; }
       .bmv-upgrade-card { position: relative; }
       .bmv-star {
         position: absolute; top: -8px; right: -8px;

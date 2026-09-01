@@ -84,6 +84,12 @@ export interface UpgradeV2Option {
    * rollThreeV3 保底命中时写回（v3）；v2 旧轨不写。升级卡席位角标按此明示，替代泛「保底」。
    */
   seat?: 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
+  /**
+   * P2-3（NV-P2-ZERO）：共鸣预告徽记四态（值集镜像 resonance-engine.ResonanceBadgeState /
+   * hud.HudResonanceBadgeState；池引擎不 import 引擎，沿 hud.ts 同款解耦惯例）。
+   * undefined / 'none' = 非共鸣钥卡不渲染；升级流装配层按 resonanceBadgeState 透传。
+   */
+  resonanceBadge?: 'none' | 'ready-highlight' | 'awaiting-key' | 'achieved';
 }
 
 /** 标签 → 是否通过（仅当前角色 / 持有类 / 所有人） */

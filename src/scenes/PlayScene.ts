@@ -58,6 +58,7 @@ import { Hud, createHud } from '@/ui/hud';
 import { ResultsOverlay, createResultsOverlay } from '@/ui/results-overlay';
 import { PauseOverlay, createPauseOverlay } from '@/ui/pause-overlay';
 import { getOverlayHost } from '@/ui/overlay-host';
+import { showResonanceFreeze } from '@/ui/resonance-freeze';
 import { RunStats } from '@/stats/run-stats';
 import { readRestartCount } from '@/stats/session-stats';
 import { CodexTracker, eventEntriesForMapCleared } from '@/codex/codex';
@@ -371,6 +372,8 @@ export class PlayScene extends Phaser.Scene {
       isBench: () => this.runModes.bench,
       treeS4Active: () => this.treeS4Active,
       refreshResonanceBadge: () => this.exclusiveRun.refreshResonanceBadge(),
+      // P2-3（NV-P2-ZERO）：共鸣达成 0.8s 定格演出（纯视觉层，ADR-004 DOM 宿主）
+      showResonanceFreeze: (pairName) => showResonanceFreeze(getOverlayHost(), pairName),
       onWeaponUnlocked: (w) => this.onWeaponUnlocked(w),
       // P2-4：共鸣达成 → 共鸣形态图鉴条目解锁（幂等；toast 同帧合并）
       onResonanceAchieved: (commonWeaponId) => {

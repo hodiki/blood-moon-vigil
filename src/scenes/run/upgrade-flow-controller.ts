@@ -17,6 +17,7 @@ import { EXCLUSIVE_TO_DERIVATIVE, DERIVATIVE_UPGRADE_MAP, type HeroId, type Weap
 import { GameEvents, GameEvent } from '@/core/events';
 import { GamePhase } from '@/core/game-state';
 import type { UpgradeState } from '@/upgrade/upgrade-pool';
+import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
 import { rollThreeV3, poolItemByIdV3, type UpgradePoolV3Context } from '@/upgrade/upgrade-pool-v3';
 import { applyUpgradeByIdV3, type UpgradeV3WriteTargets } from '@/upgrade/upgrade-apply-v3';
 import {
@@ -34,12 +35,30 @@ import type { DerivativeSkillController } from '@/active-skill/derivative/deriva
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
 import { resonancePairByExclusive } from '@/config/balance';
 import { resonanceSanctuaryBonus } from '@/weapons/resonance/resonance-math';
+import { resonanceBadgeState } from '@/weapons/resonance/resonance-engine';
 
 /** E4-S4 升级选项负载（optionId 为 v3 内容 ID 字符串） */
 export interface UpgradeChosenPayload {
   optionId: string;
   index: number;
   dwellSeconds?: number;
+}
+
+/**
+ * P2-3（NV-P2-ZERO）：roll 结果共鸣徽记四态透传（gdd-resonance §⑧ 卡面预告；导出纯函数供单测）。
+ * 仅对当前配对共鸣钥卡写 resonanceBadge（ready-highlight 高亮 / awaiting-key 灰 / achieved 徽记）；
+ * 非钥卡保持 undefined = 卡面不渲染。纯读侧装饰，不改抽取权重/席位语义（rollThreeV3 输出后调用）。
+ */
+export function decorateResonanceBadges(
+  options: UpgradeV2Option[],
+  exclusiveId: ExclusiveWeaponId,
+  hasKey: (keyId: string) => boolean,
+  achievedForExclusive: boolean,
+): void {
+  const pair = resonancePairByExclusive(exclusiveId);
+  if (!pair) return;
+  const state = resonanceBadgeState(exclusiveId, hasKey, achievedForExclusive);
+  for (const o of options) if (o.upgradeId === pair.keyId) o.resonanceBadge = state;
 }
 
 export interface UpgradeFlowPorts {
@@ -65,6 +84,8 @@ export interface UpgradeFlowPorts {
   treeS4Active: () => boolean;
   /** 共鸣徽记四态联动（NV-INTEG-FIX P1） */
   refreshResonanceBadge: () => void;
+  /** P2-3（NV-P2-ZERO）：共鸣达成 0.8s 定格演出（gdd-resonance §⑧ 复用寻获模板；纯视觉层） */
+  showResonanceFreeze: (pairName: string) => void;
   /** 武器解锁出口（E4-S5/E4-S6：解锁 + 图鉴 + HUD 槽扩列） */
   onWeaponUnlocked: (weaponId: string) => void;
   /** P2-4 共鸣达成图鉴回写（ResonanceState 提交后解锁共鸣形态条目，幂等） */
@@ -164,11 +185,25 @@ export class UpgradeFlowController {
     };
   }
 
-  /** B5-W3 Q-f1/f2/f3：首精英击杀额外 offer（不消耗 XP；立即结算非暂存，GT-10 串联） */
-  triggerExtraOffer(): void {
+  /**
+   * P2-3（NV-P2-ZERO）：roll 结果共鸣徽记四态透传（gdd-resonance §⑧ 卡面预告）。
+   * 委派导出纯函数 decorateResonanceBadges（可脱离 Phaser 单测）。
+   */
+  private applyResonanceBadgeDecoration(options: UpgradeV2Option[]): void {
     const p = this.p!;
+    decorateResonanceBadges(
+      options,
+      p.exclusiveId(),
+      (k) => p.upgradeState().hasKey(k),
+      p.weaponSystem().resonance.isAchievedForExclusive(p.exclusiveId()),
+    );
+  }
+
+  /** B5-W3 Q-f1/f2/f3：首精英击杀额外 offer（不消耗 XP；立即结算非暂存，GT-10 串联） */
+  triggerExtraOffer(): void {    const p = this.p!;
     const options = rollThreeV3(p.upgradeState(), this.buildUpgradeContext());
     if (options.length === 0) return;
+    this.applyResonanceBadgeDecoration(options);
     this.lastOptionsV2 = options;
     p.runStats().recordUpgradeOffered(options);
     p.runStats().recordEliteOffer(); // B6-W5 精英抽卡遥测（Q-f 串联每次）
@@ -192,6 +227,7 @@ export class UpgradeFlowController {
     // B3-W2：v3 池抽取（37 定义 / 单局 ≤30 + P1~P5 保底 + 席位冲突裁决 + 阶段权重修订）
     this.upgradeChoiceCount += 1;
     const options = rollThreeV3(p.upgradeState(), this.buildUpgradeContext());
+    this.applyResonanceBadgeDecoration(options);
     this.lastOptionsV2 = options;
     // QA-BUG-1 兜底：无可选选项不进入 LEVEL_UP（rollThreeV2 回退机制下理论不可达，
     // 防御「暂停无 UI」死锁）——照常 RUNNING（升级回血 HpChanged 已在上方 emit）
@@ -273,6 +309,9 @@ export class UpgradeFlowController {
         // P2-4：共鸣形态图鉴条目解锁（codex_reso_<commonWeaponId>，幂等）
         p.onResonanceAchieved(pair.commonWeaponId);
         GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: pair.commonWeaponId, name: `共鸣·${pair.name}` });
+        // P2-3（NV-P2-ZERO）：共鸣达成 0.8s 定格演出（B6 遗留；gdd-resonance §⑧ 复用寻获模板）。
+        // 纯视觉层取舍见 ui/resonance-freeze.ts 头注：LEVEL_UP 相位世界已冻结，无需敌人降速。
+        p.showResonanceFreeze(pair.name);
         // P1-5 R-5 圣域重叠区收拢：弃全局 DR +8pp，改帧级重叠判定（壁垒光环与铃域均玩家居中
         // → 几何重叠 ≡ 双武启用；dynamicDamageReductionPct 由 refreshSanctuaryOverlap 每帧写）
         if (pair.id === 'R5') {
