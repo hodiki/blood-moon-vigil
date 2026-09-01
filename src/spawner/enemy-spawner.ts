@@ -397,6 +397,22 @@ export class EnemySpawner {
     return enemy;
   }
 
+  /**
+   * P0-6 月影幻影专用口（审查结论 §P0-6「幻影不要用行尸面板」）——面板在本口显式定义：
+   * HP1（受 1 次伤即散）+ noXp（召唤零宝石路径）+ 接触伤按表（boss_4 skill1 phantom.damage = 25）；
+   * 底层实体帧仅作视觉/池承载，面板数值（hp/damage/noXp）不继承行尸语义。
+   */
+  spawnPhantom(x: number, y: number, ownerTag: string | null, contactDamage: number): Enemy | null {
+    const enemy = this.spawnOneById('enemy_g1_1', x, y, this.t);
+    if (!enemy) return null;
+    enemy.noXp = true;
+    enemy.hp = 1;
+    enemy.maxHp = 1;
+    enemy.damage = contactDamage;
+    if (ownerTag) enemy.setGroupMeta(ownerTag, 'summon', -1);
+    return enemy;
+  }
+
   /** W-13 阵纹预警查询（pending 组落点 + 渐亮进度 0~1；演出层每帧读取） */
   getPendingFormationWarnings(): Array<{ x: number; y: number; progress: number }> {
     if (!this.groups) return [];

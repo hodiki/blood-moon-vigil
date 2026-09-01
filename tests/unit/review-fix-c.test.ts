@@ -1,18 +1,22 @@
 /**
  * NV-REVIEW-FIX 批次 C · 怪物身份 —— 运行时用例
  *
- * 覆盖（审查 §4 P0-4 / P0-5；后续 C-2/C-3/D/E 小步追加）：
+ * 覆盖（审查 §4 P0-4 / P0-5 / P0-6；后续 C-3/D/E 小步追加）：
  * - P0-4 突袭型三敌（血犬 g1_2 / 血蝠 g2_2 / 暗影狼 g3_2）lunge 前扑：
  *   100px 起手 / 0.25s 蓄身锁向 / 90px@300px/s / CD 2.5s / 落空硬直 0.5s；
  *   与冲锋猎手（g3_4 charge）手感可区分（周期制长线 vs CD 制贴身短扑）
  * - P0-5 精英技能化 180s 门控：120s 守墓者无扫击预警；181s 新精英有技能；
  *   门内已入场精英不追溯切形态（不进 windup）
+ * - P0-6 Boss 技能消费运行时（boss-skill-runtime）：zone 几何自结算（扇形/环形留缝/
+ *   落点圈/走廊/冲锋线/持续场/引力圈），每 Boss ≥2 可解形状，禁全图 dist 桩；
+ *   幻影走专用口（HP1 + noXp + 接触伤按表，不行尸面板）
  *
  * 分层纪律：全部为运行时用例（纯函数/状态机/装配层协作），不依赖 Phaser 场景。
  */
 
 import { describe, it, expect } from 'vitest';
-import { ENEMY_BEHAVIORS, ENEMY_CONFIGS, type EnemyId } from '@/config/balance';
+import { ENEMY_CONFIGS, type EnemyId, type BossId, type BossSlot } from '@/config/balance';
+import { BOSS_SKILL_TABLES } from '@/config/balance';
 import {
   specialBehaviorFor,
   lungeDashDuration,
@@ -22,6 +26,8 @@ import {
 } from '@/enemies/enemy-behaviors';
 import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
 import { EliteSkillDirector, type EliteEnemyLike } from '@/enemies/elite-skill-runtime';
+import { BossSkillRuntime, type BossSkillPorts } from '@/enemies/boss-skill-runtime';
+import { createBossSkillState, type BossSkillState } from '@/enemies/boss-skill-engine';
 import { ELITE_SKILLS, ELITE_SKILL_UNLOCK_SECONDS } from '@/enemies/elite-skills';
 import type { ArcadePoolLike } from '@/core/object-pools';
 
@@ -78,7 +84,7 @@ function fakePool(enemies: FakeEnemy[]): ArcadePoolLike<never> {
   } as unknown as ArcadePoolLike<never>;
 }
 
-function stepAi(dir: EnemyAiDirector, pool: ArcadePoolLike<never>, seconds: number, player: { x: number; y: number }, startNow = 0): void {
+function stepAi(dir: EnemyAiDirector, _pool: ArcadePoolLike<never>, seconds: number, player: { x: number; y: number }, startNow = 0): void {
   const frames = Math.round(seconds * 60);
   for (let f = 0; f < frames; f += 1) {
     dir.update(1 / 60, startNow + f / 60, player, null);
@@ -286,5 +292,266 @@ describe('P0-5 精英 180s 技能门（120s 守墓者无扫击 / 181s 新精英�
     expect(ENEMY_CONFIGS.enemy_g1_8.unlockAt).toBe(180);
     expect(ENEMY_CONFIGS.enemy_g2_5.unlockAt).toBe(180);
     expect(ELITE_SKILLS.enemy_g1_8.triggerDist).toBe(260);
+  });
+});
+
+// ============================================================================
+// P0-6 Boss 技能消费运行时（boss-skill-runtime：zone 几何自结算，禁全图 dist 桩）
+// ============================================================================
+
+/** Boss 端口替身（可观测 hurt/spawn/pull/位移覆盖） */
+interface FakeBossPorts extends BossSkillPorts {
+  hurts: Array<{ damage: number; now: number }>;
+  summons: Array<{ enemyId: EnemyId; x: number; y: number }>;
+  phantoms: Array<{ x: number; y: number; damage: number; duration: number }>;
+  pulls: Array<{ x: number; y: number; distance: number }>;
+  bossVel: Array<{ vx: number; vy: number }>;
+  velCleared: number;
+}
+
+function makeBossPorts(): FakeBossPorts {
+  const ports: FakeBossPorts = {
+    hurts: [],
+    summons: [],
+    phantoms: [],
+    pulls: [],
+    bossVel: [],
+    velCleared: 0,
+    hurtPlayer(damage, now) {
+      ports.hurts.push({ damage, now });
+    },
+    spawnSummon(enemyId, x, y) {
+      ports.summons.push({ enemyId, x, y });
+      return null;
+    },
+    spawnPhantom(x, y, contactDamage, duration) {
+      ports.phantoms.push({ x, y, damage: contactDamage, duration });
+      return null;
+    },
+    pullPlayerTo(x, y, distance) {
+      ports.pulls.push({ x, y, distance });
+    },
+    setBossVelocity(vx, vy) {
+      ports.bossVel.push({ vx, vy });
+    },
+    clearBossVelocity() {
+      ports.velCleared += 1;
+    },
+  };
+  return ports;
+}
+
+function stepBoss(
+  rt: BossSkillRuntime,
+  state: BossSkillState,
+  boss: { x: number; y: number },
+  ports: BossSkillPorts,
+  seconds: number,
+  player: { x: number; y: number },
+  startNow = 0,
+  rng?: () => number,
+): void {
+  const frames = Math.round(seconds * 60);
+  for (let f = 0; f < frames; f += 1) {
+    rt.step(state, { dt: 1 / 60, now: startNow + f / 60, hpRatio: 1, canSpawnMore: true, rng }, boss, player, ports);
+  }
+}
+
+/** 指定普技槽立即施法（其余槽 CD 封顶 + 普攻封窗）；返回已锁定 zone 的运行时 */
+function castSlot(
+  bossId: BossId,
+  slot: BossSlot,
+  player: { x: number; y: number },
+  rng?: () => number,
+): { rt: BossSkillRuntime; state: BossSkillState; ports: FakeBossPorts; boss: { x: number; y: number } } {
+  const rt = new BossSkillRuntime();
+  const state = createBossSkillState(bossId);
+  state.phase = 2; // 解锁全部槽位
+  state.normalTimer = -999; // 屏蔽普攻直发事件
+  for (const s of ['skill1', 'skill2', 'skill3', 'ultimate'] as const) {
+    state.slotCds[s] = s === slot ? 0 : 999;
+  }
+  const ports = makeBossPorts();
+  const boss = { x: 0, y: 0 };
+  stepBoss(rt, state, boss, ports, 0.05, player, 0, rng); // rotation → cast-start → zone 锁定
+  return { rt, state, ports, boss };
+}
+
+describe('P0-6 Boss 技能消费运行时（每 Boss ≥2 可解形状，禁全图 dist 桩）', () => {
+  it('boss_1 普攻扇形/环形交替：扇内受击、拉开可躲（2 个可解形状）', () => {
+    const state = createBossSkillState('boss_1');
+    const rt = new BossSkillRuntime();
+    const ports = makeBossPorts();
+    const boss = { x: 0, y: 0 };
+    // 第 1 次普攻（扇形 180°/120px）：玩家原地扇内 → fireAt 受击 30
+    state.normalTimer = 1.99;
+    const near = { x: 100, y: 0 };
+    stepBoss(rt, state, boss, ports, 0.1, near); // 触发 + 锁定
+    stepBoss(rt, state, boss, ports, 0.6, near, 0.1);
+    expect(ports.hurts.some((h) => h.damage === 30)).toBe(true);
+    // 第 2 次普攻（环形重踏 180±24）：玩家拉开 400px → 环带外不受击（走位可解）
+    state.normalTimer = 1.99;
+    const before = ports.hurts.length;
+    stepBoss(rt, state, boss, ports, 0.7, { x: 400, y: 0 }, 0.8);
+    stepBoss(rt, state, boss, ports, 0.6, { x: 400, y: 0 }, 1.5);
+    expect(ports.hurts.length).toBe(before);
+    // 形状交替断言：第 1 发 arc / 第 2 发 ring
+    const state2 = createBossSkillState('boss_1');
+    const rt2 = new BossSkillRuntime();
+    const ports2 = makeBossPorts();
+    state2.normalTimer = 1.99;
+    stepBoss(rt2, state2, boss, ports2, 0.1, near);
+    expect(rt2.zoneViews(0.15).map((v) => v.shape)).toContain('arc');
+    state2.normalTimer = 1.99;
+    stepBoss(rt2, state2, boss, ports2, 0.1, near, 0.2);
+    expect(rt2.zoneViews(0.35).map((v) => v.shape)).toContain('ring');
+  });
+
+  it('boss_2 血池喷发：落点锁定可拉开躲直击；池内 dps+减速、池外无减速（推荐项）', () => {
+    const near = { x: 80, y: 0 };
+    const { rt, state, ports, boss } = castSlot('boss_2', 'skill1', near);
+    // 直击圈锁定在 (80,0)：fireAt 前拉开 400px → 直击不命中
+    stepBoss(rt, state, boss, ports, 0.8, { x: 400, y: 0 }, 0.05);
+    expect(ports.hurts).toHaveLength(0);
+    // 走回池内：持续场 dps 8 → 1s ≈ 8 伤；减速 30%
+    stepBoss(rt, state, boss, ports, 1.0, near, 0.9);
+    const poolDamage = ports.hurts.reduce((s, h) => s + h.damage, 0);
+    expect(poolDamage).toBeGreaterThanOrEqual(7);
+    expect(rt.externalSlowAt(80, 0)).toBeCloseTo(0.7, 6);
+    expect(rt.externalSlowAt(400, 0)).toBe(1);
+  });
+
+  it('boss_2 血珠连射：垂直走出走廊零受击（dist<300 但不在形状内 = 无全图 dist 桩）', () => {
+    const near = { x: 200, y: 0 };
+    const { rt, state, ports, boss } = castSlot('boss_2', 'skill2', near);
+    // 走出走廊（垂距 100 > 半宽 14；对 boss 距离 141 < 300——旧 dist 桩会扣血）
+    stepBoss(rt, state, boss, ports, 1.2, { x: 100, y: 100 }, 0.05);
+    expect(ports.hurts).toHaveLength(0);
+    // 对照：留在走廊内 → 3 连 8 伤逐发
+    const c = castSlot('boss_2', 'skill2', near);
+    stepBoss(c.rt, c.state, c.boss, c.ports, 1.2, near, 0.05);
+    expect(c.ports.hurts.filter((h) => h.damage === 8)).toHaveLength(3);
+  });
+
+  it('boss_3 短嗥冲锋：走廊外（dist<300）零受击 + dash 期 boss 速度覆盖 400px/s（推荐项）', () => {
+    const near = { x: 200, y: 0 };
+    const { rt, state, ports, boss } = castSlot('boss_3', 'skill1', near);
+    // 蓄力期（fireAt 前）无位移覆盖
+    stepBoss(rt, state, boss, ports, 0.4, { x: 200, y: 200 }, 0.05);
+    expect(ports.bossVel.filter((v) => v.vx === 400)).toHaveLength(0);
+    // dash 期（400px@400px/s = 1s）：走廊外垂距 200（dist 283 < 300，旧桩会扣血）零受击
+    stepBoss(rt, state, boss, ports, 1.1, { x: 200, y: 200 }, 0.45);
+    expect(ports.bossVel.some((v) => v.vx === 400 && v.vy === 0)).toBe(true);
+    expect(ports.hurts).toHaveLength(0);
+    expect(ports.velCleared).toBeGreaterThanOrEqual(1); // 冲刺结束清覆盖
+    // 对照：走廊内 → 接触 18 伤恰 1 次
+    const c = castSlot('boss_3', 'skill1', near);
+    stepBoss(c.rt, c.state, c.boss, c.ports, 1.6, near, 0.05);
+    expect(c.ports.hurts.filter((h) => h.damage === 18)).toHaveLength(1);
+  });
+
+  it('boss_3 蓄力扑击：冲刺无接触伤、落地震荡 180px 圈内受击 32 / 拉开可躲', () => {
+    const near = { x: 300, y: 0 };
+    const { rt, state, ports, boss } = castSlot('boss_3', 'ultimate', near);
+    // 扑过头顶（玩家在路径投影下）无接触伤；落地圈 (600,0) 前拉开 → 震荡不命中
+    stepBoss(rt, state, boss, ports, 1.5, near, 0.05);
+    stepBoss(rt, state, boss, ports, 0.6, { x: 900, y: 0 }, 1.55);
+    expect(ports.hurts).toHaveLength(0);
+    // 对照：站落点附近 → 震荡 32
+    const c = castSlot('boss_3', 'ultimate', near);
+    stepBoss(c.rt, c.state, c.boss, c.ports, 2.0, { x: 650, y: 0 }, 0.05);
+    expect(c.ports.hurts.some((h) => h.damage === 32)).toBe(true);
+  });
+
+  it('boss_4 月坠落点圈：2s 预警内走出 120px 圈可躲（推荐项）', () => {
+    const near = { x: 80, y: 0 };
+    const { rt, state, ports, boss } = castSlot('boss_4', 'ultimate', near);
+    stepBoss(rt, state, boss, ports, 2.4, { x: 400, y: 0 }, 0.05);
+    expect(ports.hurts).toHaveLength(0);
+    // 对照：原地不动 → 30 伤恰 1 次
+    const c = castSlot('boss_4', 'ultimate', near);
+    stepBoss(c.rt, c.state, c.boss, c.ports, 2.4, near, 0.05);
+    expect(c.ports.hurts.filter((h) => h.damage === 30)).toHaveLength(1);
+  });
+
+  it('boss_4 月相脉冲：环带命中 20 / 随机留缝内不命中（站缝可解）', () => {
+    const rng = () => 0; // 缺口锁定在 angle 0
+    const near = { x: 300, y: 0 };
+    const { rt, state, ports, boss } = castSlot('boss_4', 'skill3', near, rng);
+    stepBoss(rt, state, boss, ports, 1.2, near, 0.05); // 缺口方向（dist 300 环带上）
+    expect(ports.hurts).toHaveLength(0);
+    // 对照：环带对侧 → 命中 20
+    const c = castSlot('boss_4', 'skill3', near, rng);
+    stepBoss(c.rt, c.state, c.boss, c.ports, 1.2, { x: -300, y: 0 }, 0.05);
+    expect(c.ports.hurts.some((h) => h.damage === 20)).toBe(true);
+    // 环带外（dist 400）不受击
+    const c2 = castSlot('boss_4', 'skill3', near, rng);
+    stepBoss(c2.rt, c2.state, c2.boss, c2.ports, 1.2, { x: 400, y: 0 }, 0.05);
+    expect(c2.ports.hurts).toHaveLength(0);
+  });
+
+  it('boss_4 引力潮汐：220px 内被拉 100px、圈外不被拉（走位可解）', () => {
+    const { rt, state, ports, boss } = castSlot('boss_4', 'skill2', { x: 100, y: 0 });
+    stepBoss(rt, state, boss, ports, 1.4, { x: 100, y: 0 }, 0.05);
+    expect(ports.pulls).toEqual([{ x: 0, y: 0, distance: 100 }]);
+    const c = castSlot('boss_4', 'skill2', { x: 100, y: 0 });
+    stepBoss(c.rt, c.state, c.boss, c.ports, 1.4, { x: 400, y: 0 }, 0.05);
+    expect(c.ports.pulls).toHaveLength(0);
+  });
+
+  it('幻影走专用口：接触伤按表 25 + 时长按表 8s，不经行尸召唤口', () => {
+    const { rt, state, ports, boss } = castSlot('boss_4', 'skill1', { x: 100, y: 0 });
+    stepBoss(rt, state, boss, ports, 1.2, { x: 100, y: 0 }, 0.05);
+    const phantomCfg = BOSS_SKILL_TABLES.boss_4.slots.find((s) => s.slot === 'skill1')!.phantom!;
+    expect(ports.phantoms).toHaveLength(1);
+    expect(ports.phantoms[0]!.damage).toBe(phantomCfg.damage);
+    expect(ports.phantoms[0]!.damage).toBe(25);
+    expect(ports.phantoms[0]!.duration).toBe(phantomCfg.duration);
+    expect(ports.summons).toHaveLength(0); // 不走 spawnSummon（不行尸面板）
+  });
+
+  it('引擎 skill-damage 事件被忽略：落点圈 fireAt 恰结算 1 次（无双倍扣血）', () => {
+    const { rt, state, ports, boss } = castSlot('boss_2', 'skill1', { x: 80, y: 0 });
+    stepBoss(rt, state, boss, ports, 0.8, { x: 80, y: 0 }, 0.05);
+    // 直击 8 恰 1 次（持续场 dps 块伤为 1/次，不混入）
+    expect(ports.hurts.filter((h) => h.damage === 8)).toHaveLength(1);
+  });
+
+  it('reset 清空 zone：换 Boss 不残留旧技能区', () => {
+    const { rt, state, ports, boss } = castSlot('boss_4', 'ultimate', { x: 80, y: 0 });
+    expect(rt.zoneViews(0.1).length).toBeGreaterThan(0);
+    rt.reset();
+    expect(rt.zoneViews(0.1)).toHaveLength(0);
+    stepBoss(rt, state, boss, ports, 2.4, { x: 80, y: 0 }, 0.05);
+    expect(ports.hurts).toHaveLength(0); // 旧月坠区已清，不再结算
+  });
+
+  it('每 Boss ≥2 个可解形状（zone 视图形状聚合断言）', () => {
+    const shapesFor = (bossId: BossId): Set<string> => {
+      const seen = new Set<string>();
+      const player = { x: 80, y: 0 };
+      const boss = { x: 0, y: 0 };
+      // 普攻两连发（boss_1 扇形/环形交替；其余 Boss 直发扇形）
+      const rt = new BossSkillRuntime();
+      const state = createBossSkillState(bossId);
+      const ports = makeBossPorts();
+      state.normalTimer = 1.99;
+      stepBoss(rt, state, boss, ports, 0.1, player);
+      for (const v of rt.zoneViews(0.15)) seen.add(v.shape);
+      state.normalTimer = 1.99;
+      stepBoss(rt, state, boss, ports, 0.1, player, 0.2);
+      for (const v of rt.zoneViews(0.35)) seen.add(v.shape);
+      // 伤害普技槽
+      for (const s of BOSS_SKILL_TABLES[bossId].slots) {
+        if (s.slot === 'normal' || s.damage <= 0) continue;
+        const c = castSlot(bossId, s.slot, player, () => 0.99);
+        for (const v of c.rt.zoneViews(0.3)) seen.add(v.shape);
+      }
+      return seen;
+    };
+    expect(shapesFor('boss_1').size).toBeGreaterThanOrEqual(2); // arc + ring（普攻交替）
+    expect(shapesFor('boss_2').size).toBeGreaterThanOrEqual(2); // arc/circle/field/corridor
+    expect(shapesFor('boss_3').size).toBeGreaterThanOrEqual(2); // arc + corridor（dash/扑击）
+    expect(shapesFor('boss_4').size).toBeGreaterThanOrEqual(2); // arc/circle/ring
   });
 });

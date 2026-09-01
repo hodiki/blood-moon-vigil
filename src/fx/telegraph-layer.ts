@@ -7,12 +7,14 @@
  * - 警告线（冲锋系/畸体冲刺线；warningLine 同族三线扩展基座）
  * - 扇形（守墓者 180°/130px、血月尊者普攻）
  * - 阵纹（方阵 2.5s 预警，幽紫）
+ * - Boss 技能区（P0-6：扇形/环形留缝/落点圈/走廊/持续场，形状 = 危险范围，渐亮式）
  * 颜色走 PALETTE（危险红/幽紫/月白 token）；桌面全保留 / 移动端线宽 +1px（§⑦）。
  */
 
 import Phaser from 'phaser';
 import { PALETTE } from '@/config/balance';
 import type { EliteTelegraph } from '@/enemies/elite-skill-runtime';
+import type { BossZoneView } from '@/enemies/boss-skill-runtime';
 
 const COLOR_DANGER = 0xff3b30;
 const COLOR_MOON = 0xe8f0fa;
@@ -33,7 +35,8 @@ export class TelegraphLayer {
   sync(
     eliteTelegraphs: EliteTelegraph[],
     pendingFormations: Array<{ x: number; y: number; progress: number }>,
-    bossCasting: { x: number; y: number; range: number; progress: number } | null,
+    /** P0-6 Boss 技能区（boss-skill-runtime zoneViews；形状 = 危险范围） */
+    bossZones: BossZoneView[] = [],
     lineWidthBonus: number,
     /** W-4 血渍减速区（忏悔者弹着点；暗红地面污染，60px/2s） */
     bloodstains: Array<{ x: number; y: number; until: number }> = [],
@@ -105,11 +108,70 @@ export class TelegraphLayer {
       this.gfx.fillStyle(0x8c1f1f, 0.35);
       this.gfx.fillCircle(b.x, b.y, 60);
     }
-    // —— Boss 施法预警（当前 casting 槽：玩家落点预警圈，半径随技能；数据层通用形状）——
-    if (bossCasting) {
-      const a = 0.15 + 0.6 * Math.min(1, bossCasting.progress);
-      this.gfx.lineStyle(2 + lineWidthBonus, COLOR_DANGER, a);
-      this.gfx.strokeCircle(bossCasting.x, bossCasting.y, bossCasting.range);
+    // —— P0-6 Boss 技能区（扇形/环形留缝/落点圈/走廊/持续场；形状 = 危险范围，渐亮式）——
+    for (const z of bossZones) {
+      const a = 0.15 + 0.6 * Math.min(1, z.progress);
+      if (z.shape === 'arc') {
+        this.gfx.fillStyle(COLOR_DANGER, a * 0.35);
+        this.gfx.beginPath();
+        this.gfx.moveTo(z.x, z.y);
+        this.gfx.arc(z.x, z.y, z.range, z.angle - z.halfAngle, z.angle + z.halfAngle);
+        this.gfx.closePath();
+        this.gfx.fillPath();
+        this.gfx.lineStyle(2 + lineWidthBonus, COLOR_DANGER, a);
+        this.gfx.beginPath();
+        this.gfx.arc(z.x, z.y, z.range, z.angle - z.halfAngle, z.angle + z.halfAngle);
+        this.gfx.strokePath();
+      } else if (z.shape === 'ring') {
+        // 环形带（缺口段不画 = 缺口即安全缝）
+        const a0 = z.gapAngle + z.gapHalf;
+        const a1 = z.gapAngle - z.gapHalf + Math.PI * 2;
+        this.gfx.lineStyle(2 + lineWidthBonus, COLOR_DANGER, a);
+        this.gfx.beginPath();
+        this.gfx.arc(z.x, z.y, z.range + z.halfWidth, a0, a1);
+        this.gfx.strokePath();
+        this.gfx.beginPath();
+        this.gfx.arc(z.x, z.y, Math.max(1, z.range - z.halfWidth), a0, a1);
+        this.gfx.strokePath();
+        // 缺口端径向线（可读性）
+        for (const ang of [a0, a1]) {
+          this.gfx.beginPath();
+          this.gfx.moveTo(z.x + Math.cos(ang) * (z.range - z.halfWidth), z.y + Math.sin(ang) * (z.range - z.halfWidth));
+          this.gfx.lineTo(z.x + Math.cos(ang) * (z.range + z.halfWidth), z.y + Math.sin(ang) * (z.range + z.halfWidth));
+          this.gfx.strokePath();
+        }
+      } else if (z.shape === 'corridor') {
+        // 走廊两侧线 + 端线（冲锋线/连射走廊）
+        const nx = -Math.sin(z.angle);
+        const ny = Math.cos(z.angle);
+        const ex = z.x + Math.cos(z.angle) * z.range;
+        const ey = z.y + Math.sin(z.angle) * z.range;
+        this.gfx.lineStyle(2 + lineWidthBonus, COLOR_DANGER, a);
+        this.gfx.beginPath();
+        this.gfx.moveTo(z.x + nx * z.halfWidth, z.y + ny * z.halfWidth);
+        this.gfx.lineTo(ex + nx * z.halfWidth, ey + ny * z.halfWidth);
+        this.gfx.strokePath();
+        this.gfx.beginPath();
+        this.gfx.moveTo(z.x - nx * z.halfWidth, z.y - ny * z.halfWidth);
+        this.gfx.lineTo(ex - nx * z.halfWidth, ey - ny * z.halfWidth);
+        this.gfx.strokePath();
+        this.gfx.beginPath();
+        this.gfx.moveTo(ex + nx * z.halfWidth, ey + ny * z.halfWidth);
+        this.gfx.lineTo(ex - nx * z.halfWidth, ey - ny * z.halfWidth);
+        this.gfx.strokePath();
+      } else if (z.shape === 'field') {
+        // 持续场（血池/血雾：暗红地面污染语义）
+        this.gfx.fillStyle(COLOR_DANGER, a * 0.3);
+        this.gfx.fillCircle(z.x, z.y, z.range);
+        this.gfx.lineStyle(1.5 + lineWidthBonus, COLOR_DANGER, a * 0.8);
+        this.gfx.strokeCircle(z.x, z.y, z.range);
+      } else {
+        // 落点圈（血池直击/血井/月坠/引力圈）
+        this.gfx.fillStyle(COLOR_DANGER, a * 0.2);
+        this.gfx.fillCircle(z.x, z.y, z.range);
+        this.gfx.lineStyle(2 + lineWidthBonus, COLOR_DANGER, a);
+        this.gfx.strokeCircle(z.x, z.y, z.range);
+      }
     }
   }
 
