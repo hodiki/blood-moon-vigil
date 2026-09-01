@@ -37,3 +37,26 @@ export const SPAWNER = {
   /** TASK-39 E2 屠夫预警：保底厚血出生前 N 秒在出生点显示血月印记（红圈精灵 + 低音） */
   TANK_WARNING_SECONDS: 2.5,
 } as const;
+
+/**
+ * budget 分段五端点（NV-BATCH-G G1 冻结：模拟冻结 2026-09-02，5400 局，
+ * production/official-v1/sim-freeze-recommendation.md §③）。
+ * 均值端点 [t, mean]（gdd-spawner-v2 §③-1 分段线性插值 + 正弦波）：
+ * 0s 1.0（锚 0.9~1.1）/ 60s 1.1（锚 1.0~1.2，H2 前段压平）/ 120s 1.6 /
+ * 240s 2.4 / 360s 3.4（锚 3.2~3.6）。
+ * 鲁棒性依据：六变体扰动（legacy 基线 + 端点下/中/上沿 + S1 压平两沿）约束 2/3/4 判定零翻转。
+ */
+export const BUDGET_PIECEWISE_ENDPOINTS: ReadonlyArray<readonly [number, number]> = [
+  [0, 1.0], [60, 1.1], [120, 1.6], [240, 2.4], [360, 3.4],
+] as const;
+
+/** 正弦波参数（NV-BATCH-G G1 冻结：波幅 ±0.25 为 0.2~0.3 锚中值、周期 60s 保留） */
+export const BUDGET_WAVE = { amplitude: 0.25, period: 60 } as const;
+
+/**
+ * 端点锚区间表（GDD §5.3 五端点可独立断言；自 tools/sim/xp-cases.ts BUDGET_ANCHOR_RANGES
+ * 迁移为运行时断言数据源，NV-BATCH-G G1）。
+ */
+export const BUDGET_ANCHOR_RANGES: ReadonlyArray<readonly [number, number, number]> = [
+  [0, 0.9, 1.1], [60, 1.0, 1.2], [120, 1.6, 1.6], [240, 2.4, 2.4], [360, 3.2, 3.6],
+] as const;

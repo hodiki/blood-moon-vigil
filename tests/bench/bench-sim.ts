@@ -2,7 +2,7 @@
  * tests/bench/bench-sim.ts —— 无头逻辑基准（L3 / E4-S5）
  *
  * 纯逻辑模拟（Node 可跑，`npm run bench` 主入口之一）：
- * - 场景 A「堆积上限」：预算按 budget(t) 满速生成且不设死亡（最坏堆积），
+ * - 场景 A「堆积上限」：预算按 budgetPiecewise(t)（NV-BATCH-G 冻结五端点）满速生成且不设死亡（最坏堆积），
  *   验证生成器同屏上限逻辑：桌面 400 / 移动 250，无实体溢出（S8-5 / E8-5）。
  * - 场景 B「武器稳态」：飞弹 1.2s 冷却 / 3s 寿命 / 分裂 2 次级弹（一次 3 枚）/ 池上限 8，
  *   验证同屏子弹 ≤8（W8-4 / 预算表 #2）。
@@ -11,8 +11,8 @@
  * 本模拟负责环境无关的预算断言（峰值/子弹/draw call）。
  */
 
-import { SPAWNER, WEAPONS } from '@/config/balance';
-import { budget } from '@/spawner/spawner';
+import { SPAWNER, WEAPONS, BUDGET_PIECEWISE_ENDPOINTS, BUDGET_WAVE } from '@/config/balance';
+import { budgetPiecewise } from '@/spawner/spawner';
 import { estimateDrawCalls } from '@/utils/perf';
 
 export interface HeadlessBenchResult {
@@ -43,7 +43,7 @@ function simulateSpawnPileUp(maxEnemies: number, simSeconds: number): { peak: nu
   for (let f = 0; f < frames; f += 1) {
     const t = f * DT;
     if (t >= SPAWNER.BOSS_TIME) break;
-    budgetAcc += budget(t) * DT;
+    budgetAcc += budgetPiecewise(t, BUDGET_PIECEWISE_ENDPOINTS, BUDGET_WAVE.amplitude, BUDGET_WAVE.period) * DT; // NV-BATCH-G：冻结五端点曲线（最坏堆积口径随运行时切换）
     while (budgetAcc >= 1) {
       budgetAcc -= 1;
       totalSpawned += 1;

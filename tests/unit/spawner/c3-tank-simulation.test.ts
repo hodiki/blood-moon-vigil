@@ -6,7 +6,7 @@ import {
   GAME,
 } from '@/config/balance';
 import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
-import { budget, stageForTime, pickEnemyKind, tankGuaranteeDue } from '@/spawner/spawner';
+import { budgetLegacy, stageForTime, pickEnemyKind, tankGuaranteeDue } from '@/spawner/spawner';
 import { DESKTOP_CONFIG, MOBILE_CONFIG } from '@/config/runtime-config';
 import { mulberry32 } from '@/utils/math';
 
@@ -40,7 +40,7 @@ function simulateTankField(opts: TankSimOptions): { spawned: number; guaranteed:
 
   while (t < opts.simSeconds) {
     t += dt;
-    budgetAcc += budget(t) * dt;
+    budgetAcc += budgetLegacy(t) * dt; // NV-BATCH-G：legacy 曲线归档口径（C3 判据为 legacy 标定，维持对照）
     const stage = stageForTime(t);
     // 保底直接取阶段值（与 enemy-spawner.tick 同构：S2=30s / S3=20s / 其余 Infinity）
     const guaranteeEvery = stage.tankGuaranteeEvery;

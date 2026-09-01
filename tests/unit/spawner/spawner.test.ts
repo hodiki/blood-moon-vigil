@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  budget,
+  budgetLegacy,
   budgetMean,
   stageForTime,
   pickEnemyKind,
@@ -19,12 +19,12 @@ import {
 } from '@/spawner/map-spawner';
 import { SPAWNER, MAP_CONFIGS, ENEMY_CONFIGS, type MapId } from '@/config/balance';
 
-describe('生成预算 budget(t)（E2-S4 / spawner §③ / S8-1；TASK-31 收尾：LINEAR 3.3→1.2、周期 75→60、分母 1200→360）', () => {
+describe('生成预算 budgetLegacy（EG-2 归档：NV-BATCH-G G2 已切 budgetPiecewise，本组锚保留历史曲线对照；E2-S4 / spawner §③ / S8-1）', () => {
   // 任务指定断言点 t=0/180/360（恰为 sin(2πt/60)=0，与压力曲线表一致）
   it('t=0/180/360 期望值 1.2 / 1.92 / 2.64（±1e-6；TASK-31 收尾 LINEAR 1.2）', () => {
-    expect(budget(0)).toBeCloseTo(1.2, 6);
-    expect(budget(180)).toBeCloseTo(1.92, 6);
-    expect(budget(360)).toBeCloseTo(2.64, 6);
+    expect(budgetLegacy(0)).toBeCloseTo(1.2, 6);
+    expect(budgetLegacy(180)).toBeCloseTo(1.92, 6);
+    expect(budgetLegacy(360)).toBeCloseTo(2.64, 6);
   });
 
   it('压力曲线表为「平均预算」（budgetMean，正弦项均值为 0）：60→1.44 … 360→2.64（rhythm-pace-adj §4）', () => {
@@ -37,20 +37,20 @@ describe('生成预算 budget(t)（E2-S4 / spawner §③ / S8-1；TASK-31 收尾
   });
 
   it('正弦项 ±30%：波峰 = 平均 ×1.3、波谷 = 平均 ×0.7（spawner §③；R1 波次2 0.4→0.3）', () => {
-    expect(budget(15)).toBeCloseTo(budgetMean(15) * 1.3, 6); // 峰值（sin=1，周期 60s）
-    expect(budget(45)).toBeCloseTo(budgetMean(45) * 0.7, 6); // 谷值（sin=-1）
+    expect(budgetLegacy(15)).toBeCloseTo(budgetMean(15) * 1.3, 6); // 峰值（sin=1，周期 60s）
+    expect(budgetLegacy(45)).toBeCloseTo(budgetMean(45) * 0.7, 6); // 谷值（sin=-1）
   });
 
   it('相邻 60s 周期生成速率差异 ≥40%（波峰波谷可感知，S8-3；峰谷比 1.3/0.7 ≈ 86% 仍达标）', () => {
     const samples: number[] = [];
-    for (let t = 0; t <= 360; t += 5) samples.push(budget(t));
+    for (let t = 0; t <= 360; t += 5) samples.push(budgetLegacy(t));
     const peak = Math.max(...samples);
     const trough = Math.min(...samples);
     expect((peak - trough) / trough).toBeGreaterThanOrEqual(0.4);
   });
 
   it('6 分钟线性项达 2.64 点/s（1.2×(1+1.2×360/360)）', () => {
-    expect(budget(360)).toBeCloseTo(2.64, 6);
+    expect(budgetLegacy(360)).toBeCloseTo(2.64, 6);
   });
 });
 

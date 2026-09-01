@@ -43,11 +43,14 @@ export const SPAWN_STAGES: readonly SpawnStage[] = [
 ] as const;
 
 /**
- * 生成预算（点数/s）：budget(t) = 1.2 × (1 + 1.2×t/360) × (1 + 0.3×sin(2πt/60))
- * 完整公式（含正弦波峰波谷，spawner §③；TASK-39 R1 波次2 + TASK-43 R2 + TASK-31 收尾
- * 参数收敛于 balance SPAWNER）。
+ * 旧生成预算（点数/s）：budget(t) = 1.2 × (1 + 1.2×t/360) × (1 + 0.3×sin(2πt/60))
+ * ⚠ NV-BATCH-G（G2，2026-09-02）运行时已切换 budgetPiecewise（五端点冻结，见
+ * config/balance/spawner.ts BUDGET_PIECEWISE_ENDPOINTS）；本函数按 EG-2 归档原则
+ * 保留为 budgetLegacy 供历史曲线对照/测试锚，禁止新调用方接入。
+ *
+ * @deprecated 运行时生成已切换 budgetPiecewise（sim-freeze-recommendation §③ 冻结）。
  */
-export function budget(t: number): number {
+export function budgetLegacy(t: number): number {
   const linear = 1 + (SPAWNER.LINEAR_SCALE * t) / SPAWNER.LINEAR_TOTAL_SECONDS;
   const wave = 1 + SPAWNER.WAVE_AMPLITUDE * Math.sin((2 * Math.PI * t) / SPAWNER.WAVE_PERIOD_SECONDS);
   return SPAWNER.BASE_BUDGET * linear * wave;
@@ -55,7 +58,7 @@ export function budget(t: number): number {
 
 /**
  * 平均预算（去掉正弦项，即 spawner §③ 压力曲线表的"平均预算"列）：
- * 1.2 → 1.44 → 1.68 → ... → 2.64。文档对照用；实际生成用 budget(t)。
+ * 1.2 → 1.44 → 1.68 → ... → 2.64。文档对照用（legacy 曲线口径；运行时已切换 budgetPiecewise）。
  */
 export function budgetMean(t: number): number {
   return SPAWNER.BASE_BUDGET * (1 + (SPAWNER.LINEAR_SCALE * t) / SPAWNER.LINEAR_TOTAL_SECONDS);
@@ -65,8 +68,10 @@ export function budgetMean(t: number): number {
  * budget 分段曲线（gdd-spawner-v2 §③-1 修订定稿 / gdd-difficulty-v3 §5.3 B2 案）：
  * 分段线性插值端点 + 正弦波幅/周期共 6 参数（端点参数化，五端点可独立断言）。
  * 端点锚（均值 点/s）：0s 0.9~1.1 / 60s 1.0~1.2（H2 前段压平）/ 120s ~1.6 /
- * 240s ~2.4 / 360s 3.2~3.6。端点值由调用方传入（模拟复测锚裁决后冻结；
- * 运行时切换属 B2 实装基线批 W-8 联动，本批不替换既有 budget(t)）。
+ * 240s ~2.4 / 360s 3.2~3.6。
+ * NV-BATCH-G（G2，2026-09-02）：端点值已冻结入 config/balance/spawner.ts
+ * （BUDGET_PIECEWISE_ENDPOINTS / BUDGET_WAVE，模拟冻结 2026-09-02，5400 局），
+ * 运行时生成（enemy-spawner）与方阵预扣会计同口径消费本函数。
  *
  * @param t 局时秒
  * @param endpoints 均值端点表 [t, mean]（升序；t 越界 clamp 首末段）

@@ -2,7 +2,7 @@
  * tools/sim/sim-run.ts —— 整局模拟沙盘 · 单局引擎（B2-W6 接真）
  *
  * 无头整局模拟（vite-node 复用 src 真实模块，模式沿用 tests/bench）：
- * - 敌潮预算走 `spawner.budget(t)`（真实生成器曲线）；
+ * - 敌潮预算走 `spawner.budgetPiecewise(t)`（NV-BATCH-G 冻结五端点；未传端点时 legacy 曲线归档口径）；
  * - 敌面板走 `ENEMY_CONFIGS`（15 敌配置，按地图敌池抽取）；
  * - 升级需求走 `needXp(level)`（真实 XP 曲线）；
  * - **武器结算走真实层**（B2-W6 接真）：
@@ -17,7 +17,7 @@ import { BOSSES, ENEMY_CONFIGS, MAP_CONFIGS, SPAWNER, WEAPONS, XP, type MapId } 
 import { createBossSkillState, stepBossSkills, clearBossSummons, type BossSkillState } from '@/enemies/boss-skill-engine';
 import { xpAwardForKill } from '@/enemies/noxp';
 import type { ExclusiveWeaponId } from '@/config/balance';
-import { budget, budgetPiecewise } from '@/spawner/spawner';
+import { budgetLegacy, budgetPiecewise } from '@/spawner/spawner';
 import { needXpCase, BUDGET_PIECEWISE_WAVE, type XpCaseParams } from './xp-cases';
 import { needXp } from '@/xp/xp-manager';
 import { enemiesForMap } from '@/enemies/enemy-types';
@@ -252,7 +252,7 @@ export function simulateRun(opts: SimOptions): RunMetrics {
     if (t < SPAWNER.BOSS_TIME) {
       budgetAcc += (opts.budgetEndpoints
         ? budgetPiecewise(t, opts.budgetEndpoints, BUDGET_PIECEWISE_WAVE.amplitude, BUDGET_PIECEWISE_WAVE.period)
-        : budget(t)) * DT;
+        : budgetLegacy(t)) * DT;
       while (budgetAcc >= 1 && enemies.length < MAX_ACTIVE_ENEMIES) {
         budgetAcc -= 1;
         const id = spawnEnemyId();

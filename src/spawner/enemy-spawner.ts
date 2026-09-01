@@ -3,7 +3,7 @@
  *
  * 纯逻辑在 spawner/spawner.ts（budget/阶段/抽签/保底/环带），本类只做秒制累加与
  * 池交互：
- * - 预算按秒累加（budget(t)×dt），帧率无关、掉帧不跳怪（S8 §⑥.5）
+ * - 预算按秒累加（budgetPiecewise(t)×dt，NV-BATCH-G G2 五端点冻结曲线），帧率无关、掉帧不跳怪（S8 §⑥.5）
  * - 同屏达上限：暂停生成 2s 后重试，不丢弃预算（S8-5 / E8-5）
  * - 3–8min 每 30s 保底 1 厚血（spawner §③ / C-7）；保底厚血出生前 2.5s 血月印记预警（TASK-39 E2）
  * - 6:00 Boss 收束钩子：停止生成 + 清场接口（E4-S3 复用）
@@ -18,7 +18,7 @@ import type { ArcadePoolLike } from '@/core/object-pools';
 import { SPAWNER, ENEMY_CONFIGS, type MapId, type EnemyId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import {
-  budget,
+  budgetPiecewise,
   stageForTime,
   pickEnemyKind,
   tankGuaranteeDue,
@@ -26,6 +26,10 @@ import {
   spawnPosition,
   type StageWeights,
 } from '@/spawner/spawner';
+import {
+  BUDGET_PIECEWISE_ENDPOINTS,
+  BUDGET_WAVE,
+} from '@/config/balance';
 import {
   weightedWeightsForStage,
   pickEnemyIdForMap,
@@ -164,7 +168,9 @@ export class EnemySpawner {
       this.onBossTime?.();
       return;
     }
-    const budgetGain = budget(this.t) * dt;
+    // NV-BATCH-G G2：预算曲线切换 budgetPiecewise（五端点冻结，sim-freeze-recommendation §③；
+    // 方阵预扣会计 reportGroupBudget 同口径，:274）
+    const budgetGain = budgetPiecewise(this.t, BUDGET_PIECEWISE_ENDPOINTS, BUDGET_WAVE.amplitude, BUDGET_WAVE.period) * dt;
     this.budgetAcc += budgetGain;
     this.tickGroups(dt);
     this.tick(dt);
@@ -270,8 +276,9 @@ export class EnemySpawner {
   private tickGroups(dt: number): void {
     const groups = this.groups;
     if (!groups) return;
-    // 预扣占比会计分母：budget 总盘同额上报
-    reportGroupBudget(groups, budget(this.t) * dt);
+    // 预扣占比会计分母：budget 总盘同额上报（G2：与 :167 生成侧同口径 budgetPiecewise，
+    // 否则方阵占比断言失真）
+    reportGroupBudget(groups, budgetPiecewise(this.t, BUDGET_PIECEWISE_ENDPOINTS, BUDGET_WAVE.amplitude, BUDGET_WAVE.period) * dt);
     groups.boss4OnField = this.boss4OnField;
     // 掷点（60~90s 节奏位；命中 → 预约 + 预扣 + 阵纹预警事件）
     this.groupCtx.playerX = this.player.x;

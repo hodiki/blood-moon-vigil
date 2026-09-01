@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { needXp } from '@/xp/xp-manager';
-import { budget, stageForTime, pickEnemyKind } from '@/spawner/spawner';
+import { budgetLegacy, stageForTime, pickEnemyKind } from '@/spawner/spawner';
 import { ENEMIES } from '@/../src/_archived/enemies-legacy-panel'; // W-8 收档：legacy 面板归档对照（禁止运行时消费）
 import { mulberry32 } from '@/utils/math';
 
@@ -19,7 +19,7 @@ function simulate20MinXp(efficiency: number, seed: number): { spawnCount: number
   let rawXp = 0;
   while (t < 1200) {
     t += dt;
-    budgetAcc += budget(t) * dt;
+    budgetAcc += budgetLegacy(t) * dt; // NV-BATCH-G：legacy 曲线归档口径（20min 模型为 legacy 标定）
     while (budgetAcc >= 1) {
       budgetAcc -= 1;
       const stage = stageForTime(t);
