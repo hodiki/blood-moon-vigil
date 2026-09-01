@@ -96,7 +96,12 @@ export interface ActiveSkillConfig {
   lifestealOnKill?: number;
 }
 
-/** 主动技表 4（gdd-active-skill §3.2 与 content-design-outline §2 逐项一致） */
+/**
+ * 主动技表 4（gdd-active-skill §3.2 与 content-design-outline §2 逐项一致）
+ * @deprecated EG-2 双轨隔离收口（NV-REVIEW-FIX-F）：主动技旧轨已归档——B5-W4 衍生技运行时
+ *   （DerivativeSkillController / active-skill-derivative）替代；仅 active-skill-runtime（旧轨）
+ *   与测试引用，PlayScene 无 import（归档不删，资产保留）。运行时不可达。
+ */
 export const ACTIVE_SKILLS: Record<HeroId, ActiveSkillConfig> = {
   hero_edmund: { heroId: 'hero_edmund', name: '提灯闪耀', type: 'DEFENSE', cd: 20, radius: 240, stunDuration: 2.5, invulnDuration: 1.5 },
   hero_cassandra: { heroId: 'hero_cassandra', name: '血影突袭', type: 'MOBILITY', cd: 12, charges: 2, chargeInterval: 8, dashDistance: 240, dashDuration: ACTIVE_SKILL_RULES.DASH_DURATION_SECONDS, dashDamage: 40, markDamageMult: 1.2, markDuration: 4, damageMultFactor: 0.5 },

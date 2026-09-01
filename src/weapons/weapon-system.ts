@@ -558,8 +558,18 @@ export class WeaponSystem {
    * 流程：进化瞬间清空旧弹体 → 源武器行为替换为超武行为（注册表同 key 覆盖）→ 标记不可逆。
    * 超武不再吃类强化（SuperWeaponBehavior.applyClassUpgrade 为 no-op）。
    * 返回是否成功（无进化映射 / 已进化 → false）。
+   * @deprecated EG-2 双轨隔离收口（NV-REVIEW-FIX-F）：超武进化轨道已归档——升级池 v3 质变卡
+   *   双轨替代；运行时无调用点（归档不删，保留原实现供考古）。任何运行时调用即接线错误 → throw。
    */
-  evolve(weaponId: WeaponId, scene: Phaser.Scene, cfg: RuntimeConfig): boolean {
+  evolve(_weaponId: WeaponId, _scene: Phaser.Scene, _cfg: RuntimeConfig): boolean {
+    throw new Error('[EG-2] 超武进化轨道已归档：WeaponSystem.evolve 运行时不可达（升级池 v3 质变卡替代）');
+  }
+
+  /**
+   * EG-2 归档原实现（不删，资产保留；仅供考古，运行时不可达）。
+   * E2-S6：超武进化（原子切换，gdd-weapons-v2 §5.1）。
+   */
+  evolveArchived(weaponId: WeaponId, scene: Phaser.Scene, cfg: RuntimeConfig): boolean {
     const evoId = SUPER_WEAPON_EVOLUTION[weaponId];
     if (!evoId) return false; // 7 把无超武武器不可进化
     if (this.evolution.isEvolved(weaponId)) return false; // 不可逆

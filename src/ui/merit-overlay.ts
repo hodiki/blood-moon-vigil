@@ -1,6 +1,11 @@
 /**
  * ui/merit-overlay.ts —— 守夜功绩 DOM 覆盖层（ADR-004 / merit-ui-spec v1.0）
  *
+ * @deprecated EG-2 双轨隔离收口（NV-REVIEW-FIX-F）：运行时入口已隐藏——B5-W4 滤月余辉天赋树
+ *   （merit-tree + start-overlay openTree）替代功绩加成界面；本模块仅保留供归档与单测
+ *   （tests/unit/ui/merit-overlay.test.ts），无任何运行时 import。存档迁移（meritPoints /
+ *   meritEquipped / pureInGame 折算）在 stats/save 保留，不受影响。资产不删。
+ *
  * 规格来源：`design/official-v1/merit-ui-spec.md`（M3-DESIGN-2 终稿）
  * - 主菜单入口（start-overlay 功能行）→ 打开本层（z-index 75）；返回回主菜单。
  * - 置顶开关：纯局内模式（关闭全部功绩加成，gdd-codex §3.4/§④；切换即时持久化，下次开局生效）。
