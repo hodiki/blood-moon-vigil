@@ -12,7 +12,8 @@
 import {
   EXCLUSIVE_WEAPONS,
 } from '@/config/balance';
-import { applyStatus, damageTakenMultiplier, type StatusState } from '@/combat/status/status-engine';
+import { damageTakenMultiplier, type StatusState } from '@/combat/status/status-engine';
+import { applyStatusWithImmuneFeedback } from '@/combat/status/immune-feedback';
 import type { CcProfile } from '@/combat/status/status-config';
 import { hitEnemy } from '@/combat/damage';
 import { fullAmmo, consumeAmmo, tickReload, grantAmmo, type AmmoState } from '@/weapons/ammo';
@@ -90,8 +91,8 @@ function applyCc(
   source: string,
 ): void {
   if (!target.cc) return;
-  // applyStatus 为纯函数（返回新状态）——必须写回目标载荷
-  target.cc = applyStatus(target.cc, { kind, value, durationSeconds: duration, source }, now, target.ccProfile).state;
+  // applyStatus 为纯函数（返回新状态）——必须写回目标载荷；P2-7②：Boss 硬控免疫 → StatusImmune 飘字
+  target.cc = applyStatusWithImmuneFeedback(target.cc, { kind, value, durationSeconds: duration, source }, now, target, target.ccProfile).state;
 }
 
 /** 距离平方（圆检测用） */

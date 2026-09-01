@@ -12,7 +12,7 @@ import type { RuntimeConfig } from '@/config/runtime-config';
 import type { EvoId, WeaponId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
-import { applyStatus } from '@/combat/status/status-engine';
+import { applyStatusWithImmuneFeedback } from '@/combat/status/immune-feedback';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { nearestEnemy, circlesOverlap } from '@/weapons/weapon-math';
 import { superWeaponSpec, type SuperWeaponSpec } from '@/weapons/super-weapons';
@@ -325,8 +325,9 @@ export class SuperWeaponBehavior implements WeaponBehavior {
       if (Math.hypot(e.x - ctx.player.x, e.y - ctx.player.y) > radius + e.radius) continue;
       hitEnemy(e, damage, ctx.now);
       // P0-2：眩晕写状态层（applyStatus 走抗性表：Boss 免疫 / 精英 ×0.5），不再写 stunnedUntil
+      // P2-7②：Boss 免疫拒绝 → StatusImmune 飘字
       if (stunSeconds > 0 && e.cc) {
-        e.cc = applyStatus(e.cc, { kind: 'stun', value: 1, durationSeconds: stunSeconds, source: 'super_moon_eclipse' }, ctx.now, e.ccProfile).state;
+        e.cc = applyStatusWithImmuneFeedback(e.cc, { kind: 'stun', value: 1, durationSeconds: stunSeconds, source: 'super_moon_eclipse' }, ctx.now, e, e.ccProfile).state;
       }
     }
     this.fx.shockwaveEdgeFlash(ctx.player.x, ctx.player.y, radius);

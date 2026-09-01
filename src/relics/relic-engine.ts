@@ -149,6 +149,8 @@ export function applyRelicEffect(id: RelicId, now: number, ctx: RelicEffectConte
       // 「非 Boss」与免疫口径一致——Boss 的 ccProfile.stun.immune=true，演出照常逻辑不生效 §⑦-2）
       for (const e of ctx.enemies) {
         if (!e.active) continue;
+        // P2-7② 口径注：圣物月蚀之陨为全屏脉冲，目标载荷无坐标（RelicEffectContext 最小形状），
+        // 免疫反馈不接入（演出照常逻辑不生效 §⑦-2）；Boss 免疫飘字覆盖武器/衍生技/超武路径。
         if (e.cc) e.cc = applyStatus(e.cc, { kind: 'stun', value: 1, durationSeconds: cfg.params['stunDuration']!, source: id }, now, e.ccProfile).state;
       }
       break;

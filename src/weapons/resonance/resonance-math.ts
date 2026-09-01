@@ -9,7 +9,8 @@
  */
 
 import type { ResonancePairConfig } from '@/config/balance';
-import { applyStatus, damageTakenMultiplier, type StatusState } from '@/combat/status/status-engine';
+import { damageTakenMultiplier, type StatusState } from '@/combat/status/status-engine';
+import { applyStatusWithImmuneFeedback } from '@/combat/status/immune-feedback';
 import { hitEnemy } from '@/combat/damage';
 import type { ExclusiveTarget } from '@/weapons/exclusive/exclusive-math';
 import { grantAmmo, type AmmoState } from '@/weapons/ammo';
@@ -40,8 +41,8 @@ function dealDamage(target: ExclusiveTarget, amount: number, now: number, result
 
 function applyCc(target: ExclusiveTarget, kind: 'stun' | 'slow' | 'vulnerable', value: number, duration: number, now: number, source: string): void {
   if (!target.cc) return;
-  // applyStatus 纯函数返回新状态——必须写回
-  target.cc = applyStatus(target.cc, { kind, value, durationSeconds: duration, source }, now, target.ccProfile).state;
+  // applyStatus 纯函数返回新状态——必须写回；P2-7②：Boss 硬控免疫 → StatusImmune 飘字
+  target.cc = applyStatusWithImmuneFeedback(target.cc, { kind, value, durationSeconds: duration, source }, now, target, target.ccProfile).state;
 }
 
 function distSq(ax: number, ay: number, bx: number, by: number): number {

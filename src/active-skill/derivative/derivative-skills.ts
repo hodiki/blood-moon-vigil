@@ -11,6 +11,7 @@
 
 import { DERIVATIVE_SKILLS, type DerivativeSkillId } from '@/config/balance';
 import { applyStatus } from '@/combat/status/status-engine';
+import { applyStatusWithImmuneFeedback } from '@/combat/status/immune-feedback';
 import { hitEnemy } from '@/combat/damage';
 import { setInfiniteWindow, type AmmoState } from '@/weapons/ammo';
 import type { ExclusiveTarget } from '@/weapons/exclusive/exclusive-math';
@@ -130,7 +131,7 @@ function castLanternFlash(p: Readonly<Record<string, number>>, ctx: DerivativeCa
   const result = emptyResult();
   for (const e of ctx.enemies) {
     if (!e.active || e.hp <= 0) continue;
-    if (e.cc) e.cc = applyStatus(e.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_lantern_flash' }, ctx.now, e.ccProfile).state;
+    if (e.cc) e.cc = applyStatusWithImmuneFeedback(e.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_lantern_flash' }, ctx.now, e, e.ccProfile).state;
     if (e.cc) {
       // Boss 免疫 → applied=false；遥测 immune 计数可后接（§⑧-5）
       result.events.push('stunApplied');
@@ -265,7 +266,7 @@ function castMoonSnipe(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
     if (first) {
       first = false;
       if (t.cc) {
-        t.cc = applyStatus(t.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_moon_snipe' }, ctx.now, t.ccProfile).state;
+        t.cc = applyStatusWithImmuneFeedback(t.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_moon_snipe' }, ctx.now, t, t.ccProfile).state;
         result.events.push('stunApplied');
       }
     }
@@ -308,7 +309,7 @@ function castHolyJudgment(p: Readonly<Record<string, number>>, ctx: DerivativeCa
     if (dx * dx + dy * dy > rSq) continue;
     dealDamage(e, p['damage']!, ctx.now, result);
     if (e.cc) {
-      e.cc = applyStatus(e.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_holy_judgment' }, ctx.now, e.ccProfile).state;
+      e.cc = applyStatusWithImmuneFeedback(e.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_holy_judgment' }, ctx.now, e, e.ccProfile).state;
       result.events.push('stunApplied');
     }
   }

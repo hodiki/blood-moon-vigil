@@ -68,6 +68,7 @@ import { sceneHasFrame } from '@/fx/external-atlas';
 import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim, hasCharacterFrame } from '@/fx/anim';
 import { FxManager } from '@/fx/fx-manager';
 import { StatusMarkerLayer } from '@/fx/status-markers';
+import { FloatTextLayer } from '@/fx/float-text';
 import { bossEntranceFrameName } from '@/fx/skill-pose';
 import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
@@ -126,6 +127,8 @@ export class PlayScene extends Phaser.Scene {
   private fx!: FxManager;
   /** 特殊行为标记（尸巫光环 / 猎手警告线 / 侍僧符文 / 状态小点） */
   private markers!: StatusMarkerLayer;
+  /** P2-7② 世界内短飘字层（Boss 免疫飘「免疫」；共享飘字管线底座） */
+  private floatTexts!: FloatTextLayer;
   /** TASK-28 冲击波涟漪上升沿检测（active 从 false→true 时触发一次涟漪） */
   private shockwaveWasActive = false;
   /** B5-W4 衍生技控制器（替代旧 4 技 ActiveSkill 运行时；EG-2 归档） */
@@ -220,6 +223,8 @@ export class PlayScene extends Phaser.Scene {
     createCharacterAnims(this);
     this.fx = new FxManager(this, this.cfg);
     this.markers = new StatusMarkerLayer(this, this.cfg);
+    // P2-7② 世界内短飘字层（Boss 免疫飘「免疫」；伤害数字共享管线底座）
+    this.floatTexts = new FloatTextLayer(this);
 
     // E4-S1/S9：开局角色 + 地图从 session-selection 读取（解锁门禁由保存数据层校验，
     // PlayScene 兜底非法选择回退默认，见 session-selection.selectHeroSafely/selectMapSafely）
@@ -634,6 +639,11 @@ export class PlayScene extends Phaser.Scene {
 
     // 事件订阅（ARCH §3.4：统一在 create 注册，shutdown 清空）
     GameEvents.on(GameEvent.PlayerDied, this.onPlayerDied, this);
+    // P2-7②：Boss 硬控免疫 → 飘「免疫」短文本（FloatTextLayer 同位节流 1.2s）
+    GameEvents.on(GameEvent.StatusImmune, (args: unknown) => {
+      const p = args as { x: number; y: number; now: number };
+      this.floatTexts.showImmune(p.x, p.y, p.now);
+    }, this);
     GameEvents.on(GameEvent.EnemyKilled, (args: unknown) => this.killLoot.onEnemyKilled(args), this);
     GameEvents.on(GameEvent.PlayerRevived, (args: unknown) => this.killLoot.onPlayerRevived(args), this);
     GameEvents.on(GameEvent.LevelUp, (args: unknown) => this.upgrades.onLevelUp(args as { level: number; xpNeeded: number }), this);
@@ -771,6 +781,7 @@ export class PlayScene extends Phaser.Scene {
     // W-3 MN-12：血月化身稀有触发（270s 后 5%/判定，1s 节拍工程锚；once；BOSS_TIME 前独立）
     this.tickAvatarTrigger(dt);
     this.markers.sync(this.enemyPool, this.player, now);
+    this.floatTexts.update(dt); // P2-7②：短飘字上浮/淡出
     // W-13 telegraph 演出同步（精英预警/阵纹/Boss 施法圈；移动端线宽 +1px §⑦）+ P0-4 突袭蓄身预警
     {
       const eliteTel: import('@/enemies/elite-skill-runtime').EliteTelegraph[] = [];
@@ -873,6 +884,7 @@ export class PlayScene extends Phaser.Scene {
     this.weaponSystem.clearAll(); // W8 §⑥.5：清空子弹/环绕球 + 冲击波冷却重置
     this.fx.clearAll(); // TASK-28：清空粒子（结算页背景干净）
     this.markers.hideAll();
+    this.floatTexts.hideAll(); // P2-7②：清空短飘字
     this.overlay.hide(); // 防止结算时残留选卡覆盖层
     // E4-S2 玩家死亡/终局：狂化 buff 立即清除（gdd §⑥.8）、冲刺中断、倍率/移速加成归零
     this.rage.clear();
@@ -1197,6 +1209,7 @@ export class PlayScene extends Phaser.Scene {
     this.requiemRingTimer?.remove(false);
     this.requiemRingTimer = null;
     this.markers?.destroy();
+    this.floatTexts?.destroy(); // P2-7②
     resetGameEvents(); // 防泄漏（ARCH §3.4 约定）
     this.inputSource.destroy();
     this.overlay.destroy();

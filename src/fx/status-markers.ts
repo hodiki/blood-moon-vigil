@@ -9,7 +9,7 @@
  */
 
 import Phaser from 'phaser';
-import { ENEMY_BEHAVIORS, PALETTE, type ChargeBehaviorConfig } from '@/config/balance';
+import { ENEMY_BEHAVIORS, type ChargeBehaviorConfig } from '@/config/balance';
 import type { RuntimeConfig } from '@/config/runtime-config';
 import { chargeCycleElapsed, warningLineAlpha } from '@/enemies/enemy-behaviors';
 import type { Enemy } from '@/enemies/enemy';
@@ -17,11 +17,14 @@ import { SPECIAL_MARKERS, pickFxAtlas } from '@/fx/fx-spec';
 import type { Player } from '@/player/player';
 import { sceneHasFrame } from '@/fx/external-atlas';
 import { hexToRgbInt } from '@/utils/math';
-import { queryStatus } from '@/combat/status/status-engine';
 
 const DEPTH_AURA = 40;
 const DEPTH_LINE = 85;
 const DEPTH_HEAD = 92;
+
+// P2-7①：纯函数部分（三态判定 + 同屏上限）抽至 status-dots.ts（无 Phaser 依赖，可单测）
+import { statusDotsFor, STATUS_DOTS_MAX } from '@/fx/status-dots';
+export { statusDotsFor, STATUS_DOTS_MAX };
 
 function fxSlot(scene: Phaser.Scene, preferred: string, fallback: string): { atlas: string; frame: string } {
   return pickFxAtlas((atlas, frame) => sceneHasFrame(scene, atlas, frame), preferred, fallback);
@@ -30,18 +33,31 @@ function fxSlot(scene: Phaser.Scene, preferred: string, fallback: string): { atl
 class ImagePool {
   private readonly items: Phaser.GameObjects.Image[] = [];
   private used = 0;
+  /** P2-7①：同屏硬顶（超出返回隐藏哑元，不进渲染批次）；0 = 不限 */
+  private readonly cap: number;
+  private dummy: Phaser.GameObjects.Image | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly fallbackFrame: string,
     private readonly depth: number,
-  ) {}
+    cap = 0,
+  ) {
+    this.cap = cap;
+  }
 
   begin(): void {
     this.used = 0;
+    this.dummy?.setVisible(false);
   }
 
   take(): Phaser.GameObjects.Image {
+    // P2-7① 超上限：返回隐藏哑元（调用方仍可 setTexture/位置，但不可见 → 零额外 draw call）
+    if (this.cap > 0 && this.used >= this.cap) {
+      this.dummy ??= this.scene.add.image(0, 0, 'fx-ambient', this.fallbackFrame).setVisible(false).setActive(false);
+      this.dummy.setDepth(this.depth);
+      return this.dummy;
+    }
     let img = this.items[this.used];
     if (!img) {
       img = this.scene.add.image(0, 0, 'fx-ambient', this.fallbackFrame);
@@ -57,6 +73,7 @@ class ImagePool {
     for (let i = this.used; i < this.items.length; i += 1) {
       this.items[i]?.setActive(false).setVisible(false);
     }
+    this.dummy?.setVisible(false);
   }
 
   hideAll(): void {
@@ -68,6 +85,8 @@ class ImagePool {
     for (const img of this.items) img.destroy();
     this.items.length = 0;
     this.used = 0;
+    this.dummy?.destroy();
+    this.dummy = null;
   }
 }
 
@@ -83,7 +102,7 @@ export class StatusMarkerLayer {
   ) {
     this.aura = new ImagePool(scene, 'p-ring', DEPTH_AURA);
     this.rune = new ImagePool(scene, 'p-circle', DEPTH_HEAD);
-    this.dots = new ImagePool(scene, 'p-circle', DEPTH_HEAD);
+    this.dots = new ImagePool(scene, 'p-circle', DEPTH_HEAD, STATUS_DOTS_MAX);
     this.lines = scene.add.graphics().setDepth(DEPTH_LINE);
   }
 
@@ -172,18 +191,7 @@ export class StatusMarkerLayer {
   }
 
   private placeStatusDots(e: Enemy, now: number): void {
-    const dots: { color: string; frame: string }[] = [];
-    // NV-REVIEW-FIX P0-3：状态图标统一读状态层 `cc`（旧散落字段 stunnedUntil/slowUntil/markUntil
-    // 已无生产写入方——markUntil 随易伤迁入状态层后彻底退役）。
-    if (queryStatus(e.cc, 'stun', now).active) {
-      dots.push({ color: PALETTE.uiPaper, frame: 'marker-stun' });
-    }
-    if (queryStatus(e.cc, 'slow', now).active) {
-      dots.push({ color: PALETTE.playerAccent, frame: 'marker-slow' });
-    }
-    if (queryStatus(e.cc, 'vulnerable', now).active) {
-      dots.push({ color: PALETTE.player, frame: 'marker-mark' });
-    }
+    const dots = statusDotsFor(e.cc, now);
     const n = dots.length;
     if (n === 0) return;
     const y = e.y - e.radius - 18;

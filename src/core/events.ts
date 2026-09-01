@@ -126,6 +126,8 @@ export const GameEvent = {
   TreasureDropped: 'enemy:treasure-dropped',
   /** W-14 宝藏拾取（payload { x, y }；三选一 offer 直发 1 次，与卡 2 渠道解耦） */
   TreasureCollected: 'enemy:treasure-collected',
+  /** P2-7② Boss 硬控免疫反馈（payload { x, y, now }；applyStatus reason='immune' ∧ kind='stun' 时 emit，FloatTextLayer 消费飘「免疫」） */
+  StatusImmune: 'status:immune',
 } as const;
 
 export type GameEventName = (typeof GameEvent)[keyof typeof GameEvent];
