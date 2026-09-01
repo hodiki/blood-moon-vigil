@@ -104,6 +104,7 @@
 2. **Q-b 同名禁选的解读**：Q-d 预选与开局专武「同名不重复」的判定落在**树界面**，此时局内 2 选 1 专武尚未确定——故 Q-b 点亮时两把候选专武的配对共鸣通武**一律禁选**（保守口径，宁可少选不错发）。若需「仅禁实际带入者」，须把专武选择前置到树界面之后，属规格变更。
 3. **R-5 重叠区几何简化**：壁垒光环（orbit-weapons.tickAura，玩家居中 auraRadius ?? 120）与铃音领域均以玩家为中心 → 「重叠区」恒等于「双武同时启用」，帧级判定退化为双武开关检查，无需逐点求交。若未来光环改为弹体居中，需回退为真几何求交。
 4. **R-8 锁存残留**：§⑦-2 满员时月狼召唤请求「静默丢弃」，`sharedSummonCount` 返回的 `latchedRequest`（猎犬消失瞬间释放锁存 1 次）**未接线**——当前语义为丢弃后等下个 summonInterval 自然重试（12s 节拍），行为差异仅为最多一个节拍的补狼延迟。挂账 P2 级。
+   → **NV-P2-ZERO 已清偿**（commit `0cd341f`）：`HornState.latchedRequest` 接线——请求被猎犬外部占位顶掉（自身未满）时锁存，`externalOccupants` 回落（猎犬死亡/超时）后下一步进立即消费重召（一次性防连刷）；自身满员仍静默丢弃（§6.1-2 原语义不变）。
 
 ---
 
@@ -114,8 +115,10 @@
 | P1-15 / P1-16 / P1-17（BUG-3/4/6：结算页矮视口、序章 Esc、音频手势 resume） | **未修** | 不在批次 A~E 任务包内（审查单 §八未归属），建议随批次 F 或热修批处理 |
 | 批次 F（PlayScene 拆分 / 双轨隔离） | 未启动 | 结构批，无玩法数值变更 |
 | 批次 G（难度切换） | 未启动 | 前置：XP/budget 在 A~E 完成前**未动**（遵守禁令），切 c 案待沙盘裁决 |
-| R-8 锁存释放 | 挂账 | 见 §五-4 |
-| P2-1~P2-10 挂账表 | 未动 | 按审查单 §六不阻塞 0.8 手感验收 |
+| R-8 锁存释放 | ✅ 已清偿 | NV-P2-ZERO（`0cd341f`）：`HornState.latchedRequest` 接线，槽位释放立即重召，防连刷语义保留 |
+| P2-3 升级卡共鸣预览徽记 / 0.8s 定格 | ✅ 已清偿 | NV-P2-ZERO（`4ff97cf`）：`resonanceBadgeState` 四态透传三选一卡面 + `ui/resonance-freeze.ts` 0.8s 定格演出（纯视觉层，取舍注释留痕） |
+| merit-overlay 模块退役 | ✅ 已清偿 | NV-P2-ZERO（`de6375f`）：`src/_archived/merit-overlay.ts` + 单测归档（EG-2 快照）；grep 守卫断言运行时零引用；存档迁移链（meritPoints/meritEquipped）不动 |
+| P2-1~P2-10 挂账表 | 部分清偿（P2-3 ✅） | 其余 P2 项按审查单 §六不阻塞 0.8 手感验收；残留应仅剩美术帧与真机项 |
 | chunk >500kB 构建警告 | 既有 | 非本轮引入；可随批次 F 做代码分割 |
 | 版本号 / tag | 未裁决 | §十二-3：0.8 tag 是否在 A~E 完成后打，待主理人裁决 |
 
@@ -126,7 +129,22 @@
 ```bash
 cd D:/code/vampire-survivors-like
 npm run typecheck   # 0 错误
-npm test            # 1291/1291
+npm test            # 1291/1291（A~E 收官基线；NV-P2-ZERO 后 1368/1368）
 npm run build       # 通过
 npm run dev         # 按 §四 手测十条（含 ?qa=1 / ?smoke=1）
 ```
+
+---
+
+## 八、P2 清零批（NV-P2-ZERO）收口（2026-09-02）
+
+清偿 v0.8 审查链最后三项 P2 残留，之后 0.8 进入真机验收与版本收口：
+
+| 项 | commit | 落点 |
+|---|---|---|
+| P2-3 | `4ff97cf` | `UpgradeV2Option.resonanceBadge` 四态 + `decorateResonanceBadges` 导出纯函数（onLevelUp/triggerExtraOffer 双 roll 位）+ 卡面 reso-* 徽记（hud 四态视觉惯例镜像）+ `ui/resonance-freeze.ts` 0.8s 定格（纯视觉层：LEVEL_UP 相位世界已冻结，敌人降速无可感知窗口）+ `showResonanceFreeze` 端口接线 |
+| R-8 | `0cd341f` | `HornState.latchedRequest` 锁存释放：外部占位顶掉请求时锁存 → 槽位释放立即重召（一次性防连刷）；自身满员静默丢弃不变 |
+| merit-overlay | `de6375f` | 模块+单测归档（`src/_archived/` / `tests/archived/`）；grep 守卫用例；meritPoints/meritEquipped 存档迁移链不动 |
+
+- 新增用例：`tests/unit/p2-zero.test.ts`（18 例）
+- 质量门：typecheck 0 错误；**1368 / 1368 全绿**（110 文件）；build 通过；未 push；未改 XP 曲线与 budget；未放宽 GDD 断言

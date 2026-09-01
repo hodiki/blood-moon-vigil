@@ -74,5 +74,6 @@ d3dd1da W-F4 P2-6/P2-2/矩阵/协作   48c4480 docs 架构图+CHANGELOG
 1. **P4 窗口权重 `applyP4WindowWeight` 与 P3 权重对齐口径**沿 v3 现状未动（批次 G 候选）。
 2. `WeaponSystem.isEvolutionEligible` / `evolution-engine` 纯引擎与 `upgrade-pool-v2` 旧轨仍归档在库（EG-2 不删；无运行时调用点，源码断言守卫）。
 3. `merit-overlay` 模块与其单测保留（仅缺运行时入口）；后续彻底退役可随存档折算批次一并处理。
+   → **NV-P2-ZERO 已退役归档**（commit `de6375f`）：`src/_archived/merit-overlay.ts` + 单测归档 `tests/archived/`；运行时 grep 守卫断言零引用；存档迁移链（meritPoints/meritEquipped）不动。
 4. PlayScene 1200 行贴近门限，新增玩法请直接落 `src/scenes/run/*` 模块（约定见 architecture.md §3.1.1）。
 5. W-F3 的 BUG-3/4/6 用例以纯函数 + 源码守卫为主（node 测试环境无 DOM/Phaser window）；真机回归建议补 1280×656 视口与移动端音频各 1 次手测。
