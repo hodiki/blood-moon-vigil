@@ -239,6 +239,8 @@ export class PlayScene extends Phaser.Scene {
   private eliteOfferQueue = 0;
   /** Q-s1：开局窗口截止局时 s（-1 = 未点亮） */
   private treeS1UntilElapsed = -1;
+  /** P1-7 支线墓碑回血加值暂存（applyTreeToStats 写入；oathkeeper 装配在后，create 末尾写入 machine） */
+  private treeTombHealBonus = 0;
   /** P1-8：滤月余辉经验获取乘区（1 + 天赋 xpGainPct；applyTreeToStats 写入、XpManager 装配后应用） */
   private treeXpGainMult = 1;
   /** P1-11 Q-s4 双灯并祀：P4 卡前移旗（树应用写回） */
@@ -435,6 +437,10 @@ export class PlayScene extends Phaser.Scene {
     // NV-INTEG-FIX ③：原条件 ownedWeaponIds.includes('xw_bell') 在 create 期恒 false（圣铃开局
     // 自带但专武入册在此之后）→ 启用判定改为「修女 && 选中圣铃」，随专武选择结果联动（见下）。
     this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y);
+    // P1-7 支线墓碑回血：applyTreeToStats 早于守誓者装配 → 暂存加值在此写入 machine（+1 HP/s ×层数）
+    if (this.treeTombHealBonus > 0) {
+      this.oathkeeper.state.machine['tombHealFlatBonus'] = this.treeTombHealBonus;
+    }
     // P0-7c 圣铃治疗同源落点：每 8s 铃响治疗「自身 **与** 守誓者」8 HP（旧实现只写玩家 HP）。
     // 挂在行为层 onHeal 上（与 healSink 同量同源）；未启用守誓者时 healCompanion 内部短路。
     this.exw('xw_bell').onHeal = (amount: number) => {
@@ -1591,6 +1597,25 @@ export class PlayScene extends Phaser.Scene {
     // P1-8：攻速/冷却 → WeaponSystem 区间乘区（冷却下限 TALENT_COOLDOWN_FLOOR）；XP → 延迟乘区（XpManager 装配在后）
     if (a.attackSpeedPct > 0 || a.cooldownPct > 0) this.weaponSystem.applyTalentIntervals(a.attackSpeedPct, a.cooldownPct);
     this.treeXpGainMult = 1 + a.xpGainPct;
+    // P1-7 角色支线接线（§4.3 轻规格；machine 锚消费）：
+    // - 受击移速/击杀回血/狂化移速 → PlayerStats 专属字段（窗口语义由消费点保证）
+    if (a.hitMoveSpeedPct > 0) stats.hitSpeedBoostBonusPct += a.hitMoveSpeedPct;
+    if (a.killHealFlat > 0) stats.killHealBonus += a.killHealFlat;
+    if (a.rageMoveSpeedPct > 0) stats.rageSpeedBonusPct += a.rageMoveSpeedPct;
+    // - 范围 +5%（灯环/领域类）→ 提灯/圣铃 machine['areaPct']（stepLantern/stepBell 半径乘区）
+    if (a.areaPct > 0) {
+      for (const id of ['xw_lantern', 'xw_bell'] as const) {
+        const b = this.exw(id);
+        b.machine['areaPct'] = (b.machine['areaPct'] ?? 0) + a.areaPct;
+      }
+    }
+    // - 吸血效 +25% → 血契双刃 machine['healPerHitPct']（stepTwinblades 命中回复乘区）
+    if (a.lifestealHealPct > 0) {
+      const tb = this.exw('xw_twinblades');
+      tb.machine['healPerHitPct'] = (tb.machine['healPerHitPct'] ?? 0) + a.lifestealHealPct;
+    }
+    // - 墓碑回血 +1 HP/s → 守誓者 machine（oathkeeper 装配在 applyTreeToStats 之后 → 暂存字段，create 末尾写入）
+    if (a.tombHealFlat > 0) this.treeTombHealBonus += a.tombHealFlat;
   }
 
   /**

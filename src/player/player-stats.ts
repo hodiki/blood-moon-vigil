@@ -73,6 +73,8 @@ export class PlayerStats {
   /** 血猎手受击加速：截止（秒时间戳）+ 加成比例 */
   private hitSpeedBoostUntil = 0;
   private readonly hitSpeedBoostPct = HIT_SPEED_BOOST.PCT;
+  /** P1-7 天赋支线（卡珊德拉 br_1）：受击加速窗口内的额外移速比例（窗口外无感） */
+  hitSpeedBoostBonusPct = 0;
 
   constructor(hero?: HeroConfig) {
     if (hero) {
@@ -132,6 +134,10 @@ export class PlayerStats {
 
   /** E4-S2 写回：狂化移速 buff 比例（gdd-active-skill §3.2：+30%，效果结束归 0） */
   rageSpeedPct = 0;
+  /** P1-7 天赋支线（加尔文 br_2）：狂化期额外移速比例（仅 rageSpeedPct > 0 窗口内生效） */
+  rageSpeedBonusPct = 0;
+  /** P1-7 天赋支线（加尔文 br_1）：击杀额外回血 HP（applyLifesteal 与吸血/兽血愈合加法叠加） */
+  killHealBonus = 0;
   /** E4-S4 升级池：移速百分比加成（up_g_4 移速 +8% ×3；与角色成长叠加） */
   moveSpeedBonusPct = 0;
   /** E4-S4 升级池：承伤减免（up_g_7 减伤 +10% ×3；与圣光壁垒 -10% 加法叠加，上限 -30%） */
@@ -152,9 +158,9 @@ export class PlayerStats {
   /** 踏月而行：击杀移速 buff 截止（秒时间戳） */
   private killSpeedBuffUntil = -Infinity;
 
-  /** 击杀回复：吸血升级 + 狼裔专属被动（加法叠加，content §2.5）；未解锁且无被动则无操作 */
+  /** 击杀回复：吸血升级 + 狼裔专属被动 + 天赋支线（加法叠加，content §2.5 / P1-7）；未解锁且无被动则无操作 */
   applyLifesteal(): boolean {
-    const perKill = this.lifestealPerKill + this.passiveLifestealPerKill;
+    const perKill = this.lifestealPerKill + this.passiveLifestealPerKill + this.killHealBonus;
     if (perKill <= 0) return false;
     const before = this.hp;
     this.hp = Math.min(this.maxHp, this.hp + perKill);
@@ -164,8 +170,9 @@ export class PlayerStats {
   /** 当前生效移速（受击加速 + 狂化移速 buff + 升级移速 % + 踏月击杀 buff 叠加；now 秒时间戳） */
   effectiveMoveSpeed(now: number): number {
     let mult = 1;
-    if (now < this.hitSpeedBoostUntil) mult += this.hitSpeedBoostPct;
+    if (now < this.hitSpeedBoostUntil) mult += this.hitSpeedBoostPct + this.hitSpeedBoostBonusPct;
     mult += this.rageSpeedPct;
+    if (this.rageSpeedPct > 0) mult += this.rageSpeedBonusPct; // P1-7 天赋支线：狂化期移速（仅狂化窗口内生效）
     mult += this.moveSpeedBonusPct;
     if (now < this.killSpeedBuffUntil && this.killSpeedBuff) mult += this.killSpeedBuff.pct;
     // W-4 外部减速乘区（血渍区/领域类地面效应；0.85 = 减速 15%）

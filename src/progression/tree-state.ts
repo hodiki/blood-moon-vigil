@@ -123,10 +123,23 @@ export interface TreeAttributeDelta {
   moveSpeedPct: number;
   healEfficiencyPct: number;
   pickupRadius: number;
+  // ---- 支线专属字段（P1-7：§4.3 轻规格；消费点见各字段注释） ----
+  /** 范围 +5%/层（灯环/领域类；PlayScene 写入 xw_lantern/xw_bell machine['areaPct']） */
+  areaPct: number;
+  /** 受击移速 +10%/层（PlayerStats.hitSpeedBoostBonusPct，受击窗口内生效） */
+  hitMoveSpeedPct: number;
+  /** 吸血效 +25%/层（血契双刃命中回复；stepTwinblades machine['healPerHitPct']） */
+  lifestealHealPct: number;
+  /** 守誓者墓碑回血 +1 HP/s/层（oathkeeper machine['tombHealFlatBonus']） */
+  tombHealFlat: number;
+  /** 击杀回血 +0.5 HP/层（PlayerStats.killHealBonus，与吸血/兽血愈合叠加） */
+  killHealFlat: number;
+  /** 狂化期移速 +5%/层（PlayerStats.rageSpeedBonusPct，仅狂化窗口内生效） */
+  rageMoveSpeedPct: number;
 }
 
 export function emptyTreeAttributeDelta(): TreeAttributeDelta {
-  return { attackFlat: 0, damagePct: 0, attackSpeedPct: 0, cooldownPct: 0, xpGainPct: 0, magnetRadius: 0, maxHp: 0, moveSpeedPct: 0, healEfficiencyPct: 0, pickupRadius: 0 };
+  return { attackFlat: 0, damagePct: 0, attackSpeedPct: 0, cooldownPct: 0, xpGainPct: 0, magnetRadius: 0, maxHp: 0, moveSpeedPct: 0, healEfficiencyPct: 0, pickupRadius: 0, areaPct: 0, hitMoveSpeedPct: 0, lifestealHealPct: 0, tombHealFlat: 0, killHealFlat: 0, rageMoveSpeedPct: 0 };
 }
 
 /** 质变节点生效标记（PlayScene 开局/运行时消费） */
@@ -170,11 +183,12 @@ function mutationFlagsOf(ledger: TreeLedger): TreeMutationFlags {
   };
 }
 
-/** 属性段汇总（按节点 effect × 层数累加；每节点独立层数——双点位类型合计达标） */
+/** 属性段汇总（按节点 effect × 层数累加；每节点独立层数——双点位类型合计达标）。
+ *  P1-7：支线节点（kind === 'branch'）machine 同构并入汇总（顶点无数值 machine 空 = 零贡献）。 */
 function attributeDeltaOf(ledger: TreeLedger): TreeAttributeDelta {
   const delta = emptyTreeAttributeDelta();
   for (const node of TALENT_TREE) {
-    if (node.kind !== 'attribute') continue;
+    if (node.kind !== 'attribute' && node.kind !== 'branch') continue;
     const bought = ledger.purchases[node.id] ?? 0;
     if (bought <= 0) continue;
     const m = node.machine as Record<string, number>;
@@ -188,6 +202,12 @@ function attributeDeltaOf(ledger: TreeLedger): TreeAttributeDelta {
     if (m.moveSpeedPct) delta.moveSpeedPct += m.moveSpeedPct * bought;
     if (m.healEfficiencyPct) delta.healEfficiencyPct += m.healEfficiencyPct * bought;
     if (m.pickupRadius) delta.pickupRadius += m.pickupRadius * bought;
+    if (m.areaPct) delta.areaPct += m.areaPct * bought;
+    if (m.hitMoveSpeedPct) delta.hitMoveSpeedPct += m.hitMoveSpeedPct * bought;
+    if (m.lifestealHealPct) delta.lifestealHealPct += m.lifestealHealPct * bought;
+    if (m.tombHealFlat) delta.tombHealFlat += m.tombHealFlat * bought;
+    if (m.killHealFlat) delta.killHealFlat += m.killHealFlat * bought;
+    if (m.rageMoveSpeedPct) delta.rageMoveSpeedPct += m.rageMoveSpeedPct * bought;
   }
   return delta;
 }

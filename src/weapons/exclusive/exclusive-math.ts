@@ -136,7 +136,8 @@ export function stepLantern(
 ): StepResult {
   const result = emptyStep();
   const base = EXCLUSIVE_WEAPONS.xw_lantern.params;
-  const radius = machine['auraRadius'] ?? base.radius!;
+  // P1-7 天赋支线（艾德蒙 br_2 范围 +5%）：machine['areaPct'] 乘区（灯环半径；装配层由 applyTreeToStats 写入）
+  const radius = (machine['auraRadius'] ?? base.radius!) * (1 + (machine['areaPct'] ?? 0));
   const tickDamage = base.damage!;
   const tickInterval = machine['interval'] ?? base.interval!; // P0-7e：射速爆发窗口由装配层注入
   const slowPct = machine['slowPct'] ?? base.slowPct!;
@@ -335,7 +336,9 @@ export function stepTwinblades(
     if (target && distSq(target.x, target.y, player.x, player.y) <= range * range) {
       dealDamage(target, base.damage! * damageMultiplier, now, result);
       state.bloodPact = Math.min(10, state.bloodPact + 1);
-      const heal = Math.min(base.healPerHit!, Math.max(0, base.healCapPerSecond! - state.healWindowUsed));
+      // P1-7 天赋支线（卡珊德拉 br_2 吸血效 +25%）：machine['healPerHitPct'] 放大命中回复与每秒上限（同源乘区）
+      const healMult = 1 + (machine['healPerHitPct'] ?? 0);
+      const heal = Math.min(base.healPerHit! * healMult, Math.max(0, base.healCapPerSecond! * healMult - state.healWindowUsed));
       state.healWindowUsed += heal;
       if (heal > 0) healSink(heal);
       result.events.push('slash');
@@ -461,7 +464,8 @@ export function stepBell(
 ): StepResult {
   const result = emptyStep();
   const base = EXCLUSIVE_WEAPONS.xw_bell.params;
-  const radius = base.radius!;
+  // P1-7 天赋支线（艾德蒙 br_2 范围 +5%）：machine['areaPct'] 乘区（铃音领域半径；同上装配层写入）
+  const radius = base.radius! * (1 + (machine['areaPct'] ?? 0));
   state.tickTimer -= dt;
   state.healTimer -= dt;
 

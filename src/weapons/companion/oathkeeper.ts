@@ -119,7 +119,8 @@ export function tickTombstone(
   const radius = 120;
   const inRange = Math.hypot(player.x - state.x, player.y - state.y) <= radius;
   if (inRange) {
-    const heal = param(state, 'tombHealPerSec') * dt;
+    // P1-7 天赋支线（薇奥莱 br_2）：machine['tombHealFlatBonus'] 墓碑回血加值（HP/s；+1/层，与质变卡覆写叠加）
+    const heal = (param(state, 'tombHealPerSec') + (state.machine['tombHealFlatBonus'] ?? 0)) * dt;
     const applied = healSink(heal);
     // 修女治疗命中墓碑 → 复活进度按转化率折算（治疗量 × rate 累计；满 100 复活）
     convertHealToRevive(state, applied);

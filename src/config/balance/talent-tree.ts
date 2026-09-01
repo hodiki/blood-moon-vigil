@@ -92,6 +92,18 @@ const BRANCH_DESCS = {
   galvan: ['击杀回血 +0.5 HP ×2', '狂化期移速 +5% ×2', '顶点·同袍之诺'],
 } as const;
 
+/**
+ * 支线 machine 锚（P1-7 补齐：§4.3 轻规格数值；消费见 tree-state.attributeDeltaOf +
+ * PlayScene.applyTreeToStats 接线——拾取半径/治疗效能走既有属性口，其余走专属消费点）。
+ * 顶点「同袍之诺」= 图鉴轻联动节点（L-2，前置 codex_heroes_all），无数值效果，machine 保持空。
+ */
+const BRANCH_MACHINES: Record<'edmund' | 'cassandra' | 'violet' | 'galvan', [Record<string, number>, Record<string, number>]> = {
+  edmund: [{ pickupRadius: 10 }, { areaPct: 0.05 }],        // ① 拾取半径 +10px ② 范围 +5%（灯环/领域类）
+  cassandra: [{ hitMoveSpeedPct: 0.10 }, { lifestealHealPct: 0.25 }], // ① 受击移速 +10% ② 吸血效 +25%（双刃命中回复）
+  violet: [{ healEfficiencyPct: 0.10 }, { tombHealFlat: 1 }], // ① 治疗效能 +10% ② 守誓者墓碑回血 +1 HP/s
+  galvan: [{ killHealFlat: 0.5 }, { rageMoveSpeedPct: 0.05 }], // ① 击杀回血 +0.5 HP ② 狂化期移速 +5%
+};
+
 /** 全节点表（§④；主干 26 + 支线 12+4 顶点 = 全部 38 条目 ≈40 锚） */
 export const TALENT_TREE: readonly TalentNodeConfig[] = [
   // ---- 树根（1）----
@@ -123,12 +135,13 @@ export const TALENT_TREE: readonly TalentNodeConfig[] = [
   { id: 'a_move_speed', kind: 'attribute', name: '移速', desc: '影子跟不上你。', cost: 10, layer: 3, parent: 'a_life', maxPurchases: 2, bucket: 'survival', machine: TALENT_ATTRIBUTE_EFFECTS.a_move_speed },
   { id: 'a_heal_efficiency', kind: 'attribute', name: '治疗效能', desc: '伤口在圣辉里合拢得更快。', cost: 10, layer: 3, parent: 'a_life_2', maxPurchases: 2, bucket: 'survival', machine: TALENT_ATTRIBUTE_EFFECTS.a_heal_efficiency },
   { id: 'a_pickup_radius', kind: 'attribute', name: '拾取半径', desc: '伸手即是所得。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_pickup_radius },
-  // ---- 角色支线（4×3 + 顶点 4 = 14~16 锚；轻规格 §4.3）----
+  // ---- 角色支线（4×3 + 顶点 4 = 14~16 锚；轻规格 §4.3；machine 锚见 BRANCH_MACHINES）----
   ...(['edmund', 'cassandra', 'violet', 'galvan'] as const).flatMap((hero): TalentNodeConfig[] => {
     const descs = BRANCH_DESCS[hero];
+    const [m1, m2] = BRANCH_MACHINES[hero];
     return [
-      { id: `br_${hero}_1` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ①`, desc: descs[0], cost: 15, layer: 2, parent: 'q_a', maxPurchases: 2, machine: {} },
-      { id: `br_${hero}_2` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ②`, desc: descs[1], cost: 15, layer: 3, parent: `br_${hero}_1`, maxPurchases: 2, machine: {} },
+      { id: `br_${hero}_1` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ①`, desc: descs[0], cost: 15, layer: 2, parent: 'q_a', maxPurchases: 2, machine: m1 },
+      { id: `br_${hero}_2` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ②`, desc: descs[1], cost: 15, layer: 3, parent: `br_${hero}_1`, maxPurchases: 2, machine: m2 },
       { id: `br_${hero}_top` as TalentNodeId, kind: 'branch', name: '同袍之诺', desc: descs[2], cost: 25, layer: 4, parent: `br_${hero}_2`, maxPurchases: 1, machine: {}, codexPrerequisite: 'codex_heroes_all' },
     ];
   }),
