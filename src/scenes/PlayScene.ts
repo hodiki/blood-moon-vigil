@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type EnemyId, type BossId, } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type HeroId, type MapId, type WeaponId, } from '@/config/balance';
 import { defaultExclusiveFor } from '@/weapons/loadout';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
@@ -46,7 +46,7 @@ import { EnemySpawner, splitGemCluster } from '@/spawner/enemy-spawner';
 import { XpGem } from '@/xp/xp-gem';
 import { XpManager } from '@/xp/xp-manager';
 import { HealPickup } from '@/xp/heal-pickup';
-import { HealManager, shouldDropHeal } from '@/xp/heal-manager';
+import { HealManager } from '@/xp/heal-manager';
 import { UpgradeState } from '@/upgrade/upgrade-pool';
 import { DerivativeSkillController } from '@/active-skill/derivative/derivative-controller';
 import { computeTreeApplication, ledgerFromSaveData, type TreeApplication } from '@/progression/tree-state';
@@ -61,7 +61,7 @@ import { PauseOverlay, createPauseOverlay } from '@/ui/pause-overlay';
 import { getOverlayHost } from '@/ui/overlay-host';
 import { RunStats } from '@/stats/run-stats';
 import { readRestartCount } from '@/stats/session-stats';
-import { CodexTracker, MOON_AVATAR_ENTRY_ID, eventEntriesForMapCleared } from '@/codex/codex';
+import { CodexTracker, eventEntriesForMapCleared } from '@/codex/codex';
 import { calculateMeritPoints } from '@/stats/merit';
 import { loadSave, writeSave, recordMapCleared, type SaveData } from '@/stats/save';
 import { createProceduralTextures } from '@/fx/procedural-textures';
@@ -84,6 +84,7 @@ import { BenchSmokeRunner } from '@/scenes/run/bench-smoke-runner';
 import { ExclusiveRunAssembler } from '@/scenes/run/exclusive-run-assembler';
 import { UpgradeFlowController, type UpgradeChosenPayload } from '@/scenes/run/upgrade-flow-controller';
 import { DerivativeCastBridge } from '@/scenes/run/derivative-cast-bridge';
+import { KillLootConsumer } from '@/scenes/run/kill-loot-consumer';
 
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
@@ -93,21 +94,6 @@ import { DerivativeCastBridge } from '@/scenes/run/derivative-cast-bridge';
 const BENCH_TIME_SCALE = 20;
 /** W-3：化身判定窗口上界（= BOSS_TIME 360s；spawner-v2 §⑥-5 同帧常规优先口径） */
 const BOSS_TIME_GATE = 360;
-
-interface EnemyKilledPayload {
-  enemyType: string;
-  /** E4-S6 图鉴：内容 ID（15 敌/Boss；旧 kind 三敌 null） */
-  enemyId?: EnemyId | BossId | null;
-  xp: number;
-  /** W-12 召唤物 noXp：true = 击杀反馈链跳过宝石生成（零 XP 路径，gdd-spawner-v2 §③-7） */
-  noXp?: boolean;
-  /** W-B/W-11 组黑板路由（方阵成员击杀 → 槽位置亡/召唤物计数释放） */
-  groupId?: string | null;
-  groupRole?: string | null;
-  groupSlotIndex?: number;
-  x: number;
-  y: number;
-}
 
 export class PlayScene extends Phaser.Scene {
   private state!: GameState;
@@ -142,8 +128,6 @@ export class PlayScene extends Phaser.Scene {
   private markers!: StatusMarkerLayer;
   /** TASK-28 冲击波涟漪上升沿检测（active 从 false→true 时触发一次涟漪） */
   private shockwaveWasActive = false;
-  /** TASK-39 E2 屠夫预警：血月印记精灵（保底厚血预约出生时显示，落地时销毁；null = 无） */
-  private tankMark: Phaser.GameObjects.Image | null = null;
   /** B5-W4 衍生技控制器（替代旧 4 技 ActiveSkill 运行时；EG-2 归档） */
   private derivativeController!: DerivativeSkillController;
   /** W-1 特殊行为 AI 运行时（光环/召唤/冲锋；enemy-ai-runtime） */
@@ -185,8 +169,6 @@ export class PlayScene extends Phaser.Scene {
   private treeXpGainMult = 1;
   /** P1-11 Q-s4 双灯并祀：P4 卡前移旗（树应用写回） */
   private treeS4Active = false;
-  /** B6-W4 up_d_rage 失控边缘：累计延长 s（上限 3） */
-  private rageExtraSeconds = 0;
   /** Q-s3：遗言余烬（首次 HP 归零事件 + 终局折算） */
   private treeS3Active = false;
   private treeS3EmberUsed = false;
@@ -197,6 +179,7 @@ export class PlayScene extends Phaser.Scene {
   private requiemRingTimer: Phaser.Time.TimerEvent | null = null;
   /** E4-S2 血月狂化 buff（8s 窗口；玩家死亡/重开清空） */
   private rage = new RageBuff();
+  private rageExtraSeconds = 0;
   /** E4-S3 主动技运行时配置（升级分支改写；效果结算统一读本类） */
   /** E4-S5 已拥有武器 id（初始武器 + 解锁；v2 抽取上下文） */
   private ownedWeaponIds: WeaponId[] = [];
@@ -206,12 +189,8 @@ export class PlayScene extends Phaser.Scene {
   private saveData: SaveData | null = null;
   /** E4-S7 纯局内模式（关闭全部功绩加成） */
   private pureInGame = false;
-  /** E4-S7 本局首杀 Boss/精英数（功绩 +2/只） */
-  private firstBossKillsThisRun = 0;
-  /** E4-S7 本局血月化身击杀（功绩 +5） */
-  private avatarKillsThisRun = 0;
-  /** 批次 4：血月化身稀有宝箱（本局最多 1） */
-  private rareChest: Phaser.Physics.Arcade.Image | null = null;
+  /** 击杀消费/掉落/图鉴/预警/宝箱（W-F1 拆分：run/kill-loot-consumer） */
+  private readonly killLoot = new KillLootConsumer();
   /** M3 轻叙事：局内事件 → 文本表 → DOM 覆盖层（narrative-framework §5/§7；宿主 #ui-overlay） */
   private narratives!: NarrativeDispatcher;
   private unbindNarratives: (() => void) | null = null;
@@ -262,9 +241,8 @@ export class PlayScene extends Phaser.Scene {
     // RunStats 类字段累积数组（build/upgradeTimestamps）与累计埋点（offersPerRun/xpGained/...）
     // 跨局存活 → 每局开始（create 即唯一入口，含 restart 路径）重置全部 per-run 字段。
     this.stats.reset();
-    // 同族 per-run 计数：功绩首杀/化身击杀、图鉴 toast 挂起（同样跨局存活，一并归零）
-    this.firstBossKillsThisRun = 0;
-    this.avatarKillsThisRun = 0;
+    // 同族 per-run 计数：功绩首杀/化身击杀（kill-loot-consumer）、图鉴 toast 挂起（跨局存活，一并归零）
+    this.killLoot.resetRun();
     this.codexToastPending = false;
     // P0-1 圣物层 per-run 复位（scene.restart 复用实例；祭坛标记要显式销毁防残留在场）
     this.relicFields.resetRun();
@@ -408,6 +386,59 @@ export class PlayScene extends Phaser.Scene {
       s1Until: () => this.treeS1UntilElapsed,
       eachActiveEnemy: (fn) => this.enemyPool.eachActive(fn),
       derivativeControllerRef: () => this.derivativeController,
+    });
+    // 击杀消费/掉落端口（W-F1 拆分：run/kill-loot-consumer）
+    this.killLoot.attach({
+      runStats: () => this.stats,
+      notifyGroupMemberKilled: (payload) => this.spawner.notifyGroupMemberKilled(payload),
+      onBossSummonKilled: (groupId) => this.bossConsumer.onSummonKilled(groupId),
+      codex: () => this.codex,
+      setCodexToastPending: () => {
+        this.codexToastPending = true;
+      },
+      treeEliteOffers: () => (this.treeEliteOfferConsumed ? 0 : this.treeEliteOffers),
+      consumeTreeEliteOffer: () => {
+        this.treeEliteOfferConsumed = true;
+      },
+      notifyEliteKilled: () => this.upgrades.notifyEliteKilled(),
+      notifyEliteOffers: (n) => this.upgrades.notifyEliteOffers(n),
+      fx: () => this.fx,
+      dropGem: (xp, x, y) => this.xp.dropGem(xp, x, y),
+      dropHeal: (x, y) => this.healManager.dropHeal(x, y),
+      stats: () => this.player.stats,
+      rage: () => this.rage,
+      hasRageUpgrade: () => this.upgradeState.stackOf('up_d_rage' as import('@/config/balance').UpgradeId) >= 1,
+      extendRageKill: () => {
+        this.rageExtraSeconds = Math.min(3, this.rageExtraSeconds + 0.5);
+        this.rage.apply(this.time.now / 1000, 6 + this.rageExtraSeconds);
+      },
+      nowSeconds: () => this.time.now / 1000,
+      spawnTankMark: (x, y) => {
+        const mark = this.add
+          .image(x, y, 'fx-ambient', 'p-ring')
+          .setDepth(60)
+          .setDisplaySize(72, 72)
+          .setTint(hexToRgbInt(PALETTE.danger))
+          .setAlpha(0.9);
+        this.tweens.add({
+          targets: mark,
+          alpha: 0.35,
+          scale: 0.92,
+          duration: 350,
+          yoyo: true,
+          repeat: 3,
+        });
+        return mark;
+      },
+      eachActiveEnemy: (fn) => this.enemyPool.eachActive(fn),
+      playerX: () => this.player.x,
+      playerY: () => this.player.y,
+      hasChestFrame: () => sceneHasFrame(this, 'effects', 'chest'),
+      addChestImage: (x, y) => {
+        const img = this.physics.add.image(x, y, 'effects', 'chest');
+        img.setDepth(25);
+        return img;
+      },
     });
     // W-1 特殊行为 AI 运行时（召唤出口走 spawner 敌方技能召唤口：noXp 自动置位）
     this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
@@ -592,20 +623,20 @@ export class PlayScene extends Phaser.Scene {
 
     // 事件订阅（ARCH §3.4：统一在 create 注册，shutdown 清空）
     GameEvents.on(GameEvent.PlayerDied, this.onPlayerDied, this);
-    GameEvents.on(GameEvent.EnemyKilled, this.onEnemyKilled, this);
-    GameEvents.on(GameEvent.PlayerRevived, this.onPlayerRevived, this);
+    GameEvents.on(GameEvent.EnemyKilled, (args: unknown) => this.killLoot.onEnemyKilled(args), this);
+    GameEvents.on(GameEvent.PlayerRevived, (args: unknown) => this.killLoot.onPlayerRevived(args), this);
     GameEvents.on(GameEvent.LevelUp, (args: unknown) => this.upgrades.onLevelUp(args as { level: number; xpNeeded: number }), this);
     GameEvents.on(GameEvent.UpgradeChosen, (args: unknown) => this.upgrades.onUpgradeChosen(args as UpgradeChosenPayload), this);
     GameEvents.on(GameEvent.BossDefeated, this.onBossDefeated, this);
     GameEvents.on(GameEvent.RestartRequested, this.onRestartRequested, this);
     GameEvents.on(GameEvent.ToMenuRequested, this.onToMenuRequested, this);
     // TASK-28：宝石拾取爆点（负载含 x/y，TASK-28 增补）
-    GameEvents.on(GameEvent.GemCollected, this.onGemCollected, this);
+    GameEvents.on(GameEvent.GemCollected, (args: unknown) => this.killLoot.onGemCollected(args), this);
     // TASK-39 E2：屠夫预警（血月印记出现/落地）
-    GameEvents.on(GameEvent.TankWarning, this.onTankWarning, this);
-    GameEvents.on(GameEvent.TankSpawned, this.onTankSpawned, this);
+    GameEvents.on(GameEvent.TankWarning, (args: unknown) => this.killLoot.onTankWarning(args), this);
+    GameEvents.on(GameEvent.TankSpawned, () => this.killLoot.onTankSpawned(), this);
     // M3 治疗道具：拾取完成 → 治疗绿发光 + HpChanged（治疗量已由 HealManager 应用）
-    GameEvents.on(GameEvent.HealCollected, this.onHealCollected, this);
+    GameEvents.on(GameEvent.HealCollected, (args: unknown) => this.killLoot.onHealCollected(args), this);
 
     // 相机跟随 + 世界边界（S9 / E4-S9：按 MAP_CONFIGS 尺寸联动，替换 WORLD 3000 硬编码）
     this.cameras.main.setBounds(0, 0, mapCfg.width, mapCfg.height);
@@ -754,7 +785,7 @@ export class PlayScene extends Phaser.Scene {
     this.xp.update(dt);
     // 5b) M3 治疗道具拾取（精英/Boss 保底；拾取即治疗 + emit）
     this.healManager.update(dt);
-    this.updateRareChestPickup();
+    this.killLoot.updateRareChestPickup();
     // 5c) M3 图鉴 toast：局内首次解锁任一条目 → 同帧合并 emit 1 条（spec §6 n_toast_codex「多条目同帧合并 1 条」）
     if (this.codexToastPending) {
       this.codexToastPending = false;
@@ -852,8 +883,8 @@ export class PlayScene extends Phaser.Scene {
         survivalSeconds: result.survivalSeconds,
         kills: result.kills,
         victory: result.victory,
-        firstBossKills: this.firstBossKillsThisRun,
-        avatarKills: this.avatarKillsThisRun,
+        firstBossKills: this.killLoot.firstBossKillCount,
+        avatarKills: this.killLoot.avatarKillCount,
       });
       this.saveData.meritPoints += earned;
       // 图鉴解锁快照 + 功绩点数 + 装备 + 通关 + 纯局内模式 一并持久化
@@ -1036,119 +1067,6 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /**
-   * enemy:killed 消费端（E3-S1 / E4 统计）：
-   * - 击杀统计（E4 结算）
-   * - 掉落经验宝石（僵尸 1 / 疾行 2 / 厚血 15 / Boss 100；Boss 不落地——终局流程接管）
-   * - 吸血回血（upgrade-pool 第 8 项）
-   */
-  private onEnemyKilled(args: unknown): void {
-    const payload = args as EnemyKilledPayload;
-    this.stats.recordKill();
-    // W-B/W-11：方阵成员/召唤物击杀 → 组黑板路由（槽位置亡/计数释放/全灭解散）
-    if (payload.groupId) {
-      this.spawner.notifyGroupMemberKilled(payload);
-      // MN-23：Boss 同源召唤死亡释放计数（上限 6/8 口径）
-      this.bossConsumer.onSummonKilled(payload.groupId);
-    }
-    // B6-W5 占比分母近似：击杀敌面板 HP 计入总伤害（1D/沙盘校准口径；精确伤害流留遥测批次）
-    const cfg = payload.enemyId ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[payload.enemyId] ?? (BOSSES as Record<string, { hp?: number }>)[payload.enemyId] : undefined;
-    if (cfg?.hp) this.stats.recordTotalDamage(cfg.hp);
-    // E4-S6 图鉴：首杀记录（15 敌/Boss；内容 ID 幂等；旧 kind 三敌 enemyId 为 null 跳过）
-    if (payload.enemyId) {
-      if (this.codex.recordKill(payload.enemyId)) {
-        this.codexToastPending = true; // 图鉴 toast（同帧合并，update 末尾 emit）
-        // 首杀 Boss/精英 → 功绩 +2/只（E4-S7；精英 = tank 运行时类，Boss = boss 类）
-        const kind = payload.enemyType as EnemyKindId;
-        if (kind === 'boss' || kind === 'tank') this.firstBossKillsThisRun += 1;
-        // B3-W3 渠道 1（默认开）：首精英击杀必掉卡 2（待发队列防卡死 §6.1-4）
-        if (kind === 'tank') {
-          // B3-W3 渠道 1（默认开）：首精英击杀必掉卡 2（待发队列防卡死 §6.1-4；W-F1 拆分管线）
-          this.upgrades.notifyEliteKilled();
-          // B5-W3 Q-f1/f2/f3 首猎之赏：每局首个精英击杀 → 连得 N 次额外 offer（GT-10 串联）
-          if (this.treeEliteOffers > 0 && !this.treeEliteOfferConsumed) {
-            this.treeEliteOfferConsumed = true;
-            this.upgrades.notifyEliteOffers(this.treeEliteOffers);
-          }
-        }
-        // 血月化身（boss_4）：任意图稀有月坠 → 图鉴隐藏条目 + 功绩 +5（gdd-codex §3.2/§3.4）
-        if (payload.enemyId === 'boss_4') {
-          this.codex.recordTrigger(MOON_AVATAR_ENTRY_ID);
-          if (this.codex.recordProgress('codex_event_6')) this.codexToastPending = true;
-          this.avatarKillsThisRun += 1;
-          this.dropRareChest(payload.x, payload.y);
-        }
-      }
-    }
-    // TASK-28：击杀溅射（颜色/形状按敌人类型分化）
-    this.fx.deathBurst(payload.x, payload.y, payload.enemyType as EnemyKindId);
-    if (payload.enemyType !== 'boss') {
-      // W-12 召唤物 noXp 全量（MN-23）：技能召唤实体零宝石路径（无宝石生成 = 天然区分）
-      if (!payload.noXp) {
-        this.xp.dropGem(payload.xp, payload.x, payload.y);
-      }
-    }
-    // M3 治疗道具（merit-ui-spec §11 + 平衡模拟调整）：精英（tank 槽）掉率 50% / Boss 保底；
-    // 普通怪不掉（防掉落稀释）；Boss 保底 100%（shouldDropHeal 内按 HEAL.ELITE_DROP_CHANCE 判定）
-    if (shouldDropHeal(payload.enemyType)) {
-      this.healManager.dropHeal(payload.x, payload.y);
-    }
-    if (this.player.stats.applyLifesteal()) {
-      GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-    }
-    // B6-W4 up_d_rage 失控边缘：狂化期击杀延长 0.5s（上限 +3s）
-    if (this.rage.active(this.time.now / 1000) && this.upgradeState.stackOf('up_d_rage') >= 1) {
-      this.rageExtraSeconds = Math.min(3, this.rageExtraSeconds + 0.5);
-      this.rage.apply(this.time.now / 1000, 6 + this.rageExtraSeconds);
-    }
-    // 血月狂化衍生技：狂化中击杀回 1 HP（dv_blood_rage 口径沿旧值；与吸血升级/兽血愈合叠加）
-    if (this.rage.active(this.time.now / 1000)) {
-      const before = this.player.stats.hp;
-      this.player.stats.hp = Math.min(
-        this.player.stats.maxHp,
-        this.player.stats.hp + 1, // dv_blood_rage 口径沿旧值（lifestealOnKill=1）
-      );
-      if (this.player.stats.hp > before) {
-        GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-      }
-    }
-    // M3-DESIGN-1 up_g_4 踏月而行：击杀后 2s 移速 +15%（PlayerStats 时间窗，无 HP 变化）
-    this.player.stats.triggerKillSpeedBuff(this.time.now / 1000);
-  }
-
-  /** TASK-28：宝石拾取爆点（payload 由 xp-manager 补 x/y） */
-  private onGemCollected(args: unknown): void {
-    const p = args as { x?: number; y?: number };
-    if (typeof p.x === 'number' && typeof p.y === 'number') {
-      this.fx.gemPickup(p.x, p.y);
-    }
-  }
-
-  /** B5-W3 复活瞬间周身击退 100px（§④-1 Q-c：防「复活即死」循环） */
-  private onPlayerRevived(args: unknown): void {
-    const p = args as { x: number; y: number; knockback: number };
-    const kb = p.knockback ?? 0;
-    if (kb <= 0) return;
-    this.enemyPool.eachActive((e) => {
-      if (!e.active) return;
-      const dx = e.x - p.x;
-      const dy = e.y - p.y;
-      const len = Math.hypot(dx, dy) || 1;
-      if (len > kb + e.radius) return;
-      e.setPosition(e.x + (dx / len) * kb, e.y + (dy / len) * kb);
-    });
-    this.fx.levelUpBurst(p.x, p.y); // 复活演出占位（B6 专有演出）
-  }
-
-  /** M3 治疗道具拾取：治疗绿发光 + HpChanged（治疗量已由 HealManager 写入 stats） */
-  private onHealCollected(args: unknown): void {
-    const p = args as { amount: number; x?: number; y?: number };
-    if (typeof p.x === 'number' && typeof p.y === 'number') {
-      this.fx.healPickup(p.x, p.y);
-    }
-    GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-  }
-
-  /**
    * 专武行为的扩展型访问（WeaponBehavior 基接口只有 setEnabled/update，
    * 而 onHeal / applyFireRateBurst / applyMutationCard 属 ExclusiveWeaponBehavior 专有）。
    */
@@ -1233,43 +1151,6 @@ export class PlayScene extends Phaser.Scene {
     if (a.tombHealFlat > 0) this.treeTombHealBonus += a.tombHealFlat;
   }
 
-  /**
-   * TASK-39 E2 屠夫预警：保底厚血预约出生 → 出生点生成血月印记（复用 fx-ambient p-ring 红圈，
-   * 桌面 edgeWarning 叠加边缘红光脉动由既有机制承担；移动端无全屏红晕，本地印记为主预兆）。
-   * 印记脉冲 0.35s×yoyo×3 ≈ 2.5s；落地时（tank:spawned）销毁。
-   */
-  private onTankWarning(args: unknown): void {
-    const p = args as { x: number; y: number };
-    this.destroyTankMark();
-    const mark = this.add
-      .image(p.x, p.y, 'fx-ambient', 'p-ring')
-      .setDepth(60)
-      .setDisplaySize(72, 72)
-      .setTint(hexToRgbInt(PALETTE.danger))
-      .setAlpha(0.9);
-    this.tweens.add({
-      targets: mark,
-      alpha: 0.35,
-      scale: 0.92,
-      duration: 350,
-      yoyo: true,
-      repeat: 3,
-    });
-    this.tankMark = mark;
-  }
-
-  /** TASK-39 E2 屠夫预警：预约厚血落地 → 销毁印记 */
-  private onTankSpawned(): void {
-    this.destroyTankMark();
-  }
-
-  private destroyTankMark(): void {
-    if (this.tankMark) {
-      this.tankMark.destroy();
-      this.tankMark = null;
-    }
-  }
-
   /** P1-5 R-5 圣域重叠区帧级判定（每帧调用；几何锚：壁垒光环与铃音领域均玩家居中
    *  → 重叠区判定退化 ≡ 双武启用，无需逐点求交）：双武齐 → 18% 动态 DR；缺一 → 0 */
   private refreshSanctuaryOverlap(): void {
@@ -1351,26 +1232,6 @@ export class PlayScene extends Phaser.Scene {
     });
   }
 
-  private dropRareChest(x: number, y: number): void {
-    if (this.rareChest) return;
-    if (!sceneHasFrame(this, 'effects', 'chest')) return;
-    const img = this.physics.add.image(x, y, 'effects', 'chest');
-    img.setDepth(25);
-    this.rareChest = img;
-  }
-
-  private updateRareChestPickup(): void {
-    const chest = this.rareChest;
-    if (!chest?.active) return;
-    const r = 28;
-    const dx = chest.x - this.player.x;
-    const dy = chest.y - this.player.y;
-    if (dx * dx + dy * dy > r * r) return;
-    chest.destroy();
-    this.rareChest = null;
-    this.codexToastPending = true;
-  }
-
   /** 玩家 HP 比例（0..1；基准模式免死 maxHp 极大 → 视为满血，避免濒死音频误触发） */
   private playerHpFraction(): number {
     const maxHp = this.player.stats.maxHp;
@@ -1390,8 +1251,7 @@ export class PlayScene extends Phaser.Scene {
     this.narratives?.destroy();
     this.prologue?.destroy();
     this.exclusiveSelect?.destroy();
-    this.rareChest?.destroy();
-    this.rareChest = null;
+    this.killLoot.destroyChest();
     this.requiemRingTimer?.remove(false);
     this.requiemRingTimer = null;
     this.markers?.destroy();
