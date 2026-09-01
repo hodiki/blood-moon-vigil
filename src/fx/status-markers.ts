@@ -17,6 +17,7 @@ import { SPECIAL_MARKERS, pickFxAtlas } from '@/fx/fx-spec';
 import type { Player } from '@/player/player';
 import { sceneHasFrame } from '@/fx/external-atlas';
 import { hexToRgbInt } from '@/utils/math';
+import { queryStatus } from '@/combat/status/status-engine';
 
 const DEPTH_AURA = 40;
 const DEPTH_LINE = 85;
@@ -172,13 +173,15 @@ export class StatusMarkerLayer {
 
   private placeStatusDots(e: Enemy, now: number): void {
     const dots: { color: string; frame: string }[] = [];
-    if (e.stunnedUntil > now) {
+    // NV-REVIEW-FIX P0-3：状态图标统一读状态层 `cc`（旧散落字段 stunnedUntil/slowUntil/markUntil
+    // 已无生产写入方——markUntil 随易伤迁入状态层后彻底退役）。
+    if (queryStatus(e.cc, 'stun', now).active) {
       dots.push({ color: PALETTE.uiPaper, frame: 'marker-stun' });
     }
-    if (e.slowUntil > now) {
+    if (queryStatus(e.cc, 'slow', now).active) {
       dots.push({ color: PALETTE.playerAccent, frame: 'marker-slow' });
     }
-    if (e.markUntil > now) {
+    if (queryStatus(e.cc, 'vulnerable', now).active) {
       dots.push({ color: PALETTE.player, frame: 'marker-mark' });
     }
     const n = dots.length;

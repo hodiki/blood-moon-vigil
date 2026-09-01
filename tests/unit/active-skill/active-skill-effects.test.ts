@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ACTIVE_SKILLS, ACTIVE_SKILL_RULES } from '@/config/balance';
+import { emptyStatusState, applyStatus, type StatusState } from '@/combat/status/status-engine';
 import {
   isMarked,
   weaponDamageOnTarget,
@@ -20,7 +21,10 @@ import {
   type SlowableLike,
 } from '@/active-skill/active-skill-effects';
 
-/** 构造可标记/可减速/可伤害假敌（结构性满足各接口） */
+/**
+ * 构造可标记/可减速/可伤害假敌（结构性满足各接口）。
+ * NV-REVIEW-FIX P0-3：易伤载体改为状态层 `cc.vulnerable`，不再用 markUntil/markDamageMult。
+ */
 function makeEnemy(overrides: Partial<DashEnemyLike> = {}): DashEnemyLike {
   const enemy: DashEnemyLike = {
     active: true,
@@ -28,8 +32,7 @@ function makeEnemy(overrides: Partial<DashEnemyLike> = {}): DashEnemyLike {
     y: 0,
     radius: 10,
     hp: 100,
-    markUntil: 0,
-    markDamageMult: 1,
+    cc: emptyStatusState(),
     kill: () => {
       (enemy as DashEnemyLike & { active: boolean }).active = false;
     },
@@ -38,31 +41,37 @@ function makeEnemy(overrides: Partial<DashEnemyLike> = {}): DashEnemyLike {
   return enemy;
 }
 
-describe('E4-S2 血影突袭·标记（MOBILITY：命中标记 4s 受武器伤害 +20%）', () => {
-  it('isMarked：now < markUntil 为真；未标记（0）恒假', () => {
-    expect(isMarked({ markUntil: 10 }, 5)).toBe(true);
-    expect(isMarked({ markUntil: 10 }, 10)).toBe(false);
-    expect(isMarked({ markUntil: 0 }, 5)).toBe(false);
+/** 构造带易伤的载荷（value = 易伤加成，until = 截止秒时间戳） */
+function vulnerableCc(value: number, until: number): StatusState {
+  return applyStatus(emptyStatusState(), { kind: 'vulnerable', value, durationSeconds: until }, 0).state;
+}
+
+describe('E4-S2 血影突袭·易伤（MOBILITY：命中标记 4s 受武器伤害 +20%；P0-3 迁入状态层）', () => {
+  it('isMarked：易伤期内为真；过期/无载荷恒假', () => {
+    expect(isMarked({ cc: vulnerableCc(0.2, 10) }, 5)).toBe(true);
+    expect(isMarked({ cc: vulnerableCc(0.2, 10) }, 10)).toBe(false);
+    expect(isMarked({ cc: emptyStatusState() }, 5)).toBe(false);
   });
 
-  it('weaponDamageOnTarget：标记目标 ×1.20；未标记 ×1（血影突袭 markDamageMult=1.2）', () => {
+  it('weaponDamageOnTarget：易伤目标 ×1.20；过期/未易伤 ×1（血影突袭 markDamageMult=1.2）', () => {
     const cfg = ACTIVE_SKILLS.hero_cassandra;
     expect(cfg.markDamageMult).toBe(1.2);
     expect(cfg.markDuration).toBe(4);
-    expect(weaponDamageOnTarget(100, { markUntil: 10, markDamageMult: 1.2 }, 5)).toBe(120);
-    expect(weaponDamageOnTarget(100, { markUntil: 5, markDamageMult: 1.2 }, 5)).toBe(100); // 标记过期
-    expect(weaponDamageOnTarget(100, { markUntil: 0, markDamageMult: 1.2 }, 5)).toBe(100);
+    expect(weaponDamageOnTarget(100, { cc: vulnerableCc(0.2, 10) }, 5)).toBe(120);
+    expect(weaponDamageOnTarget(100, { cc: vulnerableCc(0.2, 5) }, 5)).toBe(100); // 易伤过期
+    expect(weaponDamageOnTarget(100, { cc: emptyStatusState() }, 5)).toBe(100);
   });
 
-  it('applyMarkInRadius：半径内标记 active 敌人；重复标记刷新截止为较晚者', () => {
-    const e1 = makeEnemy({ x: 0, y: 0, markUntil: 5, markDamageMult: 1 });
-    const e2 = makeEnemy({ x: 0, y: 60, markUntil: 0, markDamageMult: 1 });
-    const e3 = makeEnemy({ x: 0, y: 300, markUntil: 0, markDamageMult: 1 });
+  it('applyMarkInRadius：半径内挂易伤（+20% / 4s）；半径外不挂', () => {
+    const e1 = makeEnemy({ x: 0, y: 0 });
+    const e2 = makeEnemy({ x: 0, y: 60 });
+    const e3 = makeEnemy({ x: 0, y: 300 });
     const n = applyMarkInRadius([e1, e2, e3], { x: 0, y: 0 }, 100, 4, 1.2, 10);
     expect(n).toBe(2);
-    expect(e1.markUntil).toBe(Math.max(5, 14)); // 刷新为较晚者
-    expect(e2.markUntil).toBe(14);
-    expect(e3.markUntil).toBe(0); // 半径外不标记
+    expect(e1.cc?.vulnerable?.value).toBeCloseTo(0.2, 6);
+    expect(e1.cc?.vulnerable?.until).toBeCloseTo(14, 6);
+    expect(e2.cc?.vulnerable?.until).toBeCloseTo(14, 6);
+    expect(e3.cc?.vulnerable).toBeNull(); // 半径外不挂
   });
 });
 
@@ -105,7 +114,8 @@ describe('E4-S2 血影突袭·冲刺（240px / 路径 40 伤 / 标记）', () =>
     const result = damageAndMarkDash([e1, e2], { x: 0, y: 0 }, { x: 240, y: 0 }, 14, 40, 4, 1.2, 100);
     expect(result.hit).toBe(2);
     expect(e1.hp).toBe(10); // 50 - 40
-    expect(e1.markUntil).toBe(104); // 标记 4s
+    expect(e1.cc?.vulnerable?.value).toBeCloseTo(0.2, 6); // 易伤 +20% / 4s
+    expect(e1.cc?.vulnerable?.until).toBeCloseTo(104, 6);
     expect(e2.active).toBe(false); // 40 ≥ 5 → 击杀
     expect(result.killed).toBe(1);
   });

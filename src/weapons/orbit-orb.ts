@@ -12,7 +12,6 @@
 import Phaser from 'phaser';
 import { WEAPONS } from '@/config/balance';
 import { hitEnemy } from '@/combat/damage';
-import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
 import { advanceOrbitAngle, orbitPosition, circlesOverlap, type TargetLike } from '@/weapons/weapon-math';
 import type { FxManager } from '@/fx/fx-manager';
 import type { Player } from '@/player/player';
@@ -118,7 +117,7 @@ export class OrbitWeapon {
         if (!circlesOverlap(pos.x, pos.y, WEAPONS.ORBIT.ORB_RADIUS, enemy.x, enemy.y, enemy.radius)) continue;
         enemy.orbitHitCooldownUntil = now + WEAPONS.ORBIT.PER_TARGET_COOLDOWN;
         // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
-        hitEnemy(enemy, weaponDamageOnTarget(damage, enemy, now));
+        hitEnemy(enemy, damage, now);
         // TASK-36 命中火花：冷青 3 颗（fx 内全局节流 200ms，防 6 球高频刷屏）
         this.fx.orbitHit(pos.x, pos.y, now);
       }

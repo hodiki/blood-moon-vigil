@@ -17,6 +17,9 @@ import type { CcProfile } from '@/combat/status/status-config';
 import { hitEnemy } from '@/combat/damage';
 import { fullAmmo, consumeAmmo, tickReload, grantAmmo, type AmmoState } from '@/weapons/ammo';
 
+/** 无状态载荷目标的空载荷（遥测 dealt 口径；易伤乘区恒 1） */
+const EMPTY_CC: StatusState = { stun: null, slow: null, vulnerable: null, stunIcdReadyAt: 0 };
+
 // ============================================================================
 // 通用目标/玩家接口（Enemy 结构性满足；Oathkeeper/月狼等友方实体不在此列）
 // ============================================================================
@@ -67,9 +70,9 @@ function dealDamage(
   result: StepResult,
 ): void {
   if (!target.active || target.hp <= 0) return;
-  const vuln = target.cc ? damageTakenMultiplier(target.cc, now) : 1;
-  const dealt = Math.min(target.hp, amount * vuln);
-  if (hitEnemy(target as unknown as { hp: number; kill(): void }, amount * vuln)) {
+  // P0-3：易伤乘区统一由 damage.hitEnemy 结算（本层不再自乘，防倍增）
+  const dealt = Math.min(target.hp, amount * damageTakenMultiplier(target.cc ?? EMPTY_CC, now));
+  if (hitEnemy(target as unknown as { hp: number; kill(): void }, amount, now)) {
     result.kills += 1;
     target.onKilled?.(target);
   }

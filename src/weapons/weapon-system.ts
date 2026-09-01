@@ -17,7 +17,6 @@ import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { WEAPONS, type WeaponId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
-import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
 import { splitSubDamageMultiplier } from '@/upgrade/upgrade-apply';
 import {
   applyMissileSplit,
@@ -168,9 +167,8 @@ export class MissileWeaponBehavior implements WeaponBehavior {
         if (!enemy.active) continue;
         if (m.hasHit(enemy)) continue;
         if (!circlesOverlap(m.x, m.y, m.radius, enemy.x, enemy.y, enemy.radius)) continue;
-        // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20（now 秒时间戳由 ctx.now 传入）
-        const hitDamage = weaponDamageOnTarget(m.damageValue, enemy, this.now);
-        hitEnemy(enemy, hitDamage);
+        // P0-3：易伤乘区由 hitEnemy 唯一入口结算（原 markDamageMult 平行乘区已退役）
+        hitEnemy(enemy, m.damageValue, this.now);
         m.recordHit(enemy);
         if (m.remainingPierce > 0) {
           m.consumePierce();

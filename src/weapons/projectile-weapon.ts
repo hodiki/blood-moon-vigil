@@ -22,7 +22,6 @@ import { WEAPON_CONFIGS } from '@/config/balance';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
-import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
 import { circlesOverlap } from '@/weapons/weapon-math';
 import { segmentCircleOverlap } from '@/weapons/weapon-runtime';
 import type { ClassUpgradeStacks } from '@/weapons/class-upgrades';
@@ -280,7 +279,7 @@ export class ProjectileWeaponBehavior implements WeaponBehavior {
           : circlesOverlap(p.x, p.y, 6, enemy.x, enemy.y, enemy.radius);
       if (!hit) continue;
       // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
-      hitEnemy(enemy, weaponDamageOnTarget(damage, enemy, now));
+      hitEnemy(enemy, damage, now);
       p.recordHit(enemy);
       // B4-W2 共鸣命中钩子（R-2 银潮轮舞回充计数 / R-3 血月回旋印记）
       this.onHitResonance?.(c.id, enemy, now);

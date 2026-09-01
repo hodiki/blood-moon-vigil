@@ -9,7 +9,8 @@
  */
 
 import type { ResonancePairConfig } from '@/config/balance';
-import { applyStatus, type StatusState } from '@/combat/status/status-engine';
+import { applyStatus, damageTakenMultiplier, type StatusState } from '@/combat/status/status-engine';
+import { hitEnemy } from '@/combat/damage';
 import type { ExclusiveTarget } from '@/weapons/exclusive/exclusive-math';
 import { grantAmmo, type AmmoState } from '@/weapons/ammo';
 
@@ -20,25 +21,21 @@ export interface ResonanceStepResult {
   events: string[];
 }
 
+/** 无状态载荷目标的空载荷（遥测 dealt 口径；易伤乘区恒 1） */
+const EMPTY_CC: StatusState = { stun: null, slow: null, vulnerable: null, stunIcdReadyAt: 0 };
+
 function emptyResult(): ResonanceStepResult {
   return { damageDealt: 0, kills: 0, events: [] };
 }
 
 function dealDamage(target: ExclusiveTarget, amount: number, now: number, result: ResonanceStepResult): void {
   if (!target.active || target.hp <= 0) return;
-  const vuln = target.cc ? damageTakenMult(target.cc, now) : 1;
-  const dealt = Math.min(target.hp, amount * vuln);
-  target.hp = Math.max(0, target.hp - amount * vuln);
-  if (target.hp <= 0) {
+  // P0-3：易伤乘区统一由 damage.hitEnemy 结算（本层不自乘，防倍增）
+  const dealt = Math.min(target.hp, amount * damageTakenMultiplier(target.cc ?? EMPTY_CC, now));
+  if (hitEnemy(target as unknown as { hp: number; kill(): void }, amount, now)) {
     result.kills += 1;
-    target.kill();
   }
   result.damageDealt += dealt;
-}
-
-function damageTakenMult(cc: StatusState, now: number): number {
-  const v = cc.vulnerable;
-  return v && now < v.until ? 1 + v.value : 1;
 }
 
 function applyCc(target: ExclusiveTarget, kind: 'stun' | 'slow' | 'vulnerable', value: number, duration: number, now: number, source: string): void {

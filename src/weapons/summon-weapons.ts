@@ -16,7 +16,6 @@ import type { WeaponConfig, WeaponId } from '@/config/balance';
 import { WEAPON_CONFIGS } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
-import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
 import { nearestEnemy } from '@/weapons/weapon-math';
 import { deriveSummonParams, applyKeyPassivesToSummon, type SummonDerivedParams } from '@/weapons/weapon-runtime';
 import type { KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
@@ -219,7 +218,7 @@ export class SummonWeaponBehavior implements WeaponBehavior {
     // 命中：召唤物攻击判定（碰撞半径近似）
     if (dist <= 24 + (target as Enemy).radius) {
       // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
-      hitEnemy(target as Enemy, weaponDamageOnTarget(s.damage, target as Enemy, ctx.now));
+      hitEnemy(target as Enemy, s.damage, ctx.now);
       this.fx.orbitHit(s.x, s.y, ctx.now);
     } else {
       // 追击（玩家侧移速 ~ 敌快）
@@ -257,7 +256,7 @@ export class SummonWeaponBehavior implements WeaponBehavior {
     }
     if (bestEnemy) {
       // E4-S2 血影突袭标记：被标记目标武器伤害 ×1.20
-      hitEnemy(bestEnemy, weaponDamageOnTarget(damage, bestEnemy, ctx.now));
+      hitEnemy(bestEnemy, damage, ctx.now);
       // B4-W2 R-7 葬仪断罪：击退改拖拽（拉至巨斧弧心 = 玩家位；位移非状态不走 ICD）——钩子未配置 = 击退原行为
       if (this.onHitResonance?.(bestEnemy, ctx.now) === true) {
         const body = (bestEnemy as unknown as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body | null;

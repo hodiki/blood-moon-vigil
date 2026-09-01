@@ -10,7 +10,8 @@
  */
 
 import { WEAPONS } from '@/config/balance';
-import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
+import { hitEnemy } from '@/combat/damage';
+import type { StatusState } from '@/combat/status/status-engine';
 import type { Vec2 } from '@/utils/math';
 
 /** 冷却剩余递减（秒制，clamp ≥0）；返回新剩余值 */
@@ -118,15 +119,14 @@ export function circlesOverlap(
 export interface DamageTargetLike extends TargetLike {
   hp: number;
   kill(): void;
-  /** E4-S2 血影突袭标记（可选；被标记目标武器伤害 ×markDamageMult） */
-  markUntil?: number;
-  markDamageMult?: number;
+  /** CC 状态载荷（可选；易伤承伤乘区由 combat/damage 唯一入口消费） */
+  cc?: StatusState;
 }
 
 /**
  * 范围伤害（冲击波「月蚀脉冲」）：对半径内全部敌人造成 damage（全方向穿透，W8 §③）。
  * 返回 { hit, killed }。damage 为已乘总倍率的最终值。
- * E4-S2：per-target 标记倍率（now 缺省 +∞ → 无标记效果，向后兼容既有调用方）。
+ * P0-3：易伤乘区在 hitEnemy 内结算（now 缺省 = 不并线，向后兼容既有调用方）。
  */
 export function damageAllInRadius(
   enemies: readonly DamageTargetLike[],
@@ -141,12 +141,7 @@ export function damageAllInRadius(
     if (!e.active) continue;
     if (distance(center, e) > radius) continue;
     hit += 1;
-    const perTarget = weaponDamageOnTarget(damage, e, now);
-    e.hp = Math.max(0, e.hp - perTarget);
-    if (e.hp <= 0) {
-      killed += 1;
-      e.kill();
-    }
+    if (hitEnemy(e, damage, now)) killed += 1;
   }
   return { hit, killed };
 }

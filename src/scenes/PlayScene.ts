@@ -46,6 +46,7 @@ import {
   stepBossSkills,
   clearBossSummons,
   reportBossSummonKilled,
+  bossChargingNow,
   type BossSkillState,
 } from '@/enemies/boss-skill-engine';
 import { corruptHealMultFor } from '@/config/balance';
@@ -546,6 +547,7 @@ export class PlayScene extends Phaser.Scene {
       this.enemyPool.group,
       (_o1, o2) =>
         playerEnemyContact(
+          // P0-2：Enemy 结构性满足 ContactEnemy（含 cc 状态载荷）→ 眩晕期内不造成接触伤害
           o2 as unknown as ContactEnemy,
           this.time.now / 1000,
           // W-4：接触伤经守誓者承伤转移路由（替身圈 150px 内 50%/mc_bell_2 65%）
@@ -891,6 +893,8 @@ export class PlayScene extends Phaser.Scene {
       hpRatio: boss.hp / boss.maxHp,
       canSpawnMore: this.enemyPool.activeCount < this.cfg.maxEnemies,
     });
+    // P1-18：芬里厄减速 ×0.5 仅在蓄力期（冲锋/扑击预警窗口）生效，离开窗口即清除
+    boss.setPhaseCcResistance(bossChargingNow(this.bossSkills) ? { slow: { durationMult: 0.5 } } : undefined);
     const dist = Math.hypot(boss.x - this.player.x, boss.y - this.player.y);
     for (const ev of events) {
       if (ev.type === 'normal-attack' && dist <= 160) {

@@ -46,6 +46,13 @@ export interface EliteEnemyLike {
   spawnGeneration?: number;
   /** 位移覆盖写入口（Arcade Body；setVelocity）。Enemy.body 可为 null（无 Body 实体期），消费端统一走 ?. */
   body?: { setVelocity(x: number, y: number): void } | null;
+  /**
+   * 阶段性 CC 抗性覆写入口（P1-18：石甲狼仅石甲期吃减速 ×0.5；破甲即清除）。
+   * 可选——纯测试桩不实现即跳过覆写。
+   */
+  setPhaseCcResistance?: (
+    override?: Partial<Record<'stun' | 'slow' | 'vulnerable', { durationMult: number }>>,
+  ) => void;
 }
 
 /** 单帧位移覆盖（调用方写 body.setVelocity；null = 不覆盖） */
@@ -284,6 +291,9 @@ export class EliteSkillDirector {
     const phase = broken ? 'broken' : 'stone';
     if (state.armorPhaseApplied !== phase) {
       state.armorPhaseApplied = phase;
+      // P1-18：减速 ×0.5 仅石甲期（破甲期恢复全时长 1.0，覆盖 elite tier 默认的 0.5）。
+      // 原实现把 ×0.5 写进配置恒常驻，破甲后仍折减 —— 属抗性范围错误（MN-9 名额 3）。
+      elite.setPhaseCcResistance?.(broken ? { slow: { durationMult: 1 } } : { slow: { durationMult: 0.5 } });
       const stats = broken ? STONE_WOLF_BROKEN_PHASE : STONE_WOLF_STONE_PHASE;
       // 面板重写：speed 基准 45（石甲期 36 / 破甲 48.6≈×1.35）；interval 抬手 ×1.3 / 攻速 ÷1.4
       const baseSpeed = 45;

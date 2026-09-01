@@ -13,42 +13,54 @@
  */
 
 import { ACTIVE_SKILL_RULES } from '@/config/balance';
+import { computeHitDamage, hitEnemy } from '@/combat/damage';
+import {
+  applyStatus,
+  damageTakenMultiplier,
+  type StatusState,
+} from '@/combat/status/status-engine';
+import type { CcProfile } from '@/combat/status/status-config';
 
 // ============================================================================
-// 标记（血影突袭：命中目标标记 4s，受武器伤害 +20%，gdd §3.2）
+// 易伤（原「血影突袭标记」：NV-REVIEW-FIX P0-3 迁入状态层）
 // ============================================================================
 
-/** 可被标记的目标（Enemy 结构性满足：markUntil/markDamageMult 字段） */
+/**
+ * 可被施加易伤的目标（Enemy 结构性满足）。
+ * P0-3：原 `markUntil` / `markDamageMult` 平行字段已退役——易伤唯一载体是状态层 `cc.vulnerable`，
+ * 抗性（Boss 易伤免疫等）由 `ccProfile` 承接，伤害乘区由 `combat/damage` 唯一入口消费。
+ */
 export interface MarkableLike {
   readonly active: boolean;
   x: number;
   y: number;
-  /** 标记截止（秒时间戳）：> now 期间武器伤害 ×markDamageMult */
-  markUntil: number;
-  markDamageMult: number;
+  cc?: StatusState;
+  ccProfile?: CcProfile;
 }
 
-/** 标记只读结构（允许可选字段：weapons 命中目标接口 markUntil 为可选） */
+/** 易伤只读结构（保留旧名以免扩散改名；语义 = 状态层 cc 载荷） */
 export interface MarkTargetLike {
-  markUntil?: number;
-  markDamageMult?: number;
+  cc?: StatusState;
 }
 
-/** 目标当前是否被标记（markUntil 未设置 = 未标记） */
-export function isMarked(target: Pick<MarkTargetLike, 'markUntil'>, now: number): boolean {
-  return now < (target.markUntil ?? 0);
+/** 目标当前是否处于易伤（未接状态载荷 = 否） */
+export function isMarked(target: Pick<MarkTargetLike, 'cc'>, now: number): boolean {
+  return target.cc ? damageTakenMultiplier(target.cc, now) > 1 : false;
 }
 
-/** 武器伤害加成：被标记目标 ×markDamageMult（血影突袭 +20% → ×1.20；未标记 ×1） */
+/**
+ * 武器伤害结算：易伤期内 ×(1 + 易伤值)（gdd-status-effects §3.1）。
+ * P0-3：委托 `combat/damage.computeHitDamage`（唯一乘区入口），本函数不再自乘 markDamageMult。
+ */
 export function weaponDamageOnTarget(
   baseDamage: number,
-  target: Pick<MarkTargetLike, 'markUntil' | 'markDamageMult'>,
+  target: Pick<MarkTargetLike, 'cc'>,
   now: number,
 ): number {
-  return isMarked(target, now) ? baseDamage * (target.markDamageMult ?? 1) : baseDamage;
+  return computeHitDamage(baseDamage, 1, target, now);
 }
 
-/** 半径内标记 active 敌人（重复标记刷新截止为较晚者；返回新标记数） */
+/** 半径内施加易伤（走 applyStatus 抗性/叠加规则；返回被施加数） */
 export function applyMarkInRadius(
   enemies: readonly MarkableLike[],
   center: { x: number; y: number },
@@ -60,12 +72,17 @@ export function applyMarkInRadius(
   let marked = 0;
   const radiusSq = radius * radius;
   for (const e of enemies) {
-    if (!e.active) continue;
+    if (!e.active || !e.cc) continue;
     const dx = e.x - center.x;
     const dy = e.y - center.y;
     if (dx * dx + dy * dy > radiusSq) continue;
-    e.markUntil = Math.max(e.markUntil, now + durationSeconds);
-    e.markDamageMult = mult;
+    // 易伤值 = mult − 1（旧标记 ×1.20 → 易伤 +0.20）
+    e.cc = applyStatus(
+      e.cc,
+      { kind: 'vulnerable', value: Math.max(0, mult - 1), durationSeconds, source: 'mark' },
+      now,
+      e.ccProfile,
+    ).state;
     marked += 1;
   }
   return marked;
@@ -75,7 +92,7 @@ export function applyMarkInRadius(
 // 冲刺（血影突袭：向移动方向冲刺 240px；路径上 40 伤）
 // ============================================================================
 
-/** 冲刺路径可命中目标（Enemy 结构性满足：markUntil/markDamageMult/radius/hp/kill） */
+/** 冲刺路径可命中目标（Enemy 结构性满足：cc/radius/hp/kill） */
 export interface DashEnemyLike extends MarkableLike {
   radius: number;
   hp: number;
@@ -129,12 +146,15 @@ export function damageAndMarkDash(
   const targets = dashSegmentHits(enemies, from, to, hitRadius);
   let killed = 0;
   for (const e of targets) {
-    e.hp = Math.max(0, e.hp - damage);
-    e.markUntil = Math.max(e.markUntil, now + markDuration);
-    e.markDamageMult = markMult;
-    if (e.hp <= 0) {
-      killed += 1;
-      e.kill();
+    // P0-3：伤害走唯一入口（易伤乘区已在 hitEnemy 内结算），标记改挂状态层易伤
+    if (hitEnemy(e, damage, now)) killed += 1;
+    if (e.cc) {
+      e.cc = applyStatus(
+        e.cc,
+        { kind: 'vulnerable', value: Math.max(0, markMult - 1), durationSeconds: markDuration, source: 'mark' },
+        now,
+        e.ccProfile,
+      ).state;
     }
   }
   return { hit: targets.length, killed };
@@ -247,6 +267,7 @@ export interface ContactAuraEnemyLike {
   radius: number;
   hp: number;
   kill(): void;
+  cc?: StatusState;
 }
 
 /**
@@ -263,6 +284,7 @@ export function contactAuraTick(
   dt: number,
   flatDps: number,
   damageMult: number,
+  now?: number,
 ): { hit: number; killed: number; damageDealt: number } {
   const targets: ContactAuraEnemyLike[] = [];
   const rr = contactRadius * contactRadius;
@@ -277,11 +299,8 @@ export function contactAuraTick(
   const perTarget = total / targets.length;
   let killed = 0;
   for (const e of targets) {
-    e.hp = Math.max(0, e.hp - perTarget);
-    if (e.hp <= 0) {
-      killed += 1;
-      e.kill();
-    }
+    // P0-3：走 hitEnemy 唯一入口（易伤乘区内结算）
+    if (hitEnemy(e, perTarget, now)) killed += 1;
   }
   return { hit: targets.length, killed, damageDealt: total };
 }

@@ -75,8 +75,46 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * 旧技能退役（B5 开局重写），消费侧两源合并：任一生效即冻结/减速。
    */
   cc: StatusState = emptyStatusState();
-  /** CC 抗性画像（tier 由怪物域重做逐敌配置；普通敌缺省） */
-  ccProfile?: import('@/combat/status/status-config').CcProfile;
+  /**
+   * 基础 CC 抗性画像（配置来源；spawn* 写入）。生效画像见 `ccProfile` getter。
+   */
+  private baseCcProfile?: import('@/combat/status/status-config').CcProfile;
+  /**
+   * 阶段性 CC 抗性覆写（P1-18 / MN-9 口径修正）：只在特定相位生效的抗性走这里，
+   * 由 AI/技能运行时按相位写入（芬里厄仅蓄力期吃减速 ×0.5；石甲狼仅石甲期吃减速 ×0.5），
+   * 离开相位即清除。与 `baseCcProfile` 合成后对外暴露为 `ccProfile`。
+   */
+  private phaseCcResistance?: Partial<
+    Record<import('@/combat/status/status-types').StatusKind,
+      import('@/combat/status/status-config').CcResistanceOverride>
+  >;
+
+  /**
+   * 生效 CC 抗性画像（applyStatus 抗性入参）：基础画像 + 阶段覆写合成。
+   * 无阶段覆写时直接返回基础画像（不新建对象，热路径零分配）。
+   */
+  get ccProfile(): import('@/combat/status/status-config').CcProfile | undefined {
+    const phase = this.phaseCcResistance;
+    if (!phase) return this.baseCcProfile;
+    const base = this.baseCcProfile ?? {};
+    return {
+      ...base,
+      ccResistance: { ...(base.ccResistance ?? {}), ...phase },
+    };
+  }
+
+  /**
+   * 写入/清除阶段性 CC 抗性覆写（传 undefined = 清除）。
+   * 由敌人 AI / Boss 技能运行时按相位调用；spawn* 重置。
+   */
+  setPhaseCcResistance(
+    override?: Partial<
+      Record<import('@/combat/status/status-types').StatusKind,
+        import('@/combat/status/status-config').CcResistanceOverride>
+    >,
+  ): void {
+    this.phaseCcResistance = override;
+  }
   /**
    * B2 击杀回调挂点（可选）：专武行为按帧注入（左轮处决装填补弹/巨斧击杀回血等）。
    * 池复用重置清空，防跨局残留。
@@ -140,12 +178,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;
     clearStatuses(this.cc); // B2 状态层载荷重置（池复用不残留）
+    this.phaseCcResistance = undefined; // P1-18 阶段抗性覆写重置
     this.onKilled = undefined;
     this.onDamaged = undefined;
     this.groupId = null;
     this.groupRole = null;
     this.groupSlotIndex = -1;
-    this.ccProfile = undefined;
+    this.baseCcProfile = undefined;
+    this.phaseCcResistance = undefined; // P1-18 阶段抗性覆写重置
     this.affix = null;
     this.visualFrame = `enemy-${kind}`;
     this.setTexture('characters', this.visualFrame);
@@ -199,8 +239,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.groupId = null;
     this.groupRole = null;
     this.groupSlotIndex = -1;
-    // W-5/MN-9：逐敌覆写优先（石甲狼减速 ×0.5）；否则按 tier 派生（精英 ×0.5 / 普通全效）
-    this.ccProfile = cfg.ccProfile ?? (cfg.tier === 'elite' ? { tier: 'elite' } : undefined);
+    this.phaseCcResistance = undefined; // P1-18 阶段抗性覆写重置
+    // W-5/MN-9：逐敌覆写优先；否则按 tier 派生（精英 ×0.5 / 普通全效）。
+    // P1-18：相位类抗性（石甲狼石甲期减速 ×0.5）不在此写常驻，由 AI 运行时按相位覆写。
+    this.baseCcProfile = cfg.ccProfile ?? (cfg.tier === 'elite' ? { tier: 'elite' } : undefined);
     this.affix = null;
     this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
@@ -245,7 +287,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.groupId = null;
     this.groupRole = null;
     this.groupSlotIndex = -1;
-    this.ccProfile = cfg.ccProfile ?? { tier: 'boss' };
+    this.phaseCcResistance = undefined; // P1-18 阶段抗性覆写重置
+    // P1-18：相位类抗性（芬里厄蓄力期减速 ×0.5）不写常驻，由 Boss 技能运行时按蓄力相位覆写
+    this.baseCcProfile = cfg.ccProfile ?? { tier: 'boss' };
     this.visualFrame = cfg.frame;
     this.setTexture('characters', cfg.frame);
     this.setPosition(x, y);

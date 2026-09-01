@@ -10,11 +10,36 @@
  * 倍率语义（upgrade-pool v0.2 裁决）：
  * 总倍率 = 1 + 0.04×(等级−1) + Σ升级池加成（加法叠加防指数膨胀）。
  * 等级成长由 player-stats 维护（damageMultiplier 字段），升级池加成由 E3 写回累加。
+ *
+ * **易伤唯一入口（NV-REVIEW-FIX P0-3）**：易伤承伤乘区 ×(1+值) 只在本模块乘一次
+ * （`computeHitDamage` / `hitEnemy`），投射/环绕/召唤/冲击波/衍生技/专武/共鸣一律走本入口，
+ * 禁止各武器自乘一遍（否则倍增且抗性表失效）。Boss 易伤免疫由 `ccProfile` 抗性表承接
+ * （`boss_4` 覆写 `vulnerable.immune`），本模块不特判。
  */
+
+import { damageTakenMultiplier, type StatusState } from '@/combat/status/status-engine';
 
 /** 可被扣血的目标（hp 可变） */
 export interface Damageable {
   hp: number;
+}
+
+/**
+ * 可吃易伤承伤乘区的目标（Enemy 结构性提供 `cc` 状态载荷）。
+ * 无 `cc`（纯测试桩/非状态实体）= 不吃易伤，乘区恒 1（不并线不报错）。
+ */
+export interface VulnerableLike {
+  cc?: StatusState;
+}
+
+/**
+ * 目标承伤乘区：易伤期内 ×(1 + 易伤值)；否则 1。
+ * 缺 `cc` 或缺 `now`（旧调用方未并线）= 1 —— 兼容层，新代码一律传全。
+ */
+export function targetDamageTakenMult(target: unknown, now?: number): number {
+  const cc = (target as Partial<VulnerableLike> | null | undefined)?.cc;
+  if (!cc || now === undefined) return 1;
+  return damageTakenMultiplier(cc, now);
 }
 
 /** 可被击杀的目标：扣血至 0 后调用 kill() 回收/分发（enemy.kill 满足此接口） */
@@ -30,9 +55,17 @@ export function totalMultiplier(baseMultiplier: number, upgradeBonus: number): n
   return baseMultiplier + upgradeBonus;
 }
 
-/** 命中伤害 = 武器基础伤害 × 总倍率（weapons §③，初始倍率 1.0） */
-export function computeHitDamage(baseDamage: number, multiplier: number): number {
-  return baseDamage * multiplier;
+/**
+ * 命中伤害 = 武器基础伤害 × 总倍率 × 目标承伤乘区（易伤）。
+ * `target`/`now` 缺省 = 无易伤并线（旧调用方兼容）；新代码传全以吃易伤。
+ */
+export function computeHitDamage(
+  baseDamage: number,
+  multiplier: number,
+  target?: unknown,
+  now?: number,
+): number {
+  return baseDamage * multiplier * targetDamageTakenMult(target, now);
 }
 
 /** 无敌帧判定：now < invulnerableUntil 期间免疫（时间戳比较，enemies §⑥.3 / RV-C7） */
@@ -62,15 +95,18 @@ export function applyDamage(target: Damageable, amount: number): boolean {
 }
 
 /**
- * 统一「打中敌人」入口：扣血 → 死亡则 kill()（回收 + emit enemy:killed）。
+ * 统一「打中敌人」入口：易伤乘区 → 扣血 → 死亡则 kill()（回收 + emit enemy:killed）。
  * 返回是否击杀；调用方据此决定子弹是否消散/穿透。
  * W-B：可选 onDamaged 承伤回调（方阵成员受击 → FormationRuntime 路由）在扣血后触发。
+ *
+ * P0-3：`now` 传入即按目标 `cc` 乘易伤承伤乘区（唯一入口）。调用方**禁止**自乘易伤。
  */
 export function hitEnemy<T extends Killable>(
   target: T & { onDamaged?: (t: T) => void },
   amount: number,
+  now?: number,
 ): boolean {
-  const killed = applyDamage(target, amount);
+  const killed = applyDamage(target, amount * targetDamageTakenMult(target, now));
   target.onDamaged?.(target);
   if (killed) target.kill();
   return killed;

@@ -23,7 +23,8 @@ import {
   type WeaponId,
   type EvoId,
 } from '@/config/balance';
-import { weaponDamageOnTarget } from '@/active-skill/active-skill-effects';
+import { hitEnemy } from '@/combat/damage';
+import type { StatusState } from '@/combat/status/status-engine';
 import {
   classUpgradeTotal,
   type ClassUpgradeStacks,
@@ -413,15 +414,14 @@ export interface GroundTargetLike {
   radius: number;
   hp: number;
   kill(): void;
-  /** E4-S2 血影突袭标记（可选） */
-  markUntil?: number;
-  markDamageMult?: number;
+  /** CC 状态载荷（可选；易伤承伤乘区由 combat/damage 唯一入口消费） */
+  cc?: StatusState;
 }
 
 /**
  * 同武器多池重叠：每池独立 tick（不合并），但**同目标同一武器只计最高伤害源一次**（防刷伤，
  * gdd-weapons-v2 §⑥.6）。实现：对每个目标取覆盖它的池中 damagePerTick 最大者，仅扣一次。
- * E4-S2：per-target 标记倍率（now 缺省 +∞ → 无标记效果，向后兼容既有调用方）。
+ * P0-3：易伤乘区在 hitEnemy 内结算（now 缺省 = 不并线，向后兼容既有调用方）。
  * 返回 { hit, killed }。
  */
 export function applyGroundPoolTick(
@@ -445,12 +445,7 @@ export function applyGroundPoolTick(
     }
     if (!covered || bestDamage <= 0) continue;
     hit += 1;
-    const perTarget = weaponDamageOnTarget(bestDamage, e, now);
-    e.hp = Math.max(0, e.hp - perTarget);
-    if (e.hp <= 0) {
-      killed += 1;
-      e.kill();
-    }
+    if (hitEnemy(e, bestDamage, now)) killed += 1;
   }
   return { hit, killed };
 }

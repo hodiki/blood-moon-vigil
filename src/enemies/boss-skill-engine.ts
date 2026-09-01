@@ -84,6 +84,17 @@ export function bossPhase2Due(state: BossSkillState, hpRatio: number): boolean {
   return BOSS_SKILL_TABLES[state.bossId].hasPhase2 && state.phase === 1 && hpRatio < 0.5;
 }
 
+/**
+ * 蓄力期判定（P1-18 / MN-9 口径修正）：仅「蓄力类技能」（BossSkillConfig.charge）的预警窗口
+ * 内为真。消费方（Boss 实体相位抗性覆写）据此开关芬里厄的减速 ×0.5 抗性——
+ * 非蓄力期不折减（原实现把 ×0.5 写成常驻，属范围错误）。
+ */
+export function bossChargingNow(state: BossSkillState): boolean {
+  if (!state.casting) return false;
+  const skill = BOSS_SKILL_TABLES[state.bossId].slots.find((s) => s.slot === state.casting!.slot);
+  return skill?.charge === true;
+}
+
 /** 当前召唤上限（P1 6 / P2 8；MN-23） */
 export function bossSummonCap(state: BossSkillState): number {
   return state.phase === 2 ? BOSS_SUMMON_CAP.P2 : BOSS_SUMMON_CAP.P1;

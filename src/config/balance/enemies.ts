@@ -121,7 +121,7 @@ export const ENEMY_CONFIGS: Record<EnemyId, EnemyConfig> = {
   enemy_g3_1: { id: 'enemy_g3_1', name: '灰狼', map: 'map_den', tier: 'fast', hp: 12, speed: 85, damage: 10, attackInterval: 0.8, radius: 13, xp: 1, powerTag: 'BEAST', frame: 'enemy-greywolf', counter: '走位拉扯' },
   enemy_g3_2: { id: 'enemy_g3_2', name: '暗影狼', map: 'map_den', tier: 'fast', hp: 10, speed: 160, damage: 10, attackInterval: 0.7, radius: 11, xp: 2, powerTag: 'BEAST', frame: 'enemy-shadowwolf', counter: '优先处理/绕开', unlockAt: 90 }, // 轨① 突袭 60~90（狼穴稍后）
   // MN-9 覆写名额 ③：石甲狼石甲期减速 ×0.5（甲重难移；狂暴期解除由 W-16 行为运行时处理）
-  enemy_g3_3: { id: 'enemy_g3_3', name: '石甲狼', map: 'map_den', tier: 'elite', hp: 400, speed: 45, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BEAST', frame: 'enemy-stonewolf', counter: '集火（高 XP 对价）', ccProfile: { tier: 'elite', ccResistance: { slow: { durationMult: 0.5 } } } },
+  enemy_g3_3: { id: 'enemy_g3_3', name: '石甲狼', map: 'map_den', tier: 'elite', hp: 400, speed: 45, damage: 15, attackInterval: 1.8, radius: 22, xp: 10, powerTag: 'BEAST', frame: 'enemy-stonewolf', counter: '集火（高 XP 对价）', /* P1-18：石甲狼减速 ×0.5 仅石甲期（运行时相位覆写，不写常驻） */ ccProfile: { tier: 'elite' } },
   enemy_g3_4: { id: 'enemy_g3_4', name: '狼裔猎手', map: 'map_den', tier: 'special', hp: 16, speed: 70, damage: 12, attackInterval: 1.2, radius: 14, xp: 3, powerTag: 'BEAST', frame: 'enemy-wolfhunter', special: '每 6s 蓄力冲锋（警告线后冲刺 500px/s）', counter: '横向走位（躲警告线方向）', unlockAt: 150 }, // 轨① 特殊行为 120~150（狼穴冲锋稍后）
 };
 
@@ -151,7 +151,7 @@ export const BOSSES: Record<BossId, BossConfig> = {
   boss_1: { id: 'boss_1', name: '血月尊者', map: 'map_graveyard', hp: 4000, speed: 28, damage: 30, attackInterval: 2.0, radius: 40, xp: 100, powerTag: 'MOON', frame: 'enemy-boss', visual: '≥3x·猩红金 4px·残破守夜袍·手持锈蚀初代提灯（灯内血色光）' },
   boss_2: { id: 'boss_2', name: '血主教·尼禄', map: 'map_cathedral', hp: 4500, speed: 30, damage: 32, attackInterval: 2.2, radius: 42, xp: 120, powerTag: 'BLOOD', frame: 'boss-cardinal', phase2: '阶段 2（HP<50%）：召唤 2 圣杯侍僧；脚下周期性血池（减速 30% + 持续伤）', visual: '≥3x·猩红金·主教冠冕+圣杯' },
   // MN-9 覆写名额 ①：芬里厄蓄力期减速 ×0.5（迟滞不锁死；蓄力期条件由 Boss 技能运行时判定）
-  boss_3: { id: 'boss_3', name: '狼王·芬里厄', map: 'map_den', hp: 4200, speed: 32, damage: 30, attackInterval: 2.0, radius: 42, xp: 120, powerTag: 'BEAST', frame: 'boss-fenrir', phase2: '阶段 2（HP<50%）：蓄力冲锋扑击（警告线，逼走位）；召唤 2 灰狼', visual: '≥3x·猩红金·狼鬃王冠', ccProfile: { tier: 'boss', ccResistance: { slow: { durationMult: 0.5 } } } },
+  boss_3: { id: 'boss_3', name: '狼王·芬里厄', map: 'map_den', hp: 4200, speed: 32, damage: 30, attackInterval: 2.0, radius: 42, xp: 120, powerTag: 'BEAST', frame: 'boss-fenrir', phase2: '阶段 2（HP<50%）：蓄力冲锋扑击（警告线，逼走位）；召唤 2 灰狼', visual: '≥3x·猩红金·狼鬃王冠', /* P1-18：芬里厄减速 ×0.5 仅蓄力期（运行时相位覆写，不写常驻） */ ccProfile: { tier: 'boss' } },
   // MN-9 覆写名额 ②：化身易伤免疫（防猎物标记把短战打穿下限）
   boss_4: { id: 'boss_4', name: '血月化身', map: 'any', hp: 3000, speed: 40, damage: 25, attackInterval: 1.8, radius: 40, xp: 150, powerTag: 'MOON', frame: 'boss-moonavatar', phase2: '4:30 后 5% 触发「月坠」（预警后降临）；不掉通关进度，掉稀有图鉴', visual: '半透明猩红金·月光人形·无角饰·边缘月白描边', ccProfile: { tier: 'boss', ccResistance: { vulnerable: { immune: true } } } },
 };

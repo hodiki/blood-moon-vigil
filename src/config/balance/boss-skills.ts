@@ -37,6 +37,9 @@ export interface BossSkillConfig {
   phantom?: { duration: number; damage: number };
   /** 动作桩标识（运行时结算层简化为伤害+召唤；演出内容批） */
   action: string;
+  /** 蓄力类技（P1-18：boss_3 短嗥冲锋/蓄力扑击）——预警（telegraph）期内 = 蓄力期，
+   *  仅此窗口内吃芬里厄的减速 ×0.5 抗性（MN-9 口径：非蓄力期不折减） */
+  charge?: boolean;
 }
 
 /** Boss 五技能表（逐 Boss 配置；面板数值见 BOSSES） */
@@ -87,10 +90,10 @@ const BOSS_2_SLOTS: readonly BossSkillConfig[] = [
 /** boss_3 狼王·芬里厄（狼穴 · 突袭机动系） */
 const BOSS_3_SLOTS: readonly BossSkillConfig[] = [
   { slot: 'normal', name: '双爪连击（2 段 100px 扇形）', cd: 2.0, unlockPhase: 1, damage: 30, castLock: 0, telegraph: 0.4, action: 'double-claw' },
-  { slot: 'skill1', name: '短嗥冲锋（400px 直线）', cd: 7, unlockPhase: 1, damage: 18, castLock: 0.8, telegraph: 0.5, action: 'charge-howl' },
+  { slot: 'skill1', name: '短嗥冲锋（400px 直线）', cd: 7, unlockPhase: 1, damage: 18, castLock: 0.8, telegraph: 0.5, action: 'charge-howl', charge: true },
   { slot: 'skill2', name: '召唤灰狼×2（既有阶段 2 机制前移常驻）', cd: 10, unlockPhase: 1, damage: 0, castLock: 0.8, telegraph: 1.0, summon: { enemyId: 'enemy_g3_1', count: 2 }, action: 'summon-wolves' },
   { slot: 'skill3', name: '狼王嚎叫（狼类移速/攻速 +20% / 8s；吟唱 1.5s 免疫打断）', cd: 12, unlockPhase: 1, damage: 0, castLock: 0, telegraph: 1.5, action: 'pack-howl' },
-  { slot: 'ultimate', name: '蓄力扑击（600px 锁定警告线 + 落地震荡；既有阶段 2 升格）', cd: 10, unlockPhase: 1, damage: 32, castLock: 1.2, telegraph: 0.8, action: 'pounce' },
+  { slot: 'ultimate', name: '蓄力扑击（600px 锁定警告线 + 落地震荡；既有阶段 2 升格）', cd: 10, unlockPhase: 1, damage: 32, castLock: 1.2, telegraph: 0.8, action: 'pounce', charge: true },
 ];
 
 /** boss_4 血月化身（任意图稀有 · 月相轮转系；无阶段，普技 CD 4~5s 短战压迫） */

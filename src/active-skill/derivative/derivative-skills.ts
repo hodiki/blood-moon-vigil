@@ -11,6 +11,7 @@
 
 import { DERIVATIVE_SKILLS, type DerivativeSkillId } from '@/config/balance';
 import { applyStatus } from '@/combat/status/status-engine';
+import { hitEnemy } from '@/combat/damage';
 import { setInfiniteWindow, type AmmoState } from '@/weapons/ammo';
 import type { ExclusiveTarget } from '@/weapons/exclusive/exclusive-math';
 
@@ -44,15 +45,13 @@ function emptyResult(): DerivativeCastResult {
 }
 
 /** 击杀计数包装 */
-function dealDamage(target: ExclusiveTarget, amount: number, result: DerivativeCastResult): void {
+function dealDamage(target: ExclusiveTarget, amount: number, now: number, result: DerivativeCastResult): void {
   if (!target.active || target.hp <= 0) return;
   const before = target.hp;
-  target.hp = Math.max(0, target.hp - amount);
-  if (target.hp <= 0) {
-    result.kills += 1;
-    target.kill();
-  }
-  result.damageDealt += Math.min(before, amount);
+  // P0-3：走 damage.hitEnemy 唯一入口（易伤乘区在内结算）
+  const killed = hitEnemy(target as unknown as { hp: number; kill(): void }, amount, now);
+  if (killed) result.kills += 1;
+  result.damageDealt += before - target.hp;
 }
 
 /**
@@ -91,7 +90,7 @@ function castRevolverBurst(p: Readonly<Record<string, number>>, ctx: DerivativeC
   for (let i = 0; i < p['shots']!; i += 1) {
     const target = targets[i % Math.max(1, targets.length)];
     if (!target) break;
-    dealDamage(target, p['damage']!, result);
+    dealDamage(target, p['damage']!, ctx.now, result);
   }
   // 末段命中挂圣痕（+15%/6s，易伤走状态层）
   const last = targets[0];
@@ -142,7 +141,7 @@ function castBloodDash(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
   const targets = aliveByDistance(ctx.enemies, ctx.player.x, ctx.player.y).slice(0, 5);
   let hits = 0;
   for (const t of targets) {
-    dealDamage(t, p['damage']!, result);
+    dealDamage(t, p['damage']!, ctx.now, result);
     hits += 1;
     if (t.cc) {
       t.cc = applyStatus(t.cc, { kind: 'vulnerable', value: p['vulnerable']!, durationSeconds: p['vulnerableDuration']!, source: 'dv_blood_dash' }, ctx.now).state;
@@ -158,7 +157,7 @@ function castBloodDash(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
       const dx = e.x - ctx.player.x;
       const dy = e.y - ctx.player.y;
       if (dx * dx + dy * dy > rSq) continue;
-      dealDamage(e, p['burstDamage']!, result);
+      dealDamage(e, p['burstDamage']!, ctx.now, result);
     }
     ctx.healSink?.((p['healPerHit'] ?? 1) * hits);
     result.events.push('bloodBurst');
@@ -173,7 +172,7 @@ function castMoonSnipe(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
   const targets = aliveByDistance(ctx.enemies, ctx.player.x, ctx.player.y);
   let first = true;
   for (const t of targets) {
-    dealDamage(t, p['damage']!, result);
+    dealDamage(t, p['damage']!, ctx.now, result);
     if (first) {
       first = false;
       if (t.cc) {
@@ -218,7 +217,7 @@ function castHolyJudgment(p: Readonly<Record<string, number>>, ctx: DerivativeCa
     const dx = e.x - ctx.player.x;
     const dy = e.y - ctx.player.y;
     if (dx * dx + dy * dy > rSq) continue;
-    dealDamage(e, p['damage']!, result);
+    dealDamage(e, p['damage']!, ctx.now, result);
     if (e.cc) {
       e.cc = applyStatus(e.cc, { kind: 'stun', value: 1, durationSeconds: p['stunDuration']!, source: 'dv_holy_judgment' }, ctx.now, e.ccProfile).state;
       result.events.push('stunApplied');
@@ -260,7 +259,7 @@ function castWolfCharge(p: Readonly<Record<string, number>>, ctx: DerivativeCast
     const hits = (hitCount.get(target) ?? 0) + 1;
     hitCount.set(target, hits);
     const mult = hits >= 2 ? p['packFocusMult'] ?? 1.5 : 1;
-    dealDamage(target, p['damage']! * mult, result);
+    dealDamage(target, p['damage']! * mult, ctx.now, result);
     // 击退 100px（位移，非状态层枚举——运行时由碰撞体执行）
     result.events.push('knockback');
   }

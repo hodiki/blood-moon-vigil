@@ -12,6 +12,7 @@ import type { RuntimeConfig } from '@/config/runtime-config';
 import type { EvoId, WeaponId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { computeHitDamage, hitEnemy } from '@/combat/damage';
+import { applyStatus } from '@/combat/status/status-engine';
 import { createArcadePool, type ArcadePoolLike } from '@/core/object-pools';
 import { nearestEnemy, circlesOverlap } from '@/weapons/weapon-math';
 import { superWeaponSpec, type SuperWeaponSpec } from '@/weapons/super-weapons';
@@ -212,7 +213,7 @@ export class SuperWeaponBehavior implements WeaponBehavior {
       for (const e of ctx.enemies) {
         if (!e.active) continue;
         if (!circlesOverlap(proj.x, proj.y, 6, e.x, e.y, e.radius)) continue;
-        hitEnemy(e, proj.damage);
+        hitEnemy(e, proj.damage, ctx.now);
         for (let s = 0; s < proj.splitPerHit; s += 1) {
           const sub = this.pool.acquire(proj.x, proj.y, this.visual.atlas, this.visual.frame);
           if (sub) {
@@ -258,11 +259,11 @@ export class SuperWeaponBehavior implements WeaponBehavior {
       for (const e of ctx.enemies) {
         if (!e.active) continue;
         if (!circlesOverlap(proj.x, proj.y, 6, e.x, e.y, e.radius)) continue;
-        hitEnemy(e, proj.damage);
+        hitEnemy(e, proj.damage, ctx.now);
         // 溅射：命中点 60px 内其它敌人
         for (const other of ctx.enemies) {
           if (!other.active || other === e) continue;
-          if (Math.hypot(other.x - proj.x, other.y - proj.y) <= splash + other.radius) hitEnemy(other, proj.damage * 0.5);
+          if (Math.hypot(other.x - proj.x, other.y - proj.y) <= splash + other.radius) hitEnemy(other, proj.damage * 0.5, ctx.now);
         }
         this.fx.missileImpact(proj.x, proj.y);
         proj.dissipate();
@@ -288,7 +289,7 @@ export class SuperWeaponBehavior implements WeaponBehavior {
         if (ctx.now < e.orbitHitCooldownUntil) continue;
         if (!circlesOverlap(orb.x, orb.y, 16, e.x, e.y, e.radius)) continue;
         e.orbitHitCooldownUntil = ctx.now + 0.4;
-        hitEnemy(e, damage);
+        hitEnemy(e, damage, ctx.now);
         // 击退 60px + 0.5s 小爆（简化：击退 + 命中反馈）
         const dx = e.x - ctx.player.x;
         const dy = e.y - ctx.player.y;
@@ -322,8 +323,11 @@ export class SuperWeaponBehavior implements WeaponBehavior {
     for (const e of ctx.enemies) {
       if (!e.active) continue;
       if (Math.hypot(e.x - ctx.player.x, e.y - ctx.player.y) > radius + e.radius) continue;
-      hitEnemy(e, damage);
-      if (stunSeconds > 0) e.stunnedUntil = Math.max(e.stunnedUntil, ctx.now + stunSeconds);
+      hitEnemy(e, damage, ctx.now);
+      // P0-2：眩晕写状态层（applyStatus 走抗性表：Boss 免疫 / 精英 ×0.5），不再写 stunnedUntil
+      if (stunSeconds > 0 && e.cc) {
+        e.cc = applyStatus(e.cc, { kind: 'stun', value: 1, durationSeconds: stunSeconds, source: 'super_moon_eclipse' }, ctx.now, e.ccProfile).state;
+      }
     }
     this.fx.shockwaveEdgeFlash(ctx.player.x, ctx.player.y, radius);
     this.pulseRing
@@ -348,7 +352,7 @@ export class SuperWeaponBehavior implements WeaponBehavior {
       for (const e of ctx.enemies) {
         if (!e.active) continue;
         if (Math.hypot(e.x - this.groundPoolX, e.y - this.groundPoolY) > this.groundPoolRadius + e.radius) continue;
-        hitEnemy(e, damage);
+        hitEnemy(e, damage, ctx.now);
         if (this.groundPoolSlow > 0) {
           e.speed = Math.max(30, e.speed * (1 - this.groundPoolSlow));
         }
@@ -406,7 +410,7 @@ export class SuperWeaponBehavior implements WeaponBehavior {
       for (const e of ctx.enemies) {
         if (!e.active) continue;
         if (Math.hypot(e.x - ctx.player.x, e.y - ctx.player.y) > 260 + e.radius) continue;
-        const killed = hitEnemy(e, damage);
+        const killed = hitEnemy(e, damage, ctx.now);
         if (this.spec.mode === 'summon-slow') {
           // 撕咬减速 30%（1s）—— 记录原速，到期恢复（gdd-weapons-v2 §5.2）
           const originalSpeed = e.speed;

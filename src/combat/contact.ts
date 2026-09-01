@@ -16,7 +16,13 @@
  *
  * 死亡分发：`player.hurt` 内部 HP≤0 时 emit `player:died`（E2-S1 #4），
  * 消费方为 PlayScene.onPlayerDied → finishGame → GAMEOVER + 结算页。
+ *
+ * **眩晕唯一入口（NV-REVIEW-FIX P0-2）**：硬控期间目标不造成接触伤害，查询只走状态层
+ * `cc.stun`（`isStunned`）。旧散落字段 `stunnedUntil` 已从接触路径删除——写入侧统一走
+ * `applyStatus`，不再给敌人加平行字段的新消费者（ADR-001 / 审查 §3.2）。
  */
+
+import { isStunned, type StatusState } from '@/combat/status/status-engine';
 
 export interface ContactEnemy {
   readonly active: boolean;
@@ -26,13 +32,11 @@ export interface ContactEnemy {
   readonly attackInterval: number;
   /** 接触伤害（已乘玩家总倍率，enemy-panel 提供原始值） */
   readonly damage: number;
-  /** M1b 主动技：眩晕截止（秒时间戳）；> nowSeconds 期间不造成接触伤害（冻结攻击） */
-  readonly stunnedUntil: number;
   /**
-   * B2 状态层并线（可选）：状态引擎眩晕查询（enemy.cc.stun）。
-   * Enemy 结构性提供 `(now) => isStunned(this.cc, now)`；旧调用方/测试缺省 = 不并线。
+   * CC 状态载荷（Enemy 必有；纯测试桩缺省 = 不并线）。
+   * 眩晕（硬控）期内阻止接触伤害 —— gdd-status-effects：硬控期间目标不造成接触伤害。
    */
-  readonly statusStunned?: (nowSeconds: number) => boolean;
+  readonly cc?: StatusState;
 }
 
 export interface ContactPlayer {
@@ -57,9 +61,9 @@ export function playerEnemyContact(
   nowSeconds: number,
   player: ContactPlayer,
 ): boolean {
-  // B2 状态层并线：状态引擎眩晕（cc.stun）与旧散落字段任一生效即阻止接触伤害
-  const ccStunned = enemy.statusStunned?.(nowSeconds) ?? false;
-  if (!enemy.active || enemy.attackTimer > 0 || enemy.stunnedUntil > nowSeconds || ccStunned) return false;
+  // P0-2：硬控（cc.stun）生效即阻止接触伤害（唯一查询入口，不读 stunnedUntil）
+  if (!enemy.active || enemy.attackTimer > 0) return false;
+  if (enemy.cc && isStunned(enemy.cc, nowSeconds)) return false;
   enemy.attackTimer = enemy.attackInterval;
   return player.hurt(enemy.damage, nowSeconds);
 }

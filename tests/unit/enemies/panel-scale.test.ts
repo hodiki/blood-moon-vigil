@@ -79,10 +79,16 @@ describe('W-8 legacy ENEMIES 收档（EG-2 归档不删；运行时零消费）'
     expect(BOSSES.boss_4.hp).toBe(3000);
   });
 
-  it('W-3 ccProfile 覆写：石甲狼减速 ×0.5 / 芬里厄蓄力减速 ×0.5 / 化身易伤免疫（MN-9 名额 3）', () => {
-    expect(ENEMY_CONFIGS.enemy_g3_3.ccProfile?.ccResistance?.slow?.durationMult).toBe(0.5);
-    expect(BOSSES.boss_3.ccProfile?.ccResistance?.slow?.durationMult).toBe(0.5);
+  it('W-3 ccProfile 覆写：化身易伤免疫（MN-9 名额 3 之常驻项）', () => {
     expect(BOSSES.boss_4.ccProfile?.ccResistance?.vulnerable?.immune).toBe(true);
+  });
+
+  it('P1-18 相位抗性不写常驻配置：石甲狼/芬里厄的减速 ×0.5 改由 AI 运行时按相位覆写', () => {
+    // 原实现把「仅石甲期 / 仅蓄力期」的减速折减写进配置恒常驻（抗性范围错误）。
+    // 修正后配置侧只留 tier，相位差异走 Enemy.setPhaseCcResistance；
+    // 运行时断言见 tests/unit/combat/review-fix-a.test.ts。
+    expect(ENEMY_CONFIGS.enemy_g3_3.ccProfile).toEqual({ tier: 'elite' });
+    expect(BOSSES.boss_3.ccProfile).toEqual({ tier: 'boss' });
   });
 });
 

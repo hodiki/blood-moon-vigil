@@ -114,7 +114,7 @@ export class OrbitWeaponBehavior implements WeaponBehavior {
         if (ctx.now < enemy.orbitHitCooldownUntil) continue; // 同目标 0.4s 内置 CD
         if (!circlesOverlap(pos.x, pos.y, 10, enemy.x, enemy.y, enemy.radius)) continue;
         enemy.orbitHitCooldownUntil = ctx.now + p.perTargetCooldown;
-        hitEnemy(enemy, damage);
+        hitEnemy(enemy, damage, ctx.now);
         // B2 荆棘圣环：减速 30%（1s）—— 记录原速，到期恢复。
         // M2 收口（15 敌运行时接入）：原速取 enemy.speed（spawnByConfig 面板 + 地图移速加权），
         // 不取 enemyPanel(kind) 基准面板 —— 配置敌种面板 ≠ 三槽基准（灰狼 85 ≠ wolf 150；
@@ -149,7 +149,7 @@ export class OrbitWeaponBehavior implements WeaponBehavior {
       const dx = enemy.x - ctx.player.x;
       const dy = enemy.y - ctx.player.y;
       const r = (p.auraRadius ?? 120) + enemy.radius;
-      if (dx * dx + dy * dy <= r * r) hitEnemy(enemy, damage);
+      if (dx * dx + dy * dy <= r * r) hitEnemy(enemy, damage, ctx.now);
     }
   }
 
