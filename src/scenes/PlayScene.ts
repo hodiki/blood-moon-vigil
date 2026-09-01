@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, DERIVATIVE_SKILLS, type HeroId, type MapId, type WeaponId, } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, DERIVATIVE_SKILLS, XP_CASE, type HeroId, type MapId, type WeaponId, } from '@/config/balance';
 import { defaultExclusiveFor } from '@/weapons/loadout';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
@@ -301,6 +301,9 @@ export class PlayScene extends Phaser.Scene {
     this.spawner = new EnemySpawner(this.cfg, this.enemyPool, this.player, this.mapId, true);
     // W-8 面板链：等级滞后宽容玩家等级来源 +（裁决后）c 案联动系数
     this.spawner.playerLevelProvider = () => this.xp.level;
+    // NV-BATCH-G G6：c 案 HP 联动接线（XP_CASE.hpCaseLink ×1.125 → spawnOneById → applyPanelScale
+    // 链 caseLink；仅基础面板，精英/Boss 独立曲线不吃；sim-freeze-recommendation §⑥）
+    this.spawner.caseHpLink = XP_CASE.hpCaseLink;
     // Boss 五槽消费端口（W-F1 拆分：run/boss-skill-consumer；闭包调用期解引用）
     this.bossConsumer.attach({
       hurtPlayer: (damage, now) => this.hurtPlayer(damage, now),
