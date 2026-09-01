@@ -63,6 +63,7 @@ import { DerivativeSkillController } from '@/active-skill/derivative/derivative-
 import { computeTreeApplication, ledgerFromSaveData, type TreeApplication } from '@/progression/tree-state';
 import { judgeRevive, talentReviveHpPct, talentReviveInvulnSeconds, talentReviveKnockbackPx } from '@/progression/revive';
 import { resonancePairByExclusive } from '@/config/balance';
+import { resonanceSanctuaryBonus } from '@/weapons/resonance/resonance-math';
 import { applyUpgradeByIdV3, type UpgradeV3WriteTargets } from '@/upgrade/upgrade-apply-v3';
 import { createMutationPipeline, defaultMutationChannels, takeCard1, takeCard2, onEliteKilled, onUpgradeChosenForPipeline, type MutationPipelineState, type MutationChannelConfig } from '@/upgrade/mutation-pipeline';
 import { playerEnemyContact, type ContactEnemy } from '@/combat/contact';
@@ -241,6 +242,8 @@ export class PlayScene extends Phaser.Scene {
   private treeS1UntilElapsed = -1;
   /** P1-7 支线墓碑回血加值暂存（applyTreeToStats 写入；oathkeeper 装配在后，create 末尾写入 machine） */
   private treeTombHealBonus = 0;
+  /** P1-5 R-5 圣域达成标记（refreshSanctuaryOverlap 每帧据此写 dynamicDamageReductionPct） */
+  private r5SanctuaryAchieved = false;
   /** P1-8：滤月余辉经验获取乘区（1 + 天赋 xpGainPct；applyTreeToStats 写入、XpManager 装配后应用） */
   private treeXpGainMult = 1;
   /** P1-11 Q-s4 双灯并祀：P4 卡前移旗（树应用写回） */
@@ -740,6 +743,8 @@ export class PlayScene extends Phaser.Scene {
     const move = this.inputSource.getMove();
     this.player.update(move, now);
     tickPlayerAnim(this.player);
+    // P1-5 R-5 圣域重叠区：双武启用状态帧级刷新（廉价赋值；状态变化才会改变写入值）
+    this.refreshSanctuaryOverlap();
     // E4-S2 血月狂化：buff 生效/失效同步（B5-W4 起 = 血月狂化衍生技增益；接触光环随旧技退役移除）
     this.updateRage(dt, now);
     // B5-W4 衍生技：CD 递减 + 蓄力结算 + 移动端按钮冷却转圈（HUD 只读展示）
@@ -1711,6 +1716,16 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
+  /** P1-5 R-5 圣域重叠区帧级判定（每帧调用；几何锚：壁垒光环与铃音领域均玩家居中
+   *  → 重叠区判定退化 ≡ 双武启用，无需逐点求交）：双武齐 → 18% 动态 DR；缺一 → 0 */
+  private refreshSanctuaryOverlap(): void {
+    const sanctuary = this.r5SanctuaryAchieved
+      && this.ownedWeaponIds.includes('wpn_b_3' as unknown as WeaponId)
+      && this.currentExclusiveId === 'xw_bell';
+    const pct = sanctuary ? resonanceSanctuaryBonus(resonancePairByExclusive('xw_bell')!.machine).damageReductionPct : 0;
+    if (this.player.stats.dynamicDamageReductionPct !== pct) this.player.stats.dynamicDamageReductionPct = pct;
+  }
+
   /** QA-BUG-1 拆分：选卡消费主体（异常由 onUpgradeChosen 捕获保活）。
    *  B3-W4 legacy 双池清偿：evo_ 进化分支随超武退役（R2-3）移除；legacy 数字 id 分支退役（v1 引擎归档 EG-2）。 */
   private consumeUpgradeChoice(payload: UpgradeChosenPayload): void {
@@ -1727,8 +1742,16 @@ export class PlayScene extends Phaser.Scene {
         // 共鸣达成遥测（达成率/各对选取分布，GDD §⑧-6）
         this.stats.recordResonance(pair.id, this.spawner.elapsedSeconds);
         GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: pair.commonWeaponId, name: `共鸣·${pair.name}` });
-        // B5-W4 R-5 圣域壁垒收拢：壁垒承伤减免 −10% → −18%（+8pp 叠加进 PlayerStats 减伤池）
-        if (pair.id === 'R5') this.player.stats.addDamageReduction(0.08);
+        // P1-5 R-5 圣域重叠区收拢：弃全局 DR +8pp，改帧级重叠判定（壁垒光环与铃域均玩家居中
+        // → 几何重叠 ≡ 双武启用；dynamicDamageReductionPct 由 refreshSanctuaryOverlap 每帧写）
+        if (pair.id === 'R5') {
+          this.r5SanctuaryAchieved = true;
+          // 墓碑转化 +20pp（reviveConvertBonusPp 独立 machine 键，与 mc_bell_2 rate 覆写叠加；锚值走共鸣配置）
+          if (this.oathkeeper) {
+            const sanctuary = resonanceSanctuaryBonus(resonancePairByExclusive('xw_bell')!.machine);
+            this.oathkeeper.applyCompanionMachine({ reviveConvertBonusPp: sanctuary.reviveConvertBonusPp });
+          }
+        }
       }
     }
     // B3-W3 质变卡管线回调：卡 1 = P1 席位承载（含待发队列立即补发）；其余升级计入兜底 N

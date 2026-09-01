@@ -52,10 +52,12 @@ import {
   createResonanceRevolverFeedState, onResonanceCrossbowHit,
   createResonanceTwinbladesMarkState, onResonanceBoomerangHit,
   createResonanceDragState, onResonanceChainHit, placeResonanceTotem,
+  sharedSummonCount,
 } from '@/weapons/resonance/resonance-math';
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
 import type { RevolverState } from '@/weapons/exclusive/exclusive-math';
-import { resonancePairByExclusive, type ResonancePairConfig } from '@/config/balance';
+import { hornWolfCount } from '@/weapons/exclusive/exclusive-math';
+import { resonancePairByExclusive, EXCLUSIVE_WEAPONS, type ResonancePairConfig } from '@/config/balance';
 import { emptyKeyPassiveState, type KeyPassiveState } from '@/upgrade/upgrade-apply-v2';
 import type { FxManager } from '@/fx/fx-manager';
 import type { Enemy } from '@/enemies/enemy';
@@ -373,15 +375,27 @@ export class WeaponSystem {
     this.setNow = (now: number) => { lastNow = now; };
     this.lastNowSeconds = 0;
     // B4-W2 R-7 葬仪断罪：锁链命中 → 拖拽（拉至巨斧弧心；×1.5 伤害段经 resonanceAxeDamageMult 结算口径）
-    const chainBehavior = this.registry.get('wpn_d_3') as unknown as { onHitResonance?: (t: Enemy, now: number) => boolean } | undefined;
+    const chainBehavior = this.registry.get('wpn_d_3') as unknown as { onHitResonance?: (t: Enemy, now: number) => { x: number; y: number } | null } | undefined;
     if (chainBehavior) {
-      // B6-W4 R-8 狼群誓约：猎犬召唤上限共享门控（月狼在场计数占位；§⑦-2 静默丢弃）
-    const hound = this.registry.get('wpn_d_2') as unknown as { summonGate?: () => boolean } | undefined;
+      // B6-W4 R-8 狼群誓约：猎犬召唤上限共享门控（P1-6 真判定：月狼+猎犬合计 ≤ maxWolves，§⑦-2）
+    const hound = this.registry.get('wpn_d_2') as unknown as { summonGate?: () => boolean; activeCount?: number } | undefined;
     if (hound) {
       hound.summonGate = () => {
         if (!this.resonance.isAchieved('R8')) return true;
-        // 猎犬自身 count=1（重召节拍即上限）；月狼侧共享计数由 exclusive-math.sharedSummonCount 承载
-        return true;
+        // 猎犬为请求方：R-8 达成时需月狼侧有空位（月狼数 + 猎犬 1 ≤ maxWolves）
+        const hornBehavior = this.exclusiveBehaviors.xw_horn as ExclusiveWeaponBehavior<import('@/weapons/exclusive/exclusive-math').HornState>;
+        const wolves = hornWolfCount(hornBehavior.getState(), this.lastNowSeconds);
+        const maxWolves = resonancePairByExclusive('xw_horn')!.machine['maxWolves'] ?? EXCLUSIVE_WEAPONS.xw_horn.params.summonMax!;
+        return sharedSummonCount(wolves, false, maxWolves).canSummonWolf;
+      };
+    }
+    // B6-W4 R-8 狼群誓约：月狼侧对称共享（P1-6：猎犬在场占 1 席，月狼召唤请求扣除外部占位）
+    const hornBehavior = this.exclusiveBehaviors.xw_horn as unknown as { externalSummonOccupants?: () => number };
+    if (hornBehavior) {
+      hornBehavior.externalSummonOccupants = () => {
+        if (!this.resonance.isAchieved('R8')) return 0;
+        const houndBehavior = this.registry.get('wpn_d_2') as unknown as { activeCount?: number };
+        return (houndBehavior?.activeCount ?? 0) > 0 ? 1 : 0;
       };
     }
     // B6-W4 R-4 猎月贯钉：长弓满蓄同步（shotCounter 每 3 矢）→ 标枪贯穿 6 + 落点图腾
@@ -397,15 +411,19 @@ export class WeaponSystem {
           placeResonanceTotem(this.resonanceTotems, x, y, lastNow, resonancePairByExclusive('xw_longbow')!.machine);
         }
       };
+      // P1-4 R-7 拖拽真位移：透传落点（拉至弧心 = 玩家位）给 summon-weapons 位移层
       chainBehavior.onHitResonance = (target: Enemy, _now: number) => {
-        if (!this.resonance.isAchieved('R7')) return false;
+        if (!this.resonance.isAchieved('R7')) return null;
         return onResonanceChainHit(
           this.resonanceDrag,
           target as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget,
           { x: this.player.x, y: this.player.y },
           resonancePairByExclusive('xw_axe')!.machine,
-        ) !== null;
+        );
       };
+      // P1-4 R-7 斧侧喂食：拖拽标记注入 ExclusiveWeaponBehavior（stepAxe 消费 ×1.5）
+      const axeBehavior = this.exclusiveBehaviors.xw_axe as unknown as { resonanceDrag?: ReturnType<typeof createResonanceDragState> };
+      axeBehavior.resonanceDrag = this.resonanceDrag;
     }
 
     // E3 门控（upgrade-pool §③ 初始武器为自动飞弹）：守夜之环/月蚀脉冲初始未解锁；

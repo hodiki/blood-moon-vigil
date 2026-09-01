@@ -142,6 +142,8 @@ export class PlayerStats {
   moveSpeedBonusPct = 0;
   /** E4-S4 升级池：承伤减免（up_g_7 减伤 +10% ×3；与圣光壁垒 -10% 加法叠加，上限 -30%） */
   damageReduction = 0;
+  /** P1-5 共鸣 R-5 圣域重叠区帧级减伤（壁垒光环 ∩ 铃音领域；PlayScene 按双武启用状态写，不动静态池） */
+  dynamicDamageReductionPct = 0;
   /** E4-S4 升级池：濒死护盾剩余量（up_g_8；HP<25% 时一次性获得 60 护盾） */
   shield = 0;
   private deathShieldUsed = false;
@@ -262,9 +264,11 @@ export class PlayerStats {
     return true;
   }
 
-  /** 伤害经护盾吸收 + 承伤减免后进入 HP（Player.hurt 消费）；返回实际扣血 */
+  /** 伤害经护盾吸收 + 承伤减免后进入 HP（Player.hurt 消费）；返回实际扣血。
+   *  P1-5：dynamicDamageReductionPct（R-5 圣域重叠区）独立加算，不占静态池 30% 上限。 */
   absorbDamage(amount: number): number {
-    const reduced = amount * (1 - this.damageReduction);
+    const totalDr = Math.min(0.9, this.damageReduction + this.dynamicDamageReductionPct);
+    const reduced = amount * (1 - totalDr);
     if (this.shield > 0) {
       const absorbed = Math.min(this.shield, reduced);
       this.shield -= absorbed;

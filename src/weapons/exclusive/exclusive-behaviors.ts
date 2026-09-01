@@ -13,6 +13,7 @@ import { heavyCooldownMult } from '@/weapons/resonance/resonance-engine';
 import type { Enemy } from '@/enemies/enemy';
 import type { WeaponBehavior, WeaponUpdateContext } from '@/weapons/weapon-behavior';
 import type { ExclusivePlayerLike, ExclusiveTarget, StepResult } from './exclusive-math';
+import type { ResonanceDragState } from '@/weapons/resonance/resonance-math';
 import {
   createLanternState, stepLantern, type LanternState,
   createRevolverState, stepRevolver, revolverOnKill, type RevolverState,
@@ -45,6 +46,10 @@ interface StepArgs {
   healSink: (amount: number) => void;
   spendHp: (amount: number) => void;
   killHealSink: (amount: number) => void;
+  /** P1-4 R-7 拖拽标记（仅巨斧 hook 消费：被拖拽者 ×1.5，喂食即耗） */
+  resonanceDrag?: ResonanceDragState;
+  /** P1-6 R-8 外部占位计数 provider（仅号角 hook 消费：猎犬入编占狼群席位） */
+  externalSummonOccupants?: () => number;
 }
 
 /**
@@ -72,6 +77,10 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
   /** P0-7e 射速爆发窗口（dv_lantern_flash 4s ×1.5；until 为秒时间戳） */
   private fireRateUntil = -Infinity;
   private fireRateMult = 1;
+  /** P1-4 R-7 拖拽标记（WeaponSystem 注入共享 ResonanceDragState；仅巨斧 hooks.step 消费） */
+  resonanceDrag?: ResonanceDragState;
+  /** P1-6 R-8 外部占位计数 provider（WeaponSystem 注入；号角 hooks.step 经 StepArgs 消费） */
+  externalSummonOccupants?: () => number;
 
   constructor(readonly exclusiveId: ExclusiveWeaponId, private readonly hooks: ExclusiveWeaponHooks<S>) {
     this.weaponId = exclusiveId;
@@ -171,6 +180,8 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
       killHealSink: (amount) => {
         ctx.player.stats.heal(amount);
       },
+      resonanceDrag: this.resonanceDrag,
+      externalSummonOccupants: this.externalSummonOccupants,
     });
     this.totalDamage += result.damageDealt;
     // NV-INTEG-FIX P0-5：本帧事件上抛视觉层（左轮 tracer 等；即时结算近似的表现补口）
@@ -229,14 +240,14 @@ function axeHooks(): ExclusiveWeaponHooks<AxeState> {
   return {
     id: 'xw_axe',
     createState: createAxeState,
-    step: (s, a) => stepAxe(s, a.dt, a.now, a.player, a.enemies, a.damageMultiplier, a.machine, a.spendHp, a.killHealSink),
+    step: (s, a) => stepAxe(s, a.dt, a.now, a.player, a.enemies, a.damageMultiplier, a.machine, a.spendHp, a.killHealSink, a.resonanceDrag),
   };
 }
 function hornHooks(): ExclusiveWeaponHooks<HornState> {
   return {
     id: 'xw_horn',
     createState: createHornState,
-    step: (s, a) => stepHorn(s, a.dt, a.now, a.player, a.enemies, a.damageMultiplier, a.machine),
+    step: (s, a) => stepHorn(s, a.dt, a.now, a.player, a.enemies, a.damageMultiplier, a.machine, a.externalSummonOccupants?.() ?? 0),
   };
 }
 

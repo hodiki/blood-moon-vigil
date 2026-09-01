@@ -16,6 +16,7 @@ import { applyStatus, damageTakenMultiplier, type StatusState } from '@/combat/s
 import type { CcProfile } from '@/combat/status/status-config';
 import { hitEnemy } from '@/combat/damage';
 import { fullAmmo, consumeAmmo, tickReload, grantAmmo, type AmmoState } from '@/weapons/ammo';
+import { resonanceTwinbladesDamageMult, resonanceAxeDamageMult, consumeResonanceDrag, type ResonanceDragState } from '@/weapons/resonance/resonance-math';
 
 /** 无状态载荷目标的空载荷（遥测 dealt 口径；易伤乘区恒 1） */
 const EMPTY_CC: StatusState = { stun: null, slow: null, vulnerable: null, stunIcdReadyAt: 0 };
@@ -334,7 +335,8 @@ export function stepTwinblades(
     state.attackTimer = base.interval!;
     const target = nearestAlive(enemies, player.x, player.y);
     if (target && distSq(target.x, target.y, player.x, player.y) <= range * range) {
-      dealDamage(target, base.damage! * damageMultiplier, now, result);
+      // P1-3 共鸣 R-3（双刃 × 长弓）：主斩对 R-3 印记目标（vulnerable source='resonance_R3'）×1.2
+      dealDamage(target, base.damage! * damageMultiplier * resonanceTwinbladesDamageMult(target, now, machine), now, result);
       state.bloodPact = Math.min(10, state.bloodPact + 1);
       // P1-7 天赋支线（卡珊德拉 br_2 吸血效 +25%）：machine['healPerHitPct'] 放大命中回复与每秒上限（同源乘区）
       const healMult = 1 + (machine['healPerHitPct'] ?? 0);
@@ -613,7 +615,8 @@ export function createAxeState(): AxeState {
   return { swingTimer: 0, totalDamage: 0 };
 }
 
-/** 巨斧帧步进。spendHp = 自损落点（HP ≤20% 停止消耗）；killHealSink = 击杀回血落点。 */
+/** 巨斧帧步进。spendHp = 自损落点（HP ≤20% 停止消耗）；killHealSink = 击杀回血落点；
+ *  drag = R-7 共鸣拖拽标记（P1-4：对被拖拽者 ×1.5，挥击结算后一次性消费）。 */
 export function stepAxe(
   state: AxeState,
   dt: number,
@@ -624,6 +627,7 @@ export function stepAxe(
   machine: Readonly<Record<string, number>> = {},
   spendHp: (amount: number) => void = () => {},
   killHealSink: (amount: number) => void = () => {},
+  drag?: ResonanceDragState,
 ): StepResult {
   const result = emptyStep();
   const base = EXCLUSIVE_WEAPONS.xw_axe.params;
@@ -639,8 +643,11 @@ export function stepAxe(
         machine['lowHpBonusCap'] ?? 0,
         Math.floor(Math.max(0, 1 - player.hp / player.maxHp) / (machine['lowHpStepPer'] ?? 1)) * (machine['lowHpStepPct'] ?? 0),
       );
-      const dmg = base.damage! * (machine['damageMult'] ?? 1) * (1 + lowHpBonus) * damageMultiplier;
+      // P1-4 共鸣 R-7（锁链 × 巨斧）：对被拖拽者 ×1.5（喂食即耗：本次挥击消费拖拽标记）
+      const dragMult = drag ? resonanceAxeDamageMult(target, drag, machine) : 1;
+      const dmg = base.damage! * (machine['damageMult'] ?? 1) * (1 + lowHpBonus) * dragMult * damageMultiplier;
       dealDamage(target, dmg, now, result);
+      if (drag) consumeResonanceDrag(drag);
       // 自损 2 HP（HP ≤20% 停止消耗——保命边缘 §6.1-1；狂化免耗走衍生技 machine 覆写 selfHpCost=0）
       const selfCost = machine['selfHpCost'] ?? base.selfHpCost!;
       if (player.hp / player.maxHp > base.selfHpStopPct! && selfCost > 0) spendHp(selfCost);
@@ -676,7 +683,8 @@ export function createHornState(): HornState {
   return { summonTimer: 0, wolves: [], totalDamage: 0 };
 }
 
-/** 号角帧步进（月狼贴身玩家自动索敌；狼位置 = 玩家附近虚拟——视觉实体 B6 欠账）。 */
+/** 号角帧步进（月狼贴身玩家自动索敌；狼位置 = 玩家附近虚拟——视觉实体 B6 欠账）。
+ *  externalOccupants = R-8 猎犬入编占用席位数（P1-6 上限共享：月狼请求需扣除外部占位）。 */
 export function stepHorn(
   state: HornState,
   dt: number,
@@ -685,6 +693,7 @@ export function stepHorn(
   enemies: readonly ExclusiveTarget[],
   damageMultiplier: number,
   machine: Readonly<Record<string, number>> = {},
+  externalOccupants = 0,
 ): StepResult {
   const result = emptyStep();
   const base = EXCLUSIVE_WEAPONS.xw_horn.params;
@@ -693,7 +702,7 @@ export function stepHorn(
   state.summonTimer -= dt;
   if (state.summonTimer <= 0) {
     state.summonTimer = base.summonInterval!;
-    if (state.wolves.length < maxWolves) {
+    if (state.wolves.length + externalOccupants < maxWolves) {
       // 召唤请求：场上限静默丢弃（§6.1-2 满员不排队）
       state.wolves.push({
         until: now + base.summonDuration!,

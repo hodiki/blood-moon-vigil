@@ -141,7 +141,8 @@ export function tickTombstone(
  */
 export function convertHealToRevive(state: OathkeeperState, appliedHeal: number): void {
   if (state.phase !== 'tombstone' || appliedHeal <= 0) return;
-  const rate = param(state, 'reviveConvertRate');
+  // P1-5 共鸣 R-5（圣铃 × 壁垒）：machine['reviveConvertBonusPp'] 墓碑转化 +20pp（独立键，与 mc_bell_2 rate 覆写叠加）
+  const rate = param(state, 'reviveConvertRate') + (state.machine['reviveConvertBonusPp'] ?? 0) / 100;
   state.reviveProgress = Math.min(100, state.reviveProgress + appliedHeal * rate * 100 / 20);
   if (state.reviveProgress >= 100) revive(state);
 }
