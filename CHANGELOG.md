@@ -3,6 +3,24 @@
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 版本号唯一权威来源：package.json；发布升版规则见 `production/release/versioning.md`。
 
+## [Unreleased] - NV-REVIEW-FIX 批次 F（2026-09-01）
+
+> v0.8 审查修复批次 F：结构拆分 + 双轨收口 + 三 BUG。审查结论见 `production/official-v1/项目审查结论-v0.8-2026-09-01.md`，批次报告见 `production/official-v1/review-fix-f-report.md`。
+
+### Changed
+
+- **PlayScene 结构拆分（W-F1 / P1-7）**：2015 → 1200 行，按「机械搬移 + 端口注入」拆出 8 个协作模块（`src/scenes/run/*`：BenchSmokeRunner / BossSkillConsumer / ExclusiveRunAssembler / RelicFieldRunner / UpgradeFlowController / DerivativeCastBridge / KillLootConsumer / TreeApplier），行为零变化（测试全程保持绿）。模块图见 `docs/architecture/architecture.md` §3.1.1。
+- **双轨隔离收口（W-F2 / EG-2，归档不删）**：`WeaponSystem.evolve` 加 throw 守卫（原实现归档 `evolveArchived`）；`ACTIVE_SKILLS` 与 `active-skill-runtime` 旧轨标注 `@deprecated`；`merit-overlay` 运行时入口隐藏（树界面替代，存档迁移保留）。不可达断言 7 例（`tests/unit/review-fix-f.test.ts`）。
+- **P2-6**：方阵每局次数锚 `[4,7]` → `[3,4]`（对齐 GDD v1.1）。
+- **P2-2**：升级卡席位角标按 P1~P5 明示（`matchGuaranteeSeatV3` 席位号透传 → `levelup-overlay` 渲染「P1 保底」…「P5 保底」）。
+- **P1-16 BUG-4**：序章自动推进 timer 改 Phaser Scene clock（随相位冻结/场景销毁）；PROLOGUE 相位内 Esc 由序章消费（推进/跳过）。
+- **P1-17 BUG-6**：音频 unlock 失败后 `pointerdown`/`keydown` 常驻监听节流（800ms）重试 `ctx.resume()`。
+
+### Fixed
+
+- **BUG-3 结算页矮视口（P1-15）**：`results-overlay` 的 dvh/dvw 上限除以 `--bmv-overlay-scale` 折回设计空间，1280×656 下面板可用高度恢复满幅（1280×656 断言在 `review-fix-f.test.ts`）。
+- **测试补强**：EXCLUSIVE_SELECT 相位矩阵用例（`tests/unit/core/phase-exclusive-select.test.ts`）、P2-6/P2-2 断言、PlayScene×8 模块协作接线守卫；共 +25 用例。
+
 ## [0.5.0] - 2026-08-28
 
 > 正式版第一个稳定落定版：M0~M3 全量里程碑 + R2/R3 两轮外部测试修复。版本总结见 `production/release/v0.5-summary.md`。

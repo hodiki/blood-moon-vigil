@@ -214,6 +214,30 @@ update(time: number, delta: number): void {
 }
 ```
 
+### 3.1.1 PlayScene 协作模块（NV-REVIEW-FIX-F W-F1 拆分）
+
+PlayScene 曾膨胀至 2015 行（审查项 P1-7）。批次 F 按「机械搬移 + 端口注入（ports + `attach()`，
+箭头闭包调用期才解引用）」拆为 8 个协作模块（`src/scenes/run/*`），场景瘦身至 ≤1200 行，
+行为零变化（全部测试保持绿）。ADR-003 单场景原则不变——模块非 Scene，仅场景持有的普通类。
+
+```
+PlayScene（装配根 + 相位机 + update 转发）
+ ├─ BenchSmokeRunner        run/bench-smoke-runner.ts    smoke/bench/qa 运行模式（36s 基准）
+ ├─ BossSkillConsumer       run/boss-skill-consumer.ts   Boss 五槽运行时消费（召唤/幻象/领域/慢区）
+ ├─ ExclusiveRunAssembler   run/exclusive-run-assembler.ts 专武选择页装配（Q-b/Q-d 装配链/HUD 槽扩列）
+ ├─ RelicFieldRunner        run/relic-field-runner.ts    圣物/祭坛/银雨/十二灯减伤窗口
+ ├─ UpgradeFlowController   run/upgrade-flow-controller.ts v3 三选一 + 质变卡双节拍管线
+ ├─ DerivativeCastBridge    run/derivative-cast-bridge.ts 衍生技施放/结算/狂化/审判光环
+ ├─ KillLootConsumer        run/kill-loot-consumer.ts    击杀消费/掉落/图鉴/功绩/预警/稀有宝箱
+ └─ TreeApplier             run/tree-applier.ts          天赋树写回（A-2）+ 复活判定 + 遗言余烬
+```
+
+约定（后续新增模块沿用）：
+- 模块不 import Phaser 场景状态，依赖经 `attach(ports)` 注入（端口 = 场景 getter 闭包）；
+- 事件订阅留在场景 `create`（`GameEvents.on(..., (args) => this.xxx.handler(args), this)`），
+  场景关闭统一 `resetGameEvents()` 防泄漏（§3.4）；
+- 模块内不持有相位判断（ADR-003 短路在场景 update 入口统一承担）。
+
 ### 3.2 实体生命周期（spawn → active → 回收）
 
 所有可池化实体遵循统一生命周期，避免 `new/destroy` 抖动（GC 停顿是 Web 幸存者 like 卡顿主因）：
