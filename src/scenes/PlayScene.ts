@@ -20,7 +20,7 @@ import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
 import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
-import { computeLoadout } from '@/weapons/loadout';
+import { computeLoadout, defaultExclusiveFor } from '@/weapons/loadout';
 import { resonanceBadgeState } from '@/weapons/resonance/resonance-engine';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
@@ -544,7 +544,7 @@ export class PlayScene extends Phaser.Scene {
       // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）：
       // 跳过序章与专武选择 UI 直接进战斗；**装配照走默认角色对第一把**（P1-1：
       // 旧实现跳过 applyExclusiveSelection → 8 专武恒 disabled，QA 会误判「专武未做」）。
-      this.applyExclusiveSelection(HERO_EXCLUSIVE_PAIRS[this.heroId][0]);
+      this.applyExclusiveSelection(defaultExclusiveFor(this.heroId) ?? HERO_EXCLUSIVE_PAIRS[this.heroId][0]);
       this.state.set(GamePhase.RUNNING);
       if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
     } else {

@@ -34,6 +34,17 @@ export function derivativeForChoice(heroId: string, chosen: ExclusiveWeaponId): 
   return EXCLUSIVE_TO_DERIVATIVE[chosen];
 }
 
+/**
+ * P1-1 冒烟/基准默认专武（smoke/bench 跳过 2 选 1 插页时的确定性选择）。
+ * 取该角色专武对的第 1 把（HERO_EXCLUSIVE_PAIRS[hero][0]）；非法 heroId = null。
+ * 抽成纯函数是为了让「smoke/bench 也必须走 applyExclusiveSelection」有一条可单测的
+ * 契约——旧实现在 smoke/bench 分支里内联跳过，8 专武恒 disabled 且无从断言。
+ */
+export function defaultExclusiveFor(heroId: string): ExclusiveWeaponId | null {
+  const pair = HERO_EXCLUSIVE_PAIRS[heroId as keyof typeof HERO_EXCLUSIVE_PAIRS];
+  return pair?.[0] ?? null;
+}
+
 /** loadout 汇聚结果（WeaponSystem.applyLoadout 的入参契约） */
 export interface LoadoutResult {
   /** 选中专武 */
