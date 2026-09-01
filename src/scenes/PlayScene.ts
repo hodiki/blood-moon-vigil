@@ -69,7 +69,6 @@ import { sceneHasFrame } from '@/fx/external-atlas';
 import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim, hasCharacterFrame } from '@/fx/anim';
 import { FxManager } from '@/fx/fx-manager';
 import { StatusMarkerLayer } from '@/fx/status-markers';
-import { SKILL_RING_FRAMES } from '@/fx/fx-spec';
 import { bossEntranceFrameName } from '@/fx/skill-pose';
 import { AudioManager } from '@/audio/audio-manager';
 import { bindAudioEvents } from '@/audio/audio-events';
@@ -84,13 +83,8 @@ import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-beha
 import { BenchSmokeRunner } from '@/scenes/run/bench-smoke-runner';
 import { ExclusiveRunAssembler } from '@/scenes/run/exclusive-run-assembler';
 import { UpgradeFlowController, type UpgradeChosenPayload } from '@/scenes/run/upgrade-flow-controller';
+import { DerivativeCastBridge } from '@/scenes/run/derivative-cast-bridge';
 
-/**
- * P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：GDD §4.7 未给攻速数值 → 工程锚 ×1.25（待模拟校准）。
- * 与血月狂化（§4.6：伤害 +40% / 移速 +15% / 挥击不耗 HP）必须分列，禁止串台。
- */
-const WOLF_FRENZY_DURATION_SECONDS = 4;
-const WOLF_FRENZY_ATTACK_SPEED_MULT = 1.25;
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
  * TASK-31 收尾（rhythm-pace-adj §6）：BENCH_DURATION_MS 60_000→36_000，
@@ -229,12 +223,8 @@ export class PlayScene extends Phaser.Scene {
   private exclusiveSelect!: ExclusiveSelectOverlay;
   /** M3 结算日志条：本局开局图鉴已解锁数（结算 delta = 局终 snapshot − 开局数，codex-ui-spec §6） */
   private codexUnlockedAtStart = 0;
-  /** P1-14 衍生技施放目标集（常驻实例：蓄力期每帧刷新，避免 1.2s 后打旧快照） */
-  private derivativeCastEnemies: Enemy[] = [];
-  /** P1-14 圣辉审判治疗光环持续段（5s × 3 HP/s；旧实现一次性结算） */
-  private judgmentAura: { perSec: number; until: number } | null = null;
-  /** P1-14 月啸冲锋「加尔文狂化 4s（攻速）」窗口（与血月狂化 6s 分列，不再串台） */
-  private frenzyUntil = -Infinity;
+  /** 衍生技施放桥（W-F1 拆分：run/derivative-cast-bridge） */
+  private readonly derivativeCast = new DerivativeCastBridge();
   /** P0-1 圣物/祭坛/持续场运行时（W-F1 拆分：run/relic-field-runner） */
   private readonly relicFields = new RelicFieldRunner(new RelicDirector());
 
@@ -278,10 +268,6 @@ export class PlayScene extends Phaser.Scene {
     this.codexToastPending = false;
     // P0-1 圣物层 per-run 复位（scene.restart 复用实例；祭坛标记要显式销毁防残留在场）
     this.relicFields.resetRun();
-    // P1-14 衍生技持续段 per-run 复位（审判光环 / 月啸狂化 / 蓄力目标集）
-    this.judgmentAura = null;
-    this.frenzyUntil = -Infinity;
-    this.derivativeCastEnemies.length = 0;
 
     // M3 序章屏：初始相位 PROLOGUE（世界冻结、不开始计时/生成器；update() RUNNING 短路保证）
     this.state = new GameState(GamePhase.PROLOGUE);
@@ -403,6 +389,26 @@ export class PlayScene extends Phaser.Scene {
         this.r5SanctuaryAchieved = v;
       },
     });
+    // 衍生技施放桥端口（W-F1 拆分：run/derivative-cast-bridge）
+    this.derivativeCast.attach({
+      isRunning: () => this.state.get() === GamePhase.RUNNING,
+      nowSeconds: () => this.time.now / 1000,
+      player: () => this.player,
+      stats: () => this.player.stats,
+      runStats: () => this.stats,
+      fx: () => this.fx,
+      heroId: () => this.heroId,
+      mapSize: () => MAP_CONFIGS[this.mapId],
+      weaponSystem: () => this.weaponSystem,
+      oathkeeper: () => this.oathkeeper,
+      ownedWeaponIds: () => this.ownedWeaponIds,
+      exw: (id) => this.exw(id),
+      rage: () => this.rage,
+      elapsed: () => this.spawner.elapsedSeconds,
+      s1Until: () => this.treeS1UntilElapsed,
+      eachActiveEnemy: (fn) => this.enemyPool.eachActive(fn),
+      derivativeControllerRef: () => this.derivativeController,
+    });
     // W-1 特殊行为 AI 运行时（召唤出口走 spawner 敌方技能召唤口：noXp 自动置位）
     this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
       this.spawner.spawnRuntimeSummon(id, x, y, tag),
@@ -481,7 +487,7 @@ export class PlayScene extends Phaser.Scene {
       skillName: DERIVATIVE_SKILLS[EXCLUSIVE_TO_DERIVATIVE[this.currentExclusiveId]].name,
       skillIconFrame: `skill-${this.heroId.replace('hero_', '')}`,
       onPauseToggle: () => this.togglePause(),
-      onActiveSkill: () => this.tryCastActiveSkill(), // 移动端技能按钮 → 同一释放入口
+      onActiveSkill: () => this.derivativeCast.tryCast(), // 移动端技能按钮 → 同一释放入口
       // P0-1 圣物：移动端第二技能钮（桌面走 Q 键，见 inputSource.onRelicSkill）
       onRelicSkill: () => this.relicFields.tryUseRelic(),
     });
@@ -612,7 +618,7 @@ export class PlayScene extends Phaser.Scene {
       : new KeyboardInput(this);
     this.inputSource.onPauseToggle(() => this.togglePause());
     // M1b 主动技：桌面 Space/Shift + 移动端按钮统一走 tryCastActiveSkill（相位门禁在场景层）
-    this.inputSource.onActiveSkill(() => this.tryCastActiveSkill());
+    this.inputSource.onActiveSkill(() => this.derivativeCast.tryCast());
     // P0-1 圣物：独立键（桌面 Q / 移动端第二技能钮）→ tryUseRelic
     this.inputSource.onRelicSkill(() => this.relicFields.tryUseRelic());
 
@@ -672,12 +678,12 @@ export class PlayScene extends Phaser.Scene {
     // P1-5 R-5 圣域重叠区：双武启用状态帧级刷新（廉价赋值；状态变化才会改变写入值）
     this.refreshSanctuaryOverlap();
     // E4-S2 血月狂化：buff 生效/失效同步（B5-W4 起 = 血月狂化衍生技增益；接触光环随旧技退役移除）
-    this.updateRage(dt, now);
+    this.derivativeCast.updateRage(now);
     // B5-W4 衍生技：CD 递减 + 蓄力结算 + 移动端按钮冷却转圈（HUD 只读展示）
     //    P1-14：蓄力技（月痕狙击 1.2s）在蓄满帧由 update 返回结果，走与瞬发相同的收口
-    if (this.derivativeController.chargePhase === 'charging') this.refreshDerivativeEnemies();
+    if (this.derivativeController.chargePhase === 'charging') this.derivativeCast.refreshEnemies();
     const chargedResult = this.derivativeController.update(dt, now);
-    if (chargedResult) this.applyDerivativeResult(chargedResult, now);
+    if (chargedResult) this.derivativeCast.applyResult(chargedResult, now);
     if (this.cfg.isMobile) {
       this.hud.setSkillCooldown(this.derivativeController.cooldown, this.derivativeController.cdSeconds);
       this.hud.setSkillCharges(this.derivativeController.chargeCount);
@@ -707,7 +713,7 @@ export class PlayScene extends Phaser.Scene {
     this.relicFields.stepAltar(now);
     this.relicFields.syncRelicHud(now);
     // P1-14 审判光环持续段 + P0-1 银潮汐落场银雨（W-F1 拆分 relic-field-runner）
-    this.stepJudgmentAura(dt, now);
+    this.derivativeCast.stepJudgmentAura(dt, now);
     this.relicFields.stepFields(dt, now);
     // W-4 守誓者步进（跟随/墓碑/重召唤/撕咬）+ 血渍区/幻影到期
     this.stepCompanion(dt, now);
@@ -743,7 +749,7 @@ export class PlayScene extends Phaser.Scene {
       this.telegraphs.sync(eliteTel, this.spawner.getPendingFormationWarnings(), bossZones, this.cfg.isMobile ? 1 : 0, this.bloodstains, lungeTel);
     }
     // 4) 武器（飞弹/环绕球/冲击波全自动；Boss 霸体期内被 refreshEnemies 过滤）
-    this.weaponSystem.update(dt, now, this.s1WindowDamageMult(), this.s1WindowIntervalMult());
+    this.weaponSystem.update(dt, now, this.derivativeCast.s1WindowDamageMult(), this.derivativeCast.s1WindowIntervalMult());
     // 5) 经验宝石磁吸/拾取（E3-S1）
     this.xp.update(dt);
     // 5b) M3 治疗道具拾取（精英/Boss 保底；拾取即治疗 + emit）
@@ -880,17 +886,6 @@ export class PlayScene extends Phaser.Scene {
       : amount;
     if (remaining <= 0) return false;
     return this.player.hurt(remaining, now);
-  }
-
-  /** P1-14 审判光环持续段（圣辉审判衍生技：5s × 3 HP/s，跟随玩家；拆分后由场景暂管） */
-  private stepJudgmentAura(dt: number, now: number): void {
-    if (!this.judgmentAura) return;
-    if (now >= this.judgmentAura.until) {
-      this.judgmentAura = null;
-      return;
-    }
-    const applied = this.player.stats.heal(this.judgmentAura.perSec * dt);
-    if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
   }
 
   private stepCompanion(dt: number, now: number): void {
@@ -1154,156 +1149,11 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /**
-   * B5-W4 衍生技施放入口（桌面 Space/Shift + 移动端技能按钮共用；旧 4 技运行时退役 EG-2）。
-   * 门禁沿旧惯例：仅 RUNNING 可释放；CD / 100ms 防抖由 DerivativeSkillController 门控。
-   * 效果结算 = castDerivative（CC 走状态层）；施放不打断移动输入。
-   */
-  private tryCastActiveSkill(): void {
-    if (this.state.get() !== GamePhase.RUNNING) return;
-    const now = this.time.now / 1000;
-    const result = this.derivativeController.tryCast(now, this.buildDerivativeCastContext());
-    if (result) this.applyDerivativeResult(result, now);
-  }
-
-  /**
    * 专武行为的扩展型访问（WeaponBehavior 基接口只有 setEnabled/update，
    * 而 onHeal / applyFireRateBurst / applyMutationCard 属 ExclusiveWeaponBehavior 专有）。
    */
   private exw(id: import('@/config/balance').ExclusiveWeaponId): ExclusiveWeaponBehavior<unknown> {
     return this.weaponSystem.exclusiveBehaviors[id] as unknown as ExclusiveWeaponBehavior<unknown>;
-  }
-
-  /**
-   * 衍生技施放上下文（瞬发与蓄力按下共用同一份）。
-   * player 为**实时取值的 getter 形状**：月痕狙击 1.2s 蓄力（P1-14）在蓄满时才结算，
-   * 按下瞬间的坐标快照会让巨矢从旧位置飞出；enemies 数组为常驻实例，蓄力期间每帧刷新。
-   */
-  private buildDerivativeCastContext(): Omit<import('@/active-skill/derivative/derivative-skills').DerivativeCastContext, 'now'> {
-    const scene = this;
-    this.refreshDerivativeEnemies();
-    // Q-b/Q-d 场景下左轮可能已在手（弹巢引用给破旧提灯技补满+无限弹）
-    let ammo: import('@/weapons/ammo').AmmoState | undefined;
-    if (this.ownedWeaponIds.includes('xw_revolver' as unknown as WeaponId)) {
-      const revolver = this.weaponSystem.exclusiveBehaviors.xw_revolver as unknown as { getState(): { ammo: import('@/weapons/ammo').AmmoState } };
-      ammo = revolver.getState().ammo;
-    }
-    return {
-      player: {
-        get x() { return scene.player.x; },
-        get y() { return scene.player.y; },
-        get hp() { return scene.player.stats.hp; },
-        get maxHp() { return scene.player.stats.maxHp; },
-      },
-      enemies: this.derivativeCastEnemies as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget[],
-      healSink: (h) => {
-        const applied = this.player.stats.heal(h);
-        if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
-      },
-      // P0-7b 安魂曲协同：守誓者回满 / 墓碑复活进度充满（旧实现不传 companion → 协同段从不执行）
-      companion: {
-        healFull: () => this.oathkeeper.healFull(),
-        fillReviveProgress: () => this.oathkeeper.fillReviveProgress(),
-      },
-      ammo,
-      // B6-W4 P4 形态挂点：贯月审判图腾 / 终审庭余焰 → R-4/R-6 持续段（WeaponSystem 桥接）
-      totemSink: (x, y) => this.weaponSystem.placeResonanceTotemAt(x, y),
-      residueSink: (x, y) => this.weaponSystem.placeResonanceResidueAt(x, y),
-      // P1-14 审判光环：5s × 3 HP/s 改成持续段（旧实现一次性结算 3 HP）
-      auraSink: (perSec, duration) => {
-        this.judgmentAura = { perSec, until: this.time.now / 1000 + duration };
-      },
-      // P0-7e 射速爆发：4s ×1.5 落到当前在手的专武攻击间隔（旧实现只 push 事件）
-      fireRateSink: (mult, duration) => {
-        const until = this.time.now / 1000 + duration;
-        // 仅提灯/左轮（同源圣徒组）消费射速爆发；其余专武无「射速」语义
-        for (const id of ['xw_lantern', 'xw_revolver'] as const) {
-          const behavior = this.exw(id);
-          if (behavior.isEnabled) behavior.applyFireRateBurst(mult, until);
-        }
-      },
-    };
-  }
-
-  /** 蓄力期目标集刷新（月痕狙击 1.2s 窗口内敌会移动/死亡/新生） */
-  private refreshDerivativeEnemies(): void {
-    this.derivativeCastEnemies.length = 0;
-    this.enemyPool.eachActive((e) => this.derivativeCastEnemies.push(e));
-  }
-
-  /** 衍生技结算统一收口（瞬发返回 + 蓄力完成返回共用；遥测/表现/buff 全在此） */
-  private applyDerivativeResult(result: import('@/active-skill/derivative/derivative-skills').DerivativeCastResult, now: number): void {
-    this.stats.recordActiveSkillCast();
-    // B6-W5 遥测：衍生技伤害累计 + 占比分母
-    this.stats.recordDerivativeDamage(result.damageDealt);
-    this.stats.recordTotalDamage(result.damageDealt);
-    this.player.beginSkillPose();
-    // 血月狂化衍生技（dv_blood_rage）：6s 伤害 +40% / 移速 +15% / 挥击不耗 HP（GDD §4.6）
-    if (result.events.includes('rage')) {
-      this.rage.apply(now, 6);
-      this.player.stats.setRageBonus(0.4);
-      this.player.stats.rageSpeedPct = 0.15;
-      this.fx.rageBurst(this.player.x, this.player.y);
-      this.player.setScale(FX.SKILL_RAGE_SCALE);
-    }
-    // P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：与血月狂化分两个 buff id，不吃伤害/移速加成
-    if (result.events.includes('wolfFrenzy')) {
-      this.frenzyUntil = now + WOLF_FRENZY_DURATION_SECONDS;
-      for (const id of ['xw_axe', 'xw_horn'] as const) {
-        const behavior = this.exw(id);
-        if (behavior.isEnabled) behavior.applyFireRateBurst(WOLF_FRENZY_ATTACK_SPEED_MULT, this.frenzyUntil);
-      }
-      this.fx.rageBurst(this.player.x, this.player.y);
-    }
-    // P1-14 血影突袭：落到「最密方向」终点（旧实现不位移，语义缺失）
-    if (result.dash) {
-      const cfg = MAP_CONFIGS[this.mapId];
-      this.player.setPosition(
-        Math.max(0, Math.min(cfg.width, result.dash.x)),
-        Math.max(0, Math.min(cfg.height, result.dash.y)),
-      );
-      this.fx.bloodDash(this.player.x, this.player.y, result.dash.dirX, result.dash.dirY, result.dash.distance);
-    }
-    // 通用施法表现：技能环（B6 逐技演出细化）
-    const frames = SKILL_RING_FRAMES[this.heroId as keyof typeof SKILL_RING_FRAMES];
-    if (frames) this.fx.playSkillRing(this.player.x, this.player.y, 200, frames);
-    if (result.events.includes('heal')) {
-      this.fx.requiemHeal(this.player.x, this.player.y);
-    }
-  }
-
-  /** 血月狂化衍生技：buff 生效/失效同步（伤害 +40% / 移速 +15%；旧接触光环随旧技退役移除） */
-  private updateRage(dt: number, now: number): void {
-    void dt;
-    const active = this.rage.active(now);
-    const stats = this.player.stats;
-    if (active && stats.rageBonusMultiplier === 0) {
-      stats.setRageBonus(0.4);
-      stats.rageSpeedPct = 0.15;
-      this.player.setScale(FX.SKILL_RAGE_SCALE);
-      // P0-7d：狂化窗口内巨斧挥击不耗 HP（GDD §4.6）——写到 behavior machine 的
-      // selfHpCost=0（stepAxe 读 machine 覆写），窗口结束由下方失效分支复位。
-      this.exw('xw_axe').applyMutationCard({ selfHpCost: 0 });
-    } else if (!active && stats.rageBonusMultiplier !== 0) {
-      stats.setRageBonus(0);
-      stats.rageSpeedPct = 0;
-      this.player.setScale(1);
-      // 复位到基础自损（EXCLUSIVE_WEAPONS.xw_axe.params.selfHpCost = 2）
-      this.exw('xw_axe').applyMutationCard({
-        selfHpCost: EXCLUSIVE_WEAPONS.xw_axe.params.selfHpCost ?? 2,
-      });
-    }
-  }
-
-  /** B5-W3 Q-s1 银炉预热：开局 30s 窗口伤害 ×1.2（攻速 +20% 经全局冷却乘区登记，模拟批次校准） */
-  private s1WindowDamageMult(): number {
-    if (this.treeS1UntilElapsed < 0) return 1;
-    return this.spawner.elapsedSeconds <= this.treeS1UntilElapsed ? 1.2 : 1;
-  }
-
-  /** P1-9 Q-s1 银炉预热：窗口内发射间隔 ÷1.2（攻速 +20%），与天赋区间乘区在 ctx 内合成 */
-  private s1WindowIntervalMult(): number {
-    if (this.treeS1UntilElapsed < 0) return 1;
-    return this.spawner.elapsedSeconds <= this.treeS1UntilElapsed ? 1 / 1.2 : 1;
   }
 
   /** B5-W2 结算页「余辉行」数据接口（B6 渲染）：s3 终局折算 +2 余辉 */
