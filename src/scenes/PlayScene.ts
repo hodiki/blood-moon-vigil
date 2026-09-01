@@ -19,9 +19,8 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, DERIVATIVE_UPGRADE_MAP, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
-import { computeLoadout, defaultExclusiveFor } from '@/weapons/loadout';
-import { resonanceBadgeState } from '@/weapons/resonance/resonance-engine';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, DERIVATIVE_UPGRADE_MAP, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, } from '@/config/balance';
+import { defaultExclusiveFor } from '@/weapons/loadout';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
 import { detectIsMobile } from '@/utils/device';
 import { clampDelta } from '@/core/time';
@@ -87,6 +86,7 @@ import type { RelicEffectContext } from '@/relics/relic-engine';
 import { hitEnemy } from '@/combat/damage';
 import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
 import { BenchSmokeRunner } from '@/scenes/run/bench-smoke-runner';
+import { ExclusiveRunAssembler } from '@/scenes/run/exclusive-run-assembler';
 
 /**
  * P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：GDD §4.7 未给攻速数值 → 工程锚 ×1.25（待模拟校准）。
@@ -222,8 +222,6 @@ export class PlayScene extends Phaser.Scene {
   /** E4-S3 主动技运行时配置（升级分支改写；效果结算统一读本类） */
   /** B3-W4 v3 升级池写回目标（PlayScene 装配；v2 语义复用 + 质变卡/衍生技/通用强化扩展） */
   private upgradeV3Targets!: UpgradeV3WriteTargets;
-  /** B3-W1 当前专武（2 选 1 选择演出 B5/B6 接入前，默认角色对第一把；applyLoadout 同步点） */
-  private currentExclusiveId: import('@/config/balance').ExclusiveWeaponId = 'xw_lantern';
   /** B3-W3 质变卡双节拍管线（卡 1 P1 席位 / 卡 2 三渠道 + 待发队列） */
   private mutationPipeline: MutationPipelineState = createMutationPipeline();
   private mutationChannels: MutationChannelConfig = defaultMutationChannels();
@@ -274,6 +272,12 @@ export class PlayScene extends Phaser.Scene {
 
   // 冒烟 / 基准 / QA 运行模式（W-F1 拆分：状态与判定逻辑搬入 run/bench-smoke-runner）
   private readonly runModes = new BenchSmokeRunner();
+  /** 专武开局装配链（W-F1 拆分：run/exclusive-run-assembler） */
+  private readonly exclusiveRun = new ExclusiveRunAssembler();
+  /** B3-W1 当前专武（持有方 = exclusiveRun；升级上下文/圣域判定/质变卡 id 拼装消费） */
+  private get currentExclusiveId(): import('@/config/balance').ExclusiveWeaponId {
+    return this.exclusiveRun.exclusive;
+  }
 
   create(): void {
     this.cfg = getRuntimeConfig(detectIsMobile());
@@ -370,6 +374,21 @@ export class PlayScene extends Phaser.Scene {
       maxEnemies: () => this.cfg.maxEnemies,
       enemyActiveCount: () => this.enemyPool.activeCount,
     });
+    // 专武装配链端口（W-F1 拆分：run/exclusive-run-assembler；闭包调用期解引用）
+    this.exclusiveRun.attach({
+      heroId: () => this.heroId,
+      treeMutations: () => this.treeApp?.mutations ?? null,
+      ownedWeaponIds: () => this.ownedWeaponIds,
+      addOwnedWeapon: (w) => this.ownedWeaponIds.push(w),
+      weaponSystem: () => this.weaponSystem,
+      hud: () => this.hud,
+      oathkeeper: () => this.oathkeeper,
+      setDerivativeController: (c) => {
+        this.derivativeController = c;
+      },
+      preselectedWeapon: () => (this.saveData?.preselectedWeapon ?? null) as WeaponId | null,
+      hasKey: (keyId) => this.upgradeState.hasKey(keyId),
+    });
     // W-1 特殊行为 AI 运行时（召唤出口走 spawner 敌方技能召唤口：noXp 自动置位）
     this.aiDirector = new EnemyAiDirector(this.enemyPool, (id, x, y, tag) =>
       this.spawner.spawnRuntimeSummon(id, x, y, tag),
@@ -424,10 +443,8 @@ export class PlayScene extends Phaser.Scene {
     this.xp.setMagnetRadiusBonus(this.player.stats.magnetRadiusBonus);
     this.xp.addPickupRadiusBonus(this.player.stats.pickupRadiusBonus); // B5 属性 A-10 拾取半径
     this.upgradeState = new UpgradeState();
-    // B3-W1：当前专武默认角色对第一把（正式 2 选 1 选择演出 = 本批 P0-2 插页；树根 Q-a 宿主语义）
-    this.currentExclusiveId = HERO_EXCLUSIVE_PAIRS[this.heroId][0];
-    // NV-INTEG-FIX ③：守誓者启用 = 修女且选中圣铃（默认第一把路径即时生效；选择回调再联动）
-    this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && this.currentExclusiveId === 'xw_bell');
+    // B3-W1：当前专武默认角色对第一把 + 守誓者默认路径即时生效（W-F1 拆分 exclusive-run-assembler）
+    this.exclusiveRun.initDefaultExclusive();
     // NV-INTEG-FIX ⑤：?qa=1 方阵掷点观测（每次掷点结果/被拒原因 → console，验证节奏修复）
     if (this.runModes.qa) {
       this.spawner.groupRollLogger = (info) => {
@@ -437,18 +454,8 @@ export class PlayScene extends Phaser.Scene {
         console.info(`[qa][formation] t=${info.time.toFixed(1)}s rolled=${info.rolled} ${detail}`);
       };
     }
-    // B5-W4 Q-b 伴灯：开局自带配对共鸣通武（GT-7 全额；未配对普通形态入场，P2 取钥后升格共鸣）
-    const treePair = resonancePairByExclusive(this.currentExclusiveId);
-    if (treeApp.mutations.companionWeapon && treePair && !this.ownedWeaponIds.includes(treePair.commonWeaponId)) {
-      this.ownedWeaponIds.push(treePair.commonWeaponId);
-      this.weaponSystem.unlockWeapon(treePair.commonWeaponId);
-    }
-    // B5-W4 Q-d 携行旧兵：预选已解锁通武进局即得（GT-8 共存；同名不重复发放——与 Q-b 同名去重）
-    const preselected = (this.saveData.preselectedWeapon ?? null) as WeaponId | null;
-    if (treeApp.mutations.preselectedWeapon && preselected && WEAPON_CONFIGS[preselected] && !this.ownedWeaponIds.includes(preselected)) {
-      this.ownedWeaponIds.push(preselected);
-      this.weaponSystem.unlockWeapon(preselected);
-    }
+    // B5-W4 Q-b/Q-d 开局预发（W-F1 拆分 exclusive-run-assembler；树质变节点写回）
+    this.exclusiveRun.preGrantOpeningWeapons();
     // B3-W4：v3 升级池写回目标（37 项定义；v2 语义复用 + 质变卡/衍生技/通用强化扩展）
     this.upgradeV3Targets = {
       stats: this.player.stats,
@@ -512,8 +519,8 @@ export class PlayScene extends Phaser.Scene {
     });
     if (this.cfg.isMobile) this.hud.setSkillCharges(this.derivativeController.chargeCount);
     // NV-INTEG-FIX P1：HUD 动态武器槽初始同步（初始通武 + Q-b/Q-d 预发 + 默认专武）
-    this.refreshHudWeaponSlots();
-    this.refreshResonanceBadge();
+    this.exclusiveRun.refreshHudWeaponSlots();
+    this.exclusiveRun.refreshResonanceBadge();
     // QA-FIX-3 修复 3（R3 T-F40「装备 +20 HP 开局仍显示 100」）：HUD 只消费 hp:changed 事件、
     // 初始态硬编码 100/100，而功绩加成在 HUD 装配前已写入 PlayerStats —— 装配后立即同步一次
     // 实际数值（装备 merit_hp 时 120/120 起步可见；无功绩时为幂等 100/100）。
@@ -537,7 +544,7 @@ export class PlayScene extends Phaser.Scene {
     // NV-INTEG-FIX P0-2：专武 2 选 1 插页（EXCLUSIVE_SELECT → RUNNING；smoke/bench 跳过保确定性）
     this.exclusiveSelect = new ExclusiveSelectOverlay(getOverlayHost(), {
       onChoose: (chosen) => {
-        this.applyExclusiveSelection(chosen);
+        this.exclusiveRun.applySelection(chosen);
         this.state.set(GamePhase.RUNNING); // 选择完成 → 世界恢复（applyPhase RUNNING）
         if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
       },
@@ -546,7 +553,7 @@ export class PlayScene extends Phaser.Scene {
       // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）：
       // 跳过序章与专武选择 UI 直接进战斗；**装配照走默认角色对第一把**（P1-1：
       // 旧实现跳过 applyExclusiveSelection → 8 专武恒 disabled，QA 会误判「专武未做」）。
-      this.applyExclusiveSelection(defaultExclusiveFor(this.heroId) ?? HERO_EXCLUSIVE_PAIRS[this.heroId][0]);
+      this.exclusiveRun.applySelection(defaultExclusiveFor(this.heroId) ?? HERO_EXCLUSIVE_PAIRS[this.heroId][0]);
       this.state.set(GamePhase.RUNNING);
       if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
     } else {
@@ -1628,7 +1635,7 @@ export class PlayScene extends Phaser.Scene {
       // E4-S1 HUD：升级写回后 HP 变化（如 maxHp+20 同时回 20）
       GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
       // NV-INTEG-FIX P1：取钥/共鸣达成 → 徽记四态联动
-      this.refreshResonanceBadge();
+      this.exclusiveRun.refreshResonanceBadge();
       this.state.set(GamePhase.RUNNING); // 恢复世界（applyPhase + 输入向量归零）
       // B5-W3 Q-f 串联：elite offer 队列未清空 → 下一发（同帧连发语义经链式结算）
       if (this.eliteOfferQueue > 0) {
@@ -1728,26 +1735,7 @@ export class PlayScene extends Phaser.Scene {
       GameEvents.emit(GameEvent.WeaponUnlocked, { weaponId: wid, name: wid });
     }
     // NV-INTEG-FIX P1：解锁 → HUD 动态槽扩列
-    this.refreshHudWeaponSlots();
-  }
-
-  /** NV-INTEG-FIX P1：HUD 动态武器槽刷新（拥有集合 + 当前专武去重合成） */
-  private refreshHudWeaponSlots(): void {
-    const ids = [...this.ownedWeaponIds];
-    if (!ids.includes(this.currentExclusiveId as unknown as WeaponId)) {
-      ids.push(this.currentExclusiveId as unknown as WeaponId);
-    }
-    this.hud.setWeaponSlots(ids);
-  }
-
-  /** NV-INTEG-FIX P1：共鸣徽记四态刷新（专武 ∧ 钥 ∧ 达成 → HUD 徽记） */
-  private refreshResonanceBadge(): void {
-    const badge = resonanceBadgeState(
-      this.currentExclusiveId,
-      (keyId) => this.upgradeState.hasKey(keyId),
-      this.weaponSystem.resonance.isAchievedForExclusive(this.currentExclusiveId),
-    );
-    this.hud.setResonanceBadge(badge);
+    this.exclusiveRun.refreshHudWeaponSlots();
   }
 
 
@@ -1792,32 +1780,6 @@ export class PlayScene extends Phaser.Scene {
         this.inputSource.setEnabled(false);
         break;
     }
-  }
-
-  /**
-   * NV-INTEG-FIX P0-2：专武选择装配（单一汇聚点）。
-   * 选择回调与 smoke/bench 默认路径共用：applyLoadout 开专武门控（⑦根因修复：原全仓无调用点，
-   * 8 专武恒 disabled）+ Q-b 伴灯共鸣通武 + 衍生技重建（EXCLUSIVE_TO_DERIVATIVE 键 = 选中者）
-   * + HUD 技名联动 + 守誓者（FQ-2 修女选圣铃）。
-   */
-  private applyExclusiveSelection(chosen: ExclusiveWeaponId): void {
-    this.currentExclusiveId = chosen;
-    const loadout = computeLoadout(this.heroId, chosen, HEROES[this.heroId].initialWeapon);
-    if (loadout) this.weaponSystem.applyLoadout(loadout);
-    // B5-W4 Q-b 伴灯：开局自带配对共鸣通武（GT-7 全额；同名不重复发放——与 Q-d 同名去重）
-    const treePair = resonancePairByExclusive(chosen);
-    if (this.treeApp?.mutations.companionWeapon && treePair && !this.ownedWeaponIds.includes(treePair.commonWeaponId)) {
-      this.ownedWeaponIds.push(treePair.commonWeaponId);
-      this.weaponSystem.unlockWeapon(treePair.commonWeaponId);
-    }
-    // B5-W4 衍生技装配（落选专武转化技）：重建控制器 + HUD 技名/图标联动
-    this.derivativeController = new DerivativeSkillController(EXCLUSIVE_TO_DERIVATIVE[chosen]);
-    this.hud.setSkillName(DERIVATIVE_SKILLS[EXCLUSIVE_TO_DERIVATIVE[chosen]].name);
-    // W-4 守誓者：修女选圣铃开局自带（FQ-2）
-    this.oathkeeper.setEnabled(this.heroId === 'hero_violet' && chosen === 'xw_bell');
-    // NV-INTEG-FIX P1：HUD 动态槽 + 共鸣徽记随选择联动
-    this.refreshHudWeaponSlots();
-    this.refreshResonanceBadge();
   }
 
   /** 暂停菜单刷新（PAUSED 进入/开关切换后同步 UI 状态） */
