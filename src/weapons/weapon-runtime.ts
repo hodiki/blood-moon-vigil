@@ -212,7 +212,9 @@ export function deriveWeaponParams(config: WeaponConfig, stacks: ClassUpgradeSta
 // ============================================================================
 // 语义（content-design-outline §6.4）：key_scope 射程 +15% / key_holy 范围 +15% /
 // key_tome 冷却 -10%（与专精疾射独立乘区，乘法叠加）/ key_silver 伤害 +12% /
-// key_pact 召唤数 +1 / key_bone 召唤存在 +20% / key_grail 范围持续 +25%。
+// key_pact 召唤数 +1 / key_grail 范围持续 +25%。
+// P2-5 语义修正（GDD R-6 FQ-3）：key_bone 改读「地面圣火（R-6 审判余焰）时长 +20%」——
+// 旧「召唤存在 +20%」消费口退役（EG-2 归档）；新消费点在 weapon-system.placeResonanceResidueAt。
 // 应用方式：在「类强化派生」之上再乘钥乘区（乘法叠加，不覆盖类强化）；空钥 = 恒等。
 
 /** A 类钥被动派生：射程（lifetime+range）×1.15 / 冷却 ×0.9 / 伤害 ×1.12 */
@@ -257,7 +259,8 @@ export function applyKeyPassivesToGround(
   };
 }
 
-/** D 类钥被动派生：召唤数 +1（上限 6）/ 存在 ×1.2 / 伤害 ×1.12 / 攻击节拍 ×0.9 */
+/** D 类钥被动派生：召唤数 +1（上限 6）/ 伤害 ×1.12 / 攻击节拍 ×0.9。
+ *  P2-5：key_bone 旧「存在 ×1.2」退役（EG-2）——lifetime 不再乘钥（GDD R-6 改地面火时长）。 */
 export function applyKeyPassivesToSummon(
   base: SummonDerivedParams,
   keys: KeyPassiveState,
@@ -265,7 +268,6 @@ export function applyKeyPassivesToSummon(
   return {
     ...base,
     count: Math.min(base.count + keys.summonCountBonus, 6),
-    lifetime: base.lifetime * keys.summonLifetimeMult,
     damage: base.damage * keys.damageMult,
     attackInterval: base.attackInterval * keys.cooldownMult,
   };

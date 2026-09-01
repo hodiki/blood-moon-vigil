@@ -534,10 +534,18 @@ export class WeaponSystem {
     placeResonanceTotem(this.resonanceTotems, x, y, this.lastNowSeconds, resonancePairByExclusive('xw_longbow')!.machine);
   }
 
-  /** B6-W4 P4 形态挂点：终审庭余焰登记（公共桥接） */
+  /** B6-W4 P4 形态挂点：终审庭余焰登记（公共桥接）。
+   *  P2-5：key_bone 兽骨图腾「地面火时长 +20%」（GDD R-6 FQ-3）在此消费——余焰 until ×groundFireDurationMult。 */
   placeResonanceResidueAt(x: number, y: number): void {
     if (!this.resonance.isAchieved('R6')) return;
-    onResonanceCrossExplode(this.resonanceCross, x, y, this.lastNowSeconds, resonancePairByExclusive('xw_cross')!.machine);
+    onResonanceCrossExplode(
+      this.resonanceCross,
+      x,
+      y,
+      this.lastNowSeconds,
+      resonancePairByExclusive('xw_cross')!.machine,
+      this.keyPassives.groundFireDurationMult,
+    );
   }
 
   /**

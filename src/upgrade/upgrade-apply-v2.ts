@@ -22,7 +22,7 @@ import {
 } from '@/config/balance';
 import { WEAPON_CONFIGS } from '@/config/balance';
 
-/** 被动钥数值效果派生（key_* 7 项，gdd-upgrade-pool-v2 §3.4；超武合成条件 2 由 hasKey 提供） */
+/** 被动钥数值效果派生（key_* 8 枚，gdd-upgrade-pool-v2 §3.4 + gdd-resonance §5；超武合成条件 2 由 hasKey 提供） */
 export interface KeyPassiveState {
   /** key_scope 武器射程 +15% */
   rangeMult: number;
@@ -34,8 +34,12 @@ export interface KeyPassiveState {
   damageMult: number;
   /** key_pact 召唤数 +1 */
   summonCountBonus: number;
-  /** key_bone 召唤存在 +20% */
-  summonLifetimeMult: number;
+  /**
+   * key_bone 兽骨图腾：地面火（圣火十诫 R-6 审判余焰）时长 +20%（GDD R-6 FQ-3 定稿）。
+   * P2-5 语义修正：旧「召唤存在 +20%」实现退役（EG-2 归档原则——消费口已拆除，
+   * 仅保留本字段新语义）；消费点 = weapon-system.placeResonanceResidueAt → 余焰登记 durationMult。
+   */
+  groundFireDurationMult: number;
   /** key_grail 范围持续 +25% */
   areaDurationMult: number;
   /** key_nail 葬仪铁钉：重击类冷却 −8%（B3 新增钥；重击类判定/消费留 B4 共鸣批） */
@@ -49,7 +53,7 @@ export function emptyKeyPassiveState(): KeyPassiveState {
     cooldownMult: 1,
     damageMult: 1,
     summonCountBonus: 0,
-    summonLifetimeMult: 1,
+    groundFireDurationMult: 1,
     areaDurationMult: 1,
     heavyCooldownMult: 1,
   };
@@ -61,7 +65,7 @@ const KEY_PASSIVE_MAP: Record<string, (s: KeyPassiveState) => void> = {
   key_tome: (s) => { s.cooldownMult = 0.9; },
   key_silver: (s) => { s.damageMult = 1.12; },
   key_pact: (s) => { s.summonCountBonus = 1; },
-  key_bone: (s) => { s.summonLifetimeMult = 1.2; },
+  key_bone: (s) => { s.groundFireDurationMult = 1.2; },
   key_grail: (s) => { s.areaDurationMult = 1.25; },
   key_nail: (s) => { s.heavyCooldownMult = 0.92; },
 };

@@ -28,14 +28,14 @@ function fullKeys(): KeyPassiveState {
 }
 
 describe('E4-S4 被动钥 7 项数值效果（content-design-outline §6.4 / gdd-upgrade-pool-v2 §3.4）', () => {
-  it('deriveKeyPassives：全 7 钥 → 射程 1.15 / 范围 1.15 / 冷却 0.9 / 伤害 1.12 / 召唤 +1 / 存在 1.2 / 持续 1.25', () => {
+  it('deriveKeyPassives：全 7 钥 → 射程 1.15 / 范围 1.15 / 冷却 0.9 / 伤害 1.12 / 召唤 +1 / 地面火 1.2 / 持续 1.25', () => {
     const k = fullKeys();
     expect(k.rangeMult).toBe(1.15);        // key_scope
     expect(k.areaRadiusMult).toBe(1.15);   // key_holy
     expect(k.cooldownMult).toBe(0.9);      // key_tome
     expect(k.damageMult).toBe(1.12);       // key_silver
     expect(k.summonCountBonus).toBe(1);    // key_pact
-    expect(k.summonLifetimeMult).toBe(1.2); // key_bone
+    expect(k.groundFireDurationMult).toBe(1.2); // key_bone（P2-5：GDD R-6 FQ-3 地面火时长）
     expect(k.areaDurationMult).toBe(1.25); // key_grail
   });
 
@@ -46,7 +46,7 @@ describe('E4-S4 被动钥 7 项数值效果（content-design-outline §6.4 / gdd
     expect(k.cooldownMult).toBe(1);
     expect(k.damageMult).toBe(1);
     expect(k.summonCountBonus).toBe(0);
-    expect(k.summonLifetimeMult).toBe(1);
+    expect(k.groundFireDurationMult).toBe(1);
     expect(k.areaDurationMult).toBe(1);
   });
 });
@@ -112,11 +112,11 @@ describe('C 类钥被动派生（key_holy/key_grail/key_tome/key_silver，gdd §
 });
 
 describe('D 类钥被动派生（key_pact/key_bone/key_silver/key_tome，gdd §3.4）', () => {
-  it('血蝠群：召唤 2→3 / 存在 12→14.4 / 伤害 6→6.72 / 攻击节拍 0.5→0.45', () => {
+  it('血蝠群：召唤 2→3 / 伤害 6→6.72 / 攻击节拍 0.5→0.45（P2-5：存在不再吃 key_bone，保持 12）', () => {
     const base = deriveSummonParams(WEAPON_CONFIGS.wpn_d_1, emptyClassUpgradeStacks());
     const s = applyKeyPassivesToSummon(base, fullKeys());
     expect(s.count).toBe(3);               // 2 + 1（key_pact）
-    expect(s.lifetime).toBeCloseTo(14.4, 6); // 12 × 1.2（key_bone）
+    expect(s.lifetime).toBeCloseTo(12, 6); // P2-5：key_bone 旧召唤寿命乘区退役 → 12 原值
     expect(s.damage).toBeCloseTo(6.72, 6);   // 6 × 1.12（key_silver）
     expect(s.attackInterval).toBeCloseTo(0.45, 6); // 0.5 × 0.9（key_tome）
     expect(s.respawnCd).toBe(5);           // 重召间隔不受钥影响

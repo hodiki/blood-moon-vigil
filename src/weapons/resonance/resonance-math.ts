@@ -255,15 +255,17 @@ export function createResonanceCrossState(): ResonanceCrossState {
   return { residues: [], totalDamage: 0 };
 }
 
-/** 十字落点残留余焰（每次落点回调） */
+/** 十字落点残留余焰（每次落点回调）。
+ *  P2-5（GDD R-6 FQ-3）：durationMult = key_bone 兽骨图腾「地面火时长 +20%」乘区（持钥 ×1.2，空钥恒等）。 */
 export function onResonanceCrossExplode(
   state: ResonanceCrossState,
   x: number,
   y: number,
   now: number,
   machine: Readonly<Record<string, number>>,
+  durationMult = 1,
 ): void {
-  state.residues.push({ x, y, until: now + (machine['residueDuration'] ?? 3) });
+  state.residues.push({ x, y, until: now + (machine['residueDuration'] ?? 3) * durationMult });
 }
 
 /** 余焰帧步进（8 伤/s；独立伤害段；随审判圣火通武强化放大——damageMultiplier 传入） */

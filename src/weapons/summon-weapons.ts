@@ -133,7 +133,8 @@ export class SummonWeaponBehavior implements WeaponBehavior {
     this.params = deriveSummonParams(this.config, stacks);
   }
 
-  /** E4-S4 钥被动（key_pact 召唤数 +1 / key_bone 存在 +20% / key_silver 伤害 ×1.12 / key_tome 节拍 ×0.9；
+  /** E4-S4 钥被动（key_pact 召唤数 +1 / key_silver 伤害 ×1.12 / key_tome 节拍 ×0.9；
+   *  P2-5：key_bone 旧「存在 +20%」退役（GDD R-6 FQ-3 改地面火时长，消费点在余焰登记）；
    *  D3 锁链独立吃 key_scope 射程 +15% / key_tome 冷却 -10%，gdd-upgrade-pool-v2 §3.4） */
   applyKeyPassives(keys: KeyPassiveState): void {
     this.params = applyKeyPassivesToSummon(deriveSummonParams(this.config, this.currentClassStacks), keys);

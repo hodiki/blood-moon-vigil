@@ -186,14 +186,14 @@ describe('E4-S4 被动钥 7（记录 + 数值效果派生）', () => {
     expect(derived.cooldownMult).toBe(1); // 未取 key_tome
   });
 
-  it('key_tome 冷却 -10% / key_bone 召唤存在 +20% / key_grail 持续 +25%', () => {
+  it('key_tome 冷却 -10% / key_bone 地面火时长 +20%（P2-5）/ key_grail 持续 +25%', () => {
     const state = new UpgradeState();
     state.addStack('key_tome', 1);
     state.addStack('key_bone', 1);
     state.addStack('key_grail', 1);
     const d = deriveKeyPassives(state);
     expect(d.cooldownMult).toBe(0.9);
-    expect(d.summonLifetimeMult).toBe(1.2);
+    expect(d.groundFireDurationMult).toBe(1.2);
     expect(d.areaDurationMult).toBe(1.25);
   });
 });

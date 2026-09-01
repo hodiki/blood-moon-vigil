@@ -86,7 +86,7 @@ export const UPGRADE_POOL: readonly UpgradePoolItem[] = [
   { id: 'key_tome', name: '月相秘典', type: 'numeric', tags: ['key'], desc: '冷却 -10%', maxStack: 1, cardKind: 'amber-gold', evolutionTarget: 'evo_totaleclipse' },
   { id: 'key_silver', name: '圣银弹丸', type: 'numeric', tags: ['key'], desc: '伤害 +12%', maxStack: 1, cardKind: 'amber-gold', evolutionTarget: 'evo_silverblast' },
   { id: 'key_pact', name: '血契印', type: 'mechanic', tags: ['key'], desc: '召唤数 +1', maxStack: 1, cardKind: 'blue-purple', evolutionTarget: 'evo_batstorm' },
-  { id: 'key_bone', name: '兽骨图腾', type: 'mechanic', tags: ['key'], desc: '召唤存在 +20%', maxStack: 1, cardKind: 'blue-purple', evolutionTarget: 'evo_packleader' },
+  { id: 'key_bone', name: '兽骨图腾', type: 'mechanic', tags: ['key'], desc: '地面圣火（审判余焰）时长 +20%', maxStack: 1, cardKind: 'blue-purple', evolutionTarget: 'evo_packleader' },
   { id: 'key_grail', name: '血祭圣杯', type: 'mechanic', tags: ['key'], desc: '范围持续 +25%', maxStack: 1, cardKind: 'blue-purple', evolutionTarget: 'evo_bloodsea' },
   // ---- 主动技强化 12（§3.5，按角色展开；各分支 1 次）----
   { id: 'up_a_cd_edmund', name: 'CD -25%（守夜人）', type: 'mechanic', tags: ['hero_edmund'], desc: '提灯闪耀 CD 20s→15s', maxStack: 1, cardKind: 'blue-purple' },
