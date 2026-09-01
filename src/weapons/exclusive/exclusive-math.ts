@@ -138,7 +138,7 @@ export function stepLantern(
   const base = EXCLUSIVE_WEAPONS.xw_lantern.params;
   const radius = machine['auraRadius'] ?? base.radius!;
   const tickDamage = base.damage!;
-  const tickInterval = base.interval!;
+  const tickInterval = machine['interval'] ?? base.interval!; // P0-7e：射速爆发窗口由装配层注入
   const slowPct = machine['slowPct'] ?? base.slowPct!;
   const orbitFlames = machine['orbitFlameCount'] ?? 0;
   const emberEnabled = (machine['emberMax'] ?? 0) > 0;
@@ -234,7 +234,7 @@ export function stepRevolver(
   tickReload(state.ammo, dt);
   state.fireTimer -= dt;
   if (state.fireTimer <= 0) {
-    state.fireTimer = base.interval!;
+    state.fireTimer = machine['interval'] ?? base.interval!; // P0-7e：射速爆发窗口由装配层注入
     const target = nearestAlive(enemies, player.x, player.y);
     if (target && consumeAmmo(state.ammo, now)) {
       result.events.push('fired');

@@ -12,7 +12,11 @@
  */
 
 import {
+  applyCompanionMachine,
+  convertHealToRevive,
   createOathkeeperState,
+  fillReviveProgress,
+  oathkeeperHealFull,
   oathkeeperTargetable,
   tickBite,
   tickResummon,
@@ -53,6 +57,45 @@ export class OathkeeperRuntime {
 
   get isEnabled(): boolean {
     return this.enabled;
+  }
+
+  /**
+   * P0-7a 质变卡 2（mc_bell_2）写回：转移 65% / 撕咬 14 / 墓碑 4 HP/s / 转化率 70%。
+   * 之前 applyCompanionMachine 全仓无调用点（质变卡只写专武 behavior）→ machine 恒空。
+   */
+  applyCompanionMachine(machine: Record<string, number>): void {
+    applyCompanionMachine(this.state, machine);
+  }
+
+  /**
+   * P0-7c 圣铃治疗同源落点：companion 阶段回 HP（返回实际回复量）；
+   * 墓碑阶段按转化率折算复活进度（GDD §4.4「修女治疗命中墓碑」）。
+   */
+  healCompanion(amount: number): number {
+    if (!this.enabled || amount <= 0) return 0;
+    const s = this.state;
+    if (s.phase === 'companion') {
+      const applied = Math.min(amount, s.maxHp - s.hp);
+      s.hp += applied;
+      return applied;
+    }
+    if (s.phase === 'tombstone') {
+      convertHealToRevive(s, amount);
+      return amount;
+    }
+    return 0;
+  }
+
+  /** P0-7b 安魂曲协同：立即回满（墓碑 = 复活进度充满） */
+  healFull(): void {
+    if (!this.enabled) return;
+    oathkeeperHealFull(this.state);
+  }
+
+  /** P0-7b 安魂曲协同：墓碑复活进度直接充满（显式语义，与 healFull 同果异名） */
+  fillReviveProgress(): void {
+    if (!this.enabled) return;
+    fillReviveProgress(this.state);
   }
 
   /** targeting.pickTarget 消费形状（墓碑/消散/未启用 = null → 敌回落玩家） */

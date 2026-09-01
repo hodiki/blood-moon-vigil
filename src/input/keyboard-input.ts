@@ -20,8 +20,11 @@ export class KeyboardInput implements InputSource {
   /** M1b 主动技：Space（主键）+ Shift（备用键，防 Space 与浏览器滚动冲突，pillars §6.3） */
   private readonly skill1: Phaser.Input.Keyboard.Key;
   private readonly skill2: Phaser.Input.Keyboard.Key;
+  /** P0-1 圣物专用键（Q；GDD §3.4/§7：与衍生技按键分离，移动端为 HUD 第二技能钮） */
+  private readonly relicKey: Phaser.Input.Keyboard.Key;
   private pauseCb: (() => void) | null = null;
   private skillCb: (() => void) | null = null;
+  private relicCb: (() => void) | null = null;
   private enabled = true;
   /**
    * ux-spec §3 防误触 ②④ 精确化（TASK-21 Bug1）：
@@ -52,10 +55,14 @@ export class KeyboardInput implements InputSource {
     // M1b 主动技：Space/Shift 触发（JustDown；相位门禁在 PlayScene.tryCastActiveSkill）
     this.skill1 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.skill2 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+    // P0-1 圣物：Q（第二技能键；GDD §7「专用按键」）——桌面与 Space/Shift 互不干扰
+    this.relicKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
     // 暂停检测独立于 GamePhase（PAUSED 态也须响应恢复键，P1/P2）
     scene.events.on(Phaser.Scenes.Events.UPDATE, this.checkPause, this);
     // M1b 主动技：释放请求独立于 GamePhase（相位门禁在场景层，Pillars §6.6）
     scene.events.on(Phaser.Scenes.Events.UPDATE, this.checkSkill, this);
+    // P0-1 圣物键：与技能键同节律（相位门禁在场景层）
+    scene.events.on(Phaser.Scenes.Events.UPDATE, this.checkRelic, this);
     // fresh keydown 清除「需重新按下」标记（按轴路由；恢复后 ≥50ms 生效，TASK-21 Bug1）
     const movementKeys: Array<{ key: Phaser.Input.Keyboard.Key; axis: MoveAxis }> = [
       { key: this.keys.up, axis: 'up' },
@@ -87,6 +94,12 @@ export class KeyboardInput implements InputSource {
     if (Phaser.Input.Keyboard.JustDown(this.skill1) || Phaser.Input.Keyboard.JustDown(this.skill2)) {
       this.skillCb();
     }
+  }
+
+  /** P0-1 圣物：Q 键按下瞬间触发（100ms 防抖/每局每枚 1 次由 RelicDirector 门控） */
+  private checkRelic(): void {
+    if (!this.relicCb) return;
+    if (Phaser.Input.Keyboard.JustDown(this.relicKey)) this.relicCb();
   }
 
   getMove(): Vec2 {
@@ -121,6 +134,11 @@ export class KeyboardInput implements InputSource {
     this.skillCb = cb;
   }
 
+  /** P0-1 圣物：桌面注册释放回调（Q JustDown） */
+  onRelicSkill(cb: () => void): void {
+    this.relicCb = cb;
+  }
+
   onTap(_cb: (x: number, y: number) => void): void {
     // 桌面键盘无战斗内点按（ADR-002 仅预留接口）
   }
@@ -140,5 +158,6 @@ export class KeyboardInput implements InputSource {
   destroy(): void {
     this.scene.events.off(Phaser.Scenes.Events.UPDATE, this.checkPause, this);
     this.scene.events.off(Phaser.Scenes.Events.UPDATE, this.checkSkill, this);
+    this.scene.events.off(Phaser.Scenes.Events.UPDATE, this.checkRelic, this);
   }
 }

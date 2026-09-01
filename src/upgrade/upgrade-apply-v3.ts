@@ -32,6 +32,15 @@ export interface UpgradeV3WriteTargets extends UpgradeV2WriteTargets {
     /** 通用通武强化独立乘区（up_w_g1 射程/弹速 +10%×stack / up_w_g2 范围/持续 +10%×stack） */
     setCommonEnhancement(e: { rangeMult: number; areaMult: number }): void;
   };
+  /**
+   * P0-7a 守誓者（伴生实体）machine 写回：mc_bell_2「守誓誓约」的
+   * transferPct/biteDamage/tombHealPerSec/reviveConvertRate 只有一半落在专武行为上，
+   * 另一半属守誓者状态机——旧实现无调用点（`applyCompanionMachine` 全仓零引用）。
+   * 可选：非修女路线不注入。
+   */
+  companion?: {
+    applyCompanionMachine(machine: Record<string, number>): void;
+  };
 }
 
 /** 质变卡 id → machine 参数（MUTATION_CARDS 唯一来源） */
@@ -65,6 +74,8 @@ export function applyUpgradeByIdV3(
     if (machine) {
       state.addStack(upgradeId, 1);
       targets.exclusive.applyMutationCard(machine);
+      // P0-7a：同一份 machine 同步写守誓者状态机（mc_bell_2 的伴生参数生效）
+      targets.companion?.applyCompanionMachine(machine);
     }
     return {};
   }

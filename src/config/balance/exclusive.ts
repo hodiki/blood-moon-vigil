@@ -328,8 +328,9 @@ export const RELICS: Record<RelicId, RelicConfig> = {
   },
   relic_silver_tide: {
     id: 'relic_silver_tide', name: '银潮汐', powerTag: 'SILVER', pools: ['boss'],
-    params: { duration: 8 },
-    effect: '8s 内所有攻击附带银质灼烧演出（对血族类生成银光爆点），落场银雨——纯演出窗口，伤害加成不进预算（⚠ 数值锚缺口：GDD 未列伤害值，标记待模拟）',
+    // P0-1：GDD 尾章未列伤害值（KNOWN-GAP）→ 工程锚「落场银雨」220px / 6 伤/s / 8s（须守住 <5% 红线）
+    params: { duration: 8, radius: 220, burnDps: 6 },
+    effect: '8s 落场银雨（220px 银质灼烧 6 伤/s，对血族类生成银光爆点）+ 全场攻击附带银质演出——伤害段不进 DPS 预算主线（<5% 红线）',
     lore: '守夜驻地银炉最后一炉银，今夜铸成弹雨（§6.4）',
   },
   relic_wolf_spirit: {

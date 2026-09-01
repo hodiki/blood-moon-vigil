@@ -19,7 +19,7 @@ import Phaser from 'phaser';
 import { GameState, GamePhase } from '@/core/game-state';
 import { resetGameEvents, GameEvents, GameEvent } from '@/core/events';
 import { getRuntimeConfig, type RuntimeConfig } from '@/config/runtime-config';
-import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
+import { BOSS, BOSSES, ENEMY_CONFIGS, MOON_AVATAR, PALETTE, HEROES, MAP_CONFIGS, WEAPON_CONFIGS, FX, HERO_EXCLUSIVE_PAIRS, EXCLUSIVE_TO_DERIVATIVE, EXCLUSIVE_WEAPONS, RELICS, TALENT_S3_EMBER, DERIVATIVE_SKILLS, type EnemyKindId, type HeroId, type MapId, type WeaponId, type UpgradeId, type EnemyId, type BossId, type ExclusiveWeaponId } from '@/config/balance';
 import { computeLoadout } from '@/weapons/loadout';
 import { resonanceBadgeState } from '@/weapons/resonance/resonance-engine';
 import { getSelectedHero, getSelectedMap } from '@/config/session-selection';
@@ -90,6 +90,21 @@ import { DEFAULT_NARRATIVE_BINDINGS } from '@/narratives/narrative-bindings';
 import { SHOW_OPEN_BANNER, prologueScreensForMap } from '@/narratives/narratives';
 import { PrologueOverlay, createPrologueOverlay } from '@/ui/prologue-overlay';
 import { ExclusiveSelectOverlay } from '@/ui/exclusive-select-overlay';
+import { RelicDirector } from '@/relics/relic-runtime';
+import type { RelicEffectContext } from '@/relics/relic-engine';
+import { hitEnemy } from '@/combat/damage';
+import type { ExclusiveWeaponBehavior } from '@/weapons/exclusive/exclusive-behaviors';
+
+/**
+ * P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：GDD §4.7 未给攻速数值 → 工程锚 ×1.25（待模拟校准）。
+ * 与血月狂化（§4.6：伤害 +40% / 移速 +15% / 挥击不耗 HP）必须分列，禁止串台。
+ */
+const WOLF_FRENZY_DURATION_SECONDS = 4;
+const WOLF_FRENZY_ATTACK_SPEED_MULT = 1.25;
+/** P0-1 祭坛占位：局内 150s 落一次可交互点（最小实现；交互半径 60px，ALTAR_CHANCE 0.5） */
+const ALTAR_SPAWN_SECONDS = 150;
+const ALTAR_INTERACT_RADIUS = 60;
+const ALTAR_OFFSET_PX = 260;
 
 /**
  * E4-S5 基准：20× 时缩放 —— 36 真实秒 ≈ 720 局时秒（2 局；6:00 Boss 收束覆盖）。
@@ -243,6 +258,21 @@ export class PlayScene extends Phaser.Scene {
   private exclusiveSelect!: ExclusiveSelectOverlay;
   /** M3 结算日志条：本局开局图鉴已解锁数（结算 delta = 局终 snapshot − 开局数，codex-ui-spec §6） */
   private codexUnlockedAtStart = 0;
+  /** P1-14 衍生技施放目标集（常驻实例：蓄力期每帧刷新，避免 1.2s 后打旧快照） */
+  private derivativeCastEnemies: Enemy[] = [];
+  /** P1-14 圣辉审判治疗光环持续段（5s × 3 HP/s；旧实现一次性结算） */
+  private judgmentAura: { perSec: number; until: number } | null = null;
+  /** P1-14 月啸冲锋「加尔文狂化 4s（攻速）」窗口（与血月狂化 6s 分列，不再串台） */
+  private frenzyUntil = -Infinity;
+  /** P0-1 圣物局内运行时（Boss 渠道保底 1 + 祭坛概率第 2；CD 240s / 每枚 1 次） */
+  private relics = new RelicDirector();
+  /** P0-1 祭坛占位（地图事件最小实现：单次交互点，走 ALTAR_CHANCE 概率第 2 枚） */
+  private altar: { x: number; y: number; marker: Phaser.GameObjects.Arc | null; used: boolean } | null = null;
+  /** P0-1 银潮汐落场银雨（8s 灼烧场；伤害段不进 DPS 预算主线） */
+  private silverRain: { x: number; y: number; radius: number; dps: number; until: number } | null = null;
+  /** P0-1 十二灯誓约：承伤 −20% 窗口（到期从 PlayerStats 减伤池扣回） */
+  private relicDrUntil = 0;
+  private relicDrAmount = 0;
 
   // 冒烟自检状态
   private smokeStartedAt = 0;
@@ -296,6 +326,15 @@ export class PlayScene extends Phaser.Scene {
     this.firstBossKillsThisRun = 0;
     this.avatarKillsThisRun = 0;
     this.codexToastPending = false;
+    // P0-1 圣物层 per-run 复位（scene.restart 复用实例；祭坛标记要显式销毁防残留在场）
+    this.relics.reset();
+    this.altar?.marker?.destroy();
+    this.altar = null;
+    this.silverRain = null;
+    // P1-14 衍生技持续段 per-run 复位（审判光环 / 月啸狂化 / 蓄力目标集）
+    this.judgmentAura = null;
+    this.frenzyUntil = -Infinity;
+    this.derivativeCastEnemies.length = 0;
 
     // M3 序章屏：初始相位 PROLOGUE（世界冻结、不开始计时/生成器；update() RUNNING 短路保证）
     this.state = new GameState(GamePhase.PROLOGUE);
@@ -361,6 +400,11 @@ export class PlayScene extends Phaser.Scene {
     // NV-INTEG-FIX ③：原条件 ownedWeaponIds.includes('xw_bell') 在 create 期恒 false（圣铃开局
     // 自带但专武入册在此之后）→ 启用判定改为「修女 && 选中圣铃」，随专武选择结果联动（见下）。
     this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y);
+    // P0-7c 圣铃治疗同源落点：每 8s 铃响治疗「自身 **与** 守誓者」8 HP（旧实现只写玩家 HP）。
+    // 挂在行为层 onHeal 上（与 healSink 同量同源）；未启用守誓者时 healCompanion 内部短路。
+    this.exw('xw_bell').onHeal = (amount: number) => {
+      this.oathkeeper.healCompanion(amount);
+    };
     // W-14：宝藏落地监听（实体由 PlayScene 持有；拾取 = MN-21 offer 直发）
     GameEvents.on(GameEvent.TreasureDropped, (args: unknown) => {
       const p = args as { x: number; y: number };
@@ -432,6 +476,10 @@ export class PlayScene extends Phaser.Scene {
           behavior.applyMutationCard(machine);
         },
       },
+      // P0-7a：质变卡 machine 同步写守誓者状态机（mc_bell_2 伴生参数；非修女路线运行时丢弃）
+      companion: {
+        applyCompanionMachine: (machine) => this.oathkeeper.applyCompanionMachine(machine),
+      },
       // B3 v3 扩展：衍生技强化（up_d_* 质变级效果；运行时形态消费随 B5 衍生技装配收拢）
       derivative: {
         applyDerivativeUpgrade: (upId) => this.derivativeController.applyDerivativeUpgrade(upId),
@@ -457,6 +505,8 @@ export class PlayScene extends Phaser.Scene {
       skillIconFrame: `skill-${this.heroId.replace('hero_', '')}`,
       onPauseToggle: () => this.togglePause(),
       onActiveSkill: () => this.tryCastActiveSkill(), // 移动端技能按钮 → 同一释放入口
+      // P0-1 圣物：移动端第二技能钮（桌面走 Q 键，见 inputSource.onRelicSkill）
+      onRelicSkill: () => this.tryUseRelic(),
     });
     if (this.cfg.isMobile) this.hud.setSkillCharges(this.derivativeController.chargeCount);
     // NV-INTEG-FIX P1：HUD 动态武器槽初始同步（初始通武 + Q-b/Q-d 预发 + 默认专武）
@@ -492,7 +542,9 @@ export class PlayScene extends Phaser.Scene {
     });
     if (this.isSmoke || this.isBench) {
       // 冒烟（?smoke=1：60 帧内须 RUNNING 判据）/ 基准（?bench=1：36s 连续 20× 采样）：
-      // 跳过序章与专武选择直接进战斗（确定性：默认角色对第一把）
+      // 跳过序章与专武选择 UI 直接进战斗；**装配照走默认角色对第一把**（P1-1：
+      // 旧实现跳过 applyExclusiveSelection → 8 专武恒 disabled，QA 会误判「专武未做」）。
+      this.applyExclusiveSelection(HERO_EXCLUSIVE_PAIRS[this.heroId][0]);
       this.state.set(GamePhase.RUNNING);
       if (SHOW_OPEN_BANNER) this.narratives.show('map-open', { mapId: this.mapId });
     } else {
@@ -584,6 +636,8 @@ export class PlayScene extends Phaser.Scene {
     this.inputSource.onPauseToggle(() => this.togglePause());
     // M1b 主动技：桌面 Space/Shift + 移动端按钮统一走 tryCastActiveSkill（相位门禁在场景层）
     this.inputSource.onActiveSkill(() => this.tryCastActiveSkill());
+    // P0-1 圣物：独立键（桌面 Q / 移动端第二技能钮）→ tryUseRelic
+    this.inputSource.onRelicSkill(() => this.tryUseRelic());
 
     // 防泄漏：场景关闭时清事件总线 + 输入
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, this.onShutdown, this);
@@ -636,8 +690,11 @@ export class PlayScene extends Phaser.Scene {
     tickPlayerAnim(this.player);
     // E4-S2 血月狂化：buff 生效/失效同步（B5-W4 起 = 血月狂化衍生技增益；接触光环随旧技退役移除）
     this.updateRage(dt, now);
-    // B5-W4 衍生技：CD 递减 + 移动端按钮冷却转圈（HUD 只读展示）
-    this.derivativeController.update(dt);
+    // B5-W4 衍生技：CD 递减 + 蓄力结算 + 移动端按钮冷却转圈（HUD 只读展示）
+    //    P1-14：蓄力技（月痕狙击 1.2s）在蓄满帧由 update 返回结果，走与瞬发相同的收口
+    if (this.derivativeController.chargePhase === 'charging') this.refreshDerivativeEnemies();
+    const chargedResult = this.derivativeController.update(dt, now);
+    if (chargedResult) this.applyDerivativeResult(chargedResult, now);
     if (this.cfg.isMobile) {
       this.hud.setSkillCooldown(this.derivativeController.cooldown, this.derivativeController.cdSeconds);
       this.hud.setSkillCharges(this.derivativeController.chargeCount);
@@ -661,6 +718,11 @@ export class PlayScene extends Phaser.Scene {
     });
     // W-1 特殊行为 AI（光环攻速/侍僧召唤/猎手冲锋；冲锋速度覆盖在 updateMovement 之后）
     this.aiDirector.update(dt, now, this.player, this.oathkeeper.friendlyTarget());
+    // P0-1 圣物：祭坛占位交互 + HUD CD 环（每帧刷新；数值变化 <0.5% 时 HUD 内部跳过重绘）
+    this.stepAltar(dt, now);
+    this.syncRelicHud(now);
+    // P0-1 银潮汐落场银雨 + P1-14 审判光环持续段
+    this.stepPersistentFields(dt, now);
     // W-4 守誓者步进（跟随/墓碑/重召唤/撕咬）+ 血渍区/幻影到期
     this.stepCompanion(dt, now);
     // W-16 精英技能运行时（五精英 + MN-20 打断；技能伤走 player.hurt 独立结算）
@@ -759,6 +821,8 @@ export class PlayScene extends Phaser.Scene {
       this.bossSkills = null;
     }
     this.stats.recordBossDefeated(this.spawner.elapsedSeconds);
+    // P0-1「Boss 击杀必掉 1 枚」保底补齐（Boss 出场已发则此处 no-op）
+    if (this.relics.grantBossGuaranteed()) this.syncRelicHud(this.time.now / 1000);
     // E4-S6 图鉴 progress：首通地图 → 事件条目（墓地→起源/守夜会；教堂→血廷；狼穴→兽群）
     if (this.saveData) {
       const isNewClear = recordMapCleared(this.saveData, this.mapId);
@@ -833,7 +897,117 @@ export class PlayScene extends Phaser.Scene {
     return this.player.hurt(remaining, now);
   }
 
-  /** W-4：守誓者步进 + 血渍减速区 + 月影幻影到期 */
+  /**
+   * P0-1 圣物释放入口（桌面 Q / 移动端第二技能钮 → 同一入口；相位门禁在场景层）。
+   * 取第一枚可用（未用过 + CD 就绪）→ useRelic（used 置位 + CD 240s + 效果结算）。
+   */
+  private tryUseRelic(): void {
+    if (this.state.get() !== GamePhase.RUNNING) return;
+    const now = this.time.now / 1000;
+    const id = this.relics.tryUse(now, this.buildRelicEffectContext(now));
+    if (!id) return;
+    this.syncRelicHud(now);
+    // 演出（≥1.5s 全屏级；本批用现有特效层做 1.5s 级可见反馈，精致化归 B6 表现批）
+    this.fx.lanternFlash(this.player.x, this.player.y, 260);
+    if (RELICS[id].powerTag === 'BEAST') this.fx.rageBurst(this.player.x, this.player.y);
+  }
+
+  /** P0-1 圣物效果上下文（敌集合 + 伤害/回血/减伤/银雨端口；走唯一伤害入口 hitEnemy） */
+  private buildRelicEffectContext(now: number): RelicEffectContext {
+    const enemies: Array<{ readonly active: boolean; hp: number }> = [];
+    this.enemyPool.eachActive((e) => enemies.push(e));
+    return {
+      player: { x: this.player.x, y: this.player.y },
+      enemies: enemies as unknown as RelicEffectContext['enemies'],
+      healSink: (amount: number) => {
+        const applied = this.player.stats.heal(amount);
+        if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      },
+      damageReductionSink: (pct, duration) => {
+        this.player.stats.addDamageReduction(pct);
+        this.relicDrUntil = now + duration;
+        this.relicDrAmount = pct;
+      },
+      damageSink: (target, amount) => {
+        const before = (target as { hp: number }).hp;
+        hitEnemy(target as unknown as { hp: number; kill(): void }, amount, now);
+        this.stats.recordRelicDamage(Math.max(0, before - (target as { hp: number }).hp));
+      },
+      // P0-1 银潮汐落场银雨（GDD 尾章 #4；禁止空技能）
+      silverRainSink: (radius, dps, duration) => {
+        this.silverRain = { x: this.player.x, y: this.player.y, radius, dps, until: now + duration };
+      },
+    };
+  }
+
+  /** P0-1 HUD 同步（CD 环 + 剩余次数 1~2；未持有圣物 = 隐藏） */
+  private syncRelicHud(now: number): void {
+    const slot = this.relics.nextUsableAt(now) ?? this.relics.slotsAt(now)[0] ?? null;
+    this.hud.setRelic(slot ? { name: slot.name, cdRemaining: slot.cdRemaining, cdSeconds: slot.cdSeconds } : null, this.relics.usesLeft());
+  }
+
+  /** P0-1 祭坛占位：局内一次性可交互点（ALTAR_CHANCE 概率第 2 枚；不足 = 祭坛冷熄） */
+  private stepAltar(dt: number, now: number): void {
+    void dt;
+    if (this.altar) {
+      if (this.altar.used) return;
+      const near = Math.hypot(this.player.x - this.altar.x, this.player.y - this.altar.y) <= ALTAR_INTERACT_RADIUS;
+      if (!near) return;
+      this.altar.used = true;
+      this.altar.marker?.destroy();
+      this.altar.marker = null;
+      const rolled = this.relics.interactAltar();
+      // 祭坛占位无文本表（叙事句归内容批）：命中 = 金光爆点 + HUD 出槽，未中 = 冷熄（无反馈）
+      if (rolled.granted && rolled.relic) this.fx.levelUpBurst(this.altar.x, this.altar.y);
+      this.syncRelicHud(now);
+      return;
+    }
+    if (this.spawner.elapsedSeconds < ALTAR_SPAWN_SECONDS) return;
+    const cfg = MAP_CONFIGS[this.mapId];
+    const angle = this.spawner.elapsedSeconds % (Math.PI * 2);
+    const x = Math.max(40, Math.min(cfg.width - 40, this.player.x + Math.cos(angle) * ALTAR_OFFSET_PX));
+    const y = Math.max(40, Math.min(cfg.height - 40, this.player.y + Math.sin(angle) * ALTAR_OFFSET_PX));
+    const marker = this.add.circle(x, y, 26, 0x54e6c9, 0.28);
+    marker.setStrokeStyle(2, 0x54e6c9);
+    marker.setDepth(20);
+    this.altar = { x, y, marker, used: false };
+  }
+
+  /** P0-1 银潮汐落场银雨 + P1-14 审判光环：持续段伤害/治疗（1s 结算节拍，工程锚） */
+  private stepPersistentFields(dt: number, now: number): void {
+    // 审判光环（圣辉审判衍生技：5s × 3 HP/s，跟随玩家）
+    if (this.judgmentAura) {
+      if (now >= this.judgmentAura.until) this.judgmentAura = null;
+      else {
+        const applied = this.player.stats.heal(this.judgmentAura.perSec * dt);
+        if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      }
+    }
+    // 银雨（银潮汐圣物：8s 灼烧场；伤害计入圣物占比遥测，红线 <5%）
+    if (this.silverRain) {
+      if (now >= this.silverRain.until) this.silverRain = null;
+      else {
+        const field = this.silverRain;
+        const rSq = field.radius * field.radius;
+        this.enemyPool.eachActive((e) => {
+          if (!e.active || e.hp <= 0) return;
+          const dx = e.x - field.x;
+          const dy = e.y - field.y;
+          if (dx * dx + dy * dy > rSq) return;
+          const before = e.hp;
+          hitEnemy(e as unknown as { hp: number; kill(): void }, field.dps * dt, now);
+          this.stats.recordRelicDamage(Math.max(0, before - e.hp));
+          this.fx.orbitHit(e.x, e.y, now); // 银光爆点（GDD 尾章「对血族类生成银光爆点」演出）
+        });
+      }
+    }
+    // 十二灯誓约承伤减免窗口到期复位（RELIC 效果由减伤池承载）
+    if (this.relicDrUntil > 0 && now >= this.relicDrUntil) {
+      this.relicDrUntil = 0;
+      this.player.stats.addDamageReduction(-this.relicDrAmount);
+      this.relicDrAmount = 0;
+    }
+  }
   private stepCompanion(dt: number, now: number): void {
     // 守誓者（撕咬目标 = 敌池最近敌；咬死走 Enemy.kill 全链路）
     const biteTargets: Array<{ x: number; y: number; hp: number; kill(): void }> = [];
@@ -1012,6 +1186,8 @@ export class PlayScene extends Phaser.Scene {
     }
     // TASK-28：Boss 出场特效 —— 猩红金冲击环 + 金点爆发 + 屏幕震动（移动端震动关闭）
     this.fx.bossEntrance(bx, by);
+    // P0-1 圣物保底 1 枚：Boss 渠道发牌（进 Boss 战即可释放；详见 RelicDirector.grantBossGuaranteed 的偏离说明）
+    if (this.relics.grantBossGuaranteed()) this.syncRelicHud(now);
     if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
     // M3 叙事：Boss 登场按 bossId 分句（spec §5/§6 bottom-banner；narrative-bindings 路由）
     GameEvents.emit(GameEvent.BossSpawned, { bossHp: boss.hp, bossId: MAP_CONFIGS[this.mapId].boss });
@@ -1143,39 +1319,107 @@ export class PlayScene extends Phaser.Scene {
   private tryCastActiveSkill(): void {
     if (this.state.get() !== GamePhase.RUNNING) return;
     const now = this.time.now / 1000;
-    const enemies: Enemy[] = [];
-    this.enemyPool.eachActive((e) => enemies.push(e));
+    const result = this.derivativeController.tryCast(now, this.buildDerivativeCastContext());
+    if (result) this.applyDerivativeResult(result, now);
+  }
+
+  /**
+   * 专武行为的扩展型访问（WeaponBehavior 基接口只有 setEnabled/update，
+   * 而 onHeal / applyFireRateBurst / applyMutationCard 属 ExclusiveWeaponBehavior 专有）。
+   */
+  private exw(id: import('@/config/balance').ExclusiveWeaponId): ExclusiveWeaponBehavior<unknown> {
+    return this.weaponSystem.exclusiveBehaviors[id] as unknown as ExclusiveWeaponBehavior<unknown>;
+  }
+
+  /**
+   * 衍生技施放上下文（瞬发与蓄力按下共用同一份）。
+   * player 为**实时取值的 getter 形状**：月痕狙击 1.2s 蓄力（P1-14）在蓄满时才结算，
+   * 按下瞬间的坐标快照会让巨矢从旧位置飞出；enemies 数组为常驻实例，蓄力期间每帧刷新。
+   */
+  private buildDerivativeCastContext(): Omit<import('@/active-skill/derivative/derivative-skills').DerivativeCastContext, 'now'> {
+    const scene = this;
+    this.refreshDerivativeEnemies();
     // Q-b/Q-d 场景下左轮可能已在手（弹巢引用给破旧提灯技补满+无限弹）
     let ammo: import('@/weapons/ammo').AmmoState | undefined;
     if (this.ownedWeaponIds.includes('xw_revolver' as unknown as WeaponId)) {
       const revolver = this.weaponSystem.exclusiveBehaviors.xw_revolver as unknown as { getState(): { ammo: import('@/weapons/ammo').AmmoState } };
       ammo = revolver.getState().ammo;
     }
-    const result = this.derivativeController.tryCast(now, {
-      player: { x: this.player.x, y: this.player.y, hp: this.player.stats.hp, maxHp: this.player.stats.maxHp },
-      enemies: enemies as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget[],
+    return {
+      player: {
+        get x() { return scene.player.x; },
+        get y() { return scene.player.y; },
+        get hp() { return scene.player.stats.hp; },
+        get maxHp() { return scene.player.stats.maxHp; },
+      },
+      enemies: this.derivativeCastEnemies as unknown as import('@/weapons/exclusive/exclusive-math').ExclusiveTarget[],
       healSink: (h) => {
         const applied = this.player.stats.heal(h);
         if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp });
+      },
+      // P0-7b 安魂曲协同：守誓者回满 / 墓碑复活进度充满（旧实现不传 companion → 协同段从不执行）
+      companion: {
+        healFull: () => this.oathkeeper.healFull(),
+        fillReviveProgress: () => this.oathkeeper.fillReviveProgress(),
       },
       ammo,
       // B6-W4 P4 形态挂点：贯月审判图腾 / 终审庭余焰 → R-4/R-6 持续段（WeaponSystem 桥接）
       totemSink: (x, y) => this.weaponSystem.placeResonanceTotemAt(x, y),
       residueSink: (x, y) => this.weaponSystem.placeResonanceResidueAt(x, y),
-    });
-    if (!result) return;
+      // P1-14 审判光环：5s × 3 HP/s 改成持续段（旧实现一次性结算 3 HP）
+      auraSink: (perSec, duration) => {
+        this.judgmentAura = { perSec, until: this.time.now / 1000 + duration };
+      },
+      // P0-7e 射速爆发：4s ×1.5 落到当前在手的专武攻击间隔（旧实现只 push 事件）
+      fireRateSink: (mult, duration) => {
+        const until = this.time.now / 1000 + duration;
+        // 仅提灯/左轮（同源圣徒组）消费射速爆发；其余专武无「射速」语义
+        for (const id of ['xw_lantern', 'xw_revolver'] as const) {
+          const behavior = this.exw(id);
+          if (behavior.isEnabled) behavior.applyFireRateBurst(mult, until);
+        }
+      },
+    };
+  }
+
+  /** 蓄力期目标集刷新（月痕狙击 1.2s 窗口内敌会移动/死亡/新生） */
+  private refreshDerivativeEnemies(): void {
+    this.derivativeCastEnemies.length = 0;
+    this.enemyPool.eachActive((e) => this.derivativeCastEnemies.push(e));
+  }
+
+  /** 衍生技结算统一收口（瞬发返回 + 蓄力完成返回共用；遥测/表现/buff 全在此） */
+  private applyDerivativeResult(result: import('@/active-skill/derivative/derivative-skills').DerivativeCastResult, now: number): void {
     this.stats.recordActiveSkillCast();
     // B6-W5 遥测：衍生技伤害累计 + 占比分母
     this.stats.recordDerivativeDamage(result.damageDealt);
     this.stats.recordTotalDamage(result.damageDealt);
     this.player.beginSkillPose();
-    // 血月狂化衍生技：RageBuff 增益（伤害 +40% / 移速 +15%，GDD §4.6；旧接触光环随旧技退役）
+    // 血月狂化衍生技（dv_blood_rage）：6s 伤害 +40% / 移速 +15% / 挥击不耗 HP（GDD §4.6）
     if (result.events.includes('rage')) {
       this.rage.apply(now, 6);
       this.player.stats.setRageBonus(0.4);
       this.player.stats.rageSpeedPct = 0.15;
       this.fx.rageBurst(this.player.x, this.player.y);
       this.player.setScale(FX.SKILL_RAGE_SCALE);
+    }
+    // P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：与血月狂化分两个 buff id，不吃伤害/移速加成
+    if (result.events.includes('wolfFrenzy')) {
+      this.frenzyUntil = now + WOLF_FRENZY_DURATION_SECONDS;
+      for (const id of ['xw_axe', 'xw_horn'] as const) {
+        const behavior = this.exw(id);
+        if (behavior.isEnabled) behavior.applyFireRateBurst(WOLF_FRENZY_ATTACK_SPEED_MULT, this.frenzyUntil);
+      }
+      this.fx.rageBurst(this.player.x, this.player.y);
+    }
+    // P1-14 血影突袭：落到「最密方向」终点（旧实现不位移，语义缺失）
+    if (result.dash) {
+      const cfg = MAP_CONFIGS[this.mapId];
+      this.player.setPosition(
+        Math.max(0, Math.min(cfg.width, result.dash.x)),
+        Math.max(0, Math.min(cfg.height, result.dash.y)),
+      );
+      this.fx.bloodDash(this.player.x, this.player.y, result.dash.dirX, result.dash.dirY, result.dash.distance);
     }
     // 通用施法表现：技能环（B6 逐技演出细化）
     const frames = SKILL_RING_FRAMES[this.heroId as keyof typeof SKILL_RING_FRAMES];
@@ -1194,10 +1438,17 @@ export class PlayScene extends Phaser.Scene {
       stats.setRageBonus(0.4);
       stats.rageSpeedPct = 0.15;
       this.player.setScale(FX.SKILL_RAGE_SCALE);
+      // P0-7d：狂化窗口内巨斧挥击不耗 HP（GDD §4.6）——写到 behavior machine 的
+      // selfHpCost=0（stepAxe 读 machine 覆写），窗口结束由下方失效分支复位。
+      this.exw('xw_axe').applyMutationCard({ selfHpCost: 0 });
     } else if (!active && stats.rageBonusMultiplier !== 0) {
       stats.setRageBonus(0);
       stats.rageSpeedPct = 0;
       this.player.setScale(1);
+      // 复位到基础自损（EXCLUSIVE_WEAPONS.xw_axe.params.selfHpCost = 2）
+      this.exw('xw_axe').applyMutationCard({
+        selfHpCost: EXCLUSIVE_WEAPONS.xw_axe.params.selfHpCost ?? 2,
+      });
     }
   }
 

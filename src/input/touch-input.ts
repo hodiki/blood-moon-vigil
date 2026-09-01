@@ -30,6 +30,8 @@ export class TouchInput implements InputSource {
   private tapCb: ((x: number, y: number) => void) | null = null;
   /** M1b 主动技：移动端由 DOM 技能按钮 notify 触发（按钮在 HUD，经此回调进同一入口） */
   private skillCb: (() => void) | null = null;
+  /** P0-1 圣物释放回调（移动端由 HUD 第二技能钮触发） */
+  private relicCb: (() => void) | null = null;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -119,6 +121,16 @@ export class TouchInput implements InputSource {
   /** M1b 主动技：HUD 技能按钮点按 → 触发释放请求（相位门禁在 PlayScene.tryCastActiveSkill） */
   notifyActiveSkill(): void {
     this.skillCb?.();
+  }
+
+  /** P0-1 圣物：移动端第二技能钮由 HUD 直接接线（本适配器仅保留回调位，保持双端接口一致） */
+  onRelicSkill(cb: () => void): void {
+    this.relicCb = cb;
+  }
+
+  /** P0-1 圣物：HUD 圣物钮点按 → 触发释放请求（相位门禁在 PlayScene.tryUseRelic） */
+  notifyRelicSkill(): void {
+    this.relicCb?.();
   }
 
   onTap(cb: (x: number, y: number) => void): void {

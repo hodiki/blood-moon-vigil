@@ -182,6 +182,8 @@ export class RunStats {
   derivativeDamage = 0;
   /** 全局伤害累计（占比分母；PlayScene 击杀/伤害事件近似 —— 敌 hp 消耗累计） */
   totalDamageDealt = 0;
+  /** P0-1 圣物累计伤害（银潮汐落场银雨 / 狼灵冲撞；<5% 红线分子） */
+  relicDamage = 0;
   mutationCard1AtSeconds: number | null = null;
   mutationCard2AtSeconds: number | null = null;
   resonanceAtSeconds: number | null = null;
@@ -209,6 +211,7 @@ export class RunStats {
     this.offersPerRun = 0;
     this.derivativeDamage = 0;
     this.totalDamageDealt = 0;
+    this.relicDamage = 0;
     this.mutationCard1AtSeconds = null;
     this.mutationCard2AtSeconds = null;
     this.resonanceAtSeconds = null;
@@ -237,6 +240,14 @@ export class RunStats {
   /** B6-W5：全局伤害累计（PlayScene 击杀/武器伤害事件近似） */
   recordTotalDamage(damage: number): void {
     this.totalDamageDealt += Math.max(0, damage);
+  }
+
+  /**
+   * P0-1 圣物伤害累计（银潮汐落场银雨 / 狼灵冲撞）。
+   * 旧注释「圣物无独立伤害段 → 恒 0」在银潮汐补实效果后失效，改走真实累计（红线 <5%）。
+   */
+  recordRelicDamage(damage: number): void {
+    this.relicDamage += Math.max(0, damage);
   }
 
   /** B6-W5：质变卡获取时点（双节拍锚 30~60s / 90~150s） */
@@ -271,9 +282,9 @@ export class RunStats {
     return this.totalDamageDealt > 0 ? this.derivativeDamage / this.totalDamageDealt : null;
   }
 
-  /** B6-W5：圣物伤害占比（<5% 红线；圣物无独立伤害段（演出型）→ 恒 0，断言口径预留） */
+  /** B6-W5：圣物伤害占比（<5% 红线；银潮汐落场银雨/狼灵冲撞为唯二伤害段） */
   relicDpsShareOf(): number | null {
-    return this.totalDamageDealt > 0 ? 0 : null;
+    return this.totalDamageDealt > 0 ? this.relicDamage / this.totalDamageDealt : null;
   }
 
   /** M3 真机埋点：三选一出现轮数（offersPerRun；onLevelUp 每轮 +1）。

@@ -132,6 +132,12 @@ export interface RelicEffectContext {
   damageReductionSink?: (pct: number, duration: number) => void;
   /** 伤害结算落点（狼灵冲撞 30 伤；返回伤害供占比遥测） */
   damageSink?: (target: unknown, amount: number) => void;
+  /**
+   * P0-1 银潮汐落场银雨（GDD 尾章 #4）：(半径 px, 每秒灼烧伤, 持续秒)。
+   * GDD 未列伤害值（KNOWN-GAP）→ 工程锚 220px / 6 伤/s / 8s，红线 <5% 由遥测断言守。
+   * 未注入时退化为纯演出（不产生伤害）——调用方必须注入，禁止空技能。
+   */
+  silverRainSink?: (radius: number, dps: number, duration: number) => void;
 }
 
 /** 圣物效果总入口（CC 走状态层；每枚效果见 RELICS.effect） */
@@ -161,7 +167,13 @@ export function applyRelicEffect(id: RelicId, now: number, ctx: RelicEffectConte
       break;
     }
     case 'relic_silver_tide': {
-      // 8s 银质演出窗口（伤害加成不进预算——纯演出，GDD 未列伤害值 KNOWN-GAP）
+      // P0-1：落场银雨（8s 银质灼烧场）——GDD「8s 内所有攻击附带银质灼烧演出 + 落场银雨」的
+      // 伤害段落地：半径/每秒伤/时长全走配置锚（KNOWN-GAP 数值待模拟校准，红线 <5%）。
+      ctx.silverRainSink?.(
+        cfg.params['radius'] ?? 220,
+        cfg.params['burnDps'] ?? 6,
+        cfg.params['duration'] ?? 8,
+      );
       break;
     }
     case 'relic_wolf_spirit': {

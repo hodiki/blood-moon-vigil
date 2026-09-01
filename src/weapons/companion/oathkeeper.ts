@@ -122,19 +122,27 @@ export function tickTombstone(
     const heal = param(state, 'tombHealPerSec') * dt;
     const applied = healSink(heal);
     // 修女治疗命中墓碑 → 复活进度按转化率折算（治疗量 × rate 累计；满 100 复活）
-    const rate = param(state, 'reviveConvertRate');
-    state.reviveProgress = Math.min(100, state.reviveProgress + applied * rate * 100 / 20);
+    convertHealToRevive(state, applied);
     state.tombHealAccum += applied;
-    if (state.reviveProgress >= 100) {
-      revive(state);
-      return;
-    }
+    if (state.phase !== 'tombstone') return; // 转化满 → 已原地复活
   }
   if (now >= state.tombstoneUntil) {
     // 墓碑到期未复活 → 异常消散，重召唤 CD 20s
     state.phase = 'gone';
     state.resummonReadyAt = now + param(state, 'resummonCd');
   }
+}
+
+/**
+ * P0-7c 治疗 → 复活进度折算（修女治疗命中墓碑的统一口径；GDD §4.4）：
+ * 进度 += 治疗量 × 转化率（reviveConvertRate 0.5/0.7）× 5（20 HP 治疗 ≈ 满进度工程锚）。
+ * 满 100 → 立即复活。
+ */
+export function convertHealToRevive(state: OathkeeperState, appliedHeal: number): void {
+  if (state.phase !== 'tombstone' || appliedHeal <= 0) return;
+  const rate = param(state, 'reviveConvertRate');
+  state.reviveProgress = Math.min(100, state.reviveProgress + appliedHeal * rate * 100 / 20);
+  if (state.reviveProgress >= 100) revive(state);
 }
 
 /** 复活（进度满）：原地满血回到 companion；进度清零 */

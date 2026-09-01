@@ -64,10 +64,30 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
   onEnemyKilled?: (target: ExclusiveTarget) => void;
   /** B4 R-6 圣火十诫：十字落点爆炸回调（WeaponSystem 注入 → 余焰登记） */
   onExplode?: (x: number, y: number) => void;
+  /**
+   * P0-7c 治疗同源落点：圣铃每 8s 铃响治疗「自身 + 守誓者」——装配层（PlayScene）
+   * 注入守誓者回血，未注入时只有玩家回血（与 GDD §4.4 之前的行为一致）。
+   */
+  onHeal?: (amount: number) => void;
+  /** P0-7e 射速爆发窗口（dv_lantern_flash 4s ×1.5；until 为秒时间戳） */
+  private fireRateUntil = -Infinity;
+  private fireRateMult = 1;
 
   constructor(readonly exclusiveId: ExclusiveWeaponId, private readonly hooks: ExclusiveWeaponHooks<S>) {
     this.weaponId = exclusiveId;
     this.state = hooks.createState();
+  }
+
+  /** P0-7e 射速爆发登记（窗口内攻击间隔 ÷ mult；窗口外恒 1） */
+  applyFireRateBurst(mult: number, until: number): void {
+    if (mult <= 0) return;
+    this.fireRateMult = Math.max(this.fireRateMult, mult);
+    this.fireRateUntil = Math.max(this.fireRateUntil, until);
+  }
+
+  /** 当前射速倍率（窗口内 = mult；窗口外 = 1；测试/沙盘可读） */
+  fireRateMultAt(now: number): number {
+    return now < this.fireRateUntil ? this.fireRateMult : 1;
   }
 
   setEnabled(enabled: boolean): void {
@@ -92,6 +112,8 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
     const fresh = this.hooks.createState();
     Object.assign(this.state as object, fresh);
     this.totalDamage = 0;
+    this.fireRateUntil = -Infinity;
+    this.fireRateMult = 1;
   }
 
   /** B4-W2：内部结算状态读取（WeaponSystem R-2 回充读取左轮 AmmoState 等装配消费） */
@@ -119,6 +141,11 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
         cooldown: (this.machine['cooldown'] ?? baseInterval) * heavy,
       };
     }
+    // P0-7e：射速爆发窗口 → 攻击间隔 ÷ mult（stepRevolver / stepLantern 读 machine['interval']）
+    const fireRate = this.fireRateMultAt(ctx.now);
+    if (fireRate !== 1) {
+      effectiveMachine = { ...effectiveMachine, interval: baseInterval / fireRate };
+    }
     const player = ctx.player as unknown as ExclusivePlayerLike;
     // 击杀回调挂点注入（本次 ctx.enemies 的目标；onKilled 幂等覆盖）
     for (const e of ctx.enemies) {
@@ -135,6 +162,8 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
       rng: Math.random,
       healSink: (amount) => {
         ctx.player.stats.heal(amount);
+        // P0-7c：同一份治疗量同步落守誓者（GDD §4.4「治疗自身与守誓者 8 HP」）
+        this.onHeal?.(amount);
       },
       spendHp: (amount) => {
         ctx.player.stats.hp = Math.max(1, ctx.player.stats.hp - amount);

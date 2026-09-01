@@ -31,13 +31,25 @@ export interface DerivativeCastContext {
   totemSink?: (x: number, y: number) => void;
   /** B6-W4 P4 形态挂点：终审庭余焰登记（up_d_judgment → R-6 residues 持续段） */
   residueSink?: (x: number, y: number) => void;
+  /**
+   * P1-14 审判光环：5s 治疗光环 3 HP/s（旧实现一次性结算 3 HP；GDD §4.5 为持续段）。
+   * 由调用方按帧 tick，未注入时退化为一次性首帧结算（沙盘兼容）。
+   */
+  auraSink?: (healPerSec: number, duration: number) => void;
+  /** P0-7e 射速爆发落点（dv_lantern_flash：4s ×1.5 → 左轮/提灯攻击间隔） */
+  fireRateSink?: (mult: number, duration: number) => void;
 }
 
 export interface DerivativeCastResult {
   damageDealt: number;
   kills: number;
-  /** 结算事件（遥测/表现层：stunned/slowed/vulnerable/dash/heal/charged） */
+  /** 结算事件（遥测/表现层：stunned/slowed/vulnerable/dash/heal/charged/wolfFrenzy） */
   events: string[];
+  /**
+   * P1-14 突进落点（血影突袭）：最密方向 × 突进距离。调用方负责位移（走位合法性判定在场景层），
+   * 未注入能力（沙盘）时可忽略——命中结算已在效果层完成。
+   */
+  dash?: { x: number; y: number; dirX: number; dirY: number; distance: number };
 }
 
 function emptyResult(): DerivativeCastResult {
@@ -124,7 +136,8 @@ function castLanternFlash(p: Readonly<Record<string, number>>, ctx: DerivativeCa
       result.events.push('stunApplied');
     }
   }
-  // 射速爆发（4s ×1.5）：落武器派生参数（行为层 fireRateUntil 消费；本批经 ammo/事件登记口径）
+  // P0-7e 射速爆发（4s ×1.5）：落到专武行为的攻击间隔乘区（旧实现只 push 事件，无消费者）
+  ctx.fireRateSink?.(p['fireRateMult']!, p['fireRateDuration']!);
   result.events.push('fireRateBurst');
   if (ctx.ammo) {
     // 立即补满 + 5s 无限弹（setInfiniteWindow 内含补满）
@@ -134,13 +147,18 @@ function castLanternFlash(p: Readonly<Record<string, number>>, ctx: DerivativeCa
   return result;
 }
 
-/** 血影突袭：突进 200px 沿途斩击 15 伤/段 + 血契印记易伤 15%/5s */
+/**
+ * 血影突袭（P1-14 语义修正：旧实现 = 最近 5 敌即时结算，与「向敌群最密方向突进」不符）：
+ * 1) 方向 = 走廊内敌密度最高的方向（近者权重高）；2) 命中 = 突进走廊内全部敌；
+ * 3) 落点 = 玩家坐标 + 方向 × 距离（由调用方执行位移）；4) 血契印记易伤 15%/5s。
+ */
 function castBloodDash(p: Readonly<Record<string, number>>, ctx: DerivativeCastContext): DerivativeCastResult {
   const result = emptyResult();
-  // 即时近似：突进路径 = 玩家向敌群最密方向 200px；沿途目标 = 路径带内敌（本批按半径带近似）
-  const targets = aliveByDistance(ctx.enemies, ctx.player.x, ctx.player.y).slice(0, 5);
+  const distance = p['dashDistance']!;
+  const dir = densestDashDirection(ctx.enemies, ctx.player.x, ctx.player.y, DASH_SCAN_RANGE, DASH_CORRIDOR_HALF_WIDTH);
+  const path = dashPathTargets(ctx.enemies, ctx.player.x, ctx.player.y, dir, distance, DASH_CORRIDOR_HALF_WIDTH);
   let hits = 0;
-  for (const t of targets) {
+  for (const t of path) {
     dealDamage(t, p['damage']!, ctx.now, result);
     hits += 1;
     if (t.cc) {
@@ -149,13 +167,16 @@ function castBloodDash(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
     }
   }
   result.events.push('dash');
-  // up_d_dash 血宴：突进终点血爆（25 伤/120px）+ 每命中 1 敌回 1 HP（P4 形态，锚）
+  const endX = ctx.player.x + dir.x * distance;
+  const endY = ctx.player.y + dir.y * distance;
+  result.dash = { x: endX, y: endY, dirX: dir.x, dirY: dir.y, distance };
+  // up_d_dash 血宴：突进**终点**血爆（25 伤/120px）+ 每命中 1 敌回 1 HP（P4 形态，锚）
   if ((p['burstDamage'] ?? 0) > 0) {
     const rSq = (p['burstRadius'] ?? 120) ** 2;
     for (const e of ctx.enemies) {
       if (!e.active || e.hp <= 0) continue;
-      const dx = e.x - ctx.player.x;
-      const dy = e.y - ctx.player.y;
+      const dx = e.x - endX;
+      const dy = e.y - endY;
       if (dx * dx + dy * dy > rSq) continue;
       dealDamage(e, p['burstDamage']!, ctx.now, result);
     }
@@ -165,7 +186,75 @@ function castBloodDash(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
   return result;
 }
 
-/** 月痕狙击：1.2s 蓄力（控制器段）→ 60 伤全贯穿巨矢 + 首个命中眩晕 1s */
+/** 突进扫描射程（> dashDistance：允许跨越 200px 走廊外的敌参与密度投票） */
+export const DASH_SCAN_RANGE = 260;
+/** 突进走廊半宽（工程锚 60px：与近战专武 120~160px 手感区分） */
+export const DASH_CORRIDOR_HALF_WIDTH = 60;
+
+/**
+ * 敌群最密方向（16 向均匀采样）：走廊（半宽 halfWidth）+ 射程内敌按「近者权重高」计分，
+ * 取最高分方向；全空返回 +X（保持确定性，便于单测）。
+ */
+export function densestDashDirection(
+  enemies: readonly { readonly active: boolean; readonly hp: number; readonly x: number; readonly y: number }[],
+  x: number,
+  y: number,
+  range = DASH_SCAN_RANGE,
+  halfWidth = DASH_CORRIDOR_HALF_WIDTH,
+): { x: number; y: number } {
+  const samples = 16;
+  let bestScore = 0;
+  let bestX = 1;
+  let bestY = 0;
+  for (let i = 0; i < samples; i += 1) {
+    const angle = (i / samples) * Math.PI * 2;
+    const dx = Math.cos(angle);
+    const dy = Math.sin(angle);
+    let score = 0;
+    for (const e of enemies) {
+      if (!e.active || e.hp <= 0) continue;
+      const ex = e.x - x;
+      const ey = e.y - y;
+      const along = ex * dx + ey * dy;
+      if (along <= 0 || along > range) continue; // 背向 / 超程不计入
+      if (Math.abs(ex * -dy + ey * dx) > halfWidth) continue; // 走廊外不计入
+      score += 1 + (1 - along / range);
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestX = dx;
+      bestY = dy;
+    }
+  }
+  return { x: bestX, y: bestY };
+}
+
+/** 突进走廊内目标（沿方向 0~distance 的带状区域；距玩家升序） */
+export function dashPathTargets<T extends { readonly active: boolean; readonly hp: number; readonly x: number; readonly y: number }>(
+  enemies: readonly T[],
+  x: number,
+  y: number,
+  dir: { x: number; y: number },
+  distance: number,
+  halfWidth = DASH_CORRIDOR_HALF_WIDTH,
+): T[] {
+  const hits: Array<{ e: T; along: number }> = [];
+  for (const e of enemies) {
+    if (!e.active || e.hp <= 0) continue;
+    const ex = e.x - x;
+    const ey = e.y - y;
+    const along = ex * dir.x + ey * dir.y;
+    if (along < 0 || along > distance) continue;
+    if (Math.abs(ex * -dir.y + ey * dir.x) > halfWidth) continue;
+    hits.push({ e, along });
+  }
+  return hits.sort((a, b) => a.along - b.along).map((h) => h.e);
+}
+
+/**
+ * 月痕狙击：1.2s 蓄力（P1-14：蓄力段由 DerivativeSkillController 承载，蓄满后才进本函数结算）
+ * → 60 伤全贯穿巨矢 + 首个命中眩晕 1s（Boss 免疫 / 精英 ×0.5）。
+ */
 function castMoonSnipe(p: Readonly<Record<string, number>>, ctx: DerivativeCastContext): DerivativeCastResult {
   const result = emptyResult();
   // 全贯穿：路径全量敌结算（即时近似按距离序）
@@ -231,7 +320,11 @@ function castHolyJudgment(p: Readonly<Record<string, number>>, ctx: DerivativeCa
     }
     result.events.push('residue');
   }
-  ctx.healSink?.((p['healAuraPerSec'] ?? 3) * (p['healAuraDuration'] ?? 5) * 0.2); // 首帧口径：光环 tick 持续段归行为层
+  // P1-14：5s 治疗光环 3 HP/s = 持续段（调用方按帧 tick；未注入 auraSink 时退化为首帧一次性结算）
+  const perSec = p['healAuraPerSec'] ?? 3;
+  const duration = p['healAuraDuration'] ?? 5;
+  if (ctx.auraSink) ctx.auraSink(perSec, duration);
+  else ctx.healSink?.(perSec * duration * 0.2);
   result.events.push('healAura');
   return result;
 }
@@ -263,7 +356,8 @@ function castWolfCharge(p: Readonly<Record<string, number>>, ctx: DerivativeCast
     // 击退 100px（位移，非状态层枚举——运行时由碰撞体执行）
     result.events.push('knockback');
   }
-  result.events.push('rage');
+  // P1-14：月啸冲锋的「加尔文狂化 4s（攻速）」与血月狂化 6s 是两个 buff，不再共用 'rage'
+  result.events.push('wolfFrenzy');
   return result;
 }
 
@@ -283,6 +377,11 @@ function distSq(ax: number, ay: number, bx: number, by: number): number {
 /** 衍生技 CD 查询（控制器装配数据源） */
 export function derivativeCd(id: DerivativeSkillId): number {
   return DERIVATIVE_SKILLS[id].cd;
+}
+
+/** P1-14 蓄力时长查询（秒；0 = 瞬发。月痕狙击 1.2s，GDD §4.3） */
+export function derivativeChargeTime(id: DerivativeSkillId): number {
+  return DERIVATIVE_SKILLS[id].params['chargeTime'] ?? 0;
 }
 
 /** EG-9 占比锚查询（遥测断言口径 12~18%） */

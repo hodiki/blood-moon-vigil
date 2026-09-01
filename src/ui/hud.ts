@@ -51,6 +51,17 @@ interface HudOptions {
   skillName?: string;
   /** 批次 3：主动技图标帧（skill-edmund 等）；缺省不换图 */
   skillIconFrame?: string;
+  /** P0-1 圣物：移动端第二技能钮点按回调（桌面走 Q 键；同一释放入口 tryUseRelic） */
+  onRelicSkill?: () => void;
+}
+
+/** P0-1 圣物槽 HUD 数据（GDD §7：CD 环 + 剩余次数 1~2） */
+export interface HudRelicSlot {
+  name: string;
+  /** 剩余 CD s（0 = 就绪） */
+  cdRemaining: number;
+  /** CD 总长 s（240） */
+  cdSeconds: number;
 }
 
 export class Hud {
@@ -74,6 +85,11 @@ export class Hud {
   /** NV-INTEG-FIX P1：动态武器槽激活后置非 null（apply() 跳过固定三槽 active 切换） */
   private slots: HTMLElement[] | null = null;
   private lastSkillCdFrac = -1;
+  /** P0-1 圣物槽（桌面信息位 + 移动端第二技能钮；未持有时 hidden） */
+  private readonly relicEl: HTMLElement | null;
+  private readonly relicCdEl: HTMLElement | null;
+  private readonly relicHandler: (() => void) | null;
+  private lastRelicCdFrac = -1;
   private readonly offFns: Array<() => void> = [];
   private escHintTimer: number | null = null;
 
@@ -85,6 +101,7 @@ export class Hud {
     this.skillHandler = opts.onActiveSkill ?? null;
     this.skillEl = null;
     this.skillCdEl = null;
+    this.relicHandler = opts.onRelicSkill ?? null;
 
     this.root = document.createElement('div');
     this.root.className = 'bmv-hud';
@@ -104,6 +121,12 @@ export class Hud {
         <div class="bmv-hud-revive" hidden></div>
         <div class="bmv-hud-reso" hidden></div>
       </div>
+      <div class="bmv-hud-relic" hidden>
+        <div class="bmv-hud-relic-cd"></div>
+        <div class="bmv-hud-relic-icon">✧</div>
+        <div class="bmv-hud-relic-label">圣物</div>
+        <div class="bmv-hud-relic-uses" hidden>×1</div>
+      </div>
     `;
     host.appendChild(this.root);
 
@@ -122,6 +145,9 @@ export class Hud {
     preferFrameImg(this.weaponEls.missile, WSLOT_FRAMES.missile);
     preferFrameImg(this.weaponEls.orbit, WSLOT_FRAMES.orbit);
     preferFrameImg(this.weaponEls.shockwave, WSLOT_FRAMES.shockwave);
+    // P0-1 圣物槽（桌面信息位 / 移动端第二技能钮；未持有时 hidden）
+    this.relicEl = this.root.querySelector('.bmv-hud-relic') as HTMLElement | null;
+    this.relicCdEl = this.root.querySelector('.bmv-hud-relic-cd') as HTMLElement | null;
 
     // 暂停键（仅移动端，ux-spec §2：右上 44×44，热区=视觉）
     if (opts.cfg.isMobile) {
@@ -148,6 +174,11 @@ export class Hud {
       if (this.skillHandler) this.skillEl.addEventListener('click', this.skillHandler);
       this.root.appendChild(this.skillEl);
       this.skillCdEl = this.skillEl.querySelector('.bmv-hud-skill-cd') as HTMLElement | null;
+      // P0-1 圣物第二技能钮：与主动技钮同规格（72×72 热区 ≥44），点按走 onRelicSkill
+      if (this.relicEl && this.relicHandler) {
+        this.relicEl.classList.add('bmv-hud-relic-btn');
+        this.relicEl.addEventListener('click', this.relicHandler);
+      }
     } else {
       this.pauseEl = null;
       this.skillEl = null;
@@ -288,12 +319,39 @@ export class Hud {
     el.hidden = count <= 1;
   }
 
+  /**
+   * P0-1 圣物槽（GDD §7：CD 环 + 局内剩余次数 1~2）。
+   * slot=null（本局未获得圣物）→ 整体隐藏；桌面为信息位（键位提示 Q），移动端为第二技能钮。
+   */
+  setRelic(slot: HudRelicSlot | null, usesLeft = 0): void {
+    const el = this.relicEl;
+    if (!el) return;
+    if (!slot) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    const label = el.querySelector('.bmv-hud-relic-label') as HTMLElement | null;
+    if (label) label.textContent = slot.name;
+    const uses = el.querySelector('.bmv-hud-relic-uses') as HTMLElement | null;
+    if (uses) {
+      uses.textContent = `×${Math.max(0, usesLeft)}`;
+      uses.hidden = usesLeft <= 0;
+    }
+    if (!this.relicCdEl) return;
+    const frac = slot.cdSeconds > 0 ? Math.max(0, Math.min(1, slot.cdRemaining / slot.cdSeconds)) : 0;
+    if (Math.abs(frac - this.lastRelicCdFrac) < 0.005) return;
+    this.lastRelicCdFrac = frac;
+    this.relicCdEl.style.background = `conic-gradient(rgba(11,14,20,0.72) ${frac * 360}deg, transparent ${frac * 360}deg)`;
+  }
+
   /** 场景关闭：解除订阅 + 移除 DOM + 清提示定时器 */
   destroy(): void {
     for (const off of this.offFns) off();
     if (this.escHintTimer !== null) window.clearTimeout(this.escHintTimer);
     if (this.pauseEl && this.pauseHandler) this.pauseEl.removeEventListener('click', this.pauseHandler);
     if (this.skillEl && this.skillHandler) this.skillEl.removeEventListener('click', this.skillHandler);
+    if (this.relicEl && this.relicHandler) this.relicEl.removeEventListener('click', this.relicHandler);
     this.root.remove();
   }
 
@@ -438,6 +496,42 @@ export class Hud {
         pointer-events: none;
       }
       .bmv-hud-skill-charges[hidden] { display: none; }
+      /* P0-1 圣物槽（GDD §7：CD 环 + 剩余次数 1~2；桌面信息位 / 移动端第二技能钮） */
+      .bmv-hud-relic {
+        position: absolute; right: 140px; bottom: 24px;
+        width: 72px; height: 72px;
+        box-sizing: border-box;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: #131722; border: 2px solid #C9A227; border-radius: 12px;
+        user-select: none; -webkit-user-select: none;
+      }
+      .bmv-hud-relic[hidden] { display: none; }
+      .bmv-hud-relic-btn { pointer-events: auto; cursor: pointer; touch-action: none; }
+      .bmv-hud-relic-cd {
+        position: absolute; inset: 0; border-radius: 10px;
+        background: conic-gradient(rgba(11,14,20,0.72) 0deg, transparent 0deg);
+        pointer-events: none;
+      }
+      .bmv-hud-relic-icon {
+        font-size: 26px; line-height: 1; color: #F2D980;
+        text-shadow: 0 0 8px rgba(201, 162, 39, 0.7);
+        pointer-events: none;
+      }
+      .bmv-hud-relic-label {
+        margin-top: 4px; font-size: 11px; color: #E8F0FA;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        pointer-events: none;
+      }
+      .bmv-hud-relic-uses {
+        position: absolute; top: -6px; right: -6px;
+        min-width: 22px; height: 22px; box-sizing: border-box;
+        display: flex; align-items: center; justify-content: center;
+        padding: 0 4px;
+        font-size: 13px; font-weight: 700; color: #F2F5F9;
+        background: #2A3346; border: 2px solid #C9A227; border-radius: 999px;
+        pointer-events: none;
+      }
+      .bmv-hud-relic-uses[hidden] { display: none; }
       /* NV-INTEG-FIX P1：共鸣徽记（右上武器槽下方；36px 帧 + 文字兜底） */
       .bmv-hud-reso {
         position: absolute; right: 24px; top: 82px;
@@ -485,6 +579,10 @@ export class Hud {
         .bmv-hud-boss { left: 25%; width: 50%; top: 12px; }
         .bmv-hud-skill {
           right: calc(24px + env(safe-area-inset-right, 0px));
+          bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        }
+        .bmv-hud-relic {
+          right: calc(136px + env(safe-area-inset-right, 0px));
           bottom: calc(24px + env(safe-area-inset-bottom, 0px));
         }
       }

@@ -19,6 +19,8 @@ export interface InputSource {
   onTap(cb: (x: number, y: number) => void): void;
   /** M1b 主动技：释放请求（桌面 Space/Shift JustDown；移动端由 DOM 技能按钮 notify 触发） */
   onActiveSkill(cb: () => void): void;
+  /** P0-1 圣物：独立键释放请求（桌面 Q；移动端由 HUD 第二技能钮触发） */
+  onRelicSkill(cb: () => void): void;
   /** 输入使能开关：非 RUNNING 态冻结输入 / 隐藏摇杆（CM §5） */
   setEnabled(enabled: boolean): void;
   destroy(): void;
