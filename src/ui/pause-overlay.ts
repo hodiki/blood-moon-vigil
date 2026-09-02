@@ -12,6 +12,7 @@
  */
 
 import { getOverlayHost } from '@/ui/overlay-host';
+import { KeybindsOverlay } from '@/ui/keybinds-overlay';
 
 export interface PauseState {
   muted: boolean;
@@ -58,6 +59,7 @@ export class PauseOverlay {
             <input type="checkbox" class="bmv-pause-switch" data-setting="haptics" aria-label="触觉反馈" />
           </label>
         </div>
+        <button class="bmv-pause-tutorial" type="button">新手教程 · 键位</button>
         <button class="bmv-pause-resume" type="button">继续</button>
       </div>
     `;
@@ -77,6 +79,20 @@ export class PauseOverlay {
     bind(this.muteInput, 'change', () => opts.onMuteToggle(this.muteInput.checked));
     bind(this.reduceInput, 'change', () => opts.onReduceFlashToggle(this.reduceInput.checked));
     bind(this.hapticsInput, 'change', () => opts.onHapticsToggle(this.hapticsInput.checked));
+
+    // NV-PLAYER-UI W-B4：新手教程入口——重看键位卡（自持 KeybindsOverlay，不依赖 PlayScene 接线；
+    // 重看不写首次标记语义（markSeen:false），关闭后回到暂停面板）
+    const tutorialBtn = this.root.querySelector('.bmv-pause-tutorial') as HTMLElement;
+    let tutorialOverlay: KeybindsOverlay | null = null;
+    bind(tutorialBtn, 'click', () => {
+      if (tutorialOverlay) return;
+      tutorialOverlay = new KeybindsOverlay(getOverlayHost(), {
+        markSeen: false,
+        onClose: () => {
+          tutorialOverlay = null;
+        },
+      });
+    });
 
     this.root.style.display = 'none';
   }
@@ -157,6 +173,16 @@ export class PauseOverlay {
         cursor: pointer;
       }
       .bmv-pause-haptics-wrap { display: none; }
+      /* NV-PLAYER-UI W-B4：新手教程入口（次级描边按钮，弱于「继续」） */
+      .bmv-pause-tutorial {
+        width: 100%; height: 44px;
+        font-size: 16px;
+        color: #A9B4C4;
+        background: transparent;
+        border: 1px solid #2A3346; border-radius: 8px;
+        cursor: pointer;
+      }
+      .bmv-pause-tutorial:hover { color: #F2F5F9; border-color: #54E6C9; }
       .bmv-pause-resume {
         width: 100%; height: 56px;
         margin-top: 8px;

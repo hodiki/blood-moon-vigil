@@ -30,6 +30,7 @@ import { saveKey, type SaveData } from '@/stats/save';
 import { detectIsMobile } from '@/utils/device';
 import { CodexOverlay, createCodexOverlay } from '@/ui/codex-overlay';
 import { TreeOverlay, createTreeOverlay, unlockedCommonWeaponIds, preselectDisabledWeaponIds } from '@/ui/tree-overlay';
+import { KeybindsOverlay, loadKeybindsShown } from '@/ui/keybinds-overlay';
 import { NP } from '@/narratives/narratives';
 
 export interface StartOverlay {
@@ -306,13 +307,29 @@ export function createStartOverlay(
   }
 
   const btn = root.querySelector('.bmv-start-btn') as HTMLButtonElement;
-  btn.addEventListener('click', onStart);
+  // NV-PLAYER-UI W-B4：首次游玩弹键位卡一次（标记未写时拦截进局，关闭后放行；
+  // save 缺省（单测/旧调用）不弹，保持原语义）。标记为独立 localStorage 键（keybinds-overlay）。
+  let keybindsOverlay: KeybindsOverlay | null = null;
+  const beginRun = (): void => {
+    if (opts.save && !loadKeybindsShown(window.localStorage) && !keybindsOverlay) {
+      keybindsOverlay = new KeybindsOverlay(getOverlayHost(), {
+        onClose: () => {
+          keybindsOverlay = null;
+          onStart();
+        },
+      });
+      return;
+    }
+    onStart();
+  };
+  btn.addEventListener('click', beginRun);
 
   return {
     destroy(): void {
       codexOverlay?.destroy();
       treeOverlay = null;
-      btn.removeEventListener('click', onStart);
+      keybindsOverlay?.destroy();
+      btn.removeEventListener('click', beginRun);
       for (const h of featureHandlers) h.el.removeEventListener('click', h.onClick);
       for (const h of heroHandlers) h.el.removeEventListener('click', h.onClick);
       for (let i = 0; i < handlers.length; i += 1) {

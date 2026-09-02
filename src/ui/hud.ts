@@ -76,6 +76,8 @@ export class Hud {
   private readonly bossBarEl: HTMLElement;
   private readonly pauseEl: HTMLElement | null;
   private readonly escHintEl: HTMLElement | null;
+  /** NV-PLAYER-UI W-B4：桌面技能键提示（Space 角标；移动端无，null） */
+  private readonly skillKeyEl: HTMLElement | null;
   private readonly pauseHandler: (() => void) | null;
   /** M1b 主动技：移动端技能按钮（96×96 视觉 / 热区 96 ≥44；右下角） */
   private readonly skillEl: HTMLElement | null;
@@ -98,6 +100,7 @@ export class Hud {
     this.pauseHandler = opts.onPauseToggle;
     this.pauseEl = null;
     this.escHintEl = null;
+    this.skillKeyEl = null;
     this.skillHandler = opts.onActiveSkill ?? null;
     this.skillEl = null;
     this.skillCdEl = null;
@@ -191,6 +194,20 @@ export class Hud {
       this.escHintTimer = window.setTimeout(() => {
         this.escHintEl?.classList.add('fade-out');
       }, ESC_HINT_SECONDS * 1000);
+      // NV-PLAYER-UI W-B4：桌面技能键提示（Space 角标；玩家反馈「桌面没有技能键图标」。
+      // 常驻右下角，pointer-events:none 不挡视野；移动端已有技能钮，不渲染）
+      this.skillKeyEl = document.createElement('div');
+      this.skillKeyEl.className = 'bmv-hud-skill-key';
+      this.skillKeyEl.setAttribute('aria-label', `技能键 空格${opts.skillName ? `（${opts.skillName}）` : ''}`);
+      this.skillKeyEl.innerHTML = `
+        <div class="bmv-hud-skill-key-icon">✦</div>
+        <div class="bmv-hud-skill-key-tag">空格</div>
+      `;
+      if (opts.skillIconFrame) {
+        const iconHost = this.skillKeyEl.querySelector('.bmv-hud-skill-key-icon') as HTMLElement | null;
+        if (iconHost) preferFrameImg(iconHost, opts.skillIconFrame);
+      }
+      this.root.appendChild(this.skillKeyEl);
     }
 
     // 事件订阅（ARCH §3.4 统一注册；destroy 统一 off）
@@ -548,6 +565,30 @@ export class Hud {
         opacity: 1; transition: opacity 0.6s ease-out;
       }
       .bmv-hud-esc-hint.fade-out { opacity: 0; }
+      /* NV-PLAYER-UI W-B4：桌面技能键提示（Space 角标；常驻右下，弱存在感不挡视野） */
+      .bmv-hud-skill-key {
+        position: absolute; right: 24px; bottom: 24px;
+        width: 56px; height: 56px;
+        box-sizing: border-box;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(19,23,34,0.75);
+        border: 1px solid #2A3346; border-radius: 10px;
+        pointer-events: none;
+      }
+      .bmv-hud-skill-key-icon {
+        font-size: 24px; color: #E8F0FA;
+        text-shadow: 0 0 6px rgba(84,230,201,0.5);
+      }
+      .bmv-hud-skill-key-icon img.bmv-frame-img {
+        display: block; width: 40px; height: 40px;
+        image-rendering: pixelated;
+      }
+      .bmv-hud-skill-key-tag {
+        position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+        font-size: 12px; font-weight: 700; color: #A9B4C4;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        white-space: nowrap;
+      }
       .bmv-hud-boss {
         position: absolute; top: 24px; left: 20%;
         width: 60%; height: 14px;
