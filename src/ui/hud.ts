@@ -308,7 +308,8 @@ export class Hud {
     const label = state === 'achieved' ? '共鸣' : state === 'ready-highlight' ? '可共鸣' : '待取钥';
     el.hidden = false;
     el.innerHTML = `<span class="bmv-hud-reso-text">${label}</span>`;
-    preferFrameImg(el, frame);
+    // P2 修复（AI 测试报告 §4.7.3）：帧图 load 后会清除宿主非 img 子节点，必须 keep 文案 span
+    preferFrameImg(el, frame, { keep: '.bmv-hud-reso-text' });
   }
 
   setSkillCharges(count: number): void {

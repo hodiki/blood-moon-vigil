@@ -875,7 +875,9 @@ export class PlayScene extends Phaser.Scene {
         if (e.groupId === tag) e.kill();
       });
     });
-    this.stats.recordBossDefeated(this.spawner.elapsedSeconds);
+    // P2 修复（AI 测试报告 §4.8.4）：elapsedSeconds 在 6:00 收束后冻结于 360，spawn/defeat 相减恒 0——
+    // Boss 计时改用游戏时钟（收束后继续走动），bossFightSeconds 才能测出真实战斗墙钟（60~85s 锚）
+    this.stats.recordBossDefeated(this.time.now / 1000);
     // P0-1「Boss 击杀必掉 1 枚」保底补齐（Boss 出场已发则此处 no-op）
     if (this.relicFields.relics.grantBossGuaranteed()) this.relicFields.syncRelicHud(this.time.now / 1000);
     // E4-S6 图鉴 progress：首通地图 → 事件条目（墓地→起源/守夜会；教堂→血廷；狼穴→兽群）
@@ -1097,7 +1099,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
     // M3 叙事：Boss 登场按 bossId 分句（spec §5/§6 bottom-banner；narrative-bindings 路由）
     GameEvents.emit(GameEvent.BossSpawned, { bossHp: boss.hp, bossId: MAP_CONFIGS[this.mapId].boss });
-    this.stats.recordBossSpawn(this.spawner.elapsedSeconds, boss.hp);
+    this.stats.recordBossSpawn(this.time.now / 1000, boss.hp); // P2 修复：与 recordBossDefeated 同源游戏时钟（elapsedSeconds 收束后冻结）
   }
 
   /**
@@ -1143,6 +1145,9 @@ export class PlayScene extends Phaser.Scene {
     }
     // NV-INTEG-FIX P1：解锁 → HUD 动态槽扩列
     this.exclusiveRun.refreshHudWeaponSlots();
+    // P2 修复（AI 测试报告 §4.7.3 次级观察）：局内共鸣达成后 HUD 常驻徽记此前无刷新路径（achieved 态不可达）——
+    // 共鸣 commit 走 WeaponUnlocked 遥测，此处同步徽记四态
+    if (this.weaponSystem.resonance.achievedIds().length > 0) this.hud.setResonanceBadge('achieved');
   }
 
   /** 暂停切换（Esc/P/移动暂停键；LEVEL_UP 期不响应，CM §5） */
