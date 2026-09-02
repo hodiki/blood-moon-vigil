@@ -98,6 +98,11 @@ const BENCH_TIME_SCALE = 20;
 const BOSS_TIME_GATE = 360;
 
 export class PlayScene extends Phaser.Scene {
+  /** P0-1 修复（AI 自动化测试报告 2026-09-02）：W-F1 拆分时 constructor 整体遗失导致场景 key 回退类名，
+   *  BootScene scene.start('Play') 找不到目标 → 点击开始黑屏。显式注册 'Play'。 */
+  constructor() {
+    super('Play');
+  }
   private state!: GameState;
   private inputSource!: InputSource;
   private player!: Player;
