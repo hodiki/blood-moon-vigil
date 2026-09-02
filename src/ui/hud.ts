@@ -25,8 +25,10 @@ import {
   xpFillFraction,
   hpFillFraction,
   bossFillFraction,
+  nightProgressFraction,
   type HudState,
 } from '@/ui/hud-state';
+import { nightClockText } from '@/config/ui-copy';
 import { renderIconSvg, weaponIconKeyForId } from '@/ui/icons';
 import { FRAME_IMG_BASE, preferFrameImg } from '@/ui/frame-img';
 import { FRAME_BY_CONTENT_ID } from '@/config/frame-registry';
@@ -78,6 +80,9 @@ export class Hud {
   private readonly escHintEl: HTMLElement | null;
   /** NV-PLAYER-UI W-B4：桌面技能键提示（Space 角标；移动端无，null） */
   private readonly skillKeyEl: HTMLElement | null;
+  /** NV-PLAYER-UI W-B6：夜间时钟（☾ 游戏内时刻 00:00→06:00 + 血月进度条；首帧 setNightClock 后显示） */
+  private readonly nightClockEl: HTMLElement;
+  private lastNightFrac = -1;
   private readonly pauseHandler: (() => void) | null;
   /** M1b 主动技：移动端技能按钮（96×96 视觉 / 热区 96 ≥44；右下角） */
   private readonly skillEl: HTMLElement | null;
@@ -210,6 +215,18 @@ export class Hud {
       this.root.appendChild(this.skillKeyEl);
     }
 
+    // NV-PLAYER-UI W-B6：夜间时钟（玩家反馈「不知道离天亮还有多久」。
+    // 顶部中央 ☾ + 游戏内时刻 + 血月进度条；Boss 血条出现在 top24 时钟让位于其下方 top44，互不遮挡）
+    this.nightClockEl = document.createElement('div');
+    this.nightClockEl.className = 'bmv-hud-nightclock';
+    this.nightClockEl.hidden = true;
+    this.nightClockEl.innerHTML = `
+      <div class="bmv-hud-nightclock-moon">☾</div>
+      <div class="bmv-hud-nightclock-time">00:00</div>
+      <div class="bmv-hud-nightclock-bar"><div class="bmv-hud-nightclock-fill"></div></div>
+    `;
+    this.root.appendChild(this.nightClockEl);
+
     // 事件订阅（ARCH §3.4 统一注册；destroy 统一 off）
     const subscribe = (event: string): void => {
       const fn = (payload: unknown): void => {
@@ -335,6 +352,26 @@ export class Hud {
     if (!el) return;
     el.textContent = String(count);
     el.hidden = count <= 1;
+  }
+
+  /**
+   * NV-PLAYER-UI W-B6 夜间时钟（渲染端；数据口由游戏侧每帧/节流调用）。
+   * elapsed/total → 游戏内时刻（00:00→06:00，360s 真实秒映射）+ 血月进度条。
+   * 防每帧 style 抖动：进度变化 <0.5% 跳过（同技能 CD 口径）。
+   */
+  setNightClock(elapsedSeconds: number, totalSeconds: number): void {
+    if (!this.nightClockEl) return;
+    const clock = nightClockText(elapsedSeconds, totalSeconds);
+    const timeEl = this.nightClockEl.querySelector('.bmv-hud-nightclock-time') as HTMLElement | null;
+    if (timeEl) timeEl.textContent = clock.clock;
+    this.nightClockEl.title = clock.dawn;
+    this.nightClockEl.setAttribute('aria-label', `夜间时钟 ${clock.clock}，${clock.dawn}`);
+    const frac = nightProgressFraction(elapsedSeconds, totalSeconds);
+    if (Math.abs(frac - this.lastNightFrac) < 0.005 && !this.nightClockEl.hidden) return;
+    this.lastNightFrac = frac;
+    this.nightClockEl.hidden = false;
+    const fillEl = this.nightClockEl.querySelector('.bmv-hud-nightclock-fill') as HTMLElement | null;
+    if (fillEl) fillEl.style.width = `${frac * 100}%`;
   }
 
   /**
@@ -588,6 +625,33 @@ export class Hud {
         font-size: 12px; font-weight: 700; color: #A9B4C4;
         text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         white-space: nowrap;
+      }
+      /* NV-PLAYER-UI W-B6：夜间时钟（☾ 时刻 + 血月进度条；顶部中央，Boss 血条 top24 下方互不遮挡） */
+      .bmv-hud-nightclock {
+        position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
+        display: flex; align-items: center; gap: 6px;
+        pointer-events: none;
+      }
+      .bmv-hud-nightclock[hidden] { display: none; }
+      .bmv-hud-nightclock-moon {
+        font-size: 14px; line-height: 1; color: #FF6B5E;
+        text-shadow: 0 0 6px rgba(255, 59, 48, 0.55);
+      }
+      .bmv-hud-nightclock-time {
+        font-size: 15px; font-weight: 700; color: #F2F5F9;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        min-width: 44px; text-align: left;
+      }
+      .bmv-hud-nightclock-bar {
+        width: 110px; height: 5px;
+        background: #000A; border: 1px solid #2A3346; border-radius: 3px;
+        overflow: hidden;
+      }
+      .bmv-hud-nightclock-fill {
+        height: 100%; width: 0%;
+        background: linear-gradient(90deg, #7A1F26, #FF3B30);
+        transition: width 0.3s linear;
+        border-radius: 3px;
       }
       .bmv-hud-boss {
         position: absolute; top: 24px; left: 20%;

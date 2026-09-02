@@ -101,9 +101,9 @@ describe('narratives 文本表（narratives-spec v1.0 §2~§9）', () => {
     // side-toast（表权威时长；spec §6）
     expect(entry('n_toast_first_levelup').durationSec).toBe(1.8); // 7 字 ×0.25=1.75 → 1.8
     expect(entry('n_toast_weapon_silver').durationSec).toBe(1.3); // 5 字 ×0.25=1.25 → 1.3
-    // 注：n_toast_codex 表值为 2.3s（spec §6「9 字」口径，含句读计字）；文案 8 字 ×0.25=2.0，
-    // 以设计表权威时长为准（spec §1.2「§5 表为权威时长」）。
-    expect(entry('n_toast_codex').durationSec).toBe(2.3);
+    // NV-PLAYER-UI W-B6：玩家反馈「toast 停留太久还连发」——表值 2.3s → 1.3s，
+    // 连发由 dispatcher 合并计数兜底（spec §6 原「9 字」口径 2.3s 待 spec 修订回写）。
+    expect(entry('n_toast_codex').durationSec).toBe(1.3);
     // 公式一致性：首升/新武器/精英按 specDurationSec 复算
     expect(entry('n_toast_first_levelup').durationSec).toBe(specDurationSec('月光在回应你。', 1.0));
     expect(entry('n_toast_weapon_silver').durationSec).toBe(specDurationSec('银器出鞘。', 1.0));

@@ -145,12 +145,14 @@ export class FxManager {
       .setTint(hexToRgbInt(FX_COLORS.upgradeGold))
       .setVisible(false);
 
-    // 血月天幕（屏幕空间常驻；桌面 190 / 移动 120）
+    // 血月天幕（屏幕空间常驻；桌面 230 / 移动 150）。
+    // NV-PLAYER-UI W-B6 占位：玩家反馈「血月像个大红球、辨识度不足」——
+    // 正式血月美术交付前，程序纹理细化（drawBloodMoon）+ 上浮放大（0.16 → 0.12）兜底。
     this.moon = scene.add
-      .image(cfg.designWidth / 2, cfg.designHeight * 0.16, 'fx-ambient', 'moon')
+      .image(cfg.designWidth / 2, cfg.designHeight * 0.12, 'fx-ambient', 'moon')
       .setScrollFactor(0)
       .setDepth(-80)
-      .setDisplaySize(cfg.isMobile ? 120 : 190, cfg.isMobile ? 120 : 190);
+      .setDisplaySize(cfg.isMobile ? 150 : 230, cfg.isMobile ? 150 : 230);
 
     // 暗角渐晕（屏幕空间常驻，压暗边缘；DOM HUD/选卡在 canvas 之上不受影响）
     this.vignette = scene.add

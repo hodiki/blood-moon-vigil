@@ -45,6 +45,15 @@ export const TRIGGER_SELECTORS: Partial<Record<NarrativeTrigger, NarrativeTrigge
   'map-open': (entry, payload) => entry.key === `n_prologue_${String(payload.mapId ?? '')}`,
 };
 
+/**
+ * NV-PLAYER-UI W-B6：连发 toast 合并（玩家反馈「守夜日志 toast 连发刷屏」）。
+ * 同一 trigger 在窗口期内连发时，不叠条、不重开计时——刷新为「文案 ×N」计数。
+ * 仅作用于 codex-updated（图鉴一次拾取可连发多条）；其余 trigger 行为不变。
+ */
+export const TOAST_MERGE_TRIGGER: NarrativeTrigger = 'codex-updated';
+/** 连发合并窗口 ms（超过窗口视为新的一轮，计数从 1 重来） */
+export const TOAST_MERGE_WINDOW_MS = 4000;
+
 export interface NarrativeDispatcherOptions {
   /** 文本表（默认 NARRATIVES；spec 终稿表） */
   entries?: readonly NarrativeText[];
@@ -56,6 +65,8 @@ export interface NarrativeDispatcherOptions {
   random?: () => number;
   /** 移动端判定（PlayScene 传 cfg.isMobile；测试缺省 false） */
   isMobile?: () => boolean;
+  /** 时钟源（NV-PLAYER-UI W-B6 连发合并窗口用；测试注入确定性） */
+  now?: () => number;
 }
 
 export class NarrativeDispatcher {
@@ -67,6 +78,10 @@ export class NarrativeDispatcher {
   private readonly overlaySet: NarrativeOverlaySet | null;
   /** 本局已展示的 once trigger（开局/首升；resetRunState 于局始清空） */
   private readonly shownOnce = new Set<NarrativeTrigger>();
+  private readonly now: () => number;
+  /** W-B6 连发合并状态：当前计数与窗口起点（resetRunState 于局始清零） */
+  private mergeCount = 0;
+  private mergeLastAt = -Infinity;
   private readonly unsubscribes: Array<() => void> = [];
 
   constructor(options: NarrativeDispatcherOptions = {}) {
@@ -86,11 +101,14 @@ export class NarrativeDispatcher {
     }
     this.random = options.random ?? Math.random;
     this.isMobile = options.isMobile ?? (() => false);
+    this.now = options.now ?? Date.now;
   }
 
   /** 局始调用：清空 once 展示记录（新一局 map-open / first-level-up 可再次出现） */
   resetRunState(): void {
     this.shownOnce.clear();
+    this.mergeCount = 0;
+    this.mergeLastAt = -Infinity;
   }
 
   /**
@@ -108,6 +126,13 @@ export class NarrativeDispatcher {
       entry = randomEntryForTrigger(this.entries, trigger, this.random);
     }
     if (!entry) return false;
+    // NV-PLAYER-UI W-B6：codex-updated 窗口期内连发 → 刷新为「文案 ×N」，不叠条
+    if (trigger === TOAST_MERGE_TRIGGER) {
+      const at = this.now();
+      this.mergeCount = at - this.mergeLastAt < TOAST_MERGE_WINDOW_MS ? this.mergeCount + 1 : 1;
+      this.mergeLastAt = at;
+      if (this.mergeCount > 1) return this.showEntry({ ...entry, text: `${entry.text}×${this.mergeCount}` });
+    }
     return this.showEntry(entry);
   }
 

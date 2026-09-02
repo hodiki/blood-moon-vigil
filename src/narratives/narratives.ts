@@ -254,7 +254,9 @@ export const NARRATIVES: readonly NarrativeText[] = [
     context: 'toast',
     text: '守夜日志已更新。',
     form: 'side-toast',
-    durationSec: 2.3,
+    // NV-PLAYER-UI W-B6：玩家反馈「toast 停留太久还连发」——2.3s → 1.3s，
+    // 连发场景由 dispatcher 合并计数（「×N」），spec §6 权威值待下轮 spec 修订回写。
+    durationSec: 1.3,
     trigger: 'codex-updated',
     mobile: MOBILE,
   },

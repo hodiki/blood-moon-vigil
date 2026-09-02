@@ -118,3 +118,12 @@ export function bossFillFraction(state: HudState): number {
   if (state.bossMaxHp === null || state.bossMaxHp <= 0) return 0;
   return Math.min(1, Math.max(0, (state.bossHp ?? 0) / state.bossMaxHp));
 }
+
+/**
+ * NV-PLAYER-UI W-B6 夜间时钟（渲染端纯函数；数据口 setNightClock 由游戏侧提供 elapsed/total）。
+ * 血月进度填充比例（0~1）：elapsed/total，非法输入兜底 0。
+ */
+export function nightProgressFraction(elapsed: number, total: number): number {
+  if (total <= 0) return 0;
+  return Math.min(1, Math.max(0, elapsed / total));
+}

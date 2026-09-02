@@ -1619,6 +1619,7 @@ function createAmbientAtlas(scene: Phaser.Scene): void {  if (scene.textures.exi
 
 /** 血月天幕：冷青光晕 + 暗红月盘 + 环形高光 + 陨坑（色值全部取 PALETTE/BOSS token） */
 function drawBloodMoon(ctx: Ctx, cx: number, cy: number): void {
+  // NV-PLAYER-UI W-B6 占位（玩家反馈「血月像个大红球」：降饱和 + 柔光晕 + 月相阴影，正式美术交付前兜底）
   // 冷青光晕（多层径向渐变，柔和扩散）
   for (let i = 4; i >= 1; i -= 1) {
     const g = ctx.createRadialGradient(cx, cy, 4, cx, cy, 14 + i * 12);
@@ -1627,14 +1628,30 @@ function drawBloodMoon(ctx: Ctx, cx: number, cy: number): void {
     ctx.fillStyle = g;
     ctx.fillRect(cx - 62, cy - 62, 124, 124);
   }
+  // 柔光晕：月盘外圈暗红辉光（低透明多层，替代硬边「大红球」观感）
+  for (let i = 3; i >= 1; i -= 1) {
+    const g = ctx.createRadialGradient(cx, cy, 22, cx, cy, 22 + i * 8);
+    g.addColorStop(0, hexToRgba(PALETTE.danger, 0.1));
+    g.addColorStop(1, hexToRgba(PALETTE.danger, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - 62, cy - 62, 124, 124);
+  }
   // 月盘：暗红基底（enemyZombie 暗血红 = art-bible「暗红血月」）
   fillCircle(ctx, cx, cy, 26, PALETTE.enemyZombie);
-  // 盘面血色高光（危险红渐变，右上偏亮）
+  // 盘面血色高光（危险红渐变，右上偏亮；W-B6 降饱和：0.75/0.25 → 0.5/0.15）
   const face = ctx.createRadialGradient(cx - 6, cy - 8, 2, cx, cy, 26);
-  face.addColorStop(0, hexToRgba(PALETTE.danger, 0.75));
-  face.addColorStop(0.6, hexToRgba(PALETTE.danger, 0.25));
+  face.addColorStop(0, hexToRgba(PALETTE.danger, 0.5));
+  face.addColorStop(0.6, hexToRgba(PALETTE.danger, 0.15));
   face.addColorStop(1, hexToRgba(PALETTE.danger, 0));
   ctx.fillStyle = face;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+  ctx.fill();
+  // 月相阴影：左下暗面（基底色半透明压暗，破「纯圆球」剪影、读出「月」）
+  const shade = ctx.createRadialGradient(cx + 9, cy - 7, 4, cx - 4, cy + 4, 30);
+  shade.addColorStop(0, hexToRgba(PALETTE.base, 0));
+  shade.addColorStop(1, hexToRgba(PALETTE.base, 0.45));
+  ctx.fillStyle = shade;
   ctx.beginPath();
   ctx.arc(cx, cy, 26, 0, Math.PI * 2);
   ctx.fill();
