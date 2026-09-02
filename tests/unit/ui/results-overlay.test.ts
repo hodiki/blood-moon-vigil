@@ -62,6 +62,22 @@ describe('结算页奖励条（merit-ui-spec §7 / codex-ui-spec §6）', () => 
     expect(legacy.meritEarned).toBeUndefined();
   });
 
+  it('NV-PLAYER-UI W-B3：deathCause/meritBalance 数据口字段面（游戏侧 worker 提供，缺省可选）', () => {
+    // 字段未到（旧调用方）→ 不传不崩，渲染端走兜底（deathCauseText/meritTotal 回退）
+    const legacy: GameOverPayload = { stats: undefined as never, meritTotal: 100 };
+    expect(legacy.deathCause).toBeUndefined();
+    expect(legacy.meritBalance).toBeUndefined();
+    // 字段到位（游戏侧 worker）
+    const filled: GameOverPayload = {
+      stats: undefined as never,
+      deathCause: '血月尊者',
+      meritBalance: 366,
+      meritEarned: 14,
+    };
+    expect(filled.deathCause).toBe('血月尊者');
+    expect(filled.meritBalance).toBe(366);
+  });
+
   it('结算标题（narratives-spec §8.1 / C-5）：胜利 = 封印稳固·守夜完成，失败 = 守夜失败。', () => {
     expect(resultTitle(true)).toBe('封印稳固·守夜完成');
     expect(resultTitle(false)).toBe('守夜失败。');

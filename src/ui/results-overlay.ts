@@ -17,6 +17,13 @@ import { incrementRestartCount } from '@/stats/session-stats';
 import type { RunResult } from '@/stats/run-stats';
 import { NARRATIVES, entryByKey } from '@/narratives/narratives';
 import { meritProgress } from '@/stats/merit';
+import {
+  nightClockText,
+  deathCauseText,
+  meritBalanceText,
+  defeatClosureText,
+  TELEMETRY_TITLE,
+} from '@/config/ui-copy';
 
 const ROLL_DURATION_MS = 800;
 
@@ -65,6 +72,11 @@ export interface GameOverPayload {
   meritTotal?: number;
   /** M3 结算日志条：本局新解锁图鉴条数（codex-ui-spec §6；delta>0 显示「日志 +N」） */
   codexUnlockedDelta?: number;
+  // ───── NV-PLAYER-UI W-B3 玩家三问数据口（游戏侧 worker 提供；缺省走兜底渲染）─────
+  /** NV-PLAYER-UI W-B3：死因归因（击杀来源名；null/缺省 = 兜底「守夜失败于第 N 分钟」） */
+  deathCause?: string | null;
+  /** NV-PLAYER-UI W-B3：余辉余额（历史累计；缺省回退 meritTotal） */
+  meritBalance?: number | null;
 }
 
 export class ResultsOverlay {
@@ -92,6 +104,12 @@ export class ResultsOverlay {
       <div class="bmv-results-mask"></div>
       <div class="bmv-results-panel">
         <div class="bmv-results-title">守夜失败</div>
+        <div class="bmv-results-closure" data-ask="closure" hidden></div>
+        <div class="bmv-results-ask">
+          <div class="bmv-results-ask-row"><span class="bmv-results-ask-icon">☾</span><span data-ask="night">—</span></div>
+          <div class="bmv-results-ask-row" data-ask-row="death" hidden><span class="bmv-results-ask-icon">†</span><span data-ask="death">—</span></div>
+          <div class="bmv-results-ask-row"><span class="bmv-results-ask-icon">✧</span><span data-ask="merit">—</span></div>
+        </div>
         <div class="bmv-results-stats">
           <div class="bmv-results-row"><span class="bmv-results-label">存活时间</span><span class="bmv-results-value" data-roll="time">0:00</span></div>
           <div class="bmv-results-row"><span class="bmv-results-label">击杀数</span><span class="bmv-results-value" data-roll="kills">0</span></div>
@@ -106,21 +124,24 @@ export class ResultsOverlay {
           </div>
           <div class="bmv-results-row"><span class="bmv-results-label">守夜日志</span><span class="bmv-results-value" data-reward="codex">守夜日志已更新</span></div>
         </div>
-        <div class="bmv-results-telemetry">
-          <div class="bmv-results-telemetry-title">真机遥测（M3）</div>
-          <div class="bmv-results-trow"><span class="bmv-results-label">升级 offer</span><span class="bmv-results-value" data-tel="offers">0</span></div>
+        <details class="bmv-results-telemetry">
+          <summary class="bmv-results-telemetry-summary">${TELEMETRY_TITLE}</summary>
+          <div class="bmv-results-telemetry-body">
+          <div class="bmv-results-telemetry-title">本局统计</div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">三选一轮数</span><span class="bmv-results-value" data-tel="offers">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">本局经验</span><span class="bmv-results-value" data-tel="xp">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">进化完成</span><span class="bmv-results-value" data-tel="evolution">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">build 相关卡占比</span><span class="bmv-results-value" data-tel="related">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">Boss 战时长</span><span class="bmv-results-value" data-tel="boss">–</span></div>
-          <div class="bmv-results-telemetry-title">B6 遥测（EG-9 口径）</div>
+          <div class="bmv-results-telemetry-title">进阶统计</div>
           <div class="bmv-results-trow"><span class="bmv-results-label">衍生技 DPS 占比</span><span class="bmv-results-value" data-tel="deriv">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">质变卡时点</span><span class="bmv-results-value" data-tel="mutbeat">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">共鸣达成</span><span class="bmv-results-value" data-tel="reson">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">复活触发</span><span class="bmv-results-value" data-tel="revive">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">精英抽卡</span><span class="bmv-results-value" data-tel="elite">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">树质变节点</span><span class="bmv-results-value" data-tel="tree">0</span></div>
-        </div>
+          </div>
+        </details>
         <div class="bmv-results-build">
           <div class="bmv-results-build-title">Build 回顾</div>
           <div class="bmv-results-build-list"></div>
@@ -180,10 +201,47 @@ export class ResultsOverlay {
     this.root.style.display = 'flex';
     // C-5：标题文案来源 narratives.ts（封印稳固·守夜完成 / 守夜失败。）
     this.titleEl.textContent = resultTitle(stats.victory);
+    this.renderPlayerAsk(stats, extras);
     this.renderBuild(stats.build);
     this.renderTelemetry(stats);
     this.renderRewards(extras);
     this.rollNumbers(stats);
+  }
+
+  /**
+   * NV-PLAYER-UI W-B3：玩家三问（上半部玩家信息层）——
+   * 「现在是夜里几点、距黎明还差多久」/「致命一击来自谁（deathCause，游戏侧数据口，缺省兜底）」/
+   * 「本局余辉 +N（累计 N）（meritBalance，缺省回退 meritTotal）」；失败局补一句叙事收尾。
+   */
+  private renderPlayerAsk(stats: RunResult, extras?: GameOverPayload): void {
+    const nightEl = this.root.querySelector('[data-ask="night"]') as HTMLElement | null;
+    const deathRow = this.root.querySelector('[data-ask-row="death"]') as HTMLElement | null;
+    const deathEl = this.root.querySelector('[data-ask="death"]') as HTMLElement | null;
+    const meritEl = this.root.querySelector('[data-ask="merit"]') as HTMLElement | null;
+    const closureEl = this.root.querySelector('[data-ask="closure"]') as HTMLElement | null;
+
+    // 一问：夜钟（360s → 00:00~06:00；victory = 黎明已至）
+    const clock = nightClockText(stats.survivalSeconds);
+    if (nightEl) nightEl.textContent = `游戏内时刻 ${clock.clock} · ${clock.dawn}`;
+
+    // 二问：死因（仅失败局；deathCause 缺省走「守夜失败于第 N 分钟」兜底）
+    if (!stats.victory) {
+      if (deathEl) deathEl.textContent = deathCauseText(extras?.deathCause, stats.survivalSeconds);
+      if (deathRow) deathRow.hidden = false;
+      // 叙事收尾
+      if (closureEl) {
+        closureEl.textContent = defeatClosureText(stats.survivalSeconds);
+        closureEl.hidden = false;
+      }
+    } else {
+      if (deathRow) deathRow.hidden = true;
+      if (closureEl) closureEl.hidden = true;
+    }
+
+    // 三问：余辉（本局 +N（累计 N）；meritBalance 缺省回退 meritTotal）
+    if (meritEl) {
+      meritEl.textContent = meritBalanceText(extras?.meritEarned ?? 0, extras?.meritBalance ?? extras?.meritTotal ?? 0);
+    }
   }
 
   /** M3 结算奖励条：守夜功绩 +N（本局）+ 进度（累计）/ 守夜日志 +N（本局新解锁） */
@@ -315,6 +373,45 @@ export class ResultsOverlay {
         font-size: 32px; font-weight: 700;
         color: #F2F5F9; margin-bottom: 20px;
       }
+      /* NV-PLAYER-UI W-B3：失败叙事收尾（血月哥特一句） */
+      .bmv-results-closure {
+        font-size: 16px; color: #A9B4C4;
+        letter-spacing: 1px;
+        margin: -12px 0 16px;
+      }
+      /* NV-PLAYER-UI W-B3：玩家三问（夜钟 / 死因 / 余辉） */
+      .bmv-results-ask {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 10px 14px; box-sizing: border-box;
+        background: rgba(11,14,20,0.6);
+        border: 1px solid rgba(42,51,70,0.9);
+        border-left: 3px solid #FF3B30;
+        border-radius: 8px;
+      }
+      .bmv-results-ask-row {
+        display: flex; align-items: baseline; gap: 8px;
+        font-size: 17px; color: #F2F5F9;
+        padding: 3px 0;
+      }
+      .bmv-results-ask-row[hidden] { display: none; }
+      .bmv-results-ask-icon { color: #FFC93C; flex: 0 0 auto; }
+      .bmv-results-telemetry summary {
+        cursor: pointer;
+        list-style: none;
+        min-height: 32px;
+        display: flex; align-items: center;
+        font-size: 14px; font-weight: 700;
+        color: #54E6C9; letter-spacing: 1px;
+        user-select: none; -webkit-user-select: none;
+      }
+      .bmv-results-telemetry summary::before {
+        content: '▸';
+        margin-right: 8px;
+        transition: transform 0.15s ease-out;
+      }
+      .bmv-results-telemetry[open] summary::before { transform: rotate(90deg); }
+      .bmv-results-telemetry-body { padding-top: 4px; }
       .bmv-results-stats {
         width: 100%;
         margin-bottom: 20px;
