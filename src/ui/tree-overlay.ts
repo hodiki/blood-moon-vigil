@@ -10,7 +10,6 @@
 
 import {
   TALENT_TREE,
-  TALENT_TOTAL_COST_RANGE,
   WEAPON_CONFIGS,
   HERO_EXCLUSIVE_PAIRS,
   HEROES,
@@ -20,6 +19,7 @@ import {
   type WeaponId,
 } from '@/config/balance';
 import { resonancePairByExclusive } from '@/config/balance';
+import { TREE_GROUP_COPY, heroBranchTitle } from '@/config/ui-copy';
 import {
   unlockNode, canUnlockNode, respec, totalSpent, treeTotalCost,
   type TreeLedger, type CodexQuery,
@@ -74,6 +74,11 @@ export interface TreeOverlayOptions {
   pureInGame: boolean;
   /** 图鉴前置查询（GT-12；未接 codex 时传恒真） */
   codexQuery?: CodexQuery;
+  /**
+   * NV-PLAYER-UI W-B5：本局结算余辉（玩家侧「本局 +N · 历史累计 N」双行标注数据口；
+   * 游戏侧 worker 提供，缺省只显示历史累计）。主菜单场景无本局值 → 不传。
+   */
+  runMeritEarned?: number | null;
   /** Q-d 预选通武段（P1-10；缺省 = 不渲染预选区） */
   preselect?: PreselectOptions;
   isMobile: boolean;
@@ -87,6 +92,10 @@ export class TreeOverlay {
   private readonly listEl: HTMLElement;
   private readonly pointsEl: HTMLElement;
   private readonly spentEl: HTMLElement;
+  /** NV-PLAYER-UI W-B5：余辉余额双行标注（本局 +N · 历史累计 N） */
+  private readonly pointsSubEl: HTMLElement;
+  /** NV-PLAYER-UI W-B5：纯局内模式说明行（玩家语言） */
+  private readonly pureEl: HTMLElement;
   private ledger: TreeLedger;
   /** Q-d 预选本地镜像（onChange 写回后同步；重渲染数据源） */
   private preselectCurrent: WeaponId | null = null;
@@ -108,14 +117,17 @@ export class TreeOverlay {
       <div class="bmv-tree-panel">
         <div class="bmv-tree-header">
           <div class="bmv-tree-title">滤月余辉</div>
-          <div class="bmv-tree-points"><span class="bmv-tree-points-num"></span><span class="bmv-tree-points-unit">余辉</span></div>
+          <div class="bmv-tree-points">
+            <span class="bmv-tree-points-num"></span><span class="bmv-tree-points-unit">余辉</span>
+            <div class="bmv-tree-points-sub"></div>
+          </div>
           <div class="bmv-tree-meta"></div>
           <div class="bmv-tree-actions">
             <button class="bmv-tree-respec" type="button">洗点（免费·下局生效）</button>
             <button class="bmv-tree-close" type="button">返回</button>
           </div>
         </div>
-        <div class="bmv-tree-pure">纯局内模式：属性层关闭、质变全开（基准规则；模式去留待商榷）</div>
+        <div class="bmv-tree-pure"></div>
         <div class="bmv-tree-list"></div>
       </div>
     `;
@@ -123,6 +135,10 @@ export class TreeOverlay {
     this.listEl = this.root.querySelector('.bmv-tree-list') as HTMLElement;
     this.pointsEl = this.root.querySelector('.bmv-tree-points-num') as HTMLElement;
     this.spentEl = this.root.querySelector('.bmv-tree-meta') as HTMLElement;
+    this.pointsSubEl = this.root.querySelector('.bmv-tree-points-sub') as HTMLElement;
+    this.pureEl = this.root.querySelector('.bmv-tree-pure') as HTMLElement;
+    // NV-PLAYER-UI W-B5：开发措辞「纯局内模式……待商榷」→ 玩家语言「自由试炼模式」
+    this.pureEl.textContent = opts.pureInGame ? TREE_GROUP_COPY.pureInGame : '';
 
     (this.root.querySelector('.bmv-tree-close') as HTMLElement).addEventListener('click', () => {
       this.root.remove();
@@ -144,15 +160,22 @@ export class TreeOverlay {
   /** 列表化渲染：主干按层分组 + 支线按角色分组（降级预案 §⑧；44px 行高触区） */
   private renderList(): void {
     this.pointsEl.textContent = String(this.ledger.points);
-    this.spentEl.textContent = `已投入 ${totalSpent(this.ledger)} / 全树 ${treeTotalCost()} 点（${TALENT_TOTAL_COST_RANGE[0]}~${TALENT_TOTAL_COST_RANGE[1]}）`;
+    // NV-PLAYER-UI W-B5：大数字旁双行标注（回应玩家「366 是旧存档还是这一夜的」困惑）。
+    // 口径按派发说明：save.meritPoints = 历史累计；本局值由游戏侧 runMeritEarned 提供。
+    this.pointsSubEl.textContent = this.opts.runMeritEarned != null
+      ? `本局 +${Math.max(0, Math.floor(this.opts.runMeritEarned))} · 历史累计 ${this.ledger.points}`
+      : `历史累计 ${this.ledger.points}`;
+    // NV-PLAYER-UI W-B5：开发参数「（A~B）」成本区间删除，保留玩家可读口径
+    this.spentEl.textContent = `已投入 ${totalSpent(this.ledger)} · 全树共需 ${treeTotalCost()} 点`;
     const codex = this.opts.codexQuery ?? (() => true);
     const groups: Array<{ title: string; nodes: TalentNodeConfig[] }> = [
-      { title: '质变铭刻（改变这一夜怎么开始）', nodes: TALENT_TREE.filter((n) => n.kind === 'mutation') },
-      { title: '属性浸染（克制的小颗粒微调）', nodes: TALENT_TREE.filter((n) => n.kind === 'attribute') },
+      { title: TREE_GROUP_COPY.mutation, nodes: TALENT_TREE.filter((n) => n.kind === 'mutation') },
+      { title: TREE_GROUP_COPY.attribute, nodes: TALENT_TREE.filter((n) => n.kind === 'attribute') },
     ];
+    // NV-PLAYER-UI W-B5：支线名 br_<hero> → 角色真名「艾德蒙支线」等（HEROES.name，禁止编造）
     for (const hero of ['edmund', 'cassandra', 'violet', 'galvan']) {
       groups.push({
-        title: `支线 · ${hero}`,
+        title: heroBranchTitle(hero),
         nodes: TALENT_TREE.filter((n) => n.id.startsWith(`br_${hero}`)),
       });
     }
@@ -193,8 +216,8 @@ export class TreeOverlay {
     if (!pre) return '';
     const lit = (this.ledger.purchases['q_d'] ?? 0) >= 1;
     if (!lit) {
-      return `<div class="bmv-tree-group-title">预选通武 · 携行旧兵（未点亮 Q-d）</div>
-        <div class="bmv-tree-preselect-hint">点亮「携行旧兵」后可预选 1 把已解锁通武进局即得。</div>`;
+      return `<div class="bmv-tree-group-title">预选通武 · 携行旧兵（未点亮）</div>
+        <div class="bmv-tree-preselect-hint">点亮「携行旧兵」后，可预选 1 把已解锁的旧兵进局即得。</div>`;
     }
     if (pre.unlockedWeaponIds.length === 0) {
       return `<div class="bmv-tree-group-title">预选通武 · 携行旧兵</div>
@@ -258,6 +281,9 @@ export class TreeOverlay {
       .bmv-tree-title { font-size: 22px; font-weight: 700; color: #FFC93C; }
       .bmv-tree-points-num { font-size: 30px; font-weight: 800; color: #FFC93C; } /* ≥28px 大数字 §⑧ */
       .bmv-tree-points-unit { font-size: 14px; color: #A9B4C4; margin-left: 4px; }
+      /* NV-PLAYER-UI W-B5：余辉余额双行标注（本局 +N · 历史累计 N；回应「366 是旧存档吗」困惑） */
+      .bmv-tree-points { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 4px; }
+      .bmv-tree-points-sub { flex-basis: 100%; font-size: 12px; color: #A9B4C4; }
       .bmv-tree-meta { font-size: 13px; color: #6A7280; flex: 1; }
       .bmv-tree-actions { display: flex; gap: 8px; }
       .bmv-tree-actions button {

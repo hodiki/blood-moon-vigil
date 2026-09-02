@@ -45,6 +45,7 @@ import {
 } from '@/config/balance';
 import type { SaveData } from '@/stats/save';
 import { preferFrameImg } from '@/ui/frame-img';
+import { CODEX_RETIRED_NOTE } from '@/config/ui-copy';
 import { codexIconFrame } from '@/codex/codex-icon-frame';
 import { bindPanelA11y } from '@/ui/panel-a11y';
 
@@ -259,7 +260,7 @@ export class CodexOverlay {
     if (isRetiredCategory(category)) {
       const note = document.createElement('div');
       note.className = 'bmv-codex-retired-note';
-      note.textContent = '已退役 · 超武进化轨道归档（EG-2 双轨收口；数据保留，由共鸣/质变卡双轨替代）';
+      note.textContent = CODEX_RETIRED_NOTE;
       this.grid.appendChild(note);
     }
     const entries = CODEX_ENTRIES.filter((e) => e.category === category);
@@ -612,7 +613,7 @@ export function detailFor(entry: CodexEntry): { label: string; value: string }[]
         { label: '名称', value: cfg.name },
         { label: '类', value: cfg.class },
         { label: '力量', value: NP[cfg.powerTag] },
-        { label: '基础 DPS', value: String(cfg.baseDps) },
+        { label: '基础火力', value: String(cfg.baseDps) },
         { label: '手感', value: cfg.feel },
         { label: '超武合成', value: evolutionForWeapon(id) ?? '—' },
       ];
@@ -623,7 +624,7 @@ export function detailFor(entry: CodexEntry): { label: string; value: string }[]
       return [
         { label: '名称', value: evo.name },
         { label: '合成', value: `${WEAPON_CONFIGS[evo.wpnId]?.name ?? evo.wpnId} + ${evo.keyId}` },
-        { label: '等效 DPS', value: String(evo.baseDps) },
+        { label: '火力（超凡形态）', value: String(evo.baseDps) },
         { label: '行为质变', value: evo.effect },
       ];
     }
