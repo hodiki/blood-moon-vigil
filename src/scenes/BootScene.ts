@@ -7,7 +7,7 @@
  * Phase 6 音频接入（audio-bible §4 / ux-spec §1）：
  * - create 时用 Phaser WebAudio 后端初始化 AudioManager（压缩器总线/心跳/SFX 合成）
  * - 启动页「点击开始」= 唯一音频解锁点：回调内 unlock() 后再进 PlayScene
- * - `?smoke=1` 内嵌自检：跳过启动页直接进 Play（L2 冒烟无手势，audio 未解锁即静默 no-op）
+ * - `?smoke=1` 内嵌自检 / `?bench=1` 性能基准：跳过启动页直接进 Play（无手势自动化，audio 未解锁即静默 no-op）
  */
 
 import Phaser from 'phaser';
@@ -33,10 +33,11 @@ export class BootScene extends Phaser.Scene {
     // Phase 6 音频：程序合成引擎（WebAudio 后端，压缩器总线；HTML5Audio 兜底静默降级）
     AudioManager.getInstance().init(this.sound, { isMobile: detectIsMobile() });
 
-    // ?smoke=1 冒烟：跳过手势解锁直接进 Play（PlayScene 内 audio 未解锁 → 全部 no-op 不报错）
-    const isSmoke =
-      typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('smoke');
-    if (isSmoke) {
+    // ?smoke=1 冒烟 / ?bench=1 基准：跳过手势解锁直接进 Play（无手势自动化）。
+    // PlayScene 内 audio 未解锁 → 全部 no-op 不报错；bench 亦无需启动页点击即可 36s 采样。
+    const autoStartParams =
+      typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    if (autoStartParams.has('smoke') || autoStartParams.has('bench')) {
       this.scene.start('Play');
       return;
     }
