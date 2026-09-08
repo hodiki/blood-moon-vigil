@@ -1,0 +1,49 @@
+# 最小 CI（test-framework.md §5：typecheck → test → build → 内嵌冒烟）。
+# Lean 原则：只保"可机械判定、快"的门禁；性能基准（npm run bench）为里程碑级，不进每 PR。
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# 同一分支的旧运行被新推送取代，避免排队浪费。
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck · test · build · smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests (Vitest L1)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Frame registry guard
+        run: npm run frame-registry:ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke e2e (Playwright L2)
+        run: npx playwright test
