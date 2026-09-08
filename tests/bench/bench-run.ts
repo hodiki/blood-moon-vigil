@@ -81,14 +81,14 @@ function waitForServer(url: string, timeoutMs: number): Promise<void> {
   });
 }
 
-async function browserBench(): Promise<{ result: BenchResult | null; note: string }> {
+async function browserBench(): Promise<{ result: BenchResult | null; note: string; renderer: string }> {
   const args = process.argv.slice(2);
   const wantsBrowser = process.env.BENCH_BROWSER === '1' || args.includes('--browser');
   if (!existsSync(DIST_INDEX)) {
-    return { result: null, note: 'dist 未构建（先运行 npm run build），跳过浏览器真实 fps 基准。' };
+    return { result: null, note: 'dist 未构建（先运行 npm run build），跳过浏览器真实 fps 基准。', renderer: '' };
   }
   if (!wantsBrowser) {
-    return { result: null, note: '未启用（BENCH_BROWSER=1 或 --browser 时执行浏览器真实 fps 基准）。' };
+    return { result: null, note: '未启用（BENCH_BROWSER=1 或 --browser 时执行浏览器真实 fps 基准）。', renderer: '' };
   }
 
   // eslint-disable-next-line no-console
@@ -109,6 +109,18 @@ async function browserBench(): Promise<{ result: BenchResult | null; note: strin
     try {
       const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
       await page.goto(`http://localhost:${PREVIEW_PORT}/?bench=1`, { waitUntil: 'load' });
+      // WebGL 渲染器串：用于判定是否软件渲染（swiftshader/llvmpipe），据此把 fps 降级为"仅参考"。
+      const renderer = await page.evaluate(() => {
+        try {
+          const c = document.createElement('canvas');
+          const gl = (c.getContext('webgl') ?? c.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+          if (!gl) return 'no-webgl';
+          const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+          return String(dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+        } catch {
+          return 'unknown';
+        }
+      });
       await page.waitForFunction(
         () => (window as unknown as { __BENCH_RESULT__?: BenchResult }).__BENCH_RESULT__ !== undefined,
         undefined,
@@ -117,7 +129,7 @@ async function browserBench(): Promise<{ result: BenchResult | null; note: strin
       const result = (await page.evaluate(
         () => (window as unknown as { __BENCH_RESULT__: BenchResult }).__BENCH_RESULT__,
       )) as BenchResult;
-      return { result, note: '' };
+      return { result, note: '', renderer };
     } finally {
       await browser.close();
     }
@@ -132,34 +144,57 @@ async function main(): Promise<void> {
 
   const headlessOk = headlessAll();
 
-  const { result, note } = await browserBench();
+  const { result, note, renderer } = await browserBench();
   if (note) {
     // eslint-disable-next-line no-console
     console.log(`[bench] ${note}`);
   }
   let browserOk = true;
   if (result) {
+    const softwareRendered = /swiftshader|llvmpipe|softpipe|swrast|software/i.test(renderer);
+    // eslint-disable-next-line no-console
+    console.log(`[bench] 浏览器渲染器：${renderer || '未知'}${softwareRendered ? '（软件渲染，fps 仅参考，非真机 GPU）' : ''}`);
     // eslint-disable-next-line no-console
     console.log(
       `[bench] 浏览器真实 fps（${result.platform}）：avg ${result.avgFps.toFixed(1)} / min ${result.minFps.toFixed(1)}` +
         ` | 峰值敌人 ${result.peakActiveEnemies} / 子弹 ${result.peakActiveBullets}` +
         ` | draw call 估算 ${result.drawCallEstimate} | 帧 ${result.frames}`,
     );
-    const report = assertBenchMetrics(result, DESKTOP_THRESHOLDS);
-    const strictFps = process.env.BENCH_STRICT_FPS === '1' || process.argv.slice(2).includes('--strict-fps');
-    if (!report.pass) {
+
+    // 预算断言（同屏峰值/子弹/draw call）与渲染后端无关，始终严格。
+    const budgetReport = assertBenchMetrics(
+      {
+        peakActiveEnemies: result.peakActiveEnemies,
+        peakActiveBullets: result.peakActiveBullets,
+        drawCallEstimate: result.drawCallEstimate,
+      },
+      DESKTOP_THRESHOLDS,
+    );
+    if (!budgetReport.pass) {
       browserOk = false;
       // eslint-disable-next-line no-console
-      console.error(`[bench] 浏览器基准断言失败：${report.failures.join('；')}`);
-      if (!strictFps) {
+      console.error(`[bench] 浏览器预算断言失败：${budgetReport.failures.join('；')}`);
+    }
+
+    // fps 断言：仅在真机 GPU + 严格模式下阻塞；软件渲染（swiftshader/llvmpipe）恒为"仅参考"。
+    const strictFps = process.env.BENCH_STRICT_FPS === '1' || process.argv.slice(2).includes('--strict-fps');
+    const fpsReport = assertBenchMetrics(
+      { avgFps: result.avgFps, minFps: result.minFps, peakActiveEnemies: 0, peakActiveBullets: 0, drawCallEstimate: 0 },
+      DESKTOP_THRESHOLDS,
+    );
+    if (!fpsReport.pass) {
+      if (strictFps && !softwareRendered) {
+        browserOk = false;
+        // eslint-disable-next-line no-console
+        console.error(`[bench] 浏览器 fps 断言失败（严格·真机 GPU）：${fpsReport.failures.join('；')}`);
+      } else {
         // eslint-disable-next-line no-console
         console.error(
-          '[bench] 提示：headless swiftshader 为软件渲染，不代表真实桌面 GPU。' +
-            '请用真机桌面 Chrome 跑 `npm run bench:browser` 复核 M2 fps 闸门。',
+          `[bench] fps 未达标（${fpsReport.failures.join('；')}）——` +
+            `${softwareRendered ? '软件渲染不代表真机 GPU，' : ''}仅参考。请用真机桌面 Chrome（集显/独显）复核 M2 fps 闸门。`,
         );
-        browserOk = true; // 非严格模式下 fps 仅参考，不阻塞 CI
       }
-    } else {
+    } else if (budgetReport.pass) {
       // eslint-disable-next-line no-console
       console.log('[bench] 浏览器基准断言通过。');
     }
@@ -171,4 +206,8 @@ async function main(): Promise<void> {
   process.exit(pass ? 0 : 1);
 }
 
-void main();
+void main().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('[bench] 运行异常：', err instanceof Error ? err.message : err);
+  process.exit(1);
+});
