@@ -1,0 +1,525 @@
+{
+  "idleMetrics": {
+    "minX": 36,
+    "minY": 16,
+    "maxX": 91,
+    "maxY": 127,
+    "bw": 56,
+    "bh": 112,
+    "cx": 70.77766990291262,
+    "cy": 82.51521035598705,
+    "footY": 127,
+    "topY": 16,
+    "n": 3090
+  },
+  "thresh": 28,
+  "fill": {
+    "w": 114,
+    "h": 114
+  },
+  "margin": 7,
+  "shared": {
+    "s2-a": 0.14709677419354839,
+    "s3c-b": 0.18506493506493507
+  },
+  "frames": [
+    {
+      "gun": "s2-a",
+      "phase": "a",
+      "srcFrame": 9,
+      "file": "comfy_lan_e2_s4_s2_a_00058_.png",
+      "name": "s2-a-walk-a-128.png",
+      "crop": {
+        "w": 425,
+        "h": 756
+      },
+      "placed": {
+        "tw": 63,
+        "th": 111,
+        "ox": 33,
+        "oy": 17,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 33,
+        "minY": 17,
+        "maxX": 94,
+        "maxY": 127,
+        "bw": 62,
+        "bh": 111,
+        "cx": 68.35370714855169,
+        "cy": 85.06962529896359,
+        "footY": 127,
+        "topY": 17,
+        "n": 3763
+      },
+      "gate": {
+        "hypot": 3.52,
+        "dCx": 2.42,
+        "dCy": 2.55,
+        "dFoot": 0,
+        "dAreaPct": 21.8,
+        "ok": true,
+        "issues": []
+      }
+    },
+    {
+      "gun": "s2-a",
+      "phase": "e",
+      "srcFrame": 12,
+      "file": "comfy_lan_e2_s4_s2_a_00061_.png",
+      "name": "s2-a-walk-e-128.png",
+      "crop": {
+        "w": 480,
+        "h": 764
+      },
+      "placed": {
+        "tw": 71,
+        "th": 112,
+        "ox": 28,
+        "oy": 16,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 17,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 111,
+        "cx": 65.55112096575512,
+        "cy": 84.94826311899483,
+        "footY": 127,
+        "topY": 17,
+        "n": 4059
+      },
+      "gate": {
+        "hypot": 5.77,
+        "dCx": 5.23,
+        "dCy": 2.43,
+        "dFoot": 0,
+        "dAreaPct": 31.4,
+        "ok": false,
+        "issues": [
+          "面积 Δ 31.4% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s2-a",
+      "phase": "b",
+      "srcFrame": 14,
+      "file": "comfy_lan_e2_s4_s2_a_00063_.png",
+      "name": "s2-a-walk-b-128.png",
+      "crop": {
+        "w": 480,
+        "h": 751
+      },
+      "placed": {
+        "tw": 71,
+        "th": 110,
+        "ox": 28,
+        "oy": 18,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 19,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 109,
+        "cx": 65.93672727272727,
+        "cy": 86.04872727272728,
+        "footY": 127,
+        "topY": 19,
+        "n": 4125
+      },
+      "gate": {
+        "hypot": 5.99,
+        "dCx": 4.84,
+        "dCy": 3.53,
+        "dFoot": 0,
+        "dAreaPct": 33.5,
+        "ok": false,
+        "issues": [
+          "面积 Δ 33.5% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s2-a",
+      "phase": "c",
+      "srcFrame": 18,
+      "file": "comfy_lan_e2_s4_s2_a_00067_.png",
+      "name": "s2-a-walk-c-128.png",
+      "crop": {
+        "w": 437,
+        "h": 772
+      },
+      "placed": {
+        "tw": 64,
+        "th": 114,
+        "ox": 32,
+        "oy": 14,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 32,
+        "minY": 15,
+        "maxX": 95,
+        "maxY": 127,
+        "bw": 64,
+        "bh": 113,
+        "cx": 70.37070479056935,
+        "cy": 84.94181088537748,
+        "footY": 127,
+        "topY": 15,
+        "n": 3987
+      },
+      "gate": {
+        "hypot": 2.46,
+        "dCx": 0.41,
+        "dCy": 2.43,
+        "dFoot": 0,
+        "dAreaPct": 29,
+        "ok": false,
+        "issues": [
+          "面积 Δ 29.0% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s2-a",
+      "phase": "f",
+      "srcFrame": 20,
+      "file": "comfy_lan_e2_s4_s2_a_00069_.png",
+      "name": "s2-a-walk-f-128.png",
+      "crop": {
+        "w": 480,
+        "h": 775
+      },
+      "placed": {
+        "tw": 71,
+        "th": 114,
+        "ox": 28,
+        "oy": 14,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 15,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 113,
+        "cx": 68.77021276595745,
+        "cy": 86.34818523153942,
+        "footY": 127,
+        "topY": 15,
+        "n": 3995
+      },
+      "gate": {
+        "hypot": 4.33,
+        "dCx": 2.01,
+        "dCy": 3.83,
+        "dFoot": 0,
+        "dAreaPct": 29.3,
+        "ok": false,
+        "issues": [
+          "面积 Δ 29.3% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s2-a",
+      "phase": "d",
+      "srcFrame": 23,
+      "file": "comfy_lan_e2_s4_s2_a_00072_.png",
+      "name": "s2-a-walk-d-128.png",
+      "crop": {
+        "w": 480,
+        "h": 763
+      },
+      "placed": {
+        "tw": 71,
+        "th": 112,
+        "ox": 28,
+        "oy": 16,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 17,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 111,
+        "cx": 67.88742727042752,
+        "cy": 86.31697444978498,
+        "footY": 127,
+        "topY": 17,
+        "n": 3953
+      },
+      "gate": {
+        "hypot": 4.78,
+        "dCx": 2.89,
+        "dCy": 3.8,
+        "dFoot": 0,
+        "dAreaPct": 27.9,
+        "ok": false,
+        "issues": [
+          "面积 Δ 27.9% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s3c-b",
+      "phase": "a",
+      "srcFrame": 9,
+      "file": "comfy_lan_e2_s4_s3c_b_00058_.png",
+      "name": "s3c-b-walk-a-128.png",
+      "crop": {
+        "w": 338,
+        "h": 600
+      },
+      "placed": {
+        "tw": 63,
+        "th": 111,
+        "ox": 32,
+        "oy": 17,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 32,
+        "minY": 17,
+        "maxX": 94,
+        "maxY": 127,
+        "bw": 63,
+        "bh": 111,
+        "cx": 67.15937670858392,
+        "cy": 85.22662657189721,
+        "footY": 127,
+        "topY": 17,
+        "n": 3658
+      },
+      "gate": {
+        "hypot": 4.52,
+        "dCx": 3.62,
+        "dCy": 2.71,
+        "dFoot": 0,
+        "dAreaPct": 18.4,
+        "ok": true,
+        "issues": []
+      }
+    },
+    {
+      "gun": "s3c-b",
+      "phase": "e",
+      "srcFrame": 12,
+      "file": "comfy_lan_e2_s4_s3c_b_00061_.png",
+      "name": "s3c-b-walk-e-128.png",
+      "crop": {
+        "w": 372,
+        "h": 603
+      },
+      "placed": {
+        "tw": 69,
+        "th": 112,
+        "ox": 29,
+        "oy": 16,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 29,
+        "minY": 16,
+        "maxX": 97,
+        "maxY": 127,
+        "bw": 69,
+        "bh": 112,
+        "cx": 66.26524466750314,
+        "cy": 84.04165621079046,
+        "footY": 127,
+        "topY": 16,
+        "n": 3985
+      },
+      "gate": {
+        "hypot": 4.76,
+        "dCx": 4.51,
+        "dCy": 1.53,
+        "dFoot": 0,
+        "dAreaPct": 29,
+        "ok": false,
+        "issues": [
+          "面积 Δ 29.0% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s3c-b",
+      "phase": "b",
+      "srcFrame": 14,
+      "file": "comfy_lan_e2_s4_s3c_b_00063_.png",
+      "name": "s3c-b-walk-b-128.png",
+      "crop": {
+        "w": 384,
+        "h": 599
+      },
+      "placed": {
+        "tw": 71,
+        "th": 111,
+        "ox": 28,
+        "oy": 17,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 17,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 111,
+        "cx": 65.83382862803369,
+        "cy": 85.17533432392274,
+        "footY": 127,
+        "topY": 17,
+        "n": 4038
+      },
+      "gate": {
+        "hypot": 5.61,
+        "dCx": 4.94,
+        "dCy": 2.66,
+        "dFoot": 0,
+        "dAreaPct": 30.7,
+        "ok": false,
+        "issues": [
+          "面积 Δ 30.7% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s3c-b",
+      "phase": "c",
+      "srcFrame": 17,
+      "file": "comfy_lan_e2_s4_s3c_b_00066_.png",
+      "name": "s3c-b-walk-c-128.png",
+      "crop": {
+        "w": 384,
+        "h": 605
+      },
+      "placed": {
+        "tw": 71,
+        "th": 112,
+        "ox": 28,
+        "oy": 16,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 16,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 112,
+        "cx": 66.36247055744569,
+        "cy": 85.94320858414028,
+        "footY": 127,
+        "topY": 16,
+        "n": 3821
+      },
+      "gate": {
+        "hypot": 5.59,
+        "dCx": 4.42,
+        "dCy": 3.43,
+        "dFoot": 0,
+        "dAreaPct": 23.7,
+        "ok": true,
+        "issues": []
+      }
+    },
+    {
+      "gun": "s3c-b",
+      "phase": "f",
+      "srcFrame": 19,
+      "file": "comfy_lan_e2_s4_s3c_b_00068_.png",
+      "name": "s3c-b-walk-f-128.png",
+      "crop": {
+        "w": 384,
+        "h": 616
+      },
+      "placed": {
+        "tw": 71,
+        "th": 114,
+        "ox": 29,
+        "oy": 14,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 29,
+        "minY": 14,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 70,
+        "bh": 114,
+        "cx": 66.96565969532662,
+        "cy": 85.84224115672605,
+        "footY": 127,
+        "topY": 14,
+        "n": 3873
+      },
+      "gate": {
+        "hypot": 5.06,
+        "dCx": 3.81,
+        "dCy": 3.33,
+        "dFoot": 0,
+        "dAreaPct": 25.3,
+        "ok": false,
+        "issues": [
+          "面积 Δ 25.3% > 25%"
+        ]
+      }
+    },
+    {
+      "gun": "s3c-b",
+      "phase": "d",
+      "srcFrame": 22,
+      "file": "comfy_lan_e2_s4_s3c_b_00071_.png",
+      "name": "s3c-b-walk-d-128.png",
+      "crop": {
+        "w": 384,
+        "h": 610
+      },
+      "placed": {
+        "tw": 71,
+        "th": 113,
+        "ox": 28,
+        "oy": 15,
+        "footTarget": 127
+      },
+      "metrics": {
+        "minX": 28,
+        "minY": 15,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 113,
+        "cx": 67.4213882756929,
+        "cy": 86.10522442972774,
+        "footY": 127,
+        "topY": 15,
+        "n": 4077
+      },
+      "gate": {
+        "hypot": 4.91,
+        "dCx": 3.36,
+        "dCy": 3.59,
+        "dFoot": 0,
+        "dAreaPct": 31.9,
+        "ok": false,
+        "issues": [
+          "面积 Δ 31.9% > 25%"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+Official Comfy template (UI format, subgraphs): Wan Animate 2
+Local: tools/comfy-lan/workflows/wan-animate2-official.ui.json
+GPU:   D:\ComfyUI\user\default\workflows\Wan-Animate-2.json
+
+From Hodiki when :8188 is up:
+
+  curl.exe -sS -X POST "http://192.168.101.200:8188/api/userdata/workflows%2FWan-Animate-2.json?overwrite=true" -H "Content-Type: application/json" --data-binary "@tools\comfy-lan\workflows\wan-animate2-official.ui.json"
+
+Already uploaded 2026-09-11. Do not Queue from this UI graph as-is on 8GB
+(default: non-distill UNET, 832x480, length 81, Cache gpu).
+
+After weights land: open in Comfy, switch UNET to distill INT8, VAE to wan_2.1_vae,
+480x832, length 17, Cache cpu/int8, Save (API Format) -> wan-animate2-vo-walk.api.json
+
+Do not write assets\frames.

@@ -1,0 +1,121 @@
+{
+  "pick": {
+    "skill-a": "A1 seed 2026091701",
+    "skill-b": "B2 seed 2026091704"
+  },
+  "idleScale": 0.13636363636363635,
+  "fill": {
+    "w": 114,
+    "h": 114
+  },
+  "idleCrop": {
+    "minX": 17,
+    "maxX": 430,
+    "minY": 147,
+    "maxY": 982,
+    "w": 414,
+    "h": 836,
+    "n": 176178
+  },
+  "idleMetrics": {
+    "minX": 36,
+    "minY": 16,
+    "maxX": 91,
+    "maxY": 127,
+    "bw": 56,
+    "bh": 112,
+    "cx": 70.7848669445335,
+    "cy": 82.18275088169285,
+    "footY": 127,
+    "topY": 16,
+    "n": 3119
+  },
+  "frames": [
+    {
+      "id": "skill-a",
+      "frame": "hero-violet-skill-a",
+      "crop": {
+        "minX": 17,
+        "maxX": 444,
+        "minY": 37,
+        "maxY": 982,
+        "w": 428,
+        "h": 946,
+        "n": 191720
+      },
+      "holesFilled": 27840,
+      "placed": {
+        "tw": 58,
+        "th": 129,
+        "ox": 34,
+        "oy": -1,
+        "clipped": 1
+      },
+      "metrics": {
+        "minX": 35,
+        "minY": 0,
+        "maxX": 91,
+        "maxY": 127,
+        "bw": 57,
+        "bh": 128,
+        "cx": 70.26565143824027,
+        "cy": 76.09278059785674,
+        "footY": 127,
+        "topY": 0,
+        "n": 3546
+      },
+      "gate": {
+        "hypot": 6.11,
+        "dCx": 0.52,
+        "dCy": 6.09,
+        "dFoot": 0,
+        "dAreaPct": 13.7,
+        "ok": true,
+        "issues": []
+      }
+    },
+    {
+      "id": "skill-b",
+      "frame": "hero-violet-skill-b",
+      "crop": {
+        "minX": 17,
+        "maxX": 505,
+        "minY": 147,
+        "maxY": 982,
+        "w": 489,
+        "h": 836,
+        "n": 195818
+      },
+      "holesFilled": 19734,
+      "placed": {
+        "tw": 67,
+        "th": 114,
+        "ox": 30,
+        "oy": 14,
+        "clipped": 0
+      },
+      "metrics": {
+        "minX": 30,
+        "minY": 14,
+        "maxX": 96,
+        "maxY": 127,
+        "bw": 67,
+        "bh": 114,
+        "cx": 67.31805782869613,
+        "cy": 79.63066012002182,
+        "footY": 127,
+        "topY": 14,
+        "n": 3666
+      },
+      "gate": {
+        "hypot": 4.3,
+        "dCx": 3.47,
+        "dCy": 2.55,
+        "dFoot": 0,
+        "dAreaPct": 17.5,
+        "ok": true,
+        "issues": []
+      }
+    }
+  ]
+}

@@ -219,19 +219,19 @@
     },
     "hero-violet-skill-a": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9961
     },
     "hero-violet-skill-b": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9961
     },
     "hero-violet-v": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9961
     },
     "hero-violet": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9961
     },
     "marker-aura": {
       "x": 0.5,
@@ -603,23 +603,23 @@
     },
     "summon-oathkeeper": {
       "x": 0.5,
-      "y": 0.9271
+      "y": 0.9479
     },
     "summon-oathkeeper-tombstone": {
       "x": 0.5,
-      "y": 0.9271
+      "y": 0.9479
     },
     "summon-oathkeeper-v": {
       "x": 0.5,
-      "y": 0.9271
+      "y": 0.9479
     },
     "summon-moonwolf": {
       "x": 0.5,
-      "y": 0.9271
+      "y": 0.9479
     },
     "summon-moonwolf-v": {
       "x": 0.5,
-      "y": 0.9271
+      "y": 0.9479
     },
     "proj-revolver": {
       "x": 0.5,
@@ -1095,11 +1095,11 @@
     },
     "hero-violet-walk-a": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9961
     },
     "hero-violet-walk-b": {
       "x": 0.5,
-      "y": 0.9141
+      "y": 0.9961
     },
     "hero-galvan-walk-a": {
       "x": 0.5,
@@ -1108,6 +1108,62 @@
     "hero-galvan-walk-b": {
       "x": 0.5,
       "y": 0.9297
+    },
+    "hero-cassandra-walk-c": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-walk-d": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-walk-e": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-cassandra-walk-f": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player-walk-e": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player-walk-c": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player-walk-f": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "player-walk-d": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "hero-violet-walk-e": {
+      "x": 0.5,
+      "y": 0.9961
+    },
+    "hero-violet-walk-c": {
+      "x": 0.5,
+      "y": 0.9961
+    },
+    "hero-violet-walk-f": {
+      "x": 0.5,
+      "y": 0.9961
+    },
+    "hero-violet-walk-d": {
+      "x": 0.5,
+      "y": 0.9961
+    },
+    "hero-violet-fallen": {
+      "x": 0.5,
+      "y": 0.9961
+    },
+    "hero-violet-fallen-v": {
+      "x": 0.5,
+      "y": 0.9961
     }
   }
 }

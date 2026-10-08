@@ -1,0 +1,142 @@
+{
+  "d2": {
+    "box": {
+      "minX": 512,
+      "maxX": 967,
+      "minY": 40,
+      "maxY": 921,
+      "w": 456,
+      "h": 882,
+      "n": 196714
+    },
+    "bg": [
+      190.6,
+      179.4,
+      164.4
+    ],
+    "boxed": {
+      "dw": 87,
+      "dh": 168
+    },
+    "stats": {
+      "opaque": 7138,
+      "flame": 9,
+      "silver": 176,
+      "skin": 20,
+      "holes": 4,
+      "headTop": 24,
+      "headPx": 836,
+      "box": 192
+    }
+  },
+  "krea": [
+    {
+      "file": "d:\\code\\vampire-survivors-like\\assets\\ui-menu\\preview\\locked\\combat-64\\_park\\comfy-lan\\2026-09-09T17-48-11-790Z\\comfy_lan_ok_w15_hi_00001_.png",
+      "label": "hi",
+      "short": "04-w16-hi-192.png",
+      "mode": "void",
+      "srcBox": {
+        "minX": 112,
+        "maxX": 399,
+        "minY": 0,
+        "maxY": 1023,
+        "w": 288,
+        "h": 1024,
+        "n": 292909
+      },
+      "dw": 47,
+      "dh": 168,
+      "stats": {
+        "opaque": 7825,
+        "flame": 171,
+        "silver": 4,
+        "skin": 2528,
+        "holes": 0,
+        "headTop": 24,
+        "headPx": 1649,
+        "box": 192
+      }
+    },
+    {
+      "file": "d:\\code\\vampire-survivors-like\\assets\\ui-menu\\preview\\locked\\combat-64\\_park\\comfy-lan\\2026-09-09T17-48-22-113Z\\comfy_lan_ok_w15_lo_00001_.png",
+      "label": "lo",
+      "short": "05-w16-lo-192.png",
+      "mode": "void",
+      "srcBox": {
+        "minX": 78,
+        "maxX": 400,
+        "minY": 0,
+        "maxY": 1023,
+        "w": 323,
+        "h": 1024,
+        "n": 293884
+      },
+      "dw": 53,
+      "dh": 168,
+      "stats": {
+        "opaque": 7877,
+        "flame": 192,
+        "silver": 0,
+        "skin": 3261,
+        "holes": 0,
+        "headTop": 24,
+        "headPx": 1667,
+        "box": 192
+      }
+    },
+    {
+      "file": "d:\\code\\vampire-survivors-like\\assets\\ui-menu\\preview\\locked\\combat-64\\_park\\comfy-lan\\2026-09-09T18-07-04-956Z\\comfy_lan_ok_w16_lo_00001_.png",
+      "label": "Blo",
+      "short": "13-w16-blo-192.png",
+      "mode": "void",
+      "srcBox": {
+        "minX": 86,
+        "maxX": 395,
+        "minY": 7,
+        "maxY": 1010,
+        "w": 310,
+        "h": 1004,
+        "n": 198660
+      },
+      "dw": 52,
+      "dh": 168,
+      "stats": {
+        "opaque": 5460,
+        "flame": 169,
+        "silver": 2,
+        "skin": 163,
+        "holes": 0,
+        "headTop": 25,
+        "headPx": 932,
+        "box": 192
+      }
+    },
+    {
+      "file": "d:\\code\\vampire-survivors-like\\assets\\ui-menu\\preview\\locked\\combat-64\\_park\\comfy-lan\\2026-09-09T18-07-25-661Z\\comfy_lan_ok_w16_mid_00001_.png",
+      "label": "Bmid",
+      "short": "14-w16-bmid-192.png",
+      "mode": "void",
+      "srcBox": {
+        "minX": 0,
+        "maxX": 511,
+        "minY": 0,
+        "maxY": 1023,
+        "w": 512,
+        "h": 1024,
+        "n": 300184
+      },
+      "dw": 84,
+      "dh": 168,
+      "stats": {
+        "opaque": 8013,
+        "flame": 151,
+        "silver": 9,
+        "skin": 155,
+        "holes": 34,
+        "headTop": 24,
+        "headPx": 1642,
+        "box": 192
+      }
+    }
+  ]
+}

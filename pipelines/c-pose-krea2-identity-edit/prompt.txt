@@ -1,0 +1,23 @@
+c-pose-krea2-identity-edit · 验证提示词（E1 · 2026-09-11）
+
+规则（R23）：
+- 身份来自参考 token，不来自提示词。身份句只是「不要改」的清单，可短。
+- 姿势句写画面里看得见的改变（手放哪、哪只脚触地、画幅左右、肩髋线），不写解剖（不要「她的左腿」）。
+- 目标姿必须与底图明显不同。叉腰 / 迈步有效；重心微调这类与 idle 难分辨的姿会失效（C2 四枪 0 过）。
+- 画面仍贴参考（表情 / 机位改不动）时：除优化提示词外，**酌情降低 `ref_boost`**（E4 P6：4→2.5）。近亲才抬 boost。
+- 负向 = 空指令 + 同图（CFG 1 时不起作用，但按训练布局接上）。
+
+身份句（Vf1 · 每枪原样）：
+Keep this exact woman and her costume unchanged: two horns with black roots and red tips, red eyes, pale skin, long wavy jet-black hair past the shoulders, black evening gown with a lace bib high collar, black lace gloves ending on the forearms, high slit with red lining, red high heels, empty dark void background, same flat cel-shaded illustration style.
+
+C1 叉腰（过 · 2/2）：
+Change only her pose: she stands with both hands on her hips, elbows pointing out, weight even on both feet, facing the same direction as before.
+
+C3 走接触（过 · 1/1；脚下多了地面投影，入盒时先看印戳）：
+Change only her pose: she is mid-stride walking to the right, front heel planted, back toe pushing off, coat and hair swinging with the step.
+
+C2 换重心（废 · 0/4；留作反例）：
+v1  Change only her pose: she shifts her weight onto her left leg, right knee relaxed, hips tilted, arms hanging loosely at her sides.
+v2  见 review-exp-e1/14-e1-summary.md（画幅左侧承重版，仍近 idle）
+
+换角色：身份句换成该角色零件表（听立绘 / 已过印戳），其余不动。

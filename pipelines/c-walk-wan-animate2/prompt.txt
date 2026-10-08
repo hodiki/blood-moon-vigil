@@ -1,0 +1,12 @@
+c-walk-wan-animate2 · 验证提示词（E2 · 2026-09-12 · S3c-b 过）
+
+原则：外观由参考印戳扛；提示词只写镜头与底，不复述零件表（复述会把画法拉向绘画）。
+
+positive:
+Static camera at chest height. Empty pure black void behind her, no floor, no scenery, no props. Same flat cel-shaded illustration as the reference image. She walks in place facing the viewer's right, natural stride, arms and cloak swinging with each step.
+
+negative（官方模板中文默认 + 追加）:
+色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走, camera motion, zoom, new background, landscape, second person, realistic photo, blurry
+
+已知：正向写了 black void，实际底仍是印戳的灰棚（不影响身份，入盒时洪水去底）。
+持物：驱动视频空手，印戳胸前的烛在走里会离手 / 成白砖 / 偏低。要保持物，驱动视频里的人须做同样的持物动作。

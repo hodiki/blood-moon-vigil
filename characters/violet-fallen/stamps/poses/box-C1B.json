@@ -1,0 +1,33 @@
+{
+  "label": "C1B",
+  "stamp": "d:\\code\\vampire-survivors-like\\assets\\ui-menu\\preview\\locked\\combat-64\\_park\\comfy-lan\\2026-09-11T10-35-38-406Z\\comfy_lan_e1_c1_b_00001_.png",
+  "src": {
+    "width": 512,
+    "height": 1024
+  },
+  "extract": {
+    "minX": 88,
+    "maxX": 414,
+    "minY": 37,
+    "maxY": 1002,
+    "w": 327,
+    "h": 966,
+    "n": 100482
+  },
+  "holesFilled": 15941,
+  "boxed": {
+    "dw": 38,
+    "dh": 112,
+    "ox": 45,
+    "oy": 16,
+    "scale": 0.11594202898550725
+  },
+  "stats": {
+    "opaque": 1359,
+    "red": 85,
+    "skin": 160,
+    "topY": 16,
+    "dw": 38,
+    "dh": 112
+  }
+}

@@ -1,0 +1,1472 @@
+{
+  "1": {
+    "class_type": "LoadVideo",
+    "inputs": {
+      "file": "8c3b8794-drive-generic-walkinplace.mp4"
+    }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "wan_animate_2_distill_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "9",
+        0
+      ],
+      "text": "Static camera at chest height. Empty pure black void behind her, no floor, no scenery, no props. Same flat cel-shaded illustration as the reference image. She walks in place facing the viewer's right, natural stride, arms and cloak swinging with each step."
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "9",
+        0
+      ],
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走, camera motion, zoom, new background, landscape, second person, realistic photo, blurry"
+    }
+  },
+  "6": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "223",
+        0
+      ],
+      "vae": [
+        "7",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "wan_2.1_vae.safetensors"
+    }
+  },
+  "9": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "cpu"
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "hero-violet-idle-128-v1-stamp.png"
+    }
+  },
+  "11": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "lora_name": "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
+      "strength_model": 1
+    }
+  },
+  "18": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "224",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 6,
+      "denoise": 1
+    }
+  },
+  "19": {
+    "class_type": "SamplerCustom",
+    "inputs": {
+      "model": [
+        "95",
+        0
+      ],
+      "add_noise": true,
+      "noise_seed": 2026091201,
+      "cfg": 2,
+      "positive": [
+        "247",
+        0
+      ],
+      "negative": [
+        "247",
+        1
+      ],
+      "sampler": [
+        "27",
+        0
+      ],
+      "sigmas": [
+        "18",
+        0
+      ],
+      "latent_image": [
+        "247",
+        2
+      ]
+    }
+  },
+  "27": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "lcm"
+    }
+  },
+  "50": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "10",
+        0
+      ],
+      "upscale_method": "area",
+      "width": 384,
+      "height": 672,
+      "crop": "center"
+    }
+  },
+  "75": {
+    "class_type": "CLIPVisionLoader",
+    "inputs": {
+      "clip_name": "clip_vision_h.safetensors"
+    }
+  },
+  "76": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": [
+        "75",
+        0
+      ],
+      "image": [
+        "50",
+        0
+      ],
+      "crop": "none"
+    }
+  },
+  "90": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "6",
+        0
+      ],
+      "filename_prefix": "comfy_lan_e2_s4s3c"
+    }
+  },
+  "91": {
+    "class_type": "SaveAnimatedWEBP",
+    "inputs": {
+      "images": [
+        "6",
+        0
+      ],
+      "filename_prefix": "comfy_lan_e2_s4s3c_loop",
+      "fps": 16,
+      "lossless": false,
+      "quality": 80,
+      "method": "default"
+    }
+  },
+  "95": {
+    "class_type": "ModelSamplingSD3",
+    "inputs": {
+      "model": [
+        "224",
+        0
+      ],
+      "shift": 5
+    }
+  },
+  "220": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": [
+        "75",
+        0
+      ],
+      "image": [
+        "236",
+        0
+      ],
+      "crop": "none"
+    }
+  },
+  "223": {
+    "class_type": "TrimVideoLatent",
+    "inputs": {
+      "samples": [
+        "19",
+        0
+      ],
+      "trim_amount": [
+        "247",
+        3
+      ]
+    }
+  },
+  "224": {
+    "class_type": "WanAnimate2Cache",
+    "inputs": {
+      "model": [
+        "11",
+        0
+      ],
+      "device": "cpu",
+      "dtype": "int8"
+    }
+  },
+  "236": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "243",
+        0
+      ],
+      "batch_index": 0,
+      "length": 1
+    }
+  },
+  "241": {
+    "class_type": "GetVideoComponents",
+    "inputs": {
+      "video": [
+        "1",
+        0
+      ]
+    }
+  },
+  "243": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "448",
+        0
+      ],
+      "upscale_method": "area",
+      "width": 384,
+      "height": 672,
+      "crop": "center"
+    }
+  },
+  "247": {
+    "class_type": "WanAnimate2ToVideo",
+    "inputs": {
+      "positive": [
+        "3",
+        0
+      ],
+      "negative": [
+        "4",
+        0
+      ],
+      "vae": [
+        "7",
+        0
+      ],
+      "width": 384,
+      "height": 672,
+      "length": 49,
+      "batch_size": 1,
+      "video_frame_offset": 0,
+      "pose_strength": 1,
+      "pose_start_percent": 0,
+      "pose_end_percent": 1,
+      "reference_image_strength": 1,
+      "reference_image": [
+        "50",
+        0
+      ],
+      "pose_video": [
+        "243",
+        0
+      ],
+      "clip_vision_output": [
+        "76",
+        0
+      ],
+      "clip_vision_output_pose": [
+        "220",
+        0
+      ]
+    }
+  },
+  "300": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 0,
+      "length": 1
+    }
+  },
+  "301": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 2,
+      "length": 1
+    }
+  },
+  "302": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 4,
+      "length": 1
+    }
+  },
+  "303": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 6,
+      "length": 1
+    }
+  },
+  "304": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 8,
+      "length": 1
+    }
+  },
+  "305": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 10,
+      "length": 1
+    }
+  },
+  "306": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 12,
+      "length": 1
+    }
+  },
+  "307": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 14,
+      "length": 1
+    }
+  },
+  "308": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 16,
+      "length": 1
+    }
+  },
+  "309": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 18,
+      "length": 1
+    }
+  },
+  "310": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 20,
+      "length": 1
+    }
+  },
+  "311": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 22,
+      "length": 1
+    }
+  },
+  "312": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 24,
+      "length": 1
+    }
+  },
+  "313": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 26,
+      "length": 1
+    }
+  },
+  "314": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 28,
+      "length": 1
+    }
+  },
+  "315": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 30,
+      "length": 1
+    }
+  },
+  "316": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 32,
+      "length": 1
+    }
+  },
+  "317": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 34,
+      "length": 1
+    }
+  },
+  "318": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 36,
+      "length": 1
+    }
+  },
+  "319": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 38,
+      "length": 1
+    }
+  },
+  "320": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 40,
+      "length": 1
+    }
+  },
+  "321": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 42,
+      "length": 1
+    }
+  },
+  "322": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 44,
+      "length": 1
+    }
+  },
+  "323": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 46,
+      "length": 1
+    }
+  },
+  "324": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 48,
+      "length": 1
+    }
+  },
+  "325": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 50,
+      "length": 1
+    }
+  },
+  "326": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 52,
+      "length": 1
+    }
+  },
+  "327": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 54,
+      "length": 1
+    }
+  },
+  "328": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 56,
+      "length": 1
+    }
+  },
+  "329": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 58,
+      "length": 1
+    }
+  },
+  "330": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 60,
+      "length": 1
+    }
+  },
+  "331": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 62,
+      "length": 1
+    }
+  },
+  "332": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 64,
+      "length": 1
+    }
+  },
+  "333": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 66,
+      "length": 1
+    }
+  },
+  "334": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 68,
+      "length": 1
+    }
+  },
+  "335": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 70,
+      "length": 1
+    }
+  },
+  "336": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 72,
+      "length": 1
+    }
+  },
+  "337": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 74,
+      "length": 1
+    }
+  },
+  "338": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 76,
+      "length": 1
+    }
+  },
+  "339": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 78,
+      "length": 1
+    }
+  },
+  "340": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 80,
+      "length": 1
+    }
+  },
+  "341": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 82,
+      "length": 1
+    }
+  },
+  "342": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 84,
+      "length": 1
+    }
+  },
+  "343": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 86,
+      "length": 1
+    }
+  },
+  "344": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 88,
+      "length": 1
+    }
+  },
+  "345": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 90,
+      "length": 1
+    }
+  },
+  "346": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 92,
+      "length": 1
+    }
+  },
+  "347": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 94,
+      "length": 1
+    }
+  },
+  "348": {
+    "class_type": "ImageFromBatch",
+    "inputs": {
+      "image": [
+        "241",
+        0
+      ],
+      "batch_index": 96,
+      "length": 1
+    }
+  },
+  "401": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "300",
+        0
+      ],
+      "image2": [
+        "301",
+        0
+      ]
+    }
+  },
+  "402": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "401",
+        0
+      ],
+      "image2": [
+        "302",
+        0
+      ]
+    }
+  },
+  "403": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "402",
+        0
+      ],
+      "image2": [
+        "303",
+        0
+      ]
+    }
+  },
+  "404": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "403",
+        0
+      ],
+      "image2": [
+        "304",
+        0
+      ]
+    }
+  },
+  "405": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "404",
+        0
+      ],
+      "image2": [
+        "305",
+        0
+      ]
+    }
+  },
+  "406": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "405",
+        0
+      ],
+      "image2": [
+        "306",
+        0
+      ]
+    }
+  },
+  "407": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "406",
+        0
+      ],
+      "image2": [
+        "307",
+        0
+      ]
+    }
+  },
+  "408": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "407",
+        0
+      ],
+      "image2": [
+        "308",
+        0
+      ]
+    }
+  },
+  "409": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "408",
+        0
+      ],
+      "image2": [
+        "309",
+        0
+      ]
+    }
+  },
+  "410": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "409",
+        0
+      ],
+      "image2": [
+        "310",
+        0
+      ]
+    }
+  },
+  "411": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "410",
+        0
+      ],
+      "image2": [
+        "311",
+        0
+      ]
+    }
+  },
+  "412": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "411",
+        0
+      ],
+      "image2": [
+        "312",
+        0
+      ]
+    }
+  },
+  "413": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "412",
+        0
+      ],
+      "image2": [
+        "313",
+        0
+      ]
+    }
+  },
+  "414": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "413",
+        0
+      ],
+      "image2": [
+        "314",
+        0
+      ]
+    }
+  },
+  "415": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "414",
+        0
+      ],
+      "image2": [
+        "315",
+        0
+      ]
+    }
+  },
+  "416": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "415",
+        0
+      ],
+      "image2": [
+        "316",
+        0
+      ]
+    }
+  },
+  "417": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "416",
+        0
+      ],
+      "image2": [
+        "317",
+        0
+      ]
+    }
+  },
+  "418": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "417",
+        0
+      ],
+      "image2": [
+        "318",
+        0
+      ]
+    }
+  },
+  "419": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "418",
+        0
+      ],
+      "image2": [
+        "319",
+        0
+      ]
+    }
+  },
+  "420": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "419",
+        0
+      ],
+      "image2": [
+        "320",
+        0
+      ]
+    }
+  },
+  "421": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "420",
+        0
+      ],
+      "image2": [
+        "321",
+        0
+      ]
+    }
+  },
+  "422": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "421",
+        0
+      ],
+      "image2": [
+        "322",
+        0
+      ]
+    }
+  },
+  "423": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "422",
+        0
+      ],
+      "image2": [
+        "323",
+        0
+      ]
+    }
+  },
+  "424": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "423",
+        0
+      ],
+      "image2": [
+        "324",
+        0
+      ]
+    }
+  },
+  "425": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "424",
+        0
+      ],
+      "image2": [
+        "325",
+        0
+      ]
+    }
+  },
+  "426": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "425",
+        0
+      ],
+      "image2": [
+        "326",
+        0
+      ]
+    }
+  },
+  "427": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "426",
+        0
+      ],
+      "image2": [
+        "327",
+        0
+      ]
+    }
+  },
+  "428": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "427",
+        0
+      ],
+      "image2": [
+        "328",
+        0
+      ]
+    }
+  },
+  "429": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "428",
+        0
+      ],
+      "image2": [
+        "329",
+        0
+      ]
+    }
+  },
+  "430": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "429",
+        0
+      ],
+      "image2": [
+        "330",
+        0
+      ]
+    }
+  },
+  "431": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "430",
+        0
+      ],
+      "image2": [
+        "331",
+        0
+      ]
+    }
+  },
+  "432": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "431",
+        0
+      ],
+      "image2": [
+        "332",
+        0
+      ]
+    }
+  },
+  "433": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "432",
+        0
+      ],
+      "image2": [
+        "333",
+        0
+      ]
+    }
+  },
+  "434": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "433",
+        0
+      ],
+      "image2": [
+        "334",
+        0
+      ]
+    }
+  },
+  "435": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "434",
+        0
+      ],
+      "image2": [
+        "335",
+        0
+      ]
+    }
+  },
+  "436": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "435",
+        0
+      ],
+      "image2": [
+        "336",
+        0
+      ]
+    }
+  },
+  "437": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "436",
+        0
+      ],
+      "image2": [
+        "337",
+        0
+      ]
+    }
+  },
+  "438": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "437",
+        0
+      ],
+      "image2": [
+        "338",
+        0
+      ]
+    }
+  },
+  "439": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "438",
+        0
+      ],
+      "image2": [
+        "339",
+        0
+      ]
+    }
+  },
+  "440": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "439",
+        0
+      ],
+      "image2": [
+        "340",
+        0
+      ]
+    }
+  },
+  "441": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "440",
+        0
+      ],
+      "image2": [
+        "341",
+        0
+      ]
+    }
+  },
+  "442": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "441",
+        0
+      ],
+      "image2": [
+        "342",
+        0
+      ]
+    }
+  },
+  "443": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "442",
+        0
+      ],
+      "image2": [
+        "343",
+        0
+      ]
+    }
+  },
+  "444": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "443",
+        0
+      ],
+      "image2": [
+        "344",
+        0
+      ]
+    }
+  },
+  "445": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "444",
+        0
+      ],
+      "image2": [
+        "345",
+        0
+      ]
+    }
+  },
+  "446": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "445",
+        0
+      ],
+      "image2": [
+        "346",
+        0
+      ]
+    }
+  },
+  "447": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "446",
+        0
+      ],
+      "image2": [
+        "347",
+        0
+      ]
+    }
+  },
+  "448": {
+    "class_type": "ImageBatch",
+    "inputs": {
+      "image1": [
+        "447",
+        0
+      ],
+      "image2": [
+        "348",
+        0
+      ]
+    }
+  }
+}

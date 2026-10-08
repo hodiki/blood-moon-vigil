@@ -1,0 +1,80 @@
+{
+  "pick": {
+    "skill-a": "E1 C1 A (passed pose, reboxed to idle shared scale)"
+  },
+  "idleScale": 0.1347517730496454,
+  "fill": {
+    "w": 114,
+    "h": 114
+  },
+  "family": "hero-violet-fallen",
+  "idleCrop": {
+    "minX": 102,
+    "maxX": 396,
+    "minY": 159,
+    "maxY": 1004,
+    "w": 295,
+    "h": 846,
+    "n": 76456
+  },
+  "idleMetrics": {
+    "minX": 45,
+    "minY": 18,
+    "maxX": 82,
+    "maxY": 127,
+    "bw": 38,
+    "bh": 110,
+    "cx": 63.96265870052278,
+    "cy": 69.19865571321883,
+    "footY": 127,
+    "topY": 18,
+    "n": 1339
+  },
+  "frames": [
+    {
+      "id": "skill-a",
+      "frame": "hero-violet-fallen-skill-a",
+      "crop": {
+        "minX": 0,
+        "maxX": 511,
+        "minY": 0,
+        "maxY": 1023,
+        "w": 512,
+        "h": 1024,
+        "n": 107552
+      },
+      "holesFilled": 10890,
+      "placed": {
+        "tw": 69,
+        "th": 138,
+        "ox": 29,
+        "oy": -8,
+        "clipped": 20
+      },
+      "metrics": {
+        "minX": 29,
+        "minY": 0,
+        "maxX": 97,
+        "maxY": 127,
+        "bw": 69,
+        "bh": 128,
+        "cx": 64.44681933842239,
+        "cy": 59.97913486005089,
+        "footY": 127,
+        "topY": 0,
+        "n": 1965
+      },
+      "gate": {
+        "hypot": 9.23,
+        "dCx": 0.48,
+        "dCy": 9.22,
+        "dFoot": 0,
+        "dAreaPct": 46.8,
+        "ok": false,
+        "issues": [
+          "面积 Δ 46.8% > 25%"
+        ]
+      }
+    }
+  ]
+}

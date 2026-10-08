@@ -1,0 +1,7 @@
+{
+  "seed": ["3", "inputs", "seed"],
+  "positive": ["6", "inputs", "text"],
+  "negative": ["7", "inputs", "text"],
+  "image_idle": ["16", "inputs", "image"],
+  "image_ref": ["12", "inputs", "image"]
+}

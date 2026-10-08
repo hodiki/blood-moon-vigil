@@ -1,0 +1,124 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "Graphic production STAMP of ONE upright wolf-headed man, about 8 HARD FLAT cel color blocks. Not an oil painting, not anime illustration, not photoreal, not a character sheet. Keep the SAME PERSON as the reference. Do not invent a new costume. MUST KEEP these parts: an upright wolf HEAD (not a human face with wolf ears, not a dog face); two wolf ears; two AMBER eyes that stay readable; ash-gray-brown fur; a SHORT wrap cape over the shoulders that does not pass the knees, with a thin DARK RED trim only on the edge; olive-green tunic visible under the cape; dark belt; two standing human legs in boots (not digitigrade beast legs). FACE MUST KEEP two amber eyes, a wolf muzzle, and a short mouth line. Eyes are mandatory. Three scars over the left eye may stay. Front full-body idle stand, arms down at the sides. Same pose as the reference. Cape hem and ears included. Figure fills most of the height. LARGE masses are the olive wrap / tunic and the short cape. Ash fur on the head. Dark red ONLY as cape-edge piping and small cuff/boot trim — not a red body. Not silver plate armor. Not Edmund's ragged open cloak. Empty night void #00040C behind the figure. No studio gray. No white backdrop. No ground plane. ONE person only. No second wolf, no horn, no candle, no knight, no parchment, no labels, no sprite sheet, no grid.",
+      "clip": [
+        "3",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091803,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.48,
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "latent_image": [
+        "14",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_galvan_blo",
+      "images": [
+        "9",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "Krea2T-Enhancer-Advanced",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "enabled": false,
+      "strength": 1,
+      "text_scale": 1,
+      "debug": false
+    }
+  },
+  "14": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  }
+}

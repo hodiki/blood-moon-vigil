@@ -171,7 +171,7 @@
     },
     "player-v": {
       "frameName": "player-v",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -182,12 +182,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 723
+          "opaque": 1082
         },
         "margin": {
           "ok": true,
-          "bw": 31,
-          "bh": 54,
+          "bw": 33,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -199,68 +199,70 @@
           "note": "普通单位无描边要求"
         },
         "luminance": {
-          "ok": true,
-          "avg": "41.8",
-          "brightRatio": "24.5%",
+          "ok": false,
+          "avg": "15.3",
+          "brightRatio": "1.2%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.91,
-          "dCx": 1.8,
-          "dCy": 0.65,
+          "hypot": 0,
+          "dCx": 0,
+          "dCy": 0,
           "dFoot": 0,
           "dAreaPct": 0,
           "ok": true,
           "issues": []
         }
       },
-      "issues": [],
+      "issues": [
+        "剪影 L* 15.3 未高于敌潮且高亮 1.2% < 3%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-v.png",
       "layout": {
         "family": "player",
-        "sharedScale": 0.05907172995780591,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 205,
-          "top": 54,
-          "width": 559,
-          "height": 920
+          "left": 285,
+          "top": 99,
+          "width": 454,
+          "height": 826
         },
         "placed": {
-          "w": 33,
-          "h": 54,
-          "ox": 15,
-          "oy": 6
+          "w": 31,
+          "h": 56,
+          "ox": 16,
+          "oy": 4
         }
       },
       "metrics": {
-        "minX": 16,
-        "minY": 6,
-        "maxX": 46,
+        "minX": 15,
+        "minY": 4,
+        "maxX": 47,
         "maxY": 59,
-        "bw": 31,
-        "bh": 54,
-        "cx": 31.91,
-        "cy": 34.11,
+        "bw": 33,
+        "bh": 56,
+        "cx": 29.83,
+        "cy": 34.8,
         "footY": 59,
-        "topY": 6,
-        "n": 723
+        "topY": 4,
+        "n": 1082
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.298Z"
+      "updatedAt": "2026-09-06T08:10:18.817Z"
     },
     "player": {
       "frameName": "player",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -271,12 +273,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 723
+          "opaque": 1082
         },
         "margin": {
           "ok": true,
-          "bw": 31,
-          "bh": 53,
+          "bw": 33,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -288,55 +290,57 @@
           "note": "普通单位无描边要求"
         },
         "luminance": {
-          "ok": true,
-          "avg": "43.0",
-          "brightRatio": "26.1%",
+          "ok": false,
+          "avg": "15.3",
+          "brightRatio": "1.2%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
-      "issues": [],
+      "issues": [
+        "剪影 L* 15.3 未高于敌潮且高亮 1.2% < 3%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player.png",
       "layout": {
         "family": "player",
-        "sharedScale": 0.05907172995780591,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 198,
-          "top": 62,
-          "width": 556,
-          "height": 917
+          "left": 285,
+          "top": 99,
+          "width": 454,
+          "height": 826
         },
         "placed": {
-          "w": 33,
-          "h": 54,
+          "w": 31,
+          "h": 56,
           "ox": 16,
-          "oy": 6
+          "oy": 4
         }
       },
       "metrics": {
-        "minX": 17,
-        "minY": 7,
+        "minX": 15,
+        "minY": 4,
         "maxX": 47,
         "maxY": 59,
-        "bw": 31,
-        "bh": 53,
-        "cx": 33.71,
-        "cy": 34.76,
+        "bw": 33,
+        "bh": 56,
+        "cx": 29.83,
+        "cy": 34.8,
         "footY": 59,
-        "topY": 7,
-        "n": 723
+        "topY": 4,
+        "n": 1082
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.304Z"
+      "updatedAt": "2026-09-09T17:08:43.435Z"
     },
     "tile-grave-soil": {
       "frameName": "tile-grave-soil",
@@ -392,7 +396,7 @@
     },
     "player-skill-a": {
       "frameName": "player-skill-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -403,11 +407,11 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 702
+          "opaque": 886
         },
         "margin": {
           "ok": true,
-          "bw": 37,
+          "bw": 30,
           "bh": 56,
           "w": 64,
           "h": 64,
@@ -420,25 +424,36 @@
           "note": "普通单位无描边要求"
         },
         "luminance": {
-          "ok": true,
-          "avg": "37.5",
-          "brightRatio": "14.8%",
+          "ok": false,
+          "avg": "13.4",
+          "brightRatio": "1.1%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 2.51,
-          "dCx": 2.25,
-          "dCy": 1.12,
-          "dFoot": 0,
-          "dAreaPct": 2.9,
-          "ok": true,
-          "issues": []
+          "hypot": 3.4,
+          "dCx": 1.3,
+          "dCy": 3.14,
+          "dFoot": 2,
+          "dAreaPct": 18.1,
+          "ok": false,
+          "issues": [
+            "脚底 ΔY 2px > 1"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "剪影 L* 13.4 未高于敌潮且高亮 1.1% < 3%",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-skill-a.png",
       "layout": {
         "family": "player",
@@ -461,27 +476,27 @@
         }
       },
       "metrics": {
-        "minX": 13,
-        "minY": 4,
-        "maxX": 49,
-        "maxY": 59,
-        "bw": 37,
+        "minX": 17,
+        "minY": 6,
+        "maxX": 46,
+        "maxY": 61,
+        "bw": 30,
         "bh": 56,
-        "cx": 31.46,
-        "cy": 33.64,
-        "footY": 59,
-        "topY": 4,
-        "n": 702
+        "cx": 31.13,
+        "cy": 37.94,
+        "footY": 61,
+        "topY": 6,
+        "n": 886
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.295Z"
+      "updatedAt": "2026-09-06T08:10:18.838Z"
     },
     "player-skill-b": {
       "frameName": "player-skill-b",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -492,12 +507,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 691
+          "opaque": 1290
         },
         "margin": {
           "ok": true,
-          "bw": 39,
-          "bh": 51,
+          "bw": 52,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -509,25 +524,36 @@
           "note": "普通单位无描边要求"
         },
         "luminance": {
-          "ok": true,
-          "avg": "40.4",
-          "brightRatio": "19.8%",
+          "ok": false,
+          "avg": "13.7",
+          "brightRatio": "1.2%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.49,
-          "dCx": 0.28,
-          "dCy": 0.4,
-          "dFoot": 0,
-          "dAreaPct": 4.4,
-          "ok": true,
-          "issues": []
+          "hypot": 0.86,
+          "dCx": 0.84,
+          "dCy": 0.19,
+          "dFoot": 2,
+          "dAreaPct": 19.2,
+          "ok": false,
+          "issues": [
+            "脚底 ΔY 2px > 1"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "剪影 L* 13.7 未高于敌潮且高亮 1.2% < 3%",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-skill-b.png",
       "layout": {
         "family": "player",
@@ -550,23 +576,23 @@
         }
       },
       "metrics": {
-        "minX": 12,
-        "minY": 9,
-        "maxX": 50,
-        "maxY": 59,
-        "bw": 39,
-        "bh": 51,
-        "cx": 33.99,
-        "cy": 34.36,
-        "footY": 59,
-        "topY": 9,
-        "n": 691
+        "minX": 6,
+        "minY": 6,
+        "maxX": 57,
+        "maxY": 61,
+        "bw": 52,
+        "bh": 56,
+        "cx": 28.99,
+        "cy": 34.61,
+        "footY": 61,
+        "topY": 6,
+        "n": 1290
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.297Z"
+      "updatedAt": "2026-09-06T08:10:18.845Z"
     },
     "boss-cardinal-entrance": {
       "frameName": "boss-cardinal-entrance",
@@ -3890,12 +3916,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 570
+          "opaque": 718
         },
         "margin": {
           "ok": true,
-          "bw": 38,
-          "bh": 52,
+          "bw": 29,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -3908,63 +3934,63 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "37.0",
-          "brightRatio": "26.1%",
+          "avg": "21.6",
+          "brightRatio": "4.9%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.7,
-          "dCx": 0.65,
-          "dCy": 0.27,
+          "hypot": 1.21,
+          "dCx": 0.64,
+          "dCy": 1.03,
           "dFoot": 0,
-          "dAreaPct": 12.3,
+          "dAreaPct": 24.2,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": null,
+      "method": "edge-flood",
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-skill-a.png",
       "layout": {
         "family": "hero-cassandra",
-        "sharedScale": 0.06796116504854369,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 235,
-          "top": 152,
-          "width": 564,
-          "height": 758
+          "left": 288,
+          "top": 100,
+          "width": 447,
+          "height": 825
         },
         "placed": {
-          "w": 38,
-          "h": 52,
-          "ox": 13,
-          "oy": 8
+          "w": 30,
+          "h": 56,
+          "ox": 17,
+          "oy": 4
         }
       },
       "metrics": {
-        "minX": 13,
-        "minY": 8,
-        "maxX": 50,
+        "minX": 17,
+        "minY": 4,
+        "maxX": 45,
         "maxY": 59,
-        "bw": 38,
-        "bh": 52,
-        "cx": 31.45,
-        "cy": 31.34,
+        "bw": 29,
+        "bh": 56,
+        "cx": 30.54,
+        "cy": 29.96,
         "footY": 59,
-        "topY": 8,
-        "n": 570
+        "topY": 4,
+        "n": 718
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.156Z"
+      "updatedAt": "2026-09-05T10:32:31.293Z"
     },
     "hero-cassandra-skill-b": {
       "frameName": "hero-cassandra-skill-b",
@@ -3979,12 +4005,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 538
+          "opaque": 640
         },
         "margin": {
           "ok": true,
-          "bw": 38,
-          "bh": 47,
+          "bw": 32,
+          "bh": 53,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -3997,63 +4023,63 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "38.8",
-          "brightRatio": "27.1%",
+          "avg": "22.9",
+          "brightRatio": "4.2%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 5.57,
-          "dCx": 5.18,
-          "dCy": 2.06,
+          "hypot": 1.04,
+          "dCx": 1.04,
+          "dCy": 0.04,
           "dFoot": 0,
-          "dAreaPct": 17.2,
+          "dAreaPct": 10.7,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": null,
+      "method": "edge-flood",
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-skill-b.png",
       "layout": {
         "family": "hero-cassandra",
-        "sharedScale": 0.06796116504854369,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 231,
-          "top": 173,
-          "width": 689,
-          "height": 711
+          "left": 291,
+          "top": 100,
+          "width": 482,
+          "height": 825
         },
         "placed": {
-          "w": 47,
-          "h": 48,
-          "ox": 8,
-          "oy": 12
+          "w": 33,
+          "h": 56,
+          "ox": 15,
+          "oy": 7
         }
       },
       "metrics": {
-        "minX": 9,
-        "minY": 13,
-        "maxX": 46,
+        "minX": 16,
+        "minY": 7,
+        "maxX": 47,
         "maxY": 59,
-        "bw": 38,
-        "bh": 47,
-        "cx": 25.62,
-        "cy": 33.13,
+        "bw": 32,
+        "bh": 53,
+        "cx": 30.94,
+        "cy": 28.97,
         "footY": 59,
-        "topY": 13,
-        "n": 538
+        "topY": 7,
+        "n": 640
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.158Z"
+      "updatedAt": "2026-09-05T10:32:31.293Z"
     },
     "hero-cassandra-v": {
       "frameName": "hero-cassandra-v",
@@ -4068,12 +4094,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 558
+          "opaque": 578
         },
         "margin": {
           "ok": true,
-          "bw": 28,
-          "bh": 54,
+          "bw": 21,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -4086,63 +4112,63 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "36.1",
-          "brightRatio": "22.2%",
+          "avg": "30.8",
+          "brightRatio": "10.7%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.53,
-          "dCx": 0.53,
-          "dCy": 0.06,
+          "hypot": 0,
+          "dCx": 0,
+          "dCy": 0,
           "dFoot": 0,
-          "dAreaPct": 14.2,
+          "dAreaPct": 0,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": null,
+      "method": "edge-flood",
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-v.png",
       "layout": {
         "family": "hero-cassandra",
-        "sharedScale": 0.06796116504854369,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 325,
-          "top": 96,
-          "width": 407,
-          "height": 814
+          "left": 356,
+          "top": 99,
+          "width": 310,
+          "height": 826
         },
         "placed": {
-          "w": 28,
-          "h": 55,
-          "ox": 18,
-          "oy": 5
+          "w": 21,
+          "h": 56,
+          "ox": 21,
+          "oy": 4
         }
       },
       "metrics": {
-        "minX": 18,
-        "minY": 6,
-        "maxX": 45,
+        "minX": 21,
+        "minY": 4,
+        "maxX": 41,
         "maxY": 59,
-        "bw": 28,
-        "bh": 54,
-        "cx": 31.33,
-        "cy": 31.13,
+        "bw": 21,
+        "bh": 56,
+        "cx": 29.9,
+        "cy": 28.93,
         "footY": 59,
-        "topY": 6,
-        "n": 558
+        "topY": 4,
+        "n": 578
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.160Z"
+      "updatedAt": "2026-09-05T10:32:31.293Z"
     },
     "hero-cassandra": {
       "frameName": "hero-cassandra",
@@ -4157,12 +4183,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 650
+          "opaque": 578
         },
         "margin": {
           "ok": true,
-          "bw": 31,
-          "bh": 55,
+          "bw": 21,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -4175,10 +4201,10 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "34.7",
-          "brightRatio": "19.7%",
+          "avg": "30.8",
+          "brightRatio": "10.7%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [],
@@ -4187,42 +4213,42 @@
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra.png",
       "layout": {
         "family": "hero-cassandra",
-        "sharedScale": 0.06796116504854369,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 306,
-          "top": 88,
-          "width": 464,
-          "height": 824
+          "left": 356,
+          "top": 99,
+          "width": 310,
+          "height": 826
         },
         "placed": {
-          "w": 32,
+          "w": 21,
           "h": 56,
-          "ox": 16,
+          "ox": 21,
           "oy": 4
         }
       },
       "metrics": {
-        "minX": 16,
-        "minY": 5,
-        "maxX": 46,
+        "minX": 21,
+        "minY": 4,
+        "maxX": 41,
         "maxY": 59,
-        "bw": 31,
-        "bh": 55,
-        "cx": 30.8,
-        "cy": 31.07,
+        "bw": 21,
+        "bh": 56,
+        "cx": 29.9,
+        "cy": 28.93,
         "footY": 59,
-        "topY": 5,
-        "n": 650
+        "topY": 4,
+        "n": 578
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.167Z"
+      "updatedAt": "2026-09-09T17:08:43.446Z"
     },
     "hero-galvan-skill-a": {
       "frameName": "hero-galvan-skill-a",
@@ -4573,27 +4599,27 @@
     },
     "hero-violet-skill-a": {
       "frameName": "hero-violet-skill-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 488
+          "opaque": 3546
         },
         "margin": {
-          "ok": true,
-          "bw": 31,
-          "bh": 53,
-          "w": 64,
-          "h": 64,
+          "ok": false,
+          "bw": 57,
+          "bh": 128,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
-          "marginOkH": true,
+          "marginOkH": false,
           "outlineW": 0
         },
         "outline": {
@@ -4602,24 +4628,26 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "19.3",
-          "brightRatio": "6.8%",
+          "avg": "34.2",
+          "brightRatio": "14.9%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 4.41,
-          "dCx": 3.13,
-          "dCy": 3.1,
+          "hypot": 6.11,
+          "dCx": 0.51,
+          "dCy": 6.09,
           "dFoot": 0,
-          "dAreaPct": 24.5,
+          "dAreaPct": 13.7,
           "ok": true,
           "issues": []
         }
       },
-      "issues": [],
+      "issues": [
+        "填充 57x128 超出帧 90%（128x128，不含描边）"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet-skill-a.png",
       "layout": {
         "family": "hero-violet",
@@ -4642,45 +4670,45 @@
         }
       },
       "metrics": {
-        "minX": 16,
-        "minY": 6,
-        "maxX": 46,
-        "maxY": 58,
-        "bw": 31,
-        "bh": 53,
-        "cx": 33.81,
-        "cy": 37.55,
-        "footY": 58,
-        "topY": 6,
-        "n": 488
+        "minX": 35,
+        "minY": 0,
+        "maxX": 91,
+        "maxY": 127,
+        "bw": 57,
+        "bh": 128,
+        "cx": 70.27,
+        "cy": 76.09,
+        "footY": 127,
+        "topY": 0,
+        "n": 3546
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9141
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.184Z"
+      "updatedAt": "2026-09-17T16:00:22.200Z"
     },
     "hero-violet-skill-b": {
       "frameName": "hero-violet-skill-b",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 632
+          "opaque": 3666
         },
         "margin": {
           "ok": true,
-          "bw": 36,
-          "bh": 51,
-          "w": 64,
-          "h": 64,
+          "bw": 67,
+          "bh": 114,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4691,17 +4719,17 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "21.2",
-          "brightRatio": "8.4%",
+          "avg": "30.5",
+          "brightRatio": "9.7%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.07,
-          "dCx": 0.04,
-          "dCy": 1.07,
-          "dFoot": 1,
-          "dAreaPct": 2.2,
+          "hypot": 4.3,
+          "dCx": 3.46,
+          "dCy": 2.55,
+          "dFoot": 0,
+          "dAreaPct": 17.5,
           "ok": true,
           "issues": []
         }
@@ -4731,45 +4759,45 @@
         }
       },
       "metrics": {
-        "minX": 14,
-        "minY": 9,
-        "maxX": 49,
-        "maxY": 59,
-        "bw": 36,
-        "bh": 51,
-        "cx": 30.64,
-        "cy": 33.38,
-        "footY": 59,
-        "topY": 9,
-        "n": 632
+        "minX": 30,
+        "minY": 14,
+        "maxX": 96,
+        "maxY": 127,
+        "bw": 67,
+        "bh": 114,
+        "cx": 67.32,
+        "cy": 79.63,
+        "footY": 127,
+        "topY": 14,
+        "n": 3666
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9141
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.186Z"
+      "updatedAt": "2026-09-17T16:00:22.207Z"
     },
     "hero-violet-v": {
       "frameName": "hero-violet-v",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 646
+          "opaque": 3119
         },
         "margin": {
           "ok": true,
-          "bw": 28,
-          "bh": 53,
-          "w": 64,
-          "h": 64,
+          "bw": 56,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4780,10 +4808,10 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "21.6",
-          "brightRatio": "9.1%",
+          "avg": "32.5",
+          "brightRatio": "9.3%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 0,
@@ -4820,45 +4848,45 @@
         }
       },
       "metrics": {
-        "minX": 17,
-        "minY": 6,
-        "maxX": 44,
-        "maxY": 58,
-        "bw": 28,
-        "bh": 53,
-        "cx": 30.68,
-        "cy": 34.45,
-        "footY": 58,
-        "topY": 6,
-        "n": 646
+        "minX": 36,
+        "minY": 16,
+        "maxX": 91,
+        "maxY": 127,
+        "bw": 56,
+        "bh": 112,
+        "cx": 70.78,
+        "cy": 82.18,
+        "footY": 127,
+        "topY": 16,
+        "n": 3119
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9141
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.188Z"
+      "updatedAt": "2026-09-17T16:00:22.194Z"
     },
     "hero-violet": {
       "frameName": "hero-violet",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 646
+          "opaque": 3119
         },
         "margin": {
           "ok": true,
-          "bw": 28,
-          "bh": 53,
-          "w": 64,
-          "h": 64,
+          "bw": 56,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4869,10 +4897,10 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "21.6",
-          "brightRatio": "9.1%",
+          "avg": "32.5",
+          "brightRatio": "9.3%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [],
@@ -4900,23 +4928,23 @@
         }
       },
       "metrics": {
-        "minX": 17,
-        "minY": 6,
-        "maxX": 44,
-        "maxY": 58,
-        "bw": 28,
-        "bh": 53,
-        "cx": 30.68,
-        "cy": 34.45,
-        "footY": 58,
-        "topY": 6,
-        "n": 646
+        "minX": 36,
+        "minY": 16,
+        "maxX": 91,
+        "maxY": 127,
+        "bw": 56,
+        "bh": 112,
+        "cx": 70.78,
+        "cy": 82.18,
+        "footY": 127,
+        "topY": 16,
+        "n": 3119
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9141
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.194Z"
+      "updatedAt": "2026-09-17T16:00:22.183Z"
     },
     "marker-aura": {
       "frameName": "marker-aura",
@@ -11658,7 +11686,7 @@
           "avg": "53.8",
           "brightRatio": "46.6%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [
@@ -11704,7 +11732,7 @@
         "x": 0.5,
         "y": 0.9479
       },
-      "updatedAt": "2026-08-31T10:47:59.467Z"
+      "updatedAt": "2026-09-09T17:08:43.454Z"
     },
     "summon-oathkeeper-tombstone": {
       "frameName": "summon-oathkeeper-tombstone",
@@ -19515,7 +19543,7 @@
     },
     "player-walk-a": {
       "frameName": "player-walk-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -19526,12 +19554,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 701
+          "opaque": 925
         },
         "margin": {
           "ok": true,
-          "bw": 33,
-          "bh": 53,
+          "bw": 34,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -19543,25 +19571,36 @@
           "note": "普通单位无描边要求"
         },
         "luminance": {
-          "ok": true,
-          "avg": "43.6",
-          "brightRatio": "26.7%",
+          "ok": false,
+          "avg": "16.0",
+          "brightRatio": "1.6%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.97,
-          "dCx": 0.95,
-          "dCy": 0.21,
+          "hypot": 3.06,
+          "dCx": 2.95,
+          "dCy": 0.81,
           "dFoot": 0,
-          "dAreaPct": 3,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 14.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.1px > 3"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "剪影 L* 16.0 未高于敌潮且高亮 1.6% < 3%",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-walk-a.png",
       "layout": {
         "family": "player",
@@ -19585,26 +19624,26 @@
       },
       "metrics": {
         "minX": 15,
-        "minY": 7,
-        "maxX": 47,
+        "minY": 4,
+        "maxX": 48,
         "maxY": 59,
-        "bw": 33,
-        "bh": 53,
-        "cx": 32.76,
-        "cy": 34.55,
+        "bw": 34,
+        "bh": 56,
+        "cx": 32.78,
+        "cy": 35.61,
         "footY": 59,
-        "topY": 7,
-        "n": 701
+        "topY": 4,
+        "n": 925
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T14:02:10.660Z"
+      "updatedAt": "2026-09-06T08:10:18.821Z"
     },
     "player-walk-b": {
       "frameName": "player-walk-b",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -19615,12 +19654,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 678
+          "opaque": 634
         },
         "margin": {
           "ok": true,
-          "bw": 29,
-          "bh": 53,
+          "bw": 20,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -19632,25 +19671,36 @@
           "note": "普通单位无描边要求"
         },
         "luminance": {
-          "ok": true,
-          "avg": "43.2",
-          "brightRatio": "26.1%",
+          "ok": false,
+          "avg": "16.3",
+          "brightRatio": "1.6%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.45,
-          "dCx": 0.33,
-          "dCy": 0.3,
+          "hypot": 2.3,
+          "dCx": 2.06,
+          "dCy": 1.02,
           "dFoot": 0,
-          "dAreaPct": 6.2,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 41.4,
+          "ok": false,
+          "issues": [
+            "面积 Δ 41.4% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "剪影 L* 16.3 未高于敌潮且高亮 1.6% < 3%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\player-walk-b.png",
       "layout": {
         "family": "player",
@@ -19673,23 +19723,23 @@
         }
       },
       "metrics": {
-        "minX": 18,
-        "minY": 7,
-        "maxX": 46,
+        "minX": 22,
+        "minY": 4,
+        "maxX": 41,
         "maxY": 59,
-        "bw": 29,
-        "bh": 53,
-        "cx": 33.38,
-        "cy": 34.46,
+        "bw": 20,
+        "bh": 56,
+        "cx": 31.89,
+        "cy": 33.78,
         "footY": 59,
-        "topY": 7,
-        "n": 678
+        "topY": 4,
+        "n": 634
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T14:02:10.663Z"
+      "updatedAt": "2026-09-06T08:10:18.827Z"
     },
     "hero-cassandra-walk-a": {
       "frameName": "hero-cassandra-walk-a",
@@ -19704,12 +19754,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 635
+          "opaque": 503
         },
         "margin": {
           "ok": true,
-          "bw": 32,
-          "bh": 55,
+          "bw": 24,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -19722,63 +19772,63 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "34.9",
-          "brightRatio": "19.4%",
+          "avg": "28.9",
+          "brightRatio": "8.7%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.21,
-          "dCx": 0.11,
-          "dCy": 0.18,
+          "hypot": 0.85,
+          "dCx": 0.82,
+          "dCy": 0.21,
           "dFoot": 0,
-          "dAreaPct": 2.3,
+          "dAreaPct": 13,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": null,
+      "method": "edge-flood",
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-a.png",
       "layout": {
         "family": "hero-cassandra",
-        "sharedScale": 0.06796116504854369,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 306,
-          "top": 88,
-          "width": 464,
-          "height": 824
+          "left": 332,
+          "top": 100,
+          "width": 359,
+          "height": 825
         },
         "placed": {
-          "w": 32,
+          "w": 24,
           "h": 56,
-          "ox": 16,
+          "ox": 20,
           "oy": 4
         }
       },
       "metrics": {
-        "minX": 16,
-        "minY": 5,
-        "maxX": 47,
+        "minX": 20,
+        "minY": 4,
+        "maxX": 43,
         "maxY": 59,
-        "bw": 32,
-        "bh": 55,
-        "cx": 30.91,
-        "cy": 30.89,
+        "bw": 24,
+        "bh": 56,
+        "cx": 30.72,
+        "cy": 29.14,
         "footY": 59,
-        "topY": 5,
-        "n": 635
+        "topY": 4,
+        "n": 503
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T14:02:10.665Z"
+      "updatedAt": "2026-09-05T10:32:31.293Z"
     },
     "hero-cassandra-walk-b": {
       "frameName": "hero-cassandra-walk-b",
@@ -19793,12 +19843,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 638
+          "opaque": 493
         },
         "margin": {
           "ok": true,
-          "bw": 28,
-          "bh": 55,
+          "bw": 16,
+          "bh": 56,
           "w": 64,
           "h": 64,
           "marginOkW": true,
@@ -19811,85 +19861,85 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "34.8",
-          "brightRatio": "18.8%",
+          "avg": "28.9",
+          "brightRatio": "8.3%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.57,
-          "dCx": 0.56,
-          "dCy": 0.12,
+          "hypot": 1.12,
+          "dCx": 1.01,
+          "dCy": 0.48,
           "dFoot": 0,
-          "dAreaPct": 1.8,
+          "dAreaPct": 14.7,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": null,
+      "method": "edge-flood",
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-b.png",
       "layout": {
         "family": "hero-cassandra",
-        "sharedScale": 0.06796116504854369,
+        "sharedScale": 0.06779661016949153,
         "fillMax": {
           "w": 56,
           "h": 56
         },
         "crop": {
-          "left": 319,
-          "top": 88,
-          "width": 439,
-          "height": 824
+          "left": 396,
+          "top": 100,
+          "width": 232,
+          "height": 825
         },
         "placed": {
-          "w": 30,
+          "w": 16,
           "h": 56,
-          "ox": 18,
+          "ox": 24,
           "oy": 4
         }
       },
       "metrics": {
-        "minX": 18,
-        "minY": 5,
-        "maxX": 45,
+        "minX": 24,
+        "minY": 4,
+        "maxX": 39,
         "maxY": 59,
-        "bw": 28,
-        "bh": 55,
-        "cx": 31.36,
-        "cy": 30.95,
+        "bw": 16,
+        "bh": 56,
+        "cx": 30.91,
+        "cy": 28.45,
         "footY": 59,
-        "topY": 5,
-        "n": 638
+        "topY": 4,
+        "n": 493
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T14:02:10.668Z"
+      "updatedAt": "2026-09-05T10:32:31.293Z"
     },
     "hero-violet-walk-a": {
       "frameName": "hero-violet-walk-a",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 640
+          "opaque": 3658
         },
         "margin": {
           "ok": true,
-          "bw": 31,
-          "bh": 53,
-          "w": 64,
-          "h": 64,
+          "bw": 63,
+          "bh": 111,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -19900,17 +19950,17 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "21.5",
-          "brightRatio": "8.9%",
+          "avg": "34.7",
+          "brightRatio": "18.4%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.26,
-          "dCx": 0.16,
-          "dCy": 0.21,
+          "hypot": 4.73,
+          "dCx": 3.62,
+          "dCy": 3.05,
           "dFoot": 0,
-          "dAreaPct": 0.9,
+          "dAreaPct": 17.3,
           "ok": true,
           "issues": []
         }
@@ -19940,45 +19990,45 @@
         }
       },
       "metrics": {
-        "minX": 16,
-        "minY": 6,
-        "maxX": 46,
-        "maxY": 58,
-        "bw": 31,
-        "bh": 53,
-        "cx": 30.84,
-        "cy": 34.24,
-        "footY": 58,
-        "topY": 6,
-        "n": 640
+        "minX": 32,
+        "minY": 17,
+        "maxX": 94,
+        "maxY": 127,
+        "bw": 63,
+        "bh": 111,
+        "cx": 67.16,
+        "cy": 85.23,
+        "footY": 127,
+        "topY": 17,
+        "n": 3658
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9141
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T14:02:10.670Z"
+      "updatedAt": "2026-09-17T16:00:22.212Z"
     },
     "hero-violet-walk-b": {
       "frameName": "hero-violet-walk-b",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 604
+          "opaque": 4038
         },
         "margin": {
           "ok": true,
-          "bw": 25,
-          "bh": 53,
-          "w": 64,
-          "h": 64,
+          "bw": 71,
+          "bh": 111,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -19989,24 +20039,29 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "22.4",
-          "brightRatio": "9.6%",
+          "avg": "35.2",
+          "brightRatio": "17.1%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.1,
-          "dCx": 0.78,
-          "dCy": 0.78,
+          "hypot": 5.79,
+          "dCx": 4.95,
+          "dCy": 3,
           "dFoot": 0,
-          "dAreaPct": 6.5,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 29.5,
+          "ok": false,
+          "issues": [
+            "面积 Δ 29.5% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%",
+        "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet-walk-b.png",
       "layout": {
         "family": "hero-violet",
@@ -20029,23 +20084,23 @@
         }
       },
       "metrics": {
-        "minX": 19,
-        "minY": 6,
-        "maxX": 43,
-        "maxY": 58,
-        "bw": 25,
-        "bh": 53,
-        "cx": 31.46,
-        "cy": 33.67,
-        "footY": 58,
-        "topY": 6,
-        "n": 604
+        "minX": 28,
+        "minY": 17,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 111,
+        "cx": 65.83,
+        "cy": 85.18,
+        "footY": 127,
+        "topY": 17,
+        "n": 4038
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9141
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T14:02:10.672Z"
+      "updatedAt": "2026-09-17T16:00:22.241Z"
     },
     "hero-galvan-walk-a": {
       "frameName": "hero-galvan-walk-a",
@@ -20224,9 +20279,1089 @@
         "y": 0.9297
       },
       "updatedAt": "2026-08-31T14:02:10.677Z"
+    },
+    "hero-cassandra-walk-c": {
+      "frameName": "hero-cassandra-walk-c",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 497
+        },
+        "margin": {
+          "ok": true,
+          "bw": 25,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "30.0",
+          "brightRatio": "8.9%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 0.73,
+          "dCx": 0.52,
+          "dCy": 0.51,
+          "dFoot": 0,
+          "dAreaPct": 14,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": "edge-flood",
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-c.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06779661016949153,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 325,
+          "top": 99,
+          "width": 373,
+          "height": 826
+        },
+        "placed": {
+          "w": 25,
+          "h": 56,
+          "ox": 19,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 19,
+        "minY": 4,
+        "maxX": 43,
+        "maxY": 59,
+        "bw": 25,
+        "bh": 56,
+        "cx": 30.42,
+        "cy": 29.44,
+        "footY": 59,
+        "topY": 4,
+        "n": 497
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-05T10:32:31.293Z"
+    },
+    "hero-cassandra-walk-d": {
+      "frameName": "hero-cassandra-walk-d",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 483
+        },
+        "margin": {
+          "ok": true,
+          "bw": 16,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "31.7",
+          "brightRatio": "10.1%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 1.33,
+          "dCx": 0.96,
+          "dCy": 0.92,
+          "dFoot": 0,
+          "dAreaPct": 16.4,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": "edge-flood",
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-d.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06779661016949153,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 387,
+          "top": 99,
+          "width": 250,
+          "height": 826
+        },
+        "placed": {
+          "w": 17,
+          "h": 56,
+          "ox": 23,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 24,
+        "minY": 4,
+        "maxX": 39,
+        "maxY": 59,
+        "bw": 16,
+        "bh": 56,
+        "cx": 30.86,
+        "cy": 28.01,
+        "footY": 59,
+        "topY": 4,
+        "n": 483
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-05T10:32:31.293Z"
+    },
+    "hero-cassandra-walk-e": {
+      "frameName": "hero-cassandra-walk-e",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 505
+        },
+        "margin": {
+          "ok": true,
+          "bw": 23,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "29.7",
+          "brightRatio": "8.7%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 1.04,
+          "dCx": 0.54,
+          "dCy": 0.89,
+          "dFoot": 0,
+          "dAreaPct": 12.6,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": "edge-flood",
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-e.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06779661016949153,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 359,
+          "top": 100,
+          "width": 332,
+          "height": 825
+        },
+        "placed": {
+          "w": 23,
+          "h": 56,
+          "ox": 20,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 20,
+        "minY": 4,
+        "maxX": 42,
+        "maxY": 59,
+        "bw": 23,
+        "bh": 56,
+        "cx": 29.36,
+        "cy": 28.04,
+        "footY": 59,
+        "topY": 4,
+        "n": 505
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-05T10:32:31.293Z"
+    },
+    "hero-cassandra-walk-f": {
+      "frameName": "hero-cassandra-walk-f",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 476
+        },
+        "margin": {
+          "ok": true,
+          "bw": 24,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "30.8",
+          "brightRatio": "9.2%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 1.12,
+          "dCx": 0.23,
+          "dCy": 1.1,
+          "dFoot": 0,
+          "dAreaPct": 17.6,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": "edge-flood",
+      "passed": "PASS",
+      "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-f.png",
+      "layout": {
+        "family": "hero-cassandra",
+        "sharedScale": 0.06779661016949153,
+        "fillMax": {
+          "w": 56,
+          "h": 56
+        },
+        "crop": {
+          "left": 351,
+          "top": 99,
+          "width": 347,
+          "height": 826
+        },
+        "placed": {
+          "w": 24,
+          "h": 56,
+          "ox": 20,
+          "oy": 4
+        }
+      },
+      "metrics": {
+        "minX": 20,
+        "minY": 4,
+        "maxX": 43,
+        "maxY": 59,
+        "bw": 24,
+        "bh": 56,
+        "cx": 30.13,
+        "cy": 27.83,
+        "footY": 59,
+        "topY": 4,
+        "n": 476
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-05T10:32:31.293Z"
+    },
+    "player-walk-e": {
+      "frameName": "player-walk-e",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 706
+        },
+        "margin": {
+          "ok": true,
+          "bw": 24,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": false,
+          "avg": "15.9",
+          "brightRatio": "1.8%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 3.49,
+          "dCx": 3.25,
+          "dCy": 1.26,
+          "dFoot": 0,
+          "dAreaPct": 34.8,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.5px > 3",
+            "面积 Δ 34.8% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "剪影 L* 15.9 未高于敌潮且高亮 1.8% < 3%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 20,
+        "minY": 4,
+        "maxX": 43,
+        "maxY": 59,
+        "bw": 24,
+        "bh": 56,
+        "cx": 33.08,
+        "cy": 33.54,
+        "footY": 59,
+        "topY": 4,
+        "n": 706
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-06T08:10:18.824Z"
+    },
+    "player-walk-c": {
+      "frameName": "player-walk-c",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 795
+        },
+        "margin": {
+          "ok": true,
+          "bw": 28,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": false,
+          "avg": "16.3",
+          "brightRatio": "2.0%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 1.23,
+          "dCx": 1.2,
+          "dCy": 0.29,
+          "dFoot": 0,
+          "dAreaPct": 26.5,
+          "ok": false,
+          "issues": [
+            "面积 Δ 26.5% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "剪影 L* 16.3 未高于敌潮且高亮 2.0% < 3%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 18,
+        "minY": 4,
+        "maxX": 45,
+        "maxY": 59,
+        "bw": 28,
+        "bh": 56,
+        "cx": 31.03,
+        "cy": 34.51,
+        "footY": 59,
+        "topY": 4,
+        "n": 795
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-06T08:10:18.829Z"
+    },
+    "player-walk-f": {
+      "frameName": "player-walk-f",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 851
+        },
+        "margin": {
+          "ok": true,
+          "bw": 32,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": false,
+          "avg": "16.0",
+          "brightRatio": "1.5%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 2.64,
+          "dCx": 2.62,
+          "dCy": 0.31,
+          "dFoot": 0,
+          "dAreaPct": 21.3,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [
+        "剪影 L* 16.0 未高于敌潮且高亮 1.5% < 3%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 16,
+        "minY": 4,
+        "maxX": 47,
+        "maxY": 59,
+        "bw": 32,
+        "bh": 56,
+        "cx": 32.45,
+        "cy": 35.11,
+        "footY": 59,
+        "topY": 4,
+        "n": 851
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-06T08:10:18.832Z"
+    },
+    "player-walk-d": {
+      "frameName": "player-walk-d",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 646
+        },
+        "margin": {
+          "ok": true,
+          "bw": 20,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": false,
+          "avg": "15.9",
+          "brightRatio": "1.5%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 2.2,
+          "dCx": 1.96,
+          "dCy": 1,
+          "dFoot": 0,
+          "dAreaPct": 40.3,
+          "ok": false,
+          "issues": [
+            "面积 Δ 40.3% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "剪影 L* 15.9 未高于敌潮且高亮 1.5% < 3%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 22,
+        "minY": 4,
+        "maxX": 41,
+        "maxY": 59,
+        "bw": 20,
+        "bh": 56,
+        "cx": 31.79,
+        "cy": 33.8,
+        "footY": 59,
+        "topY": 4,
+        "n": 646
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-09-06T08:10:18.834Z"
+    },
+    "hero-violet-walk-e": {
+      "frameName": "hero-violet-walk-e",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 3985
+        },
+        "margin": {
+          "ok": true,
+          "bw": 69,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "35.9",
+          "brightRatio": "17.5%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 4.88,
+          "dCx": 4.51,
+          "dCy": 1.86,
+          "dFoot": 0,
+          "dAreaPct": 27.8,
+          "ok": false,
+          "issues": [
+            "面积 Δ 27.8% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%",
+        "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 29,
+        "minY": 16,
+        "maxX": 97,
+        "maxY": 127,
+        "bw": 69,
+        "bh": 112,
+        "cx": 66.27,
+        "cy": 84.04,
+        "footY": 127,
+        "topY": 16,
+        "n": 3985
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-09-17T16:00:22.226Z"
+    },
+    "hero-violet-walk-c": {
+      "frameName": "hero-violet-walk-c",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 3821
+        },
+        "margin": {
+          "ok": true,
+          "bw": 71,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "34.6",
+          "brightRatio": "16.9%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 5.8,
+          "dCx": 4.42,
+          "dCy": 3.76,
+          "dFoot": 0,
+          "dAreaPct": 22.5,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 28,
+        "minY": 16,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 112,
+        "cx": 66.36,
+        "cy": 85.94,
+        "footY": 127,
+        "topY": 16,
+        "n": 3821
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-09-17T16:00:22.257Z"
+    },
+    "hero-violet-walk-f": {
+      "frameName": "hero-violet-walk-f",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 3873
+        },
+        "margin": {
+          "ok": true,
+          "bw": 70,
+          "bh": 114,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "34.5",
+          "brightRatio": "13.3%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 5.28,
+          "dCx": 3.81,
+          "dCy": 3.66,
+          "dFoot": 0,
+          "dAreaPct": 24.2,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 29,
+        "minY": 14,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 70,
+        "bh": 114,
+        "cx": 66.97,
+        "cy": 85.84,
+        "footY": 127,
+        "topY": 14,
+        "n": 3873
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-09-17T16:00:22.274Z"
+    },
+    "hero-violet-walk-d": {
+      "frameName": "hero-violet-walk-d",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 4077
+        },
+        "margin": {
+          "ok": true,
+          "bw": 71,
+          "bh": 113,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "33.4",
+          "brightRatio": "9.9%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 5.17,
+          "dCx": 3.36,
+          "dCy": 3.93,
+          "dFoot": 0,
+          "dAreaPct": 30.7,
+          "ok": false,
+          "issues": [
+            "面积 Δ 30.7% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%",
+        "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 28,
+        "minY": 15,
+        "maxX": 98,
+        "maxY": 127,
+        "bw": 71,
+        "bh": 113,
+        "cx": 67.42,
+        "cy": 86.11,
+        "footY": 127,
+        "topY": 15,
+        "n": 4077
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-09-17T16:00:22.286Z"
+    },
+    "hero-violet-fallen": {
+      "frameName": "hero-violet-fallen",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 1339
+        },
+        "margin": {
+          "ok": true,
+          "bw": 38,
+          "bh": 110,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "32.4",
+          "brightRatio": "17.7%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 45,
+        "minY": 18,
+        "maxX": 82,
+        "maxY": 127,
+        "bw": 38,
+        "bh": 110,
+        "cx": 63.96,
+        "cy": 69.2,
+        "footY": 127,
+        "topY": 18,
+        "n": 1339
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-09-17T16:22:12.937Z"
+    },
+    "hero-violet-fallen-v": {
+      "frameName": "hero-violet-fallen-v",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 1339
+        },
+        "margin": {
+          "ok": true,
+          "bw": 38,
+          "bh": 110,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "32.4",
+          "brightRatio": "17.7%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 0,
+          "dCx": 0,
+          "dCy": 0,
+          "dFoot": 0,
+          "dAreaPct": 0,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 45,
+        "minY": 18,
+        "maxX": 82,
+        "maxY": 127,
+        "bw": 38,
+        "bh": 110,
+        "cx": 63.96,
+        "cy": 69.2,
+        "footY": 127,
+        "topY": 18,
+        "n": 1339
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-09-17T16:22:12.953Z"
     }
   },
-  "updatedAt": "2026-08-31T14:02:10.694Z",
+  "updatedAt": "2026-09-17T16:22:12.990Z",
   "families": {
     "enemy-gravekeeper": {
       "base": "enemy-gravekeeper",
@@ -20248,7 +21383,8 @@
             "hypotMax": 3,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 96
           }
         }
       }
@@ -20261,46 +21397,56 @@
         "player-skill-b",
         "player-v",
         "player-walk-a",
-        "player-walk-b"
+        "player-walk-b",
+        "player-walk-c",
+        "player-walk-d",
+        "player-walk-e",
+        "player-walk-f"
       ],
       "pairs": {
         "player-skill-a": {
           "vs": "player",
-          "hypot": 2.51,
-          "dCx": 2.25,
-          "dCy": 1.12,
-          "dFoot": 0,
-          "dAreaPct": 2.9,
-          "ok": true,
-          "issues": [],
+          "hypot": 3.4,
+          "dCx": 1.3,
+          "dCy": 3.14,
+          "dFoot": 2,
+          "dAreaPct": 18.1,
+          "ok": false,
+          "issues": [
+            "脚底 ΔY 2px > 1"
+          ],
           "limits": {
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 64
           }
         },
         "player-skill-b": {
           "vs": "player",
-          "hypot": 0.49,
-          "dCx": 0.28,
-          "dCy": 0.4,
-          "dFoot": 0,
-          "dAreaPct": 4.4,
-          "ok": true,
-          "issues": [],
+          "hypot": 0.86,
+          "dCx": 0.84,
+          "dCy": 0.19,
+          "dFoot": 2,
+          "dAreaPct": 19.2,
+          "ok": false,
+          "issues": [
+            "脚底 ΔY 2px > 1"
+          ],
           "limits": {
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 64
           }
         },
         "player-v": {
           "vs": "player",
-          "hypot": 1.91,
-          "dCx": 1.8,
-          "dCy": 0.65,
+          "hypot": 0,
+          "dCx": 0,
+          "dCy": 0,
           "dFoot": 0,
           "dAreaPct": 0,
           "ok": true,
@@ -20309,39 +21455,121 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         },
         "player-walk-a": {
           "vs": "player",
-          "hypot": 0.97,
-          "dCx": 0.95,
-          "dCy": 0.21,
+          "hypot": 3.06,
+          "dCx": 2.95,
+          "dCy": 0.81,
           "dFoot": 0,
-          "dAreaPct": 3,
-          "ok": true,
-          "issues": [],
+          "dAreaPct": 14.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.1px > 3"
+          ],
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
           }
         },
         "player-walk-b": {
           "vs": "player",
-          "hypot": 0.45,
-          "dCx": 0.33,
-          "dCy": 0.3,
+          "hypot": 2.3,
+          "dCx": 2.06,
+          "dCy": 1.02,
           "dFoot": 0,
-          "dAreaPct": 6.2,
+          "dAreaPct": 41.4,
+          "ok": false,
+          "issues": [
+            "面积 Δ 41.4% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "player-walk-c": {
+          "vs": "player",
+          "hypot": 1.23,
+          "dCx": 1.2,
+          "dCy": 0.29,
+          "dFoot": 0,
+          "dAreaPct": 26.5,
+          "ok": false,
+          "issues": [
+            "面积 Δ 26.5% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "player-walk-d": {
+          "vs": "player",
+          "hypot": 2.2,
+          "dCx": 1.96,
+          "dCy": 1,
+          "dFoot": 0,
+          "dAreaPct": 40.3,
+          "ok": false,
+          "issues": [
+            "面积 Δ 40.3% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "player-walk-e": {
+          "vs": "player",
+          "hypot": 3.49,
+          "dCx": 3.25,
+          "dCy": 1.26,
+          "dFoot": 0,
+          "dAreaPct": 34.8,
+          "ok": false,
+          "issues": [
+            "重心 hypot 3.5px > 3",
+            "面积 Δ 34.8% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "player-walk-f": {
+          "vs": "player",
+          "hypot": 2.64,
+          "dCx": 2.62,
+          "dCy": 0.31,
+          "dFoot": 0,
+          "dAreaPct": 21.3,
           "ok": true,
           "issues": [],
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
           }
         }
       }
@@ -20367,7 +21595,8 @@
             "hypotMax": 24,
             "footMax": 3,
             "areaMax": 0.3,
-            "kind": "entrance"
+            "kind": "entrance",
+            "band": 240
           }
         },
         "boss-cardinal-v": {
@@ -20383,7 +21612,8 @@
             "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 240
           }
         }
       }
@@ -20409,7 +21639,8 @@
             "hypotMax": 24,
             "footMax": 3,
             "areaMax": 0.3,
-            "kind": "entrance"
+            "kind": "entrance",
+            "band": 240
           }
         },
         "boss-fenrir-v": {
@@ -20425,7 +21656,8 @@
             "hypotMax": 4,
             "footMax": 1,
             "areaMax": 0.2,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 240
           }
         }
       }
@@ -20451,7 +21683,8 @@
             "hypotMax": 24,
             "footMax": 3,
             "areaMax": 0.3,
-            "kind": "entrance"
+            "kind": "entrance",
+            "band": 240
           }
         },
         "boss-moonavatar-v": {
@@ -20467,7 +21700,8 @@
             "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 240
           }
         }
       }
@@ -20492,7 +21726,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20517,7 +21752,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20542,7 +21778,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20567,7 +21804,8 @@
             "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 240
           }
         }
       }
@@ -20592,7 +21830,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20617,7 +21856,8 @@
             "hypotMax": 3,
             "footMax": 1,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 96
           }
         }
       }
@@ -20642,7 +21882,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.2,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20667,7 +21908,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.2,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20692,7 +21934,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20717,7 +21960,8 @@
             "hypotMax": 3,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 96
           }
         }
       }
@@ -20742,7 +21986,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.2,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20769,7 +22014,8 @@
             "hypotMax": 8,
             "footMax": 2,
             "areaMax": 0.3,
-            "kind": "broken"
+            "kind": "broken",
+            "band": 96
           }
         },
         "enemy-stonewolf-broken-v": {
@@ -20785,7 +22031,8 @@
             "hypotMax": 8,
             "footMax": 2,
             "areaMax": 0.3,
-            "kind": "broken"
+            "kind": "broken",
+            "band": 96
           }
         },
         "enemy-stonewolf-v": {
@@ -20801,7 +22048,8 @@
             "hypotMax": 3,
             "footMax": 1,
             "areaMax": 0.2,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 96
           }
         }
       }
@@ -20826,7 +22074,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20851,7 +22100,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20876,7 +22126,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -20889,87 +22140,164 @@
         "hero-cassandra-skill-b",
         "hero-cassandra-v",
         "hero-cassandra-walk-a",
-        "hero-cassandra-walk-b"
+        "hero-cassandra-walk-b",
+        "hero-cassandra-walk-c",
+        "hero-cassandra-walk-d",
+        "hero-cassandra-walk-e",
+        "hero-cassandra-walk-f"
       ],
       "pairs": {
         "hero-cassandra-skill-a": {
           "vs": "hero-cassandra",
-          "hypot": 0.7,
-          "dCx": 0.65,
-          "dCy": 0.27,
+          "hypot": 1.21,
+          "dCx": 0.64,
+          "dCy": 1.03,
           "dFoot": 0,
-          "dAreaPct": 12.3,
+          "dAreaPct": 24.2,
           "ok": true,
           "issues": [],
           "limits": {
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 64
           }
         },
         "hero-cassandra-skill-b": {
           "vs": "hero-cassandra",
-          "hypot": 5.57,
-          "dCx": 5.18,
-          "dCy": 2.06,
+          "hypot": 1.04,
+          "dCx": 1.04,
+          "dCy": 0.04,
           "dFoot": 0,
-          "dAreaPct": 17.2,
+          "dAreaPct": 10.7,
           "ok": true,
           "issues": [],
           "limits": {
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 64
           }
         },
         "hero-cassandra-v": {
           "vs": "hero-cassandra",
-          "hypot": 0.53,
-          "dCx": 0.53,
-          "dCy": 0.06,
+          "hypot": 0,
+          "dCx": 0,
+          "dCy": 0,
           "dFoot": 0,
-          "dAreaPct": 14.2,
+          "dAreaPct": 0,
           "ok": true,
           "issues": [],
           "limits": {
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         },
         "hero-cassandra-walk-a": {
           "vs": "hero-cassandra",
-          "hypot": 0.21,
-          "dCx": 0.11,
-          "dCy": 0.18,
+          "hypot": 0.85,
+          "dCx": 0.82,
+          "dCy": 0.21,
           "dFoot": 0,
-          "dAreaPct": 2.3,
+          "dAreaPct": 13,
           "ok": true,
           "issues": [],
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
           }
         },
         "hero-cassandra-walk-b": {
           "vs": "hero-cassandra",
-          "hypot": 0.57,
-          "dCx": 0.56,
-          "dCy": 0.12,
+          "hypot": 1.12,
+          "dCx": 1.01,
+          "dCy": 0.48,
           "dFoot": 0,
-          "dAreaPct": 1.8,
+          "dAreaPct": 14.7,
           "ok": true,
           "issues": [],
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "hero-cassandra-walk-c": {
+          "vs": "hero-cassandra",
+          "hypot": 0.73,
+          "dCx": 0.52,
+          "dCy": 0.51,
+          "dFoot": 0,
+          "dAreaPct": 14,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "hero-cassandra-walk-d": {
+          "vs": "hero-cassandra",
+          "hypot": 1.33,
+          "dCx": 0.96,
+          "dCy": 0.92,
+          "dFoot": 0,
+          "dAreaPct": 16.4,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "hero-cassandra-walk-e": {
+          "vs": "hero-cassandra",
+          "hypot": 1.04,
+          "dCx": 0.54,
+          "dCy": 0.89,
+          "dFoot": 0,
+          "dAreaPct": 12.6,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "hero-cassandra-walk-f": {
+          "vs": "hero-cassandra",
+          "hypot": 1.12,
+          "dCx": 0.23,
+          "dCy": 1.1,
+          "dFoot": 0,
+          "dAreaPct": 17.6,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
           }
         }
       }
@@ -20998,7 +22326,8 @@
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 64
           }
         },
         "hero-galvan-skill-b": {
@@ -21014,7 +22343,8 @@
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 64
           }
         },
         "hero-galvan-v": {
@@ -21030,7 +22360,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         },
         "hero-galvan-walk-a": {
@@ -21045,8 +22376,9 @@
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
           }
         },
         "hero-galvan-walk-b": {
@@ -21061,8 +22393,9 @@
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
           }
         }
       }
@@ -21075,39 +22408,45 @@
         "hero-violet-skill-b",
         "hero-violet-v",
         "hero-violet-walk-a",
-        "hero-violet-walk-b"
+        "hero-violet-walk-b",
+        "hero-violet-walk-c",
+        "hero-violet-walk-d",
+        "hero-violet-walk-e",
+        "hero-violet-walk-f"
       ],
       "pairs": {
         "hero-violet-skill-a": {
           "vs": "hero-violet",
-          "hypot": 4.41,
-          "dCx": 3.13,
-          "dCy": 3.1,
+          "hypot": 6.11,
+          "dCx": 0.51,
+          "dCy": 6.09,
           "dFoot": 0,
-          "dAreaPct": 24.5,
+          "dAreaPct": 13.7,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 128
           }
         },
         "hero-violet-skill-b": {
           "vs": "hero-violet",
-          "hypot": 1.07,
-          "dCx": 0.04,
-          "dCy": 1.07,
-          "dFoot": 1,
-          "dAreaPct": 2.2,
+          "hypot": 4.3,
+          "dCx": 3.46,
+          "dCy": 2.55,
+          "dFoot": 0,
+          "dAreaPct": 17.5,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "skill"
+            "kind": "skill",
+            "band": 128
           }
         },
         "hero-violet-v": {
@@ -21120,42 +22459,119 @@
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 2,
+            "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 128
           }
         },
         "hero-violet-walk-a": {
           "vs": "hero-violet",
-          "hypot": 0.26,
-          "dCx": 0.16,
-          "dCy": 0.21,
+          "hypot": 4.73,
+          "dCx": 3.62,
+          "dCy": 3.05,
           "dFoot": 0,
-          "dAreaPct": 0.9,
+          "dAreaPct": 17.3,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
           }
         },
         "hero-violet-walk-b": {
           "vs": "hero-violet",
-          "hypot": 1.1,
-          "dCx": 0.78,
-          "dCy": 0.78,
+          "hypot": 5.79,
+          "dCx": 4.95,
+          "dCy": 3,
           "dFoot": 0,
-          "dAreaPct": 6.5,
+          "dAreaPct": 29.5,
+          "ok": false,
+          "issues": [
+            "面积 Δ 29.5% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "hero-violet-walk-c": {
+          "vs": "hero-violet",
+          "hypot": 5.8,
+          "dCx": 4.42,
+          "dCy": 3.76,
+          "dFoot": 0,
+          "dAreaPct": 22.5,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
-            "areaMax": 0.2,
-            "kind": "walk"
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "hero-violet-walk-d": {
+          "vs": "hero-violet",
+          "hypot": 5.17,
+          "dCx": 3.36,
+          "dCy": 3.93,
+          "dFoot": 0,
+          "dAreaPct": 30.7,
+          "ok": false,
+          "issues": [
+            "面积 Δ 30.7% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "hero-violet-walk-e": {
+          "vs": "hero-violet",
+          "hypot": 4.88,
+          "dCx": 4.51,
+          "dCy": 1.86,
+          "dFoot": 0,
+          "dAreaPct": 27.8,
+          "ok": false,
+          "issues": [
+            "面积 Δ 27.8% > 25%"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "hero-violet-walk-f": {
+          "vs": "hero-violet",
+          "hypot": 5.28,
+          "dCx": 3.81,
+          "dCy": 3.66,
+          "dFoot": 0,
+          "dAreaPct": 24.2,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
           }
         }
       }
@@ -21530,7 +22946,8 @@
             "hypotMax": 3,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 96
           }
         }
       }
@@ -21555,7 +22972,8 @@
             "hypotMax": 3,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 96
           }
         }
       }
@@ -21679,7 +23097,8 @@
             "hypotMax": 6,
             "footMax": 1,
             "areaMax": 0.25,
-            "kind": "tombstone"
+            "kind": "tombstone",
+            "band": 64
           }
         },
         "summon-oathkeeper-v": {
@@ -21695,7 +23114,8 @@
             "hypotMax": 2,
             "footMax": 0,
             "areaMax": 0.15,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -21720,7 +23140,8 @@
             "hypotMax": 2,
             "footMax": 1,
             "areaMax": 0.2,
-            "kind": "idle"
+            "kind": "idle",
+            "band": 64
           }
         }
       }
@@ -22088,6 +23509,32 @@
         "exw-emblem-horn"
       ],
       "pairs": {}
+    },
+    "hero-violet-fallen": {
+      "base": "hero-violet-fallen",
+      "members": [
+        "hero-violet-fallen",
+        "hero-violet-fallen-v"
+      ],
+      "pairs": {
+        "hero-violet-fallen-v": {
+          "vs": "hero-violet-fallen",
+          "hypot": 0,
+          "dCx": 0,
+          "dCy": 0,
+          "dFoot": 0,
+          "dAreaPct": 0,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 4,
+            "footMax": 0,
+            "areaMax": 0.15,
+            "kind": "idle",
+            "band": 128
+          }
+        }
+      }
     }
   }
 }

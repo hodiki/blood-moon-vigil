@@ -1,0 +1,261 @@
+{
+  "id": "style-frame-cassandra-h2",
+  "revision": 0,
+  "last_node_id": 21,
+  "last_link_id": 18,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [-520, 80],
+      "size": [480, 380],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "当前产线 · H2（网页用）",
+      "properties": {},
+      "widgets_values": [
+        "## 当前测通 · H23（未过）\n\n底图 = H1 `comfy_lan_style_c_hose_00001_.png`（不要用全身当 IPA）。\nIPA weight **0** · end_at 0.35 · denoise **0.75** · 种子 `202609104`。\n成片：`_park/.../2026-09-08T09-00-25-659Z/comfy_lan_style_c_hose2_00023_.png`\n\nweight 0 时 IPA 等于旁路，身材/靴才能跟提示词。网页 Queue 仍写 GPU `output/`。"
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 4,
+      "type": "CheckpointLoaderSimple",
+      "pos": [20, 80],
+      "size": [340, 110],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [1] },
+        { "name": "CLIP", "type": "CLIP", "links": [2] },
+        { "name": "VAE", "type": "VAE", "links": [8, 18] }
+      ],
+      "properties": { "Node name for S&R": "CheckpointLoaderSimple" },
+      "widgets_values": ["waiIllustriousSDXL_v170.safetensors"]
+    },
+    {
+      "id": 17,
+      "type": "CLIPSetLastLayer",
+      "pos": [20, 230],
+      "size": [340, 70],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 2 }],
+      "outputs": [{ "name": "CLIP", "type": "CLIP", "links": [4, 5] }],
+      "title": "CLIP Skip 2",
+      "properties": { "Node name for S&R": "CLIPSetLastLayer" },
+      "widgets_values": [-2]
+    },
+    {
+      "id": 12,
+      "type": "LoadImage",
+      "pos": [20, 340],
+      "size": [340, 320],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [6] },
+        { "name": "MASK", "type": "MASK", "links": null }
+      ],
+      "title": "脸参考 IPA",
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["m1-face.png", "image"]
+    },
+    {
+      "id": 16,
+      "type": "LoadImage",
+      "pos": [20, 700],
+      "size": [340, 320],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [16] },
+        { "name": "MASK", "type": "MASK", "links": null }
+      ],
+      "title": "底图 i2i（H1）",
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["comfy_lan_style_c_hose_00001_.png", "image"]
+    },
+    {
+      "id": 21,
+      "type": "ImageScale",
+      "pos": [400, 700],
+      "size": [280, 130],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [{ "name": "image", "type": "IMAGE", "link": 16 }],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [17] }],
+      "title": "768×1344",
+      "properties": { "Node name for S&R": "ImageScale" },
+      "widgets_values": ["lanczos", 768, 1344, "disabled"]
+    },
+    {
+      "id": 18,
+      "type": "VAEEncode",
+      "pos": [400, 870],
+      "size": [220, 50],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        { "name": "pixels", "type": "IMAGE", "link": 17 },
+        { "name": "vae", "type": "VAE", "link": 18 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [13] }],
+      "properties": { "Node name for S&R": "VAEEncode" }
+    },
+    {
+      "id": 11,
+      "type": "IPAdapterUnifiedLoader",
+      "pos": [400, 80],
+      "size": [320, 80],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 1 },
+        { "name": "ipadapter", "type": "IPADAPTER", "link": null }
+      ],
+      "outputs": [
+        { "name": "model", "type": "MODEL", "links": [7] },
+        { "name": "ipadapter", "type": "IPADAPTER", "links": [9] }
+      ],
+      "properties": { "Node name for S&R": "IPAdapterUnifiedLoader" },
+      "widgets_values": ["PLUS (high strength)"]
+    },
+    {
+      "id": 10,
+      "type": "IPAdapter",
+      "pos": [400, 200],
+      "size": [320, 180],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 7 },
+        { "name": "ipadapter", "type": "IPADAPTER", "link": 9 },
+        { "name": "image", "type": "IMAGE", "link": 6 },
+        { "name": "attn_mask", "type": "MASK", "link": null }
+      ],
+      "outputs": [{ "name": "MODEL", "type": "MODEL", "links": [10] }],
+      "properties": { "Node name for S&R": "IPAdapter" },
+      "widgets_values": [0.0, 0.0, 0.35, "prompt is more important"]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [760, 80],
+      "size": [420, 220],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 4 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [11] }],
+      "title": "Positive",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [
+        "masterpiece, best quality, amazing quality, very aesthetic, newest, 1girl, solo, adult woman, full body, standing, three-quarter view, looking at viewer, proud, smug, chin up, both eyes open, dark eyeshadow, sharp hunter eyes, pale skin, high silver-white ponytail, wine-red long coat, open coat, high collar, fitted waist, triangular hem, coat hem at mid-calf, black turtleneck, white cross on black turtleneck, layered belts, silver buckles, black pantyhose, feminine, slim waist, hip curve, slim feminine thighs, thin calves tapering to ankle,matte black boots, stiletto, pointed toe, empty hands, void background, simple background, hourglass, slim waist, wide hips, curvy"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [760, 340],
+      "size": [420, 180],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 5 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [12] }],
+      "title": "Negative",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [
+        "shorts, skirt, pants, trousers, military uniform, masculine, male, muscular, broad shoulders, thick calves, column legs, wide stance, leather boots, patent leather, shiny boots, glossy boots, latex, wet look, chrome heel, combat boots, chunky boots, flat boots, round toe, smudged makeup, panda eyes, mascara clumps, wink, extra limbs, extra digits, lowres, worst quality, scenery"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 3,
+      "type": "KSampler",
+      "pos": [1220, 80],
+      "size": [290, 270],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 10 },
+        { "name": "positive", "type": "CONDITIONING", "link": 11 },
+        { "name": "negative", "type": "CONDITIONING", "link": 12 },
+        { "name": "latent_image", "type": "LATENT", "link": 13 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [14] }],
+      "properties": { "Node name for S&R": "KSampler" },
+      "widgets_values": [202609104, "fixed", 28, 6, "euler_ancestral", "normal", 0.75]
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [1220, 390],
+      "size": [220, 50],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 14 },
+        { "name": "vae", "type": "VAE", "link": 8 }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [15] }],
+      "properties": { "Node name for S&R": "VAEDecode" }
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [1560, 80],
+      "size": [360, 280],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 15 }],
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["comfy_lan_style_c_hose2"]
+    }
+  ],
+  "links": [
+    [1, 4, 0, 11, 0, "MODEL"],
+    [2, 4, 1, 17, 0, "CLIP"],
+    [4, 17, 0, 6, 0, "CLIP"],
+    [5, 17, 0, 7, 0, "CLIP"],
+    [6, 12, 0, 10, 2, "IMAGE"],
+    [7, 11, 0, 10, 0, "MODEL"],
+    [8, 4, 2, 8, 1, "VAE"],
+    [9, 11, 1, 10, 1, "IPADAPTER"],
+    [10, 10, 0, 3, 0, "MODEL"],
+    [11, 6, 0, 3, 1, "CONDITIONING"],
+    [12, 7, 0, 3, 2, "CONDITIONING"],
+    [13, 18, 0, 3, 3, "LATENT"],
+    [14, 3, 0, 8, 0, "LATENT"],
+    [15, 8, 0, 9, 0, "IMAGE"],
+    [16, 16, 0, 21, 0, "IMAGE"],
+    [17, 21, 0, 18, 0, "IMAGE"],
+    [18, 4, 2, 18, 1, "VAE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": { "ds": { "scale": 0.65, "offset": [540, 40] }, "frontendVersion": "1.51.9" },
+  "version": 0.4
+}

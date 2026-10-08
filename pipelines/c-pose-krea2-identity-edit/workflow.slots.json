@@ -1,0 +1,8 @@
+{
+  "seed": ["8", "inputs", "seed"],
+  "positive": ["41", "inputs", "prompt"],
+  "image_ref": ["10", "inputs", "image"],
+  "ref_boost": ["40", "inputs", "ref_boost"],
+  "grounding_px": ["41", "inputs", "grounding_px"],
+  "lora_strength": ["32", "inputs", "strength_model"]
+}
