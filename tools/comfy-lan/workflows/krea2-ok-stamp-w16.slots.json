@@ -1,0 +1,5 @@
+{
+  "seed": ["8", "inputs", "seed"],
+  "positive": ["5", "inputs", "text"],
+  "image_ref": ["10", "inputs", "image"]
+}

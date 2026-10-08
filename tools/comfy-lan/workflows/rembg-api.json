@@ -1,0 +1,22 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "2": {
+    "class_type": "InspyrenetRembg",
+    "inputs": {
+      "image": ["1", 0],
+      "torchscript_jit": "default"
+    }
+  },
+  "3": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_rembg",
+      "images": ["2", 0]
+    }
+  }
+}

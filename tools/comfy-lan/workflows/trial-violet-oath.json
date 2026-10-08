@@ -1,0 +1,59 @@
+{
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 20260908,
+      "steps": 28,
+      "cfg": 6,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    }
+  },
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "1girl, adult woman, full body, standing, three-quarter view, tired face, short ivory forehead cloth, dark ash hair to shoulders, neck visible, dusty slate-blue short capelet, taupe brown long skirt, dull brass belt, holding a thin candle, small flame, tall standing knight behind her, polished silver plate armor, moon-silver metal, not black armor, small gold chest emblem, void black background, no scenery, masterpiece, best quality",
+      "clip": ["4", 1]
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "lowres, worst quality, bad anatomy, extra limbs, extra fingers, text, watermark, logo, blurry, cropped, nsfw, nude, nun habit, wimple, crucifix, rosary, kneeling knight, blackened armor, dark armor, silver ponytail, wine red coat",
+      "clip": ["4", 1]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_trial_violet_oath",
+      "images": ["8", 0]
+    }
+  }
+}

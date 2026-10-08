@@ -1,0 +1,124 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "Graphic production STAMP of ONE standing knight, about 8 hard cel color blocks. Not an oil painting, not anime illustration, not photoreal metal, not a character sheet. Keep the SAME PERSON as the reference: tall adult knight in a closed visor helm, large red feather plume on the helm. The visor slit is the face. No exposed skin. Not a kneeling statue. Not a woman. 3/4 camera facing RIGHT. Full-body idle stand. One hand rests on the hip sword. Hem on the bottom. Figure fills most of the height including the plume. Empty void #00040C on the sides. No studio gray. No ground shadow. Combat color D2: LARGE masses are mid-steel plate. Dark cloth only in the surcoat gaps. Silver ONLY as thin edges, not a chrome statue. Red plume is the only saturated accent. ONE knight only. No woman, no candle, no second person, no parchment, no labels, no sprite sheet, no grid, no horns, no wings.",
+      "clip": [
+        "3",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091701,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.72,
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "latent_image": [
+        "14",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_ok_w15_hi",
+      "images": [
+        "9",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "Krea2T-Enhancer-Advanced",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "enabled": false,
+      "strength": 1,
+      "text_scale": 1,
+      "debug": false
+    }
+  },
+  "14": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  }
+}

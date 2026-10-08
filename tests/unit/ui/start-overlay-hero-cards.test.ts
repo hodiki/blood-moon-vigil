@@ -1,8 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   HERO_CARD_ORDER,
+  MAP_CARD_ORDER,
   buildHeroCardStates,
+  buildMapCardStates,
+  nextStartStep,
+  prevStartStep,
 } from '@/ui/start-overlay';
+import { PALETTE } from '@/config/balance';
 import { emptySave, unlockStatusFromSave, type SaveData } from '@/stats/save';
 import { HEROES } from '@/config/balance';
 import { getSelectedHero, setSelectedHero, selectHeroSafely, resetSessionSelection } from '@/config/session-selection';
@@ -66,5 +71,32 @@ describe('QA-FIX-2 A 启动页角色选择栏（卡片逻辑态；QA-FIX-3 追�
   it('⑤ 解锁数据源兼容：unlockStatusFromSave 空存档语义不变（未来门禁复用）', () => {
     const save: SaveData = emptySave();
     expect(unlockStatusFromSave(save)).toEqual(ALL_LOCKED_UNLOCK);
+  });
+
+  it('⑥ 入口三屏步进：首页 → 选人 → 选图，Esc 原路返回', () => {
+    expect(nextStartStep('title')).toBe('hero');
+    expect(nextStartStep('hero')).toBe('map');
+    expect(nextStartStep('map')).toBe('map');
+    expect(prevStartStep('map')).toBe('hero');
+    expect(prevStartStep('hero')).toBe('title');
+    expect(prevStartStep('title')).toBe('title');
+  });
+});
+
+describe('入口地图卡玩家语言（ui-redesign-handoff v1.3 §1.4）', () => {
+  it('三图叙事名齐全，不含内部 id / 像素尺寸', () => {
+    const states = buildMapCardStates(ALL_LOCKED_UNLOCK);
+    expect(states.map((s) => s.id)).toEqual([...MAP_CARD_ORDER]);
+    expect(states.map((s) => s.name)).toEqual(['月下墓地', '血教堂', '狼穴']);
+    expect(states.map((s) => s.threat)).toEqual(['血月尊者', '血主教·尼禄', '狼王·芬里厄']);
+    for (const s of states) {
+      expect(s.node.length).toBeGreaterThan(0);
+      expect(`${s.node}${s.threat}${s.blurb}`).not.toMatch(/boss_\d|×\d{3,}/);
+    }
+  });
+
+  it('圣辉标签在入口改走余辉金（灯下哥特选中语义）', () => {
+    const edmund = buildHeroCardStates(ALL_CLEARED).find((s) => s.id === 'hero_edmund')!;
+    expect(edmund.powerTagColor).toBe(PALETTE.amber);
   });
 });

@@ -1,0 +1,109 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "14": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": ["10", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "32": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": ["2", 0],
+      "lora_name": "krea2_identity_edit_v1_2_r128.safetensors",
+      "strength_model": 1.0
+    }
+  },
+  "40": {
+    "class_type": "Krea2EditModelPatch",
+    "inputs": {
+      "model": ["32", 0],
+      "source_latent": ["14", 0],
+      "ref_boost": 4.0,
+      "ref_boost_a": 1.0,
+      "fit_mode": "fit"
+    }
+  },
+  "41": {
+    "class_type": "Krea2EditGroundedEncode",
+    "inputs": {
+      "clip": ["3", 0],
+      "prompt": "Keep this exact woman and her costume unchanged: two horns with black roots and red tips, red eyes, pale skin, long wavy jet-black hair past the shoulders, black evening gown with a lace bib high collar, black lace gloves ending on the forearms, high slit with red lining, red high heels, empty dark void background, same flat cel-shaded illustration style.\nChange only her pose: she stands with both hands on her hips, elbows pointing out, weight even on both feet, facing the same direction as before.",
+      "image": ["10", 0],
+      "grounding_px": 768
+    }
+  },
+  "42": {
+    "class_type": "Krea2EditGroundedEncode",
+    "inputs": {
+      "clip": ["3", 0],
+      "prompt": "",
+      "image": ["10", 0],
+      "grounding_px": 768
+    }
+  },
+  "7": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": 512,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091101,
+      "steps": 10,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": ["40", 0],
+      "positive": ["41", 0],
+      "negative": ["42", 0],
+      "latent_image": ["7", 0]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_e1_",
+      "images": ["9", 0]
+    }
+  }
+}

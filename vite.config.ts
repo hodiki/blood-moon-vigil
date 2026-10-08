@@ -6,6 +6,7 @@ import { defineConfig } from 'vitest/config';
 
 const atlasDir = fileURLToPath(new URL('./assets/atlas', import.meta.url));
 const framesDir = fileURLToPath(new URL('./assets/frames', import.meta.url));
+const uiMenuDir = fileURLToPath(new URL('./assets/ui-menu', import.meta.url));
 
 /** 把管线打好的 `assets/atlas` 挂到 /atlas，把处理后的单帧挂到 /frames（HUD / 地图卡 DOM 用） */
 function servePackedAtlas(): Plugin {
@@ -39,6 +40,16 @@ function servePackedAtlas(): Plugin {
           sendFile(path.join(framesDir, name), url, res, next);
           return;
         }
+        if (url.startsWith('/ui-menu/')) {
+          const name = decodeURIComponent(url.slice('/ui-menu/'.length));
+          if (!name || name.includes('..') || name.includes('/') || name.includes('\\') || !name.endsWith('.png')) {
+            res.statusCode = 404;
+            res.end();
+            return;
+          }
+          sendFile(path.join(uiMenuDir, name), url, res, next);
+          return;
+        }
         next();
       });
     },
@@ -58,6 +69,15 @@ function servePackedAtlas(): Plugin {
         for (const f of fs.readdirSync(framesDir)) {
           if (f.endsWith('.png')) {
             fs.copyFileSync(path.join(framesDir, f), path.join(dest, f));
+          }
+        }
+      }
+      if (fs.existsSync(uiMenuDir)) {
+        const dest = path.join(options.dir ?? 'dist', 'ui-menu');
+        fs.mkdirSync(dest, { recursive: true });
+        for (const f of fs.readdirSync(uiMenuDir)) {
+          if (f.endsWith('.png')) {
+            fs.copyFileSync(path.join(uiMenuDir, f), path.join(dest, f));
           }
         }
       }

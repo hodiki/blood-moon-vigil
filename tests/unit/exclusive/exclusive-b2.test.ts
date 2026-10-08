@@ -26,7 +26,7 @@ import {
 } from '@/relics/relic-engine';
 import {
   createOathkeeperState, transferDamage, tickTombstone, tickResummon, oathkeeperTargetable, revive,
-  becomeTombstone, applyCompanionMachine,
+  becomeTombstone, applyCompanionMachine, syncOathkeeperMaxHp,
 } from '@/weapons/companion/oathkeeper';
 import { pickTarget } from '@/enemies/targeting';
 
@@ -374,15 +374,16 @@ describe('B2-W4 圣物层（尾章定稿；验收判据 ⑤）', () => {
   });
 });
 
-describe('B2-W5 守誓者（EG-4：HP 固定 200）+ 索敌扩展', () => {
+describe('B2-W5 守誓者（D8/EN-06：HP = 玩家当局当前最大生命 ×150%）+ 索敌扩展', () => {
   it('状态机闭环：承伤转移 50% → 击倒化墓碑 → 墓碑回血/治疗转化复活 → 满血复活', () => {
         const state = createOathkeeperState(0, 0);
-    expect(state.maxHp).toBe(200);
+    // 默认基数 = 薇奥莱 initialHp 115 ×150% = 172.5（GDD §4.4「无树入场 ≈173」）
+    expect(state.maxHp).toBeCloseTo(172.5);
     expect(oathkeeperTargetable(state)).toBe(true);
     // 承伤转移 50%
     const transferred = transferDamage(state, 100, 0);
     expect(transferred).toBe(50);
-    expect(state.hp).toBe(150);
+    expect(state.hp).toBeCloseTo(122.5);
     // 击倒 → 墓碑（不可被索敌）
     transferDamage(state, 300, 0);
     expect(state.phase).toBe('tombstone');
@@ -398,8 +399,24 @@ describe('B2-W5 守誓者（EG-4：HP 固定 200）+ 索敌扩展', () => {
     // 治疗灌满 → 复活满血
     revive(state);
     expect(state.phase).toBe('companion');
-    expect(state.hp).toBe(200);
+    expect(state.hp).toBeCloseTo(172.5);
     expect(state.reviveProgress).toBe(0);
+  });
+
+  it('EN-06 动态跟随：maxHp = 玩家当局当前最大生命 ×150%；随生命成长同步（非快照）', () => {
+    const state = createOathkeeperState(0, 0, 300); // 玩家当局当前 maxHp 300 → 450
+    expect(state.maxHp).toBeCloseTo(450);
+    expect(state.hp).toBeCloseTo(450);
+    // 受伤后玩家生命成长（如升一档 +100）→ 上限同步（非快照）
+    transferDamage(state, 200, 0); // 450 − 100 = 350
+    syncOathkeeperMaxHp(state, 400); // ×150% = 600
+    expect(state.maxHp).toBeCloseTo(600);
+    expect(state.hp).toBeCloseTo(350); // 未满血 → 保留（钳制到新上限）
+    // 满血时同步 → 跟随满血
+    state.hp = state.maxHp;
+    syncOathkeeperMaxHp(state, 500); // ×150% = 750
+    expect(state.maxHp).toBeCloseTo(750);
+    expect(state.hp).toBeCloseTo(750);
   });
 
   it('墓碑到期未复活 → gone + 重召唤 CD 20s → 就绪后满血重召唤', () => {
@@ -412,7 +429,7 @@ describe('B2-W5 守誓者（EG-4：HP 固定 200）+ 索敌扩展', () => {
     expect(state.phase).toBe('gone'); // 未就绪
     tickResummon(state, 0, 28.2);
     expect(state.phase).toBe('companion');
-    expect(state.hp).toBe(200);
+    expect(state.hp).toBeCloseTo(172.5);
   });
 
   it('索敌扩展：150px 替身圈内强制索敌守誓者；墓碑期/远离回落玩家（targeting）', () => {

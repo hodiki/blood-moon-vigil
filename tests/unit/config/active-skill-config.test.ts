@@ -94,11 +94,11 @@ describe('E1-S5 血猎手·卡珊德拉「血影突袭」（content §2.3 / gdd-
   });
 });
 
-describe('E1-S5 夜祷修女·薇奥莱「安魂曲」（content §2.4 / gdd-active-skill §3.2）', () => {
+describe('E1-S5 秉烛人·薇奥莱「誓约回响」（content §2.4 / gdd-active-skill §3.2）', () => {
   it('DEFENSE / CD 22s / 300px 减速 40%（4s）/ 回复 20% 最大生命；效果型无伤害倍率', () => {
     expect(ACTIVE_SKILLS.hero_violet).toMatchObject({
       heroId: 'hero_violet',
-      name: '安魂曲',
+      name: '誓约回响',
       type: 'DEFENSE',
       cd: 22,
       radius: 300,

@@ -16,6 +16,7 @@
  */
 
 import { FX, EXCLUSIVE_WEAPONS, type HeroId, type WeaponId } from '@/config/balance';
+import { skillPosePlayForCast } from '@/fx/skill-pose';
 import { SKILL_RING_FRAMES } from '@/fx/fx-spec';
 
 /**
@@ -159,14 +160,20 @@ export class DerivativeCastBridge {
     // B6-W5 遥测：衍生技伤害累计 + 占比分母
     p.runStats().recordDerivativeDamage(result.damageDealt);
     p.runStats().recordTotalDamage(result.damageDealt);
-    p.player().beginSkillPose();
+    const skillId = p.derivativeControllerRef().skillId;
+    p.player().beginSkillPose(skillPosePlayForCast(p.player().visualFrame, skillId));
+    if (skillId === 'dv_lantern_flash') {
+      const flashR = EXCLUSIVE_WEAPONS.xw_lantern.params.radius ?? 90;
+      p.fx().lanternFlash(p.player().x, p.player().y, flashR);
+      p.fx().lanternEdgeFlash(p.player().x, p.player().y, flashR);
+    }
     // 血月狂化衍生技（dv_blood_rage）：6s 伤害 +40% / 移速 +15% / 挥击不耗 HP（GDD §4.6）
     if (result.events.includes('rage')) {
       p.rage().apply(now, 6);
       p.stats().setRageBonus(0.4);
       p.stats().rageSpeedPct = 0.15;
       p.fx().rageBurst(p.player().x, p.player().y);
-      p.player().setScale(FX.SKILL_RAGE_SCALE);
+      p.player().setCombatRageMult(FX.SKILL_RAGE_SCALE);
     }
     // P1-14 月啸冲锋「加尔文狂化 4s（攻速）」：与血月狂化分两个 buff id，不吃伤害/移速加成
     if (result.events.includes('wolfFrenzy')) {
@@ -202,14 +209,14 @@ export class DerivativeCastBridge {
     if (active && stats.rageBonusMultiplier === 0) {
       stats.setRageBonus(0.4);
       stats.rageSpeedPct = 0.15;
-      p.player().setScale(FX.SKILL_RAGE_SCALE);
+      p.player().setCombatRageMult(FX.SKILL_RAGE_SCALE);
       // P0-7d：狂化窗口内巨斧挥击不耗 HP（GDD §4.6）——写到 behavior machine 的
       // selfHpCost=0（stepAxe 读 machine 覆写），窗口结束由下方失效分支复位。
       p.exw('xw_axe').applyMutationCard({ selfHpCost: 0 });
     } else if (!active && stats.rageBonusMultiplier !== 0) {
       stats.setRageBonus(0);
       stats.rageSpeedPct = 0;
-      p.player().setScale(1);
+      p.player().setCombatRageMult(1);
       // 复位到基础自损（EXCLUSIVE_WEAPONS.xw_axe.params.selfHpCost = 2）
       p.exw('xw_axe').applyMutationCard({
         selfHpCost: EXCLUSIVE_WEAPONS.xw_axe.params.selfHpCost ?? 2,

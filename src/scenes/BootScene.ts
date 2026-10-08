@@ -6,7 +6,7 @@
  *
  * Phase 6 音频接入（audio-bible §4 / ux-spec §1）：
  * - create 时用 Phaser WebAudio 后端初始化 AudioManager（压缩器总线/心跳/SFX 合成）
- * - 启动页「点击开始」= 唯一音频解锁点：回调内 unlock() 后再进 PlayScene
+ * - 启动页最终 CTA「走进夜色」= 唯一音频解锁点：回调内 unlock() 后再进 PlayScene
  * - `?smoke=1` 内嵌自检：跳过启动页直接进 Play（L2 冒烟无手势，audio 未解锁即静默 no-op）
  */
 
@@ -41,7 +41,7 @@ export class BootScene extends Phaser.Scene {
       return;
     }
 
-    // ux-spec §1：启动页「点击开始」= 唯一音频解锁点（audio-bible §4 硬前提）
+    // ux-spec §1：启动页最终 CTA「走进夜色」= 唯一音频解锁点（audio-bible §4 硬前提）
     // E4-S9：地图选择最小 UI（读局外存档解锁状态；图鉴/功绩 UI 归 M3，start-overlay 功能行消费 save）
     const saveData = loadSave(window.localStorage, detectIsMobile() ? 'mobile' : 'desktop');
     this.startOverlay = createStartOverlay(

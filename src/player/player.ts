@@ -13,12 +13,13 @@ import Phaser from 'phaser';
 import { PLAYER, DEATH_SHIELD, type HeroConfig, type MapId } from '@/config/balance';
 import { MAP_CONFIGS } from '@/config/balance';
 import { visualFrameForContent } from '@/config/frame-registry';
+import { applyCombatDisplayScale } from '@/fx/combat-display-scale';
 import { resolveCharacterFrame } from '@/fx/external-atlas';
 import { PlayerStats } from '@/player/player-stats';
 import { isInvulnerable, applyDamage, extendInvulnerabilityUntil } from '@/combat/damage';
 import { GameEvents, GameEvent } from '@/core/events';
 import { clampToWorld, type Vec2 } from '@/utils/math';
-import { SkillPoseClock } from '@/fx/skill-pose';
+import { SkillPoseClock, type SkillPosePhase, type SkillPosePlay } from '@/fx/skill-pose';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   readonly stats: PlayerStats;
@@ -31,6 +32,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private worldH: number;
   /** 主动技姿态计时（fx/skill-pose.ts 纯类；<0 = 未在播。伤害已瞬发，本字段只驱动 skill-a/b 帧） */
   private skillPose = new SkillPoseClock();
+  /** 专武在手站姿（提灯 → skill-b）。施法叠层优先；移动时不播。 */
+  private weaponStance: SkillPosePhase | null = null;
+  /** 狂化体型乘区。落地缩放 = 此值 × combatDisplayScale(当前帧宽)。 */
+  combatRageMult = 1;
 
   constructor(scene: Phaser.Scene, x: number, y: number, hero?: HeroConfig, mapId: MapId = 'map_graveyard') {
     const visual = resolveCharacterFrame(scene, visualFrameForContent(hero?.id ?? 'hero_edmund'));
@@ -45,6 +50,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // 边界用 clampToWorld 手动钳制（精确 [0,W]²，S9 / E4-S9 地图尺寸联动），不依赖 Arcade worldBounds
     body.setCollideWorldBounds(false);
     this.setDepth(100);
+    applyCombatDisplayScale(this, this.combatRageMult);
     const map = MAP_CONFIGS[mapId];
     this.worldW = map.width;
     this.worldH = map.height;
@@ -125,13 +131,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.invulnerableUntil = extendInvulnerabilityUntil(this.invulnerableUntil, nowSeconds, durationSeconds);
   }
 
-  /** 开始姿态叠层（不冻结移动；缺帧时 tick 自动跳过） */
-  beginSkillPose(): void {
-    this.skillPose.start(this.scene.time.now);
+  /** 开始姿态叠层（不冻结移动；缺帧时 tick 自动跳过）。play=null = 本技无姿态帧。 */
+  beginSkillPose(play: SkillPosePlay | null = { kind: 'combo' }): void {
+    if (play === null) {
+      this.skillPose.stop();
+      return;
+    }
+    this.skillPose.start(this.scene.time.now, play);
   }
 
   /** 距姿态起点的毫秒；未开始为 -1 */
   skillPoseElapsedMs(): number {
     return this.skillPose.elapsedMs(this.scene.time.now);
+  }
+
+  skillPosePlay(): SkillPosePlay {
+    return this.skillPose.posePlay();
+  }
+
+  setWeaponStance(phase: SkillPosePhase | null): void {
+    this.weaponStance = phase;
+  }
+
+  weaponStancePhase(): SkillPosePhase | null {
+    return this.weaponStance;
+  }
+
+  /** 狂化开/关只改乘区；真正 setScale 仍走占地公式。 */
+  setCombatRageMult(mult: number): void {
+    this.combatRageMult = mult;
+    applyCombatDisplayScale(this, this.combatRageMult);
   }
 }

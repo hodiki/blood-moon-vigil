@@ -2,7 +2,7 @@
  * weapons/companion/oathkeeper.ts —— 守誓者召唤物状态机（B2-W5，gdd-exclusive-weapons §4.4）
  *
  * 规格（R2 §D 收录；FQ-2 定稿：修女·薇奥莱选安魂圣铃时**开局自带**）：
- * - HP 固定 200（EG-4 裁决：固定 200，×150% 双值配置挂账模拟定一）；
+ * - HP = 玩家「当局当前」最大生命 ×150%（EN-06 / GDD §4.4 v1.4；**动态跟随**，非快照、非固定 200）；
  * - 承伤替身：150px 强制索敌（targeting.pickTarget）+ 接触伤害转移 50%（质变卡 2 → 65%）；
  * - 低频撕咬 8 伤/1.0s（质变卡 2 → 14）；
  * - HP 归零化墓碑（8~10s；120px 内修女回血 2 HP/s——质变卡 2 → 4；墓碑期不可被攻击）；
@@ -13,7 +13,7 @@
  * 质变卡 machine 参数（mc_bell_2）经 applyCompanionMachine 写入。
  */
 
-import { EXCLUSIVE_WEAPONS } from '@/config/balance';
+import { EXCLUSIVE_WEAPONS, oathkeeperMaxHp } from '@/config/balance';
 
 /** 守誓者阶段 */
 export type OathkeeperPhase = 'companion' | 'tombstone' | 'gone';
@@ -39,17 +39,23 @@ export interface OathkeeperState {
   totalDamage: number;
 }
 
-/** 初始参数（EXCLUSIVE_WEAPONS.xw_bell.params.companion；EG-4：HP 固定 200） */
+/** 初始参数（EXCLUSIVE_WEAPONS.xw_bell.params.companion；HP 口径见 EN-06 = ×玩家当局当前最大生命） */
 function baseParams(): NonNullable<(typeof EXCLUSIVE_WEAPONS.xw_bell.params)['companion']> {
   return EXCLUSIVE_WEAPONS.xw_bell.params.companion!;
 }
 
-export function createOathkeeperState(x = 0, y = 0): OathkeeperState {
-  const p = baseParams();
+/**
+ * 无玩家面板兜底基数（薇奥莱 initialHp 115；×150% ≈ 172.5 = GDD §4.4「无树入场 ≈173」）。
+ * 仅未接线期 / 单测默认值使用——运行时应试由调用方传入玩家「当局当前」最大生命（EN-06）。
+ */
+export const OATHKEEPER_BASE_PLAYER_MAX_HP = 115;
+
+export function createOathkeeperState(x = 0, y = 0, playerMaxHp: number = OATHKEEPER_BASE_PLAYER_MAX_HP): OathkeeperState {
+  const maxHp = oathkeeperMaxHp(playerMaxHp);
   return {
     phase: 'companion',
-    hp: p.hp,
-    maxHp: p.hp,
+    hp: maxHp,
+    maxHp,
     x,
     y,
     tombstoneUntil: 0,
@@ -60,6 +66,17 @@ export function createOathkeeperState(x = 0, y = 0): OathkeeperState {
     machine: {},
     totalDamage: 0,
   };
+}
+
+/**
+ * 动态跟随（EN-06）：玩家「当局当前」最大生命变化 → 守誓者上限同步 ×150%（**非入场快照**）。
+ * 原为满血则保持满血；否则按新上限钳制（不溢出）。调用方以玩家当前最大生命传入。
+ */
+export function syncOathkeeperMaxHp(state: OathkeeperState, playerMaxHp: number): void {
+  const next = oathkeeperMaxHp(playerMaxHp);
+  const wasFull = state.hp >= state.maxHp;
+  state.maxHp = next;
+  state.hp = wasFull ? next : Math.min(state.hp, next);
 }
 
 /** 质变卡参数写回（mc_bell_2 machine 键与 OathkeeperParams 字段名对齐） */

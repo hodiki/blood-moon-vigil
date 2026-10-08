@@ -328,8 +328,8 @@ describe('状态层 · §④ 登记表（验收判据 ⑧-2：来源-状态-参�
     // 减速行
     expect(bySource.get('破旧提灯（基础）')).toMatchObject({ kind: 'slow', value: 0.1, durationSeconds: null });
     expect(bySource.get('亡者灯引残焰')).toMatchObject({ kind: 'slow', value: 0.1, durationSeconds: 3 });
-    expect(bySource.get('安魂圣铃衍生技（安魂曲）')).toMatchObject({ kind: 'slow', value: 0.3, durationSeconds: 3 });
-    expect(bySource.get('安魂钟鸣（质变 1）')).toMatchObject({ kind: 'slow', value: 0.2, durationSeconds: 2 });
+    expect(bySource.get('誓约圣铃衍生技（誓约回响）')).toMatchObject({ kind: 'slow', value: 0.3, durationSeconds: 3 });
+    expect(bySource.get('誓约钟鸣（质变 1）')).toMatchObject({ kind: 'slow', value: 0.2, durationSeconds: 2 });
     expect(bySource.get('猎月贯钉（共鸣 R-4）')).toMatchObject({ kind: 'slow', value: 0.15, durationSeconds: 2 });
     expect(bySource.get('圣物·血海退潮')).toMatchObject({ kind: 'slow', value: 0.4, durationSeconds: 6 });
     // 易伤行
@@ -338,7 +338,7 @@ describe('状态层 · §④ 登记表（验收判据 ⑧-2：来源-状态-参�
     expect(bySource.get('月痕长弓质变卡 2（猎首之约）')).toMatchObject({ kind: 'vulnerable', value: 0.2, durationSeconds: 8 });
     // 眩晕行（stun value 占位 1）
     expect(bySource.get('月痕长弓衍生技（月痕狙击）')).toMatchObject({ kind: 'stun', durationSeconds: 1 });
-    expect(bySource.get('圣辉十字衍生技（圣辉审判）')).toMatchObject({ kind: 'stun', durationSeconds: 2 });
+    expect(bySource.get('圣辉轮刃衍生技（圣辉审判）')).toMatchObject({ kind: 'stun', durationSeconds: 2 });
     expect(bySource.get('守夜环灯（共鸣 R-1）')).toMatchObject({ kind: 'stun', durationSeconds: 0.5 });
     expect(bySource.get('圣物·月蚀之陨')).toMatchObject({ kind: 'stun', durationSeconds: 2 });
     // 非状态行
@@ -365,9 +365,9 @@ describe('状态层 · §④ 登记表（验收判据 ⑧-2：来源-状态-参�
     expect(CC_ICD_SECONDS).toBe(10);
   });
 
-  it('登记表驱动引擎：模拟「安魂曲 30% 后接血海退潮 40%」取最强', () => {
+  it('登记表驱动引擎：模拟「誓约回响 30% 后接血海退潮 40%」取最强', () => {
     let s = emptyStatusState();
-    const requiem = CC_EFFECT_REGISTRY.find((e) => e.source === '安魂圣铃衍生技（安魂曲）')!;
+    const requiem = CC_EFFECT_REGISTRY.find((e) => e.source === '誓约圣铃衍生技（誓约回响）')!;
     const bloodsea = CC_EFFECT_REGISTRY.find((e) => e.source === '圣物·血海退潮')!;
     s = applyStatus(s, { kind: requiem.kind as 'slow', value: requiem.value, durationSeconds: requiem.durationSeconds!, source: requiem.source }, 0).state;
     s = applyStatus(s, { kind: bloodsea.kind as 'slow', value: bloodsea.value, durationSeconds: bloodsea.durationSeconds!, source: bloodsea.source }, 1).state;

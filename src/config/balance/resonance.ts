@@ -89,7 +89,7 @@ export const RESONANCE_PAIRS: readonly ResonancePairConfig[] = [
     machine: { damageReductionPct: 0.18, reviveConvertBonusPp: 20 },
   },
   {
-    id: 'R6', name: '圣火十诫', powerTag: 'HALLOWED',
+    id: 'R6', name: '圣火判词', powerTag: 'HALLOWED',
     exclusiveId: 'xw_cross', commonWeaponId: 'wpn_c_3', keyId: 'key_bone',
     behavior: '十字每次落点残留余焰（100px，8 伤/s / 3s）——爆发与持续区域缝合',
     damageNote: '余焰 8 伤/s / 3s（独立伤害段，锚点）',

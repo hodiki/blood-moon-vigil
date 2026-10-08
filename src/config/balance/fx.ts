@@ -63,7 +63,7 @@ export const FX = {
   GEM_PICKUP_COUNT: 6,
   /**
    * 主动技姿态叠层（表现层，不挡移动、不延迟伤害；gdd-active-skill §3.1 无蓄力资源）。
-   * skill-a 前摇帧 → skill-b 施放帧 → 回 idle。
+   * 默认 combo：skill-a → skill-b → idle。艾德蒙改为按技 hold 单帧，禁止 a/b 连播。
    */
   SKILL_POSE_A_MS: 300,
   SKILL_POSE_B_MS: 150,

@@ -1,0 +1,951 @@
+{
+  "ok": true,
+  "started": "2026-09-16T16:03:07+08:00",
+  "finished": "2026-09-16T16:29:11+08:00",
+  "prompt_id": "accd3af6-85c6-4454-b244-a8e636b78fdb",
+  "seconds": 1560.2,
+  "error": null,
+  "error_class": null,
+  "files": [
+    "video/S01_dance_v3_studio_480x864_362f_00001_.mp4"
+  ],
+  "status": {
+    "status_str": "success",
+    "completed": true,
+    "messages": [
+      [
+        "execution_start",
+        {
+          "prompt_id": "accd3af6-85c6-4454-b244-a8e636b78fdb",
+          "timestamp": 1789545791121
+        }
+      ],
+      [
+        "execution_cached",
+        {
+          "nodes": [],
+          "prompt_id": "accd3af6-85c6-4454-b244-a8e636b78fdb",
+          "timestamp": 1789545791135
+        }
+      ],
+      [
+        "execution_success",
+        {
+          "prompt_id": "accd3af6-85c6-4454-b244-a8e636b78fdb",
+          "timestamp": 1789547350253
+        }
+      ]
+    ]
+  },
+  "rung": "r2v_dance_04_362",
+  "spec": {
+    "width": 480,
+    "height": 864,
+    "length": 362,
+    "steps": 8,
+    "scheduler": "beta",
+    "turbo": true,
+    "lora_strength": 0.8,
+    "clip_device": "cpu",
+    "unet": "MiniMax-H3-REF2VA-Q3_K_M.gguf",
+    "clip": "qwen3vl-32B-MiniMax-H3-Q2_K.gguf",
+    "lora": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+    "seed": 20260916,
+    "prompt": "Same woman as <Picture 1>. Keep her identity exactly as shown: pale skin, red eyes, long wavy black hair, and exactly two glossy black horns with red tips - two horns only, nothing else protrudes from her head or her hair. Her hair is smooth and lies flat against her head with no extra horn shapes. Her face, hair colour, horn colour and eye colour stay identical from the first frame to the last.\n\nWardrobe exactly as in <Picture 1>: black high-waisted shorts with a chain belt, sheer black thigh-high stockings, black ankle-strap stiletto heels, and short black gloves ending at the wrist. Do not lengthen the gloves and do not add any garment that is not visible in <Picture 1>.\n\nSet: reuse the exact same empty photo studio as <Picture 1>. The wall and floor are one continuous matte light-grey cyclorama, the same colour and texture as Picture 1. Dry matte painted floor, no gloss, no wet look, no reflections, no seam lines. No gold, no green, no mesh, no lattice, no net, no LED wall, no disco lights, no concert stage, no spotlight tunnel, no mirrored floor. Nothing else in the room. This is a still-photo cyclorama, not a performance venue.\n\nLighting: the same even flat frontal high-key light as <Picture 1>. No rim light, no backlight halo, no shaft of light behind her. The whole image stays bright, matching Picture 1. Her skin stays clean, bright and evenly lit.\n\nCamera: locked-off tripod, fixed wide full-body framing from horns to heels, eye level, 35mm look, deep focus. Her whole body, including both hands, stays fully inside the frame at all times with clear margin from all four edges.\n\nChoreography, a restrained K-pop girl-group routine that keeps her arms close to her body, with a clear accent on every beat:\n\n[0.0s-1.5s] INTRO. She stands at centre in a low ready stance, weight on the back leg, chin up, one hand resting near her hip. She takes a slow visible breath and shifts her weight forward as the track starts.\n\n[1.5s-4.0s] VERSE. Two crisp hip isolations to her right, then a small side-step-together pattern travelling one step left, her heels striking the floor on each beat. Her arms stay low, relaxed, and close to her torso.\n\n[4.0s-6.5s] She raises one hand to frame her cheek, holds it, then lowers it slowly. The other hand stays near her waist. A small pointed toe-tap forward on the accent, then a second toe-tap to the side. Both hands remain well inside the frame.\n\n[6.5s-9.0s] A gentle shoulder roll travelling one small step to her left, hair swinging with natural follow-through. She glances over her shoulder toward camera to re-anchor her face, then turns back to front. She never fully turns her back.\n\n[9.0s-11.0s] CHORUS. Bigger hip isolations and two quick side steps to her right, hips leading, chin tracking the movement. One forearm makes a small diagonal close across her torso. Arms never rise overhead and never spread outward.\n\n[11.0s-13.0s] A single clean hair sweep: she lifts one hand and draws the hair off her shoulder in one small arc, steps back onto the rear foot, and lets her hips counter-sway once.\n\n[13.0s-15.08s] FINAL POSE. She settles into a grounded stance, one hand near her hip, the other relaxed, chest lifted, faint confident smile. She holds to the last frame with only a small breath and her hair settling.\n\nBoth hands are open with the fingers together and clearly five fingers each. Her arms stay close to her torso and never spread outward. Her feet stay on the floor, her body stays entirely within the frame, and her movement is smooth and continuous.\n\nAudio: an upbeat dance-pop backing track played in the studio, four-on-the-floor kick, bright synth-brass stabs on the off-beats, a simple female vocal hook, plus the soft click of her heels on the matte floor. No dialogue, no crowd noise. The room never becomes a concert.\n\nNo camera movement, no cuts, no zoom, no slow motion. No extra fingers, no extra limbs, no duplicated arms, no extra horns, no fur or feathers on the horns, no wings, no tail, no second person, no text, no logos, no watermarks, no subtitles, no outfit changes, no gold mesh, no green lattice, no LED wall, no wet floor, no glossy floor, no reflections on the ground, no concert stage, no spotlight tunnel.",
+    "prefix": "video/S01_dance_v3_studio_480x864_362f",
+    "image": "S101_9x16.png"
+  },
+  "mem": [
+    {
+      "t": "2026-09-16T16:03:10+08:00",
+      "vram_free_mb": 7068,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 1062,
+      "ram_used_total_mb": "12,171/32,479",
+      "nvidia_smi": "223, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:03:11+08:00",
+      "vram_free_mb": 7068,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 1477,
+      "ram_used_total_mb": "12,270/32,479",
+      "nvidia_smi": "223, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:03:28+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 3231,
+      "ram_used_total_mb": "14,274/32,479",
+      "nvidia_smi": "934, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:03:43+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 4544,
+      "ram_used_total_mb": "15,619/32,479",
+      "nvidia_smi": "934, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:03:58+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 4733,
+      "ram_used_total_mb": "16,212/32,479",
+      "nvidia_smi": "934, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:04:13+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 5969,
+      "ram_used_total_mb": "16,530/32,479",
+      "nvidia_smi": "945, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:04:28+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 6212,
+      "ram_used_total_mb": "17,291/32,479",
+      "nvidia_smi": "945, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:04:43+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 7297,
+      "ram_used_total_mb": "17,555/32,479",
+      "nvidia_smi": "945, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:04:58+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 7192,
+      "ram_used_total_mb": "18,294/32,479",
+      "nvidia_smi": "945, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:05:13+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 7966,
+      "ram_used_total_mb": "19,421/32,479",
+      "nvidia_smi": "945, 8188, 0"
+    },
+    {
+      "t": "2026-09-16T16:05:30+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9163,
+      "ram_used_total_mb": "20,053/32,479",
+      "nvidia_smi": "941, 8188, 79"
+    },
+    {
+      "t": "2026-09-16T16:05:45+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9491,
+      "ram_used_total_mb": "20,836/32,479",
+      "nvidia_smi": "917, 8188, 21"
+    },
+    {
+      "t": "2026-09-16T16:06:00+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9995,
+      "ram_used_total_mb": "21,229/32,479",
+      "nvidia_smi": "917, 8188, 21"
+    },
+    {
+      "t": "2026-09-16T16:06:16+08:00",
+      "vram_free_mb": 6515,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 10300,
+      "ram_used_total_mb": "21,403/32,479",
+      "nvidia_smi": "919, 8188, 21"
+    },
+    {
+      "t": "2026-09-16T16:06:31+08:00",
+      "vram_free_mb": 6965,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 15241,
+      "ram_used_total_mb": "26,640/32,479",
+      "nvidia_smi": "567, 8188, 32"
+    },
+    {
+      "t": "2026-09-16T16:06:48+08:00",
+      "vram_free_mb": 6921,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 19137,
+      "ram_used_total_mb": "32,022/32,479",
+      "nvidia_smi": "567, 8188, 26"
+    },
+    {
+      "t": "2026-09-16T16:07:05+08:00",
+      "vram_free_mb": 2760,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 21748,
+      "ram_used_total_mb": "28,685/32,479",
+      "nvidia_smi": "5469, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:07:20+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 22436,
+      "ram_used_total_mb": "27,779/32,479",
+      "nvidia_smi": "7517, 8188, 51"
+    },
+    {
+      "t": "2026-09-16T16:07:37+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 22975,
+      "ram_used_total_mb": "28,371/32,479",
+      "nvidia_smi": "7518, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:07:54+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 23742,
+      "ram_used_total_mb": "29,223/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:08:11+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24358,
+      "ram_used_total_mb": "29,958/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:08:28+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24828,
+      "ram_used_total_mb": "30,492/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:08:43+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25286,
+      "ram_used_total_mb": "31,005/32,479",
+      "nvidia_smi": "7517, 8188, 70"
+    },
+    {
+      "t": "2026-09-16T16:09:00+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25597,
+      "ram_used_total_mb": "31,276/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:09:17+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26037,
+      "ram_used_total_mb": "31,635/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:09:32+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26269,
+      "ram_used_total_mb": "31,814/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:09:49+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26412,
+      "ram_used_total_mb": "32,024/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:10:06+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26202,
+      "ram_used_total_mb": "32,021/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:10:21+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26040,
+      "ram_used_total_mb": "32,064/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:10:36+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26207,
+      "ram_used_total_mb": "32,102/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:10:52+08:00",
+      "vram_free_mb": 794,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26451,
+      "ram_used_total_mb": "32,146/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:11:07+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26402,
+      "ram_used_total_mb": "32,125/32,479",
+      "nvidia_smi": "7515, 8188, 99"
+    },
+    {
+      "t": "2026-09-16T16:11:22+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26318,
+      "ram_used_total_mb": "32,061/32,479",
+      "nvidia_smi": "7515, 8188, 98"
+    },
+    {
+      "t": "2026-09-16T16:11:39+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26271,
+      "ram_used_total_mb": "32,026/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:11:54+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26152,
+      "ram_used_total_mb": "32,109/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:12:09+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26114,
+      "ram_used_total_mb": "32,037/32,479",
+      "nvidia_smi": "7517, 8188, 99"
+    },
+    {
+      "t": "2026-09-16T16:12:26+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26075,
+      "ram_used_total_mb": "32,013/32,479",
+      "nvidia_smi": "7517, 8188, 92"
+    },
+    {
+      "t": "2026-09-16T16:12:43+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26073,
+      "ram_used_total_mb": "31,995/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:12:58+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26073,
+      "ram_used_total_mb": "32,014/32,479",
+      "nvidia_smi": "7521, 8188, 95"
+    },
+    {
+      "t": "2026-09-16T16:13:13+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26084,
+      "ram_used_total_mb": "32,018/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:13:30+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26063,
+      "ram_used_total_mb": "32,009/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:13:45+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26063,
+      "ram_used_total_mb": "32,018/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:14:00+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26047,
+      "ram_used_total_mb": "31,999/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:14:17+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26048,
+      "ram_used_total_mb": "31,994/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:14:32+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26048,
+      "ram_used_total_mb": "32,000/32,479",
+      "nvidia_smi": "7517, 8188, 98"
+    },
+    {
+      "t": "2026-09-16T16:14:47+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26048,
+      "ram_used_total_mb": "32,017/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:15:02+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26048,
+      "ram_used_total_mb": "32,013/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:15:19+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26048,
+      "ram_used_total_mb": "32,019/32,479",
+      "nvidia_smi": "7517, 8188, 96"
+    },
+    {
+      "t": "2026-09-16T16:15:36+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26049,
+      "ram_used_total_mb": "32,021/32,479",
+      "nvidia_smi": "7529, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:15:51+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 26007,
+      "ram_used_total_mb": "32,049/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:16:08+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25967,
+      "ram_used_total_mb": "32,037/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:16:25+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25968,
+      "ram_used_total_mb": "32,042/32,479",
+      "nvidia_smi": "7515, 8188, 98"
+    },
+    {
+      "t": "2026-09-16T16:16:42+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25968,
+      "ram_used_total_mb": "32,058/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:16:59+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25932,
+      "ram_used_total_mb": "32,042/32,479",
+      "nvidia_smi": "7517, 8188, 97"
+    },
+    {
+      "t": "2026-09-16T16:17:16+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25932,
+      "ram_used_total_mb": "32,054/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:17:33+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25932,
+      "ram_used_total_mb": "32,054/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:17:50+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,908/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:18:07+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,904/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:18:24+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,900/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:18:41+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,900/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:18:58+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,896/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:19:15+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,904/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:19:30+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,891/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:19:45+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,906/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:20:02+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,892/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:20:19+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,895/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:20:36+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,927/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:20:51+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,904/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:21:08+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25739,
+      "ram_used_total_mb": "31,911/32,479",
+      "nvidia_smi": "7517, 8188, 97"
+    },
+    {
+      "t": "2026-09-16T16:21:23+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25723,
+      "ram_used_total_mb": "31,891/32,479",
+      "nvidia_smi": "7515, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:21:40+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25723,
+      "ram_used_total_mb": "31,920/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:21:55+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25707,
+      "ram_used_total_mb": "31,892/32,479",
+      "nvidia_smi": "7515, 8188, 99"
+    },
+    {
+      "t": "2026-09-16T16:22:12+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25707,
+      "ram_used_total_mb": "31,879/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:22:29+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 25707,
+      "ram_used_total_mb": "31,866/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:22:46+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,644/32,479",
+      "nvidia_smi": "7516, 8188, 99"
+    },
+    {
+      "t": "2026-09-16T16:23:01+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,642/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:23:18+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,818/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:23:35+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,829/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:23:50+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,824/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:24:07+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,831/32,479",
+      "nvidia_smi": "7516, 8188, 98"
+    },
+    {
+      "t": "2026-09-16T16:24:24+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,828/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:24:41+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,854/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:24:57+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,849/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:25:14+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,860/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:25:29+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,859/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:25:46+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,852/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:26:03+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,846/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:26:20+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,852/32,479",
+      "nvidia_smi": "7516, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:26:37+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,869/32,479",
+      "nvidia_smi": "7517, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:26:54+08:00",
+      "vram_free_mb": 746,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24695,
+      "ram_used_total_mb": "30,870/32,479",
+      "nvidia_smi": "7517, 8188, 98"
+    },
+    {
+      "t": "2026-09-16T16:27:10+08:00",
+      "vram_free_mb": 7006,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 2602,
+      "ram_used_total_mb": "8,673/32,479",
+      "nvidia_smi": "324, 8188, 38"
+    },
+    {
+      "t": "2026-09-16T16:27:26+08:00",
+      "vram_free_mb": 1597,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 7922,
+      "ram_used_total_mb": "14,242/32,479",
+      "nvidia_smi": "5799, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:27:43+08:00",
+      "vram_free_mb": 1609,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 8244,
+      "ram_used_total_mb": "14,550/32,479",
+      "nvidia_smi": "5863, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:28:00+08:00",
+      "vram_free_mb": 1612,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 8486,
+      "ram_used_total_mb": "14,791/32,479",
+      "nvidia_smi": "5926, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:28:17+08:00",
+      "vram_free_mb": 1615,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 8809,
+      "ram_used_total_mb": "15,110/32,479",
+      "nvidia_smi": "5926, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:28:32+08:00",
+      "vram_free_mb": 1623,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9051,
+      "ram_used_total_mb": "15,360/32,479",
+      "nvidia_smi": "5927, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:28:49+08:00",
+      "vram_free_mb": 1647,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9293,
+      "ram_used_total_mb": "15,588/32,479",
+      "nvidia_smi": "5927, 8188, 100"
+    },
+    {
+      "t": "2026-09-16T16:29:04+08:00",
+      "vram_free_mb": 1851,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9667,
+      "ram_used_total_mb": "15,976/32,479",
+      "nvidia_smi": "5479, 8188, 72"
+    },
+    {
+      "t": "2026-09-16T16:29:11+08:00",
+      "vram_free_mb": 1851,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 9580,
+      "ram_used_total_mb": "15,892/32,479",
+      "nvidia_smi": "5479, 8188, 79"
+    }
+  ]
+}

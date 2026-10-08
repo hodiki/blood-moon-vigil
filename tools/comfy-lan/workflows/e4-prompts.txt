@@ -1,0 +1,45 @@
+# E4 指令 · S1b（2026-09-14 优化）
+# 身份句与 S1a 相同。机位句改成 E1 画面向：先写「相对参考明显不同」，再写画幅里能看见的左右 / 肩宽 / 眼数 / 口型。
+# 不写脸的形状。种子与 S1a 相同，只换句。
+
+[identity violet-fallen]
+Keep this exact woman and her costume unchanged: two horns with black roots and red tips, red eyes, pale skin, long wavy jet-black hair past the shoulders, black evening gown with a lace bib high collar, black lace gloves ending on the forearms, high slit with red lining, red high heels, empty dark void background, same flat cel-shaded illustration style.
+
+[identity cassandra]
+Keep this exact woman and her costume unchanged: silver-white high ponytail, pale sharp face with red hunter eyes and light black eyeshadow, wine-red open long coat over a black turtleneck with a white cross on the chest, two black belts with silver buckles, black pantyhose, matte black stiletto pointed boots, empty dark void background, same clean anime illustration style.
+
+[cell P1 violet-fallen]
+Change the camera so this picture is clearly different from the reference: full-body, she stands square to the viewer, both shoulders the same width in the frame, both hands hanging beside the hips, mouth closed, camera at chest height, empty dark void.
+
+[cell P1 cassandra]
+Change the camera so this picture is clearly different from the three-quarter smirk in the reference: full-body, she stands square to the viewer, both shoulders the same width, both eyes equally visible, mouth a closed line with no smile, both arms hanging, camera at chest height, empty dark void.
+
+[cell P2 violet-fallen]
+Change the camera so this picture is clearly different from the reference: full-body, the camera sits at her front-left, the near shoulder is large in the frame and the far shoulder is small, more of the right side of the gown is visible, she looks toward the right of the frame, mouth closed, weight even.
+
+[cell P2 cassandra]
+Change the camera so this picture is clearly different from the reference: full-body, rotate further onto her front-left, the near shoulder fills the left of the frame, the far shoulder is much smaller, the right coat panel opens toward the viewer, mouth closed, not the same three-quarter as the reference.
+
+[cell P3]
+Change the camera so this picture is clearly different from the reference: full-body, true right profile, only one eye visible, the nose sits on the silhouette edge against the void, the far shoulder is hidden, both arms hang along the near side, empty dark void.
+
+[cell P4 violet-fallen]
+Change the camera so this picture is clearly different from the reference: full-body, back view, the back of the head faces the camera, both horns seen from behind, long black hair down the back, no face visible, lace gloves and gown back readable.
+
+[cell P4 cassandra]
+Change the camera so this picture is clearly different from the reference: full-body, back view, no face visible, the long silver-white ponytail hangs straight down the back all the way to the coat, not a bun, wine-red coat back with the black cross on the sleeve, both heels planted.
+
+[cell P5 violet-fallen]
+Change the camera so this picture is clearly different from the reference: waist-up close shot, one person only, no second body, camera at eye height, mouth curved in a faint knowing smile, both eyes open toward the viewer.
+
+[cell P5 cassandra]
+Change the camera so this picture is clearly different from the reference: waist-up close shot, one person only, no second body, camera at eye height, chin slightly lifted, a proud smirk, both eyes open toward the viewer.
+
+[cell P6]
+Change the camera so this picture is clearly different from the reference: waist-up close shot, one person only, a single figure, no second body, no extra copies, no character sheet, camera at eye height, mouth a straight closed line with no smile, brows lowered, a cold hard stare into the camera.
+
+[cell P6 cassandra]
+Change this picture so it is clearly different from the proud smirk in the reference: waist-up close shot, one person only, camera 45° to her front-left. She drops the smirk: mouth flat, lower eyelids tense and rise, brows pressed down low. Cold hard stare into the camera, empty dark void.
+
+[wai-positive]
+masterpiece, best quality, amazing quality, very aesthetic, newest, 1girl, solo, adult woman, clean anime illustration, empty dark void background, simple background

@@ -1,0 +1,160 @@
+{
+  "schema": "comfy-lan-handshake/v1",
+  "generated_at": "2026-09-22T14:15:00+08:00",
+  "gpu": {
+    "hostname": "HodikiX",
+    "os": "windows",
+    "lan_ip": "192.168.101.200",
+    "port": 8188,
+    "url": "http://192.168.101.200:8188",
+    "listen": "0.0.0.0"
+  },
+  "allow": {
+    "client_hostname": "Hodiki",
+    "client_ip": "192.168.101.82",
+    "client_mac": "7C-21-4A-DD-A9-EB"
+  },
+  "firewall": {
+    "kind": "windows",
+    "rule": "allow tcp/8188 from 192.168.101.82 only",
+    "verified_local": true
+  },
+  "comfy": {
+    "version": "0.37.0",
+    "system_stats_ok": true,
+    "devices": ["cuda:0 NVIDIA GeForce RTX 4070 Laptop GPU : cudaMallocAsync"],
+    "custom_nodes": {
+      "ipadapter_plus": true,
+      "controlnet_aux": true,
+      "inspyrenet_rembg": true,
+      "krea2t_enhancer": true,
+      "krea2_controlnet": true,
+      "krea2_ostris_edit": true,
+      "krea2edit": true,
+      "comfyui_gguf": true
+    }
+  },
+  "models": {
+    "checkpoints": [
+      "waiIllustriousSDXL_v170.safetensors (~6.6 GB)",
+      "Anything-v5.0-PRT.safetensors (~2.0 GB)"
+    ],
+    "ipadapter": [
+      "ip-adapter-plus_sdxl_vit-h.safetensors (~808 MB)"
+    ],
+    "controlnet": [
+      "openpose-sdxl-xinsir.safetensors (~2.4 GB)",
+      "control_v11p_sd15_openpose_fp16.safetensors (~689 MB)"
+    ],
+    "clip_vision": [
+      "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors (~2.4 GB, IPA)"
+    ],
+    "background_removal": [
+      "ckpt_base.pth (~351 MB, InSPyReNet / transparent-background)"
+    ],
+    "upscale": [
+      "4x-UltraSharp.pth (~64 MB)"
+    ],
+    "loras": [
+      "PixelArtRedmond15V-PixelArt-PIXARFK.safetensors",
+      "oil-painting-sdxl-slider.safetensors",
+      "krea2_softwatercolor.safetensors (~448 MB, L1 官方 style)",
+      "krea2_retroanime.safetensors (~448 MB, L1 官方 style)",
+      "krea2_darkbrush.safetensors (~448 MB, L1 官方 style)",
+      "Krea2_Anything2RealCharacters-V3.safetensors (~229 MB, A2R V3 I2I)",
+      "krea2_turbo_openpose_controlnet.safetensors (~218 MB, Krea 2 pose Control LoRA；放 loras 不是 controlnet/)",
+      "krea2_identity_edit_v1_2_r128.safetensors (~0.91 GB, Identity Edit v1.2 r128；实验 E1)",
+      "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors (~1.82 GB, H3 T2V 8-step Turbo)",
+      "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors (~1.82 GB, H3 R2V 4-step Turbo)",
+      "krea2filterbypass.safetensors（未下；仅仓库占位）"
+    ],
+    "diffusion_models": [
+      "krea2_turbo_int8_convrot.safetensors (~12.6 GB, Krea 2 Turbo INT8 ConvRot，非二次元主力)",
+      "MiniMax-H3-FL2VA-Q3_K_M.gguf (~14.5 GB, H3 T2V GGUF；UnetLoaderGGUF)",
+      "MiniMax-H3-REF2VA-Q3_K_M.gguf (~14.5 GB, H3 R2V GGUF；UnetLoaderGGUF)",
+      "qwen_image_2.1_int8_convrot.safetensors (~7.26 GB, Qwen-Image-2.1 INT8 ConvRot；主力引擎)"
+    ],
+    "text_encoders": [
+      "qwen3vl_4b_fp8_scaled.safetensors (~4.88 GB, CLIP type=krea2)",
+      "qwen3vl-32B-MiniMax-H3-Q2_K.gguf (~8.49 GB, CLIP type=minimax device=cpu；H3 第一枪)",
+      "qwen3vl_8b_w4a8.safetensors (~6.31 GB, CLIP type=qwen_image；Qwen 2.1 编码器，默认档)",
+      "qwen3vl_8b_int8_convrot.safetensors (~9.35 GB, 同型 int8，A/B 对照用)",
+      "qwen3.5_9b_qwen_image_2.1_pe_t2i.int8_convrot.safetensors (~9.47 GB, PE-T2I 提示词改写；配 TextGenerate 用，不是 CLIP 编码器)"
+    ],
+    "vae": [
+      "qwen_image_vae.safetensors (~242 MB, Krea/Anima/Qwen-Image)",
+      "minimax_h3_video_vae_fp16.safetensors (~4.85 GB, H3 视频 VAE)",
+      "minimax_h3_audio_vae_fp32.safetensors (~0.56 GB, H3 音频 VAE)",
+      "qwen_image_2.1_vae_bf16.safetensors (~0.63 GB, Qwen 2.1 专用 64 通道 RGBA VAE；与 qwen_image_vae 不通用)"
+    ]
+  },
+  "workflows": {
+    "smoke": true,
+    "walk_strip_api": false,
+    "skill_strip_api": false,
+    "reference": [
+      "WAI-Illustrious-个人学习.json",
+      "WAI-底图加精修.json",
+      "WAI-锁角色-IPAdapter.json",
+      "WAI-锁姿势-OpenPose.json",
+      "WAI-精修外来底图.json",
+      "KREA2-Turbo-t2i.json",
+      "KREA2-Turbo-基础.json",
+      "KREA2-Turbo-仓库.json",
+      "KREA2-Turbo-Vf1-底图.json",
+      "KREA2-Turbo-Vf1-无底图.json",
+      "MiniMax-H3-T2V-8GB.json",
+      "MiniMax-H3-R2V-8GB.json",
+      "QWEN21-T2I-基础.json",
+      "QWEN21-T2I-2K.json",
+      "QWEN21-T2I-透明RGBA.json",
+      "QWEN21-图片编辑.json",
+      "QWEN21-去背景.json"
+    ],
+    "archive_no_weights_moved": [
+      "_backup/deprecated-workflows/2026-09-22/FLUX2-Klein4B-个人学习.json",
+      "_backup/deprecated-workflows/2026-09-22/FLUX2-Klein4B-改图.json",
+      "_backup/deprecated-workflows/2026-09-22/Wan-Animate-2.json"
+    ]
+  },
+  "docs": {
+    "scheme": "A",
+    "method": "userdata-junction",
+    "list": "http://192.168.101.200:8188/userdata?dir=env-docs&full_info=true",
+    "workflows": "http://192.168.101.200:8188/userdata?dir=workflows",
+    "handshake": "http://192.168.101.200:8188/userdata/comfy-lan-handshake.json",
+    "warning": "Do not use /docs (Comfy frontend, 403). Encode / as %2F in /userdata/{file}.",
+    "files": {
+      "环境说明.md": "http://192.168.101.200:8188/userdata/env-docs%2F%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E.md",
+      "维护更新日志.md": "http://192.168.101.200:8188/userdata/env-docs%2F%E7%BB%B4%E6%8A%A4%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97.md",
+      "任务清单.md": "http://192.168.101.200:8188/userdata/env-docs%2F%E4%BB%BB%E5%8A%A1%E6%B8%85%E5%8D%95.md",
+      "提示词预设.txt": "http://192.168.101.200:8188/userdata/env-docs%2F%E6%8F%90%E7%A4%BA%E8%AF%8D%E9%A2%84%E8%AE%BE.txt",
+      "局域网通信维护记录.md": "http://192.168.101.200:8188/userdata/env-docs%2F%E5%B1%80%E5%9F%9F%E7%BD%91%E9%80%9A%E4%BF%A1%E7%BB%B4%E6%8A%A4%E8%AE%B0%E5%BD%95.md",
+      "工作规范-GPU生图环境.md": "http://192.168.101.200:8188/userdata/env-docs%2F%E5%B7%A5%E4%BD%9C%E8%A7%84%E8%8C%83-GPU%E7%94%9F%E5%9B%BE%E7%8E%AF%E5%A2%83.md",
+      "model-shortlist.md": "http://192.168.101.200:8188/userdata/env-docs%2Fmodel-shortlist.md",
+      "qwen-image-2.1-eval.md": "http://192.168.101.200:8188/userdata/env-docs%2Fqwen-image-2.1-eval.md",
+      "h3-local-plan.md": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-local-plan.md",
+      "h3-test-ops.md": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-test-ops.md",
+      "h3-smoke-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-smoke-results.json",
+      "h3-b1-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-b1-results.json",
+      "h3-b2-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-b2-results.json",
+      "h3-b3-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-b3-results.json",
+      "h3-r2v-plan.md": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-plan.md",
+      "h3-r2v-smoke-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-smoke-results.json",
+      "h3-r2v-b1-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-b1-results.json",
+      "h3-r2v-upper-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-upper-results.json",
+      "h3-r2v-upper-03-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-upper-03-results.json",
+      "h3-r2v-upper-04-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-upper-04-results.json",
+      "h3-r2v-upper-098-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-upper-098-results.json",
+      "h3-r2v-dance-124-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-dance-124-results.json",
+      "h3-r2v-dance-v2a-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-dance-v2a-results.json",
+      "h3-r2v-dance-v2b-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-dance-v2b-results.json",
+      "h3-r2v-dance-04-362-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fh3-r2v-dance-04-362-results.json",
+      "krea2-turbo-eval.md": "http://192.168.101.200:8188/userdata/env-docs%2Fkrea2-turbo-eval.md",
+      "krea2-eval-prompts.json": "http://192.168.101.200:8188/userdata/env-docs%2Fkrea2-eval-prompts.json",
+      "krea2-compare-results.json": "http://192.168.101.200:8188/userdata/env-docs%2Fkrea2-compare-results.json",
+      "vf1-krea-lora-prompts.md": "http://192.168.101.200:8188/userdata/env-docs%2Fvf1-krea-lora-prompts.md"
+    }
+  },
+  "notes": "引擎分工：二次元 WAI；非二次元 **Qwen-Image-2.1（新，更快/透明/出字强）与 Krea 2 并存**（2.1 默认 w4a8 编码器 + 40 步；PE 改写走 TextGenerate，190–501s 属批量工具）。H3 活页 env-docs/h3-test-ops.md。T2V 0.2 MP 已通至 15s。R2V：0.98 MP×124 已通；0.4 MP×362 已通（video/S01_dance_v3_studio_480x864_362f_00001_.mp4，1560s）；0.98 MP×362 未达。先 POST /free，不要和 WAI/Krea/T2V 同队，不要冻进 walk/skill。不要 Queue 官方 INT8 模板。请用 start_lowvram.bat 独立窗口。不要用 /docs。"
+}

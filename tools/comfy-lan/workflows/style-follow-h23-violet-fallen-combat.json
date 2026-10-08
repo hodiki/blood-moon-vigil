@@ -1,0 +1,91 @@
+{
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    }
+  },
+  "17": {
+    "class_type": "CLIPSetLastLayer",
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": ["4", 1]
+    }
+  },
+  "12": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "vf1-face.png"
+    }
+  },
+  "11": {
+    "class_type": "IPAdapterUnifiedLoader",
+    "inputs": {
+      "model": ["4", 0],
+      "preset": "PLUS (high strength)"
+    }
+  },
+  "10": {
+    "class_type": "IPAdapter",
+    "inputs": {
+      "model": ["11", 0],
+      "ipadapter": ["11", 1],
+      "image": ["12", 0],
+      "weight": 0.5,
+      "start_at": 0.0,
+      "end_at": 0.35,
+      "weight_type": "prompt is more important"
+    }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "masterpiece, best quality, amazing quality, very aesthetic, newest, 1girl, solo, adult woman, succubus, demon girl, two horns, messy dark wavy hair, full body, standing, three-quarter view, looking at viewer, hand on hip, weight on one leg, lidded eyes, evil smile, short dark skirt, high slit, thigh strap, black pantyhose, black high heels, stiletto, pointed toe, shoulder armor, waist armor, dark metal, leather, straps, buckles, fitted, long black gloves, detached sleeves, slim waist, wide hips, curvy, empty hands, simple background, solid color background",
+      "clip": ["17", 0]
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "gown, evening dress, lace, jewelry, earrings, wedding dress, nun, candle, full plate armor, knight, wings, halo, magic circle, floating eyes, extra eyes, tentacles, hourglass, red heels, silver ponytail, wine-red coat, extra limbs, extra digits, lowres, worst quality, nsfw, nude, scenery",
+      "clip": ["17", 0]
+    }
+  },
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609311,
+      "steps": 28,
+      "cfg": 6,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": ["10", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_style_vf_combat",
+      "images": ["8", 0]
+    }
+  }
+}

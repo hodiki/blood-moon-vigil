@@ -1,0 +1,106 @@
+{
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    }
+  },
+  "17": {
+    "class_type": "CLIPSetLastLayer",
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": ["4", 1]
+    }
+  },
+  "12": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "krea_restage.png"
+    }
+  },
+  "16": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "krea_restage.png"
+    }
+  },
+  "21": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "upscale_method": "lanczos",
+      "width": 768,
+      "height": 1344,
+      "crop": "disabled",
+      "image": ["16", 0]
+    }
+  },
+  "11": {
+    "class_type": "IPAdapterUnifiedLoader",
+    "inputs": {
+      "model": ["4", 0],
+      "preset": "PLUS (high strength)"
+    }
+  },
+  "10": {
+    "class_type": "IPAdapter",
+    "inputs": {
+      "model": ["11", 0],
+      "ipadapter": ["11", 1],
+      "image": ["12", 0],
+      "weight": 0.0,
+      "start_at": 0.0,
+      "end_at": 0.35,
+      "weight_type": "prompt is more important"
+    }
+  },
+  "18": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": ["21", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "masterpiece, best quality, amazing quality, very aesthetic, newest, 1girl, solo, adult woman, clean anime illustration, empty dark void background, simple background",
+      "clip": ["17", 0]
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "shorts, skirt, pants, trousers, military uniform, masculine, male, muscular, broad shoulders, thick calves, column legs, wide stance, leather boots, patent leather, shiny boots, glossy boots, latex, wet look, chrome heel, combat boots, chunky boots, flat boots, round toe, smudged makeup, panda eyes, mascara clumps, wink, extra limbs, extra digits, lowres, worst quality, scenery",
+      "clip": ["17", 0]
+    }
+  },
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609104,
+      "steps": 28,
+      "cfg": 6,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 0.35,
+      "model": ["10", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["18", 0]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_e4_wai",
+      "images": ["8", 0]
+    }
+  }
+}

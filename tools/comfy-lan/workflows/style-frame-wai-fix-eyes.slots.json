@@ -1,0 +1,4 @@
+{
+  "seed": ["3", "inputs", "seed"],
+  "image_idle": ["16", "inputs", "image"]
+}

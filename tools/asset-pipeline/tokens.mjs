@@ -1,4 +1,4 @@
-// tokens.mjs — 14 token 色相 + 同色相明度阶量化
+// tokens.mjs — 14 token 色相 + 同色相明度阶 + §2.2 派生族（案 A）
 // 契约：asset-spec §2.4「只用 token 色相，允许同色相不同明度；禁止新色相」
 // 角色帧禁止落到草地 token（银灰中间调以前被 Lab 最近邻吸进草叶，袍子发碎）
 
@@ -98,7 +98,12 @@ function tokenStep(name, family) {
   return { family, name, rgb, lab: rgbToLab(rgb), hex: t.hex };
 }
 
-// 同色相明度阶：色相锚在 14 token，中间灰/中间红等为派生
+function hexStep(hex, family, name) {
+  const rgb = hexToRgb(hex);
+  return { family, name, rgb, lab: rgbToLab(rgb), hex: rgbToHex(rgb) };
+}
+
+// 同色相明度阶：14 token 锚 + art-bible §2.2 战斗层派生（案 A，不算新色相）
 const PALETTE = [
   ...ramp('#0B0E14', '#E8F0FA', 7, 'silver', '银'),
   tokenStep('纸白', 'silver'),
@@ -111,18 +116,45 @@ const PALETTE = [
   ...ramp('#0B0E14', '#4FC3F7', 3, 'blue', '蓝'),
   ...ramp('#0B0E14', '#43D17C', 3, 'heal', '绿'),
   ...ramp('#0B0E14', '#18201C', 3, 'grass', '草暗'),
-  ...ramp('#18201C', '#2A3B2E', 3, 'grass', '草叶')
+  ...ramp('#18201C', '#2A3B2E', 3, 'grass', '草叶'),
+  // §2.2 派生族：酒/巡夜/肤/橄榄/骨灰（硬禁猩红与草叶）
+  hexStep('#3A1F24', 'wine', '酒-0'),
+  hexStep('#512C33', 'wine', '酒-1'),
+  hexStep('#6B3942', 'wine', '酒-2'),
+  hexStep('#8A545C', 'wine', '酒-3'),
+  hexStep('#2A3038', 'night', '墨衣'),
+  hexStep('#3A4250', 'night', '圣袍灰'),
+  hexStep('#3A4554', 'night', '巡夜布'),
+  hexStep('#4A5566', 'night', '巡夜亮'),
+  hexStep('#3A4A3E', 'olive', '橄-0'),
+  hexStep('#4A5C4E', 'olive', '橄-1'),
+  hexStep('#6A7C6E', 'olive', '橄-2'),
+  hexStep('#8A8074', 'ash', '骨灰-0'),
+  hexStep('#C4B8A8', 'ash', '骨灰-1'),
+  hexStep('#D8D0C4', 'ash', '骨灰-2'),
+  hexStep('#7F664D', 'skin', '肤-0'),
+  hexStep('#A07F5E', 'skin', '肤-1'),
+  hexStep('#C3996E', 'skin', '肤-2'),
+  hexStep('#D2B4A0', 'skin', '肤-3'),
 ];
 
-const ANCHORS = {
-  silver: rgbToLab(hexToRgb('#E8F0FA')),
-  blood: rgbToLab(hexToRgb('#7E1E1E')),
-  cyan: rgbToLab(hexToRgb('#54E6C9')),
-  purple: rgbToLab(hexToRgb('#B06AF0')),
-  gold: rgbToLab(hexToRgb('#FFC93C')),
-  blue: rgbToLab(hexToRgb('#4FC3F7')),
-  heal: rgbToLab(hexToRgb('#43D17C')),
-  grass: rgbToLab(hexToRgb('#2A3B2E'))
+const CORE_ANCHORS = {
+  silver: [rgbToLab(hexToRgb('#E8F0FA')), rgbToLab(hexToRgb('#131722'))],
+  blood: [rgbToLab(hexToRgb('#7E1E1E')), rgbToLab(hexToRgb('#FF3B3B')), rgbToLab(hexToRgb('#FF3B30'))],
+  cyan: [rgbToLab(hexToRgb('#54E6C9'))],
+  purple: [rgbToLab(hexToRgb('#B06AF0'))],
+  gold: [rgbToLab(hexToRgb('#FFC93C'))],
+  blue: [rgbToLab(hexToRgb('#4FC3F7'))],
+  heal: [rgbToLab(hexToRgb('#43D17C'))],
+  grass: [rgbToLab(hexToRgb('#2A3B2E')), rgbToLab(hexToRgb('#18201C'))],
+};
+
+const DERIVED_ANCHORS = {
+  wine: [rgbToLab(hexToRgb('#6B3942')), rgbToLab(hexToRgb('#512C33')), rgbToLab(hexToRgb('#8A545C'))],
+  night: [rgbToLab(hexToRgb('#3A4554')), rgbToLab(hexToRgb('#3A4250')), rgbToLab(hexToRgb('#2A3038'))],
+  olive: [rgbToLab(hexToRgb('#4A5C4E')), rgbToLab(hexToRgb('#6A7C6E'))],
+  ash: [rgbToLab(hexToRgb('#C4B8A8')), rgbToLab(hexToRgb('#8A8074'))],
+  skin: [rgbToLab(hexToRgb('#D2B4A0')), rgbToLab(hexToRgb('#C3996E')), rgbToLab(hexToRgb('#7F664D'))],
 };
 
 function abDist(p, q) {
@@ -130,19 +162,44 @@ function abDist(p, q) {
   return da * da + db * db;
 }
 
+function nearestAnchorFamily(lab, table, { skipGrass = false } = {}) {
+  let best = null;
+  let bestD = Infinity;
+  for (const [family, anchors] of Object.entries(table)) {
+    if (skipGrass && family === 'grass') continue;
+    for (const anchor of anchors) {
+      const d = labDist(lab, anchor);
+      if (d < bestD) {
+        bestD = d;
+        best = family;
+      }
+    }
+  }
+  return best ? { family: best, dist: bestD } : null;
+}
+
 function classifyFamily(lab, allowGrass) {
   const chroma = Math.hypot(lab[1], lab[2]);
-  // 角色：低彩度必须走银阶，禁止再被草叶吸走。贴图允许草地，低彩度也可进草阶。
-  if (chroma < 16 && !allowGrass) return 'silver';
+  const derived = nearestAnchorFamily(lab, DERIVED_ANCHORS);
+  const core = nearestAnchorFamily(lab, CORE_ANCHORS, { skipGrass: !allowGrass });
 
-  let best = 'silver';
-  let bestD = Infinity;
-  for (const [family, anchor] of Object.entries(ANCHORS)) {
-    if (family === 'grass' && !allowGrass) continue;
-    const d = abDist(lab, anchor);
-    if (d < bestD) { bestD = d; best = family; }
+  if (allowGrass && core?.family === 'grass' && (!derived || core.dist <= derived.dist + 1e-6)) {
+    return 'grass';
   }
-  return best;
+
+  if (derived && (!core || derived.dist <= core.dist + 0.35)) {
+    // 高饱和敌潮红 / 危险红不得被酒、肤吸走
+    if ((derived.family === 'wine' || derived.family === 'skin') && core?.family === 'blood' && core.dist + 2 < derived.dist) {
+      return 'blood';
+    }
+    // 月银高光保持银，不要收进骨灰
+    if (derived.family === 'ash' && chroma < 12 && lab[0] > 82) return 'silver';
+    return derived.family;
+  }
+
+  // 真正无彩度褶才进银；压饱和布料已在派生族处理
+  if (chroma < 16 && !allowGrass) return 'silver';
+  return core?.family ?? 'silver';
 }
 
 const tokenLab = TOKENS.map((t) => ({ ...t, lab: rgbToLab(hexToRgb(t.hex)), rgb: hexToRgb(t.hex) }));

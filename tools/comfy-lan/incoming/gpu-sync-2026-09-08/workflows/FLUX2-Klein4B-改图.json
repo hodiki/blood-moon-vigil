@@ -1,0 +1,316 @@
+{
+  "id": "flux2-klein4b-edit",
+  "revision": 0,
+  "last_node_id": 25,
+  "last_link_id": 40,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [-520, 80],
+      "size": [480, 420],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Klein 改图（参考图）",
+      "properties": {},
+      "widgets_values": [
+        "## 干什么\n\n把一张已有图（WAI / 照片 / 草稿）交给 Klein，用**自然语言**改写。\n官方 distilled 改图模板的单参考扁平版。\n\n## 用法\n\n1. Load Image 换成要改的图\n2. 用完整句子写要改什么\n3. Queue（不要同时开 WAI 图）\n\n采样仍是 Euler / 4 步 / CFG 1。\n输入会先缩到 1024，再当 Reference Latent。\n\n立绘锁脸请继续用 `WAI-锁角色-IPAdapter.json`，不要用这张当 IP-Adapter。"
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 2,
+      "type": "UNETLoader",
+      "pos": [20, 80],
+      "size": [360, 80],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "MODEL", "type": "MODEL", "links": [1] }],
+      "properties": { "Node name for S&R": "UNETLoader" },
+      "widgets_values": ["flux-2-klein-4b.safetensors", "default"]
+    },
+    {
+      "id": 3,
+      "type": "CLIPLoader",
+      "pos": [20, 200],
+      "size": [360, 110],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "CLIP", "type": "CLIP", "links": [2] }],
+      "properties": { "Node name for S&R": "CLIPLoader" },
+      "widgets_values": ["qwen_3_4b.safetensors", "flux2", "cpu"]
+    },
+    {
+      "id": 4,
+      "type": "VAELoader",
+      "pos": [20, 350],
+      "size": [360, 60],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "VAE", "type": "VAE", "links": [3, 4] }],
+      "properties": { "Node name for S&R": "VAELoader" },
+      "widgets_values": ["flux2-vae.safetensors"]
+    },
+    {
+      "id": 16,
+      "type": "LoadImage",
+      "pos": [20, 450],
+      "size": [360, 300],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [20] },
+        { "name": "MASK", "type": "MASK", "links": null }
+      ],
+      "title": "要改的底图",
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["ref_character.png", "image"]
+    },
+    {
+      "id": 17,
+      "type": "ImageScale",
+      "pos": [420, 450],
+      "size": [300, 130],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [{ "name": "image", "type": "IMAGE", "link": 20 }],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [21] }],
+      "properties": { "Node name for S&R": "ImageScale" },
+      "widgets_values": ["lanczos", 1024, 1024, "center"]
+    },
+    {
+      "id": 18,
+      "type": "VAEEncode",
+      "pos": [420, 620],
+      "size": [300, 50],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        { "name": "pixels", "type": "IMAGE", "link": 21 },
+        { "name": "vae", "type": "VAE", "link": 4 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [22, 23] }],
+      "properties": { "Node name for S&R": "VAEEncode" }
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [420, 80],
+      "size": [400, 180],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 2 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [5, 24] }],
+      "title": "改写说明（自然语言）",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [
+        "Keep the same character and pose. Change the lighting to warm sunset through a window, painterly oil-painting atmosphere, no text."
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 6,
+      "type": "ConditioningZeroOut",
+      "pos": [420, 300],
+      "size": [280, 40],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [{ "name": "conditioning", "type": "CONDITIONING", "link": 5 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [25] }],
+      "properties": { "Node name for S&R": "ConditioningZeroOut" },
+      "widgets_values": []
+    },
+    {
+      "id": 19,
+      "type": "ReferenceLatent",
+      "pos": [860, 80],
+      "size": [260, 60],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        { "name": "conditioning", "type": "CONDITIONING", "link": 24 },
+        { "name": "latent", "type": "LATENT", "link": 22 }
+      ],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [26] }],
+      "title": "参考 latent +",
+      "properties": { "Node name for S&R": "ReferenceLatent" }
+    },
+    {
+      "id": 20,
+      "type": "ReferenceLatent",
+      "pos": [860, 180],
+      "size": [260, 60],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        { "name": "conditioning", "type": "CONDITIONING", "link": 25 },
+        { "name": "latent", "type": "LATENT", "link": 23 }
+      ],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [27] }],
+      "title": "参考 latent −",
+      "properties": { "Node name for S&R": "ReferenceLatent" }
+    },
+    {
+      "id": 7,
+      "type": "EmptyFlux2LatentImage",
+      "pos": [860, 280],
+      "size": [260, 110],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [7] }],
+      "properties": { "Node name for S&R": "EmptyFlux2LatentImage" },
+      "widgets_values": [1024, 1024, 1]
+    },
+    {
+      "id": 8,
+      "type": "CFGGuider",
+      "pos": [1160, 80],
+      "size": [260, 100],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 1 },
+        { "name": "positive", "type": "CONDITIONING", "link": 26 },
+        { "name": "negative", "type": "CONDITIONING", "link": 27 }
+      ],
+      "outputs": [{ "name": "GUIDER", "type": "GUIDER", "links": [8] }],
+      "properties": { "Node name for S&R": "CFGGuider" },
+      "widgets_values": [1]
+    },
+    {
+      "id": 9,
+      "type": "KSamplerSelect",
+      "pos": [1160, 220],
+      "size": [260, 60],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "SAMPLER", "type": "SAMPLER", "links": [9] }],
+      "properties": { "Node name for S&R": "KSamplerSelect" },
+      "widgets_values": ["euler"]
+    },
+    {
+      "id": 10,
+      "type": "Flux2Scheduler",
+      "pos": [1160, 320],
+      "size": [260, 110],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "SIGMAS", "type": "SIGMAS", "links": [10] }],
+      "properties": { "Node name for S&R": "Flux2Scheduler" },
+      "widgets_values": [4, 1024, 1024]
+    },
+    {
+      "id": 11,
+      "type": "RandomNoise",
+      "pos": [1160, 470],
+      "size": [260, 80],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{ "name": "NOISE", "type": "NOISE", "links": [11] }],
+      "properties": { "Node name for S&R": "RandomNoise" },
+      "widgets_values": [43, "randomize"]
+    },
+    {
+      "id": 12,
+      "type": "SamplerCustomAdvanced",
+      "pos": [1460, 80],
+      "size": [280, 160],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        { "name": "noise", "type": "NOISE", "link": 11 },
+        { "name": "guider", "type": "GUIDER", "link": 8 },
+        { "name": "sampler", "type": "SAMPLER", "link": 9 },
+        { "name": "sigmas", "type": "SIGMAS", "link": 10 },
+        { "name": "latent_image", "type": "LATENT", "link": 7 }
+      ],
+      "outputs": [
+        { "name": "output", "type": "LATENT", "links": [12] },
+        { "name": "denoised_output", "type": "LATENT", "links": null }
+      ],
+      "properties": { "Node name for S&R": "SamplerCustomAdvanced" }
+    },
+    {
+      "id": 13,
+      "type": "VAEDecode",
+      "pos": [1460, 280],
+      "size": [220, 50],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 12 },
+        { "name": "vae", "type": "VAE", "link": 3 }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [13] }],
+      "properties": { "Node name for S&R": "VAEDecode" }
+    },
+    {
+      "id": 15,
+      "type": "SaveImage",
+      "pos": [1780, 80],
+      "size": [340, 280],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 13 }],
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["klein_edit"]
+    }
+  ],
+  "links": [
+    [1, 2, 0, 8, 0, "MODEL"],
+    [2, 3, 0, 5, 0, "CLIP"],
+    [3, 4, 0, 13, 1, "VAE"],
+    [4, 4, 0, 18, 1, "VAE"],
+    [5, 5, 0, 6, 0, "CONDITIONING"],
+    [7, 7, 0, 12, 4, "LATENT"],
+    [8, 8, 0, 12, 1, "GUIDER"],
+    [9, 9, 0, 12, 2, "SAMPLER"],
+    [10, 10, 0, 12, 3, "SIGMAS"],
+    [11, 11, 0, 12, 0, "NOISE"],
+    [12, 12, 0, 13, 0, "LATENT"],
+    [13, 13, 0, 15, 0, "IMAGE"],
+    [20, 16, 0, 17, 0, "IMAGE"],
+    [21, 17, 0, 18, 0, "IMAGE"],
+    [22, 18, 0, 19, 1, "LATENT"],
+    [23, 18, 0, 20, 1, "LATENT"],
+    [24, 5, 0, 19, 0, "CONDITIONING"],
+    [25, 6, 0, 20, 0, "CONDITIONING"],
+    [26, 19, 0, 8, 1, "CONDITIONING"],
+    [27, 20, 0, 8, 2, "CONDITIONING"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": { "ds": { "scale": 0.62, "offset": [540, 40] }, "frontendVersion": "1.51.9" },
+  "version": 0.4
+}

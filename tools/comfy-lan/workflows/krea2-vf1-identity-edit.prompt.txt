@@ -1,0 +1,7 @@
+E1 · Krea 2 Identity Edit · Vf1 B-lo 印戳换姿
+底 = review-identity-vf1/12-idle-blo-passed-stamp.png（512×1024）
+不接 Enhancer。不接 source_latent_b。纯潜空间路（源=出）。
+采样：euler / simple / 10 步 / CFG 1 / denoise 1 / EmptySD3 512×1024
+打 Krea 前 POST /free。不写 assets/frames/。
+姿势句以画面改变为中心（画幅左右、触地点、肩髋线），不要用角色左腿/右腿当指令。
+C2 v2 / C3 v2 见 exp-e1-krea2-identity-edit-v1.md §4.2。

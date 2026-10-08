@@ -38,11 +38,11 @@ describe('P2-4 共鸣形态条目（数据层）', () => {
     expect(CODEX_ENTRIES.filter((e) => e.category === 'resonance')).toHaveLength(8);
   });
 
-  it('解锁条件文案 = 配对专武名 × 共鸣钥名（R-1：破旧提灯 × 圣辉坠饰 / R-6：圣辉十字 × 兽骨图腾）', () => {
+  it('解锁条件文案 = 配对专武名 × 共鸣钥名（R-1：破旧提灯 × 圣辉坠饰 / R-6：圣辉轮刃 × 兽骨图腾）', () => {
     const r1 = RESONANCE_PAIRS.find((p) => p.id === 'R1')!;
     const r6 = RESONANCE_PAIRS.find((p) => p.id === 'R6')!;
     expect(resonanceConditionText(r1)).toBe('达成共鸣：破旧提灯 × 圣辉坠饰');
-    expect(resonanceConditionText(r6)).toBe('达成共鸣：圣辉十字 × 兽骨图腾');
+    expect(resonanceConditionText(r6)).toBe('达成共鸣：圣辉轮刃 × 兽骨图腾');
   });
 
   it('CodexTracker.recordResonance：共鸣达成解锁幂等（重开/重复提交不重复计数）', () => {

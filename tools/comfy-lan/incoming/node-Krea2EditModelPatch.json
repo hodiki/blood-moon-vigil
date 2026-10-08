@@ -1,0 +1,121 @@
+﻿{
+    "Krea2EditModelPatch":  {
+                                "input":  {
+                                              "required":  {
+                                                               "model":  [
+                                                                             "MODEL"
+                                                                         ],
+                                                               "source_latent":  [
+                                                                                     "LATENT"
+                                                                                 ]
+                                                           },
+                                              "optional":  {
+                                                               "source_latent_b":  [
+                                                                                       "LATENT",
+                                                                                       {
+                                                                                           "tooltip":  "2nd reference (subject photo) for multi-ref LoRAs -\u003e RoPE frame=2, training-matched order: scene first, subject second"
+                                                                                       }
+                                                                                   ],
+                                                               "ref_boost":  [
+                                                                                 "FLOAT",
+                                                                                 {
+                                                                                     "default":  1.0,
+                                                                                     "min":  0.0,
+                                                                                     "max":  1000.0,
+                                                                                     "step":  0.01,
+                                                                                     "round":  0.001,
+                                                                                     "tooltip":  "reference-fidelity dial: multiplies target-\u003ereference attention. Applies to the LAST ref (= the subject in two-ref workflows, the only ref in single-ref). 1.0 = off, \u003e1 pulls harder toward the reference\u0027s appearance, \u003c1 loosens. Optimal value is model-specific"
+                                                                                 }
+                                                                             ],
+                                                               "ref_boost_a":  [
+                                                                                   "FLOAT",
+                                                                                   {
+                                                                                       "default":  1.0,
+                                                                                       "min":  0.0,
+                                                                                       "max":  1000.0,
+                                                                                       "step":  0.01,
+                                                                                       "round":  0.001,
+                                                                                       "tooltip":  "same dial for the FIRST ref (= the scene in two-ref workflows). No effect in single-ref workflows. 1.0 = off"
+                                                                                   }
+                                                                               ],
+                                                               "fit_mode":  [
+                                                                                [
+                                                                                    "fit",
+                                                                                    "crop (legacy)"
+                                                                                ],
+                                                                                {
+                                                                                    "default":  "fit",
+                                                                                    "tooltip":  "how an image source fits a mismatched output aspect ratio (needs vae + source_image connected): fit = resample the source to the target grid at a centered offset — matches how this model was trained (default, use this); crop (legacy) = center-crop to the target AR then resize (v1/v1.1 geometry, only for older weights)"
+                                                                                }
+                                                                            ],
+                                                               "ref_boost_mask":  [
+                                                                                      "MASK",
+                                                                                      {
+                                                                                          "tooltip":  "optional region on the (last) reference to boost, e.g. the face; empty = whole reference"
+                                                                                      }
+                                                                                  ],
+                                                               "vae":  [
+                                                                           "VAE",
+                                                                           {
+                                                                               "tooltip":  "RECOMMENDED with source_image: enables the blur-proof pixel-space path (crop+resize in pixels, encode internally) — immune to input/output resolution mismatches"
+                                                                           }
+                                                                       ],
+                                                               "source_image":  [
+                                                                                    "IMAGE",
+                                                                                    {
+                                                                                        "tooltip":  "source as IMAGE (with vae connected): overrides source_latent with exact pixel-space fitting — fixes blurry results from mismatched resolutions"
+                                                                                    }
+                                                                                ],
+                                                               "source_image_b":  [
+                                                                                      "IMAGE",
+                                                                                      {
+                                                                                          "tooltip":  "2nd reference as IMAGE (with vae)"
+                                                                                      }
+                                                                                  ],
+                                                               "target_latent":  [
+                                                                                     "LATENT",
+                                                                                     {
+                                                                                         "tooltip":  "RECOMMENDED with vae + source_image: wire the SAME latent you feed KSampler.latent_image. Lets the node VAE-encode the source here, before sampling starts, instead of on the first step — otherwise the VAE is pulled onto the GPU mid-sampling and can evict part of the diffusion model, slowing every remaining step on VRAM-tight setups"
+                                                                                     }
+                                                                                 ]
+                                                           }
+                                          },
+                                "input_order":  {
+                                                    "required":  [
+                                                                     "model",
+                                                                     "source_latent"
+                                                                 ],
+                                                    "optional":  [
+                                                                     "source_latent_b",
+                                                                     "ref_boost",
+                                                                     "ref_boost_a",
+                                                                     "fit_mode",
+                                                                     "ref_boost_mask",
+                                                                     "vae",
+                                                                     "source_image",
+                                                                     "source_image_b",
+                                                                     "target_latent"
+                                                                 ]
+                                                },
+                                "is_input_list":  false,
+                                "output":  [
+                                               "MODEL"
+                                           ],
+                                "output_is_list":  [
+                                                       false
+                                                   ],
+                                "output_name":  [
+                                                    "MODEL"
+                                                ],
+                                "name":  "Krea2EditModelPatch",
+                                "display_name":  "Krea2 Edit (source patch)",
+                                "description":  "Adds the krea2_edit in-context source-preservation path (source latent as frame=1 tokens) to a Krea2 model.",
+                                "python_module":  "custom_nodes.comfyui-krea2edit",
+                                "category":  "krea2edit",
+                                "output_node":  false,
+                                "has_intermediate_output":  false,
+                                "search_aliases":  [
+
+                                                   ]
+                            }
+}

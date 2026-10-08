@@ -1,0 +1,52 @@
+提示词预设（选用，可改、可另写）
+
+WAI / Illustrious 吃 Danbooru 标签，不是长篇散文。
+长自然语言不要指望 WAI。非二次元走 Krea 2 Turbo。Klein 4B 已删盘。更强本地模型见 docs\model-shortlist.md。
+Cursor GenerateImage 只有一段 description（加可选比例/参考图），不能当工作流。
+两套采样不要混在同一张图里硬套。
+
+======== 质量（WAI）========
+masterpiece, best quality, amazing quality, very aesthetic, newest, high resolution, ultra-detailed
+
+======== 分级（不是质量工具）========
+general          偏干净、全龄向
+sensitive        略擦边
+nsfw             成人向（Not Safe For Work，不是插件）
+explicit         更露
+
+加 nsfw 不会让光影更好，只改尺度。要好看用质量和光影词。
+
+======== 光影 / 体积（补裸配最缺的）========
+cinematic lighting, volumetric light, rim light, dramatic lighting, detailed shading, soft shadows, god rays
+
+======== 上色 / 材质 ========
+detailed skin, detailed fabric, subsurface scattering, rich colors, coherent color palette
+
+======== 油画倾向（现有滑条可叠加）========
+oil painting (medium), impasto, traditional media, visible brush strokes
+LoRA: oil-painting-sdxl-slider  强度 0.6–1.2  触发词 oil painting
+
+======== 无背景 ========
+simple background, white background
+出图后再开 Inspyrenet Rembg
+
+======== 负向（WAI 常用短负向）========
+lowres, worst quality, bad quality, bad anatomy, extra digits, sketch, jpeg artifacts, signature, watermark, artist name, flat lighting, oversaturated
+
+======== Klein（自然语言，第二引擎）========
+写完整句子，不要堆 Danbooru 标签。
+采样：Euler，4 步，CFG 1。分辨率先 1024。
+参考图：FLUX2-Klein4B-个人学习.json / FLUX2-Klein4B-改图.json
+和 WAI 分两轮：Klein 出底后再开 WAI-精修外来底图.json。不要同一 Queue 混采样器。
+
+======== Krea 2 Turbo（自然语言，评估中）========
+写完整句子。不要 prompt_enhance。不要挂 WAI LoRA。
+采样：Euler + simple，8 步，CFG 1。CLIP type=krea2。分辨率先 1024。
+参考图：KREA2-Turbo-t2i.json
+对照题：docs\krea2-eval-prompts.json
+和 WAI / Klein 分 Queue。换引擎前 POST /free。
+
+======== 用法 ========
+一次少改：先质量+光影，再加题材。
+锁角色用 IP-Adapter 图，不把外貌写成一篇作文。
+锁姿势用 OpenPose 图，提示词里姿势词可以写淡一点。

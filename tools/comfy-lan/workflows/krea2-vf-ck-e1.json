@@ -1,0 +1,113 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "A character-bible color-key lock sheet on pale textured parchment paper. High-contrast graphic design, not an illustration. Same language as a flat stamp color key: one woman only. ONE full-body figure as SOLID FILLED paper-cut color regions on a thin ground line. Opaque screenprint fills, 5 to 6 flat colors. No faces, no eyes, no noses, no cloth folds, no painterly shading, no gray gradients, no white holes, no stipple, no mosaic. Copy the F-3 silhouette: 3/4 view facing right. Two curved horns. Dark wavy hair to the shoulders, NOT a silver ponytail, NOT a nun wimple. Strapless bodice. Long opera gloves with a SKIN GAP on the upper arm (the break that makes them gloves, not sleeves). Floor-length skirt with one high even slit showing the leg. Stiletto heels. Empty hands. No candle. No knight. No wings. No diagonal sash. No plate armor. E1 AREA: large mass is black ink gown and hair #2A3038 and #0B0E14. Horns more filled with dark red #7E1E1E (still only the horns). Warm pale skin readable on face oval, upper-arm gap, and the slit leg. Gloves darker than the gown. Centered title text: VIOLET FALLEN COLOR KEY E1. Label VIOLET FALLEN under the ground line. Tiny 64 thumbnail bottom right. No extra people, no scenery, no anime painting, no photoreal.",
+      "clip": [
+        "3",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609921,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_vf_ck_e1",
+      "images": [
+        "9",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "Krea2T-Enhancer-Advanced",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "enabled": false,
+      "strength": 1,
+      "text_scale": 1,
+      "debug": false
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "image_ref": [
+    "10",
+    "inputs",
+    "image"
+  ],
+  "video_drive": [
+    "1",
+    "inputs",
+    "file"
+  ],
+  "positive": [
+    "3",
+    "inputs",
+    "text"
+  ],
+  "seed": [
+    "19",
+    "inputs",
+    "noise_seed"
+  ],
+  "length": [
+    "247",
+    "inputs",
+    "length"
+  ],
+  "width": [
+    "247",
+    "inputs",
+    "width"
+  ],
+  "height": [
+    "247",
+    "inputs",
+    "height"
+  ]
+}

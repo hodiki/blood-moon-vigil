@@ -1,0 +1,81 @@
+{
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    }
+  },
+  "17": {
+    "class_type": "CLIPSetLastLayer",
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": ["4", 1]
+    }
+  },
+  "16": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "21": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "upscale_method": "lanczos",
+      "width": 768,
+      "height": 1344,
+      "crop": "disabled",
+      "image": ["16", 0]
+    }
+  },
+  "18": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": ["21", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "masterpiece, best quality, general, 1girl, solo, full body, looking at viewer, smug, proud, chin up, perfectly even eyes, symmetrical eyes, both eyes identical size and shape, no wink, sharp red eyes, pale skin, high silver-white ponytail, wine-red coat, black turtleneck, white cross, slim feminine legs, over-the-knee high-heeled black boots, stiletto, pointed toe, empty hands, void background",
+      "clip": ["17", 0]
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "uneven eyes, lopsided eyes, different sized eyes, wink, closed eye, lazy eye, extra eyes, tired, sad, masculine, thick calves, flat boots, ankle boots, extra fingers, lowres, worst quality, nsfw",
+      "clip": ["17", 0]
+    }
+  },
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609091,
+      "steps": 24,
+      "cfg": 6,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 0.32,
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["18", 0]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_style_c_wai_eyes",
+      "images": ["8", 0]
+    }
+  }
+}

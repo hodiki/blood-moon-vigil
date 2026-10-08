@@ -1,0 +1,13 @@
+ONE isolated Vampire Survivors-like 2D combat sprite on a pure black void #00040C. Graphic stamp, hard cel color blocks, not a painting, not anime, not photoreal.
+
+Exactly ONE short woman, full body. No knight, no second person, no text, no labels, no parchment sheet, no thumbnail, no scenery, no ground line, no drop shadow.
+
+3/4 camera facing RIGHT. Idle stand, both hands holding a small candle at chest. Hem sits on the bottom edge. The figure fills about 80 percent of the image height. Wide empty black margins on left and right.
+
+FLAT HARD COLOR BLOCKS only, about 7 solid colors, no gradients, no anti-alias, no cloth-fold painting, no metal speckle, no white holes inside armor.
+
+Color budget D2: LARGE masses are night-gray cloak and floor-length skirt #3A4250. Silver #C8D0DA ONLY as a small chest plate and pointed shoulder caps, not a silver dress, not full chrome. Long dark hair down the back, NOT a nun wimple, NOT a hood. Warm pale skin. Exactly ONE candle, flame #FFC93C only.
+
+Face is 3-4 flat skin blocks with two dark eye pixels, readable, not a void, not painted lashes.
+
+No horns, no slit skirt, no wings, no lace, no extra candles.

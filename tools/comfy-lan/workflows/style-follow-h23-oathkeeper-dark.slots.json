@@ -1,0 +1,5 @@
+{
+  "seed": ["3", "inputs", "seed"],
+  "positive": ["6", "inputs", "text"],
+  "negative": ["7", "inputs", "text"]
+}

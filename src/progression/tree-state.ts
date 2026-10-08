@@ -228,13 +228,21 @@ export function computeTreeApplication(ledger: TreeLedger, pureInGame: boolean):
 // 三桶红线断言（tree 版 allMeritBonusesWithinRedline，§3.6/§⑩-2）
 // ============================================================================
 
+/** 归一化节点 id：第二铺位（`_2` 后缀）折算按基础节点 id 查表（EN-02）。 */
+export function baseBucketNodeId(id: string): string {
+  return id.replace(/_2$/, '');
+}
+
 function bucketEquiv(bucket: TalentBucket): number {
   const table = TALENT_BUCKET_EQUIV[bucket as 'damage' | 'survival'];
   if (!table) return 0;
   let sum = 0;
   for (const node of TALENT_TREE) {
     if (node.bucket !== bucket) continue;
-    const per = (table as Record<string, number>)[node.id];
+    // EN-02 修复：原按 `node.id` 精确匹配 → `_2` 独立 id 查不到被 `if (per)` 静默跳过（假 PASS）。
+    // 现先按精确 id 查（EN-01 已补 `_2` 键），再回落归一化基础 id（防再添新铺位时同类失配）。
+    const rec = table as Record<string, number>;
+    const per = rec[node.id] ?? rec[baseBucketNodeId(node.id)];
     if (per) sum += per * node.maxPurchases;
   }
   return sum / 100; // 折算系数表按 % 记
@@ -250,7 +258,7 @@ export function survivalBucketEquiv(): number {
   return bucketEquiv('survival');
 }
 
-/** tree 版红线断言（§⑩-2）：伤害 ≤8% / 生存 ≤6% / 合成 ≤10% */
+/** tree 版红线断言（§⑩-2 / EN-04）：伤害 ≤8% / 生存 ≤6% / 合成 = d + s ≤10%（口径 α，EN-05） */
 export function allTreeBonusesWithinRedline(): boolean {
   const d = damageBucketEquiv();
   const s = survivalBucketEquiv();

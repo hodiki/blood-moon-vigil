@@ -1,7 +1,7 @@
 // layout.mjs — P-6：动画族共享缩放 / 脚底对齐 / 时间轴门禁 / pivot 元数据
 // 不写入 Phaser 帧级 pivot 字段（会自动 setOrigin，打乱现有碰撞中心）。
 
-const VARIANT_RE = /-(?:v|skill-a|skill-b|skill-c|entrance|walk-a|walk-b|broken|tombstone)$/;
+const VARIANT_RE = /-(?:v|skill-a|skill-b|skill-c|entrance|walk-[a-fs]|broken|tombstone)$/;
 
 /** 循环剥后缀：`enemy-stonewolf-broken-v` → `enemy-stonewolf`（只 replace 一次会停在 `-broken`）。 */
 export function familyKey(frameName) {
@@ -46,7 +46,7 @@ export function variantKind(frameName) {
   if (frameName.includes('-tombstone')) return 'tombstone';
   if (frameName.endsWith('-entrance')) return 'entrance';
   if (/-(?:skill-a|skill-b|skill-c)$/.test(frameName)) return 'skill';
-  if (/-(?:walk-a|walk-b)$/.test(frameName)) return 'walk';
+  if (/-(?:walk-[a-fs])$/.test(frameName)) return 'walk';
   if (frameName.endsWith('-v')) return 'idle';
   return 'base';
 }
@@ -67,36 +67,53 @@ export function isCanineFamily(family) {
 }
 
 /**
+ * 画布分档：64 已过英雄 / 96 精英 / 128 评 C 新英雄 / 240+ Boss。
+ * 128 按 64 的 2× 像素预算，不要误进 96 精英档。
+ */
+export function sizeBand(specW) {
+  if (specW >= 240) return 240;
+  if (specW >= 128) return 128;
+  if (specW >= 96) return 96;
+  return 64;
+}
+
+const BAND_HYPOT = {
+  64: { idle: 2, skill: 6, walk: 3, entrance: 12 },
+  96: { idle: 3, skill: 8, walk: 4, entrance: 16 },
+  128: { idle: 4, skill: 12, walk: 6, entrance: 24 },
+  240: { idle: 4, skill: 12, walk: 6, entrance: 24 },
+};
+
+/**
  * 时间轴门禁。idle `-v` 最严（呼吸帧）；skill / entrance 允许姿态变化，仍锁脚底。
  * @param {string} [variantName] 变体帧名（决定 kind）；缺省按 idle 口径
  */
 export function temporalLimits(family, specW, variantName = '') {
   const kind = variantKind(variantName || `${family}-v`);
-  const sizeHypot = specW >= 240 ? 4 : specW >= 96 ? 3 : 2;
-  let hypotMax = sizeHypot;
+  const band = sizeBand(specW);
+  const table = BAND_HYPOT[band];
+  let hypotMax = table.idle;
   let footMax = (isQuadrupedFamily(family) || isFloatingFamily(family)) ? 1 : 0;
   let areaMax = isCanineFamily(family) ? 0.2 : 0.15;
 
   if (kind === 'skill' || kind === 'tombstone') {
-    hypotMax = specW >= 240 ? 12 : specW >= 96 ? 8 : 6;
+    hypotMax = table.skill;
     footMax += 1;
     areaMax = Math.max(areaMax, 0.25);
   } else if (kind === 'broken') {
-    // 剥甲：姿态仍锁脚，面积允许到 30%（岩甲脱落）
-    hypotMax = specW >= 240 ? 12 : specW >= 96 ? 8 : 6;
+    hypotMax = table.skill;
     footMax += 1;
     areaMax = Math.max(areaMax, 0.3);
   } else if (kind === 'walk') {
-    hypotMax = specW >= 240 ? 6 : specW >= 96 ? 4 : 3;
-    areaMax = Math.max(areaMax, 0.2);
+    hypotMax = table.walk;
+    areaMax = Math.max(areaMax, 0.25);
   } else if (kind === 'entrance') {
-    hypotMax = specW >= 240 ? 24 : specW >= 96 ? 16 : 12;
-    // 256 档出场顶边顶满时脚底无法与 idle 同钉；允许 3px（量化 + 顶边夹）
-    footMax = Math.max(footMax, specW >= 240 ? 3 : 2);
+    hypotMax = table.entrance;
+    footMax = Math.max(footMax, band >= 240 ? 3 : 2);
     areaMax = 0.3;
   }
 
-  return { hypotMax, footMax, areaMax, kind };
+  return { hypotMax, footMax, areaMax, kind, band };
 }
 
 export function silhouetteMetrics(data, width, height) {

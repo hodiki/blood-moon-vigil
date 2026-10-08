@@ -1,0 +1,129 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e5-scene.png"
+    }
+  },
+  "12": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e5-person.png"
+    }
+  },
+  "14": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": ["10", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "15": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": ["12", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "32": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": ["2", 0],
+      "lora_name": "krea2_identity_edit_v1_2_r128.safetensors",
+      "strength_model": 1.0
+    }
+  },
+  "40": {
+    "class_type": "Krea2EditModelPatch",
+    "inputs": {
+      "model": ["32", 0],
+      "source_latent": ["14", 0],
+      "source_latent_b": ["15", 0],
+      "ref_boost": 4.0,
+      "ref_boost_a": 1.0,
+      "fit_mode": "fit",
+      "vae": ["4", 0],
+      "source_image": ["10", 0],
+      "source_image_b": ["12", 0],
+      "target_latent": ["7", 0]
+    }
+  },
+  "41": {
+    "class_type": "Krea2EditGroundedEncode",
+    "inputs": {
+      "clip": ["3", 0],
+      "prompt": "Place the woman from the second image into this scene. She stands on the path in the middle distance, full body visible from head to heels, facing the viewer, about two thirds of the frame height. Keep her face, hair, horns, gown, gloves, red heels exactly as in the second image. Light her with the same red moonlight from the upper right as the scene, with a soft contact shadow under her feet. Do not change the scene otherwise.",
+      "image": ["10", 0],
+      "image_b": ["12", 0],
+      "grounding_px": 768
+    }
+  },
+  "42": {
+    "class_type": "Krea2EditGroundedEncode",
+    "inputs": {
+      "clip": ["3", 0],
+      "prompt": "",
+      "image": ["10", 0],
+      "image_b": ["12", 0],
+      "grounding_px": 768
+    }
+  },
+  "7": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": 1152,
+      "height": 864,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091321,
+      "steps": 10,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": ["40", 0],
+      "positive": ["41", 0],
+      "negative": ["42", 0],
+      "latent_image": ["7", 0]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_e5_A",
+      "images": ["9", 0]
+    }
+  }
+}

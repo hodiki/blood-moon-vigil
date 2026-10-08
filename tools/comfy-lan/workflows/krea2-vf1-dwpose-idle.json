@@ -1,0 +1,25 @@
+{
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "20": {
+    "class_type": "DWPreprocessor",
+    "inputs": {
+      "image": ["10", 0],
+      "detect_hand": "enable",
+      "detect_body": "enable",
+      "detect_face": "enable",
+      "resolution": 512
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_vf1_dwpose_idle",
+      "images": ["20", 0]
+    }
+  }
+}

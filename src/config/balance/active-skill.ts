@@ -105,6 +105,6 @@ export interface ActiveSkillConfig {
 export const ACTIVE_SKILLS: Record<HeroId, ActiveSkillConfig> = {
   hero_edmund: { heroId: 'hero_edmund', name: '提灯闪耀', type: 'DEFENSE', cd: 20, radius: 240, stunDuration: 2.5, invulnDuration: 1.5 },
   hero_cassandra: { heroId: 'hero_cassandra', name: '血影突袭', type: 'MOBILITY', cd: 12, charges: 2, chargeInterval: 8, dashDistance: 240, dashDuration: ACTIVE_SKILL_RULES.DASH_DURATION_SECONDS, dashDamage: 40, markDamageMult: 1.2, markDuration: 4, damageMultFactor: 0.5 },
-  hero_violet: { heroId: 'hero_violet', name: '安魂曲', type: 'DEFENSE', cd: 22, radius: 300, slowPct: 0.4, slowDuration: 4, healPct: 0.2 },
+  hero_violet: { heroId: 'hero_violet', name: '誓约回响', type: 'DEFENSE', cd: 22, radius: 300, slowPct: 0.4, slowDuration: 4, healPct: 0.2 },
   hero_galvan: { heroId: 'hero_galvan', name: '血月狂化', type: 'BURST', cd: 24, duration: 8, moveSpeedPct: 0.3, rageMultiplierAdd: ACTIVE_SKILL_RULES.RAGE_MULTIPLIER_ADD, contactAuraFlat: ACTIVE_SKILL_RULES.CONTACT_AURA_FLAT_DPS, lifestealOnKill: 1, damageMultFactor: 0.5 },
 };

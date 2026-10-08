@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { FX } from '@/config/balance';
-import { skillPoseFrameName, skillPosePhase, skillPoseTotalMs, bossEntranceFrameName, SkillPoseClock } from '@/fx/skill-pose';
+import { skillPoseFrameName, skillPosePhase, skillPosePlayForCast, skillPoseStanceForExclusive, skillPoseTotalMs, bossEntranceFrameName, SkillPoseClock } from '@/fx/skill-pose';
 
 describe('主动技姿态叠层（无蓄力资源；表现 300+150ms）', () => {
   it('常量：skill-a 300ms + skill-b 150ms = 0.45s', () => {
@@ -52,6 +52,29 @@ describe('SkillPoseClock（Player 委托的姿态计时；释放瞬间 start，e
     expect(skillPosePhase(clock.elapsedMs(300))).toBe('b');
     expect(skillPosePhase(clock.elapsedMs(449))).toBe('b');
     expect(skillPosePhase(clock.elapsedMs(450))).toBeNull(); // 回 idle（anim.ts playVisual 接管）
+  });
+
+  it('hold：整段只钉一帧，不连到另一姿', () => {
+    const clock = new SkillPoseClock();
+    clock.start(0, { kind: 'hold', phase: 'a' });
+    const play = clock.posePlay();
+    expect(skillPosePhase(clock.elapsedMs(0), play)).toBe('a');
+    expect(skillPosePhase(clock.elapsedMs(300), play)).toBe('a');
+    expect(skillPosePhase(clock.elapsedMs(449), play)).toBe('a');
+    expect(skillPosePhase(clock.elapsedMs(450), play)).toBeNull();
+  });
+
+  it('艾德蒙：提灯技 hold-a；左轮技无姿；其它角色 combo', () => {
+    expect(skillPosePlayForCast('player', 'dv_lantern_flash')).toEqual({ kind: 'hold', phase: 'a' });
+    expect(skillPosePlayForCast('player', 'dv_revolver_burst')).toBeNull();
+    expect(skillPosePlayForCast('hero-cassandra', 'dv_blood_dash')).toEqual({ kind: 'combo' });
+  });
+
+  it('艾德蒙：提灯在手站住用 skill-b；左轮在手不叠层', () => {
+    expect(skillPoseStanceForExclusive('player', 'xw_lantern')).toBe('b');
+    expect(skillPoseStanceForExclusive('player', 'xw_revolver')).toBeNull();
+    expect(skillPoseStanceForExclusive('player', null)).toBeNull();
+    expect(skillPoseStanceForExclusive('hero-cassandra', 'xw_lantern')).toBeNull();
   });
 
   it('anim.ts 姿态消费链路端到端：四角色姿态帧在 characters 图集中真实存在（holdFrame 不落空）', () => {

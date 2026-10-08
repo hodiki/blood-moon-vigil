@@ -1,0 +1,15 @@
+A single adult woman, waist-up, centered in a empty light-grey photography studio. Seamless grey cyclorama, flat frontal light, no furniture, no pew, no candles, no church, no windows, no second person, no mirror. Simple dark sleeveless top and dark pants, bare arms, no hat, no glasses, no jewelry, empty hands. Body faces the camera in a slight three-quarter, matching a standing portrait. Static locked-off camera at chest height, no cut, no zoom, no dolly.
+
+Start pose: standing still; the hand on the left side of the frame rests at hip height as if on a rail and never moves; the hand on the right side of the frame hangs relaxed. Gaze just past the camera. Soft studio room tone.
+
+[0.0-0.5s] She holds that pose. No footsteps.
+
+[0.5-1.2s] She turns her head about 30 degrees toward the left side of the frame. Shoulders and torso stay still.
+
+[1.2-1.8s] She turns her head back to the start.
+
+[1.8-2.3s] She raises the hanging (frame-right) hand to chest height, palm inward. The hip hand does not move. Hands never cover the face.
+
+[2.3-2.8s] She holds the raised hand at chest height.
+
+[2.8-3.0s] She begins to lower that hand. No dialogue, no text, logos, or subtitles.

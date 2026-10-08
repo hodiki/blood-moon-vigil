@@ -10,9 +10,10 @@ import {
   HERO_ARCHIVES,
   BOSS_ARCHIVES,
   EVENT_ARCHIVES,
+  ENTITY_ARCHIVES,
+  RELIC_ARCHIVES,
   NP,
   entryByKey,
-  entryForTrigger,
   defaultNarrativeDurationMs,
   specDurationSec,
   mobileSingleLineFits,
@@ -23,10 +24,11 @@ import {
   dialogueLineCount,
   textEntryCount,
   archiveCount,
+  TARGET_DIALOGUE_LINE_COUNT,
+  TARGET_TEXT_ENTRY_COUNT,
+  TARGET_ARCHIVE_COUNT,
   dialogueMaxLength,
   weaponPowerTag,
-  evolutionPowerTag,
-  evolutionTriggerForPowerTag,
   bossEnterTriggerFor,
   newWeaponTriggerForPowerTag,
   SHOW_OPEN_BANNER,
@@ -40,7 +42,7 @@ import {
 } from '@/narratives/narrative-dispatcher';
 import { DEFAULT_NARRATIVE_BINDINGS } from '@/narratives/narrative-bindings';
 import { resultTitle } from '@/ui/results-overlay';
-import { EVOLUTIONS, type EvoId, type WeaponId } from '@/config/balance';
+import type { WeaponId } from '@/config/balance';
 import type { NarrativeComponent } from '@/narratives/narrative-overlays';
 
 /** 测试用假组件（记录调用；不碰 DOM） */
@@ -66,37 +68,51 @@ function makeAllComponents(): Record<NarrativeForm, NarrativeComponent & { calls
 
 const VALID_FORMS: NarrativeForm[] = ['top-banner', 'bottom-banner', 'side-toast', 'center-gold', 'result-title'];
 
-describe('narratives 文本表（narratives-spec v1.0 §2~§9）', () => {
-  it('文本条目合计 42 = 台词 30 + 序章 4 + 结算 2 + 事件 6；档案对象 8 = 角色 4 + Boss 4', () => {
-    expect(textEntryCount()).toBe(42);
-    expect(dialogueLineCount()).toBe(30);
-    expect(archiveCount()).toBe(8);
+describe('narratives 文本表（narratives-spec v1.4 §2~§9；SC-01~SC-09 schema 地基）', () => {
+  it('SC-08 红线统计：现值按实际条目现算（台词 25 / 文本 37 / 档案 8）；目标常量 33 / 45 / 14', () => {
+    // 现值：本批 schema 地基下，新条目（圣物释放/共鸣/双路线变体/实体/圣物档案）尚未落表 → 预期缺口。
+    expect(dialogueLineCount()).toBe(25); // 表内 9（toast 5 + boss 4）+ 角色台词 12 + Boss 击败 4 + 变体 0
+    expect(textEntryCount()).toBe(37); // NARRATIVES 15 + 12 + 4 + 变体 0 + 事件 6
+    expect(archiveCount()).toBe(8); // 角色 4 + Boss 4 + 实体 0 + 圣物 0
+    // 目标常量（口径目标，非现值）——缺口为预期（供人工文案补齐）。
+    expect(TARGET_DIALOGUE_LINE_COUNT).toBe(33);
+    expect(TARGET_TEXT_ENTRY_COUNT).toBe(45);
+    expect(TARGET_ARCHIVE_COUNT).toBe(14);
     expect(HERO_ARCHIVES).toHaveLength(4);
     expect(BOSS_ARCHIVES).toHaveLength(4);
     expect(EVENT_ARCHIVES).toHaveLength(6);
+    expect(ENTITY_ARCHIVES).toHaveLength(0); // 待人工文案：守誓者 entity_oathkeeper（§4A）
+    expect(RELIC_ARCHIVES).toHaveLength(0); // 待人工文案：圣物档案 ×5（§4A）
   });
 
-  it('表内 20 条：key 唯一、form/context 属合法枚举、时长为 spec §1.2 计算值', () => {
+  it('表内条目：key 唯一、form/context 属合法枚举、时长为 spec §1.2 计算值', () => {
     const keys = new Set<string>();
     for (const e of NARRATIVES) {
       expect(keys.has(e.key)).toBe(false); // key 唯一（数据驱动键）
       keys.add(e.key);
       expect(VALID_FORMS).toContain(e.form);
-      expect(['prologue', 'hero', 'boss', 'toast', 'evolution', 'result', 'event']).toContain(e.context);
+      expect(['prologue', 'hero', 'boss', 'toast', 'relic', 'resonance', 'result', 'event']).toContain(e.context);
       expect(e.mobile.maxLineChars).toBe(14);
       expect(e.mobile.fontSize).toBeGreaterThanOrEqual(16); // 局内台词 ≥16px 物理
       expect(e.durationSec).toBeGreaterThanOrEqual(0);
     }
-    // 台词/点缀/进化条目（context toast/boss/evolution）= 14 条
-    const inTable = NARRATIVES.filter((e) => e.context === 'toast' || e.context === 'boss' || e.context === 'evolution');
-    expect(inTable).toHaveLength(14); // 5 toast + 4 boss enter + 5 evolution
+    // 本批现存 15 条：序章 4 + 局内点缀 5 + Boss 登场 4 + 结算 2（圣物/共鸣待落表）
+    expect(NARRATIVES).toHaveLength(15);
+    // 台词/点缀条目（context toast/boss）= 9 条
+    const inTable = NARRATIVES.filter((e) => e.context === 'toast' || e.context === 'boss');
+    expect(inTable).toHaveLength(9); // 5 toast + 4 boss enter
+    // SC-04：无任何条目使用已退役的 evolution 上下文 / evolution:* 触发键
+    for (const e of NARRATIVES) {
+      expect(e.context).not.toBe('evolution');
+      expect(e.trigger.startsWith('evolution:')).toBe(false);
+    }
   });
 
   it('台词 ≤20 字红线（spec §11：最长 15 字卡珊德拉入场）', () => {
     expect(dialogueMaxLength()).toBeLessThanOrEqual(20);
   });
 
-  it('时长口径（spec §1.2）：side-toast max(×0.25,1)/上限3、bottom-banner max(×0.25,3)、进化固定 2.5、序章固定 3、结算常驻 0', () => {
+  it('时长口径（spec §1.2）：side-toast max(×0.25,1)/上限3、bottom-banner max(×0.25,3)、序章固定 3、结算常驻 0', () => {
     const entry = (key: string): NarrativeText => entryByKey(NARRATIVES, key)!;
     // side-toast（表权威时长；spec §6）
     expect(entry('n_toast_first_levelup').durationSec).toBe(1.8); // 7 字 ×0.25=1.75 → 1.8
@@ -111,8 +127,8 @@ describe('narratives 文本表（narratives-spec v1.0 §2~§9）', () => {
     // bottom-banner（Boss 登场 floor 3.0）
     expect(entry('n_boss_1_enter').durationSec).toBe(specDurationSec('凡人，你守不住这夜。', 3.0)); // 3.0
     expect(entry('n_boss_2_enter').durationSec).toBe(specDurationSec('圣血已污，你的祷言没有回音。', 3.0)); // 3.5
-    // 进化固定 2.5
-    for (const e of NARRATIVES.filter((x) => x.context === 'evolution')) expect(e.durationSec).toBe(2.5);
+    // 圣物释放 / 共鸣寻获固定 2.5s（spec §7）——条目待人工文案落表，本批 NARRATIVES 内暂无
+    expect(NARRATIVES.filter((x) => x.context === 'relic' || x.context === 'resonance')).toHaveLength(0);
     // 序章固定 3
     for (const e of NARRATIVES.filter((x) => x.context === 'prologue')) expect(e.durationSec).toBe(3.0);
     // 结算常驻 0
@@ -152,25 +168,22 @@ describe('narratives 文本表（narratives-spec v1.0 §2~§9）', () => {
     expect(resultTitle(false)).toBe('守夜失败。');
   });
 
-  it('薇奥莱濒死台词唯一 exception（spec §4.3 religious-word-exception）；其余无宗教实指', () => {
+  it('SC-07：`exception` 字段已删除（去圣职化后无例外口径，spec §13-7）', () => {
+    // 运行期：档案对象不应再携带 exception 属性（类型层字段已删）
+    for (const h of HERO_ARCHIVES) {
+      expect((h as { exception?: unknown }).exception).toBeUndefined();
+    }
+    // 文本层残留（薇奥莱濒死句「主……不」旧文）属人工文案批 C-9c 范围，本批不动；
+    // 除该句外全表无宗教实指「神」，且除该句外无「主」。
     const violet = HERO_ARCHIVES.find((h) => h.key === 'hero_violet')!;
     expect(violet.lines.dying).toBe('主……不，月亮不会怜悯。');
-    expect(violet.exception).toBe('religious-word-exception');
-    // 其余档案对象无 exception
-    for (const h of HERO_ARCHIVES) {
-      if (h.key !== 'hero_violet') expect(h.exception).toBeUndefined();
-    }
-    // 台词文本不出现宗教实指（「主」仅薇奥莱濒死一句；「神」全表禁用）
     const allTexts: string[] = [];
     for (const e of NARRATIVES) allTexts.push(e.text);
     for (const h of HERO_ARCHIVES) allTexts.push(h.background, h.lines.enter, h.lines.dying, h.lines.death);
     for (const b of BOSS_ARCHIVES) allTexts.push(b.background, b.enterLine, b.defeatLine);
     for (const t of allTexts) {
-      if (t.includes('神')) expect(t).toBe(violet.lines.dying); // 不含「神」
-      if (t.includes('主') && t !== violet.lines.dying) {
-        // 仅允许「主教/主理」等非宗教实指词；本表内「主」仅薇奥莱濒死
-        expect(t).toBe(violet.lines.dying);
-      }
+      if (t.includes('神')) expect(t).toBe(violet.lines.dying); // 全表不含「神」
+      if (t.includes('主') && t !== violet.lines.dying) expect(t).toBe(violet.lines.dying);
     }
   });
 
@@ -194,33 +207,13 @@ describe('narratives 文本表（narratives-spec v1.0 §2~§9）', () => {
     expect(BOSS_ARCHIVES[3]!.faction).toBe(NP.FACTION_BLOODMOON);
   });
 
-  it('进化播报按 powerTag 映射：7 超武命中 5 句，BLOOD/MOON 各 2 把（spec §7）', () => {
-    const counts: Record<string, number> = {};
-    for (const evo of EVOLUTIONS) {
-      const tag = evolutionPowerTag(evo.evoId as EvoId)!;
-      const trigger = evolutionTriggerForPowerTag(tag);
-      expect(trigger).not.toBeNull();
-      expect(trigger!.startsWith('evolution:')).toBe(true);
-      counts[tag] = (counts[tag] ?? 0) + 1;
-      // 每条进化播报句存在且为 center-gold 2.5s
-      const entry = entryForTrigger(NARRATIVES, trigger!);
-      expect(entry).toBeTruthy();
-      expect(entry!.form).toBe('center-gold');
-      expect(entry!.durationSec).toBe(2.5);
-    }
-    expect(counts.MOON).toBe(2);
-    expect(counts.BLOOD).toBe(2);
-    expect(counts.SILVER).toBe(1);
-    expect(counts.HALLOWED).toBe(1);
-    expect(counts.BEAST).toBe(1);
-  });
-
-  it('新武器 toast 仅 SILVER/HALLOWED（spec §6 C-2；BLOOD/BEAST/MOON 不弹）', () => {
+  it('新武器 toast 仅 SILVER/HALLOWED（spec §6 C-2；BLOOD/BEAST/MOON/BONE 不弹）', () => {
     expect(newWeaponTriggerForPowerTag('SILVER')).toBe('new-weapon:silver');
     expect(newWeaponTriggerForPowerTag('HALLOWED')).toBe('new-weapon:hallowed');
     expect(newWeaponTriggerForPowerTag('BLOOD')).toBeNull();
     expect(newWeaponTriggerForPowerTag('BEAST')).toBeNull();
     expect(newWeaponTriggerForPowerTag('MOON')).toBeNull();
+    expect(newWeaponTriggerForPowerTag('BONE')).toBeNull();
   });
 
   it('Boss 登场按 bossId 路由（spec §5/§6）', () => {
@@ -325,11 +318,9 @@ describe('NarrativeDispatcher 触发分发器（spec §6/§7）', () => {
     expect(comps['bottom-banner'].calls).toEqual([{ text: '圣血已污，你的祷言没有回音。', durationMs: 3500 }]);
   });
 
-  it('进化播报按 trigger 路由 center-gold（2.5s）', () => {
-    const comps = makeAllComponents();
-    const d = new NarrativeDispatcher({ entries: NARRATIVES, components: comps });
-    expect(d.show('evolution:moon')).toBe(true);
-    expect(comps['center-gold'].calls).toEqual([{ text: '月光凝成猎手之形。', durationMs: 2500 }]);
+  it('已退役的 evolution trigger → 无条目 no-op（SC-04）', () => {
+    const d = new NarrativeDispatcher({ entries: NARRATIVES, components: makeAllComponents() });
+    expect(d.show('evolution:moon' as NarrativeTrigger)).toBe(false);
   });
 
   it('无条目 trigger → no-op（返回 false，不抛错）', () => {
@@ -337,21 +328,21 @@ describe('NarrativeDispatcher 触发分发器（spec §6/§7）', () => {
     expect(d.show('new-weapon:blood' as NarrativeTrigger)).toBe(false);
   });
 
-  it('bind() 默认绑定按负载解析：new-weapon tag / evolution tag / bossId / 图鉴', () => {
+  it('bind() 默认绑定按负载解析：new-weapon tag / bossId / 图鉴（SC-04 去 evolution）', () => {
     const comps = makeAllComponents();
     const d = new NarrativeDispatcher({ entries: NARRATIVES, components: comps });
     const emitter = new EventEmitter();
     const unbind = d.bind(emitter, DEFAULT_NARRATIVE_BINDINGS);
-    // 新武器：SILVER → side-toast；超武 → evolution（null 防双发）
+    // 新武器：SILVER → side-toast；超武（evo_*）→ null（无局内播报）
     emitter.emit(GameEvent.WeaponUnlocked, { weaponId: 'wpn_a_2' });
     expect(comps['side-toast'].calls).toEqual([{ text: '银器出鞘。', durationMs: 1300 }]);
     emitter.emit(GameEvent.WeaponUnlocked, { weaponId: 'wpn_a_5' }); // BLOOD → 不弹
     expect(comps['side-toast'].calls).toHaveLength(1);
     emitter.emit(GameEvent.WeaponUnlocked, { weaponId: 'evo_moonwrath' }); // 超武 → null
     expect(comps['side-toast'].calls).toHaveLength(1);
-    // 进化：UpgradeChosen evo_moonwrath（MOON）→ center-gold
+    // SC-04：UpgradeChosen 不再映射进化播报（超武退役）→ 无中心大字
     emitter.emit(GameEvent.UpgradeChosen, { optionId: 'evo_moonwrath' });
-    expect(comps['center-gold'].calls).toEqual([{ text: '月光凝成猎手之形。', durationMs: 2500 }]);
+    expect(comps['center-gold'].calls).toHaveLength(0);
     // Boss 登场：boss_3 → bottom-banner
     emitter.emit(GameEvent.BossSpawned, { bossHp: 4200, bossId: 'boss_3' });
     expect(comps['bottom-banner'].calls).toEqual([{ text: '月光属于狼群。', durationMs: 3000 }]);

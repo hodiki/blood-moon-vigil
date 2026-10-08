@@ -1,0 +1,344 @@
+{
+  "id": "wai-illustrious-personal-learn",
+  "revision": 0,
+  "last_node_id": 22,
+  "last_link_id": 50,
+  "nodes": [
+    {
+      "id": 16,
+      "type": "MarkdownNote",
+      "pos": [-520, 80],
+      "size": [480, 720],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "这张图是什么",
+      "properties": {},
+      "widgets_values": [
+        "## 来源（避免重复造轮）\n\n骨架来自 ComfyUI **官方模板** `image_sdxl_simple`（Workflow → Browse Templates → Image → SDXL Simple）。\n\n采样按 [WAI-Illustrious 模型页](https://civitai.com/models/827184) / [HF v170](https://huggingface.co/LyliaEngine/waiIllustriousSDXL_v170)：\n\n- Sampler **Euler a**（`euler_ancestral`）\n- CFG **5–7**（图里默认 6）\n- Steps **15–30**（图里默认 28）\n- **CLIP Skip 2**（`CLIPSetLastLayer = -2`）\n\n网上好评的「Bounty Hunter」等 WAI 图要 **两颗底模 + 精修 LoRA**，8GB 和当前只装了 v170 对不上，所以不搬。EasyIllustrious 要再装一整包节点，学习官方图更合适。\n\n## 怎么用\n\n1. 改绿色 **Positive**、红色 **Negative**\n2. Queue（Ctrl+Enter）\n3. 看 Preview，成品在 `output/wai_learn_`\n\nWAI 吃 **Danbooru 标签**，不是长篇自然语言。质量词可留：`masterpiece, best quality, general`。\n\n## 可选（默认旁路，右键 Bypass 打开）\n\n- **Load LoRA**：强度默认 0（等于关掉）。油画时改 0.6–1.2，提示词加 `oil painting`\n- **Inspyrenet Rembg**：无背景；同时打开下面的 Save rembg\n\n## 8GB\n\n分辨率先 832×1216 或 768×1024。不要默认 1536。这张图不要再叠 IP-Adapter / OpenPose（另开任务图，且不要同开）。"
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 15,
+      "type": "CheckpointLoaderSimple",
+      "pos": [40, 80],
+      "size": [360, 120],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [42] },
+        { "name": "CLIP", "type": "CLIP", "links": [43] },
+        { "name": "VAE", "type": "VAE", "links": [41] }
+      ],
+      "title": "Load Checkpoint（WAI v170）",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": ["waiIllustriousSDXL_v170.safetensors"]
+    },
+    {
+      "id": 18,
+      "type": "LoraLoader",
+      "pos": [40, 260],
+      "size": [360, 130],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 42 },
+        { "name": "clip", "type": "CLIP", "link": 43 }
+      ],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [38] },
+        { "name": "CLIP", "type": "CLIP", "links": [44] }
+      ],
+      "title": "Load LoRA（强度 0 = 关，油画改 0.8）",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "LoraLoader"
+      },
+      "widgets_values": ["oil-painting-sdxl-slider.safetensors", 0, 0]
+    },
+    {
+      "id": 17,
+      "type": "CLIPSetLastLayer",
+      "pos": [40, 460],
+      "size": [360, 80],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP", "link": 44 }
+      ],
+      "outputs": [
+        { "name": "CLIP", "type": "CLIP", "links": [39, 40] }
+      ],
+      "title": "CLIP Skip 2（WAI 必需）",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "CLIPSetLastLayer"
+      },
+      "widgets_values": [-2]
+    },
+    {
+      "id": 10,
+      "type": "CLIPTextEncode",
+      "pos": [480, 80],
+      "size": [420, 220],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP", "link": 39 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [33] }
+      ],
+      "title": "Positive Prompt",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "masterpiece, best quality, amazing quality, very aesthetic, newest, general,\n1girl, solo, looking at viewer, long hair, simple background"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 11,
+      "type": "CLIPTextEncode",
+      "pos": [480, 360],
+      "size": [420, 180],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP", "link": 40 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [34] }
+      ],
+      "title": "Negative Prompt",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "lowres, worst quality, bad quality, bad anatomy, extra digits, sketch, jpeg artifacts, signature, watermark, artist name"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 13,
+      "type": "EmptyLatentImage",
+      "pos": [480, 600],
+      "size": [280, 130],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "LATENT", "type": "LATENT", "links": [35] }
+      ],
+      "title": "Empty Latent（竖图）",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [832, 1216, 1],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 12,
+      "type": "KSampler",
+      "pos": [980, 80],
+      "size": [300, 270],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 38 },
+        { "name": "positive", "type": "CONDITIONING", "link": 33 },
+        { "name": "negative", "type": "CONDITIONING", "link": 34 },
+        { "name": "latent_image", "type": "LATENT", "link": 35 }
+      ],
+      "outputs": [
+        { "name": "LATENT", "type": "LATENT", "links": [36] }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [170001, "randomize", 28, 6, "euler_ancestral", "normal", 1]
+    },
+    {
+      "id": 14,
+      "type": "VAEDecode",
+      "pos": [980, 400],
+      "size": [240, 60],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 36 },
+        { "name": "vae", "type": "VAE", "link": 41 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [37, 50, 48] }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 19,
+      "type": "PreviewImage",
+      "pos": [1340, 80],
+      "size": [360, 360],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE", "link": 50 }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 7,
+      "type": "SaveImage",
+      "pos": [1340, 480],
+      "size": [360, 280],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE", "link": 37 }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": ["wai_learn"]
+    },
+    {
+      "id": 20,
+      "type": "InspyrenetRembg",
+      "pos": [980, 520],
+      "size": [300, 80],
+      "flags": {},
+      "order": 11,
+      "mode": 4,
+      "inputs": [
+        { "name": "image", "type": "IMAGE", "link": 48 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [49] },
+        { "name": "MASK", "type": "MASK", "links": null }
+      ],
+      "title": "Inspyrenet Rembg（默认关）",
+      "properties": {
+        "Node name for S&R": "InspyrenetRembg"
+      },
+      "widgets_values": ["default"]
+    },
+    {
+      "id": 21,
+      "type": "SaveImage",
+      "pos": [980, 640],
+      "size": [300, 80],
+      "flags": {},
+      "order": 12,
+      "mode": 4,
+      "inputs": [
+        { "name": "images", "type": "IMAGE", "link": 49 }
+      ],
+      "title": "Save rembg（默认关）",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": ["wai_learn_rembg"]
+    },
+    {
+      "id": 22,
+      "type": "MarkdownNote",
+      "pos": [40, 600],
+      "size": [360, 200],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "练手建议",
+      "properties": {},
+      "widgets_values": [
+        "一次只改一样：提示词，或步数，或 CFG，或分辨率。\n\n场景：把 `1girl` 换成 `scenery, forest, shrine`。\n油画：打开 LoRA，提示词加 `oil painting (medium), impasto`。\n无背景：提示词加 `white background`，再打开两个抠图节点。\n\n这是个人学习图，不是 Hodiki 的 API 契约。"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [33, 10, 0, 12, 1, "CONDITIONING"],
+    [34, 11, 0, 12, 2, "CONDITIONING"],
+    [35, 13, 0, 12, 3, "LATENT"],
+    [36, 12, 0, 14, 0, "LATENT"],
+    [37, 14, 0, 7, 0, "IMAGE"],
+    [38, 18, 0, 12, 0, "MODEL"],
+    [39, 17, 0, 10, 0, "CLIP"],
+    [40, 17, 0, 11, 0, "CLIP"],
+    [41, 15, 2, 14, 1, "VAE"],
+    [42, 15, 0, 18, 0, "MODEL"],
+    [43, 15, 1, 18, 1, "CLIP"],
+    [44, 18, 1, 17, 0, "CLIP"],
+    [48, 14, 0, 20, 0, "IMAGE"],
+    [49, 20, 0, 21, 0, "IMAGE"],
+    [50, 14, 0, 19, 0, "IMAGE"]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "1 加载（底模 → 可选 LoRA → CLIP Skip）",
+      "bounding": [20, 20, 410, 540],
+      "color": "#3f789e",
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "2 提示词 + 画布",
+      "bounding": [460, 20, 460, 730],
+      "color": "#3f789e",
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "3 采样 → 解码 → 预览/保存",
+      "bounding": [960, 20, 760, 760],
+      "color": "#3f789e",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.72,
+      "offset": [560, 80]
+    },
+    "frontendVersion": "1.51.9"
+  },
+  "version": 0.4
+}

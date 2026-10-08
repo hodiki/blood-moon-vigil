@@ -15,7 +15,11 @@ import { BOSSES, HEROES, MAP_CONFIGS, type ExclusiveWeaponId, type MapId, type P
 // W-B1 · powerTag 术语映射（五词根；world-bible §7 对齐）
 // ============================================================================
 
-/** powerTag → 玩家语言（保底席位/专武卡/角色卡全 UI 消费） */
+/**
+ * powerTag → 玩家语言（UI 别名集，暂未接线）。
+ * EN-13（术语同步批）：原注释「保底席位 / 专武卡 / 角色卡全 UI 消费」与事实不符——实测 `src/`
+ * **零生产消费**（唯一引用 = 本表单测）；主理人裁决保留现状、暂不接线（narratives-spec §10 登记）。
+ */
 export const POWER_TAG_COPY: Record<PowerTag, string> = {
   MOON: '月相誓约',
   BLOOD: '血契',
@@ -68,8 +72,8 @@ export const EXCLUSIVE_WEAPON_PROFILE: Record<ExclusiveWeaponId, string> = {
   xw_revolver: '拉开距离，六响银弹逐个点名——精准克制的猎手',
   xw_twinblades: '贴身缠斗的双刃，越砍越回血——以血换血的近身篇章',
   xw_longbow: '一箭贯三敌的重狙击，慢，但每一发都值得等',
-  xw_bell: '铃音领域随你同行，守誓者代你受难——安魂者的守护',
-  xw_cross: '旋转的圣辉十字飞向敌群炸开——定点爆发的祈祷',
+  xw_bell: '铃音领域随你同行，守誓者代你受难——誓约的守护',
+  xw_cross: '旋转的圣辉轮刃飞向敌群炸开——定点爆发的一击',
   xw_axe: '重斩扫过弧内一切，以自身之血为薪——孤注一掷的葬仪',
   xw_horn: '号角唤来狼群并肩撕咬——与兽同行的召唤者',
 };

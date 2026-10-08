@@ -96,11 +96,11 @@ export const MUTATION_CARDS: readonly MutationCardConfig[] = [
   { id: 'mc_longbow_1', exclusiveId: 'xw_longbow', order: 1, name: '月相贯矢', desc: '每第 3 矢为满蓄月痕矢——伤害 ×2.2、贯穿 3→全部', machine: { chargeEveryN: 3, chargedDamageMult: 2.2, chargedPierceAll: 1 } },
   { id: 'mc_longbow_2', exclusiveId: 'xw_longbow', order: 2, name: '猎首之约', desc: '满蓄矢命中标记「猎物」（易伤 +20%/8s，单目标）；对猎物普通矢伤害 ×1.3', machine: { preyVulnerable: 0.2, preyDuration: 8, preyDamageMult: 1.3 } },
   // 安魂圣铃
-  { id: 'mc_bell_1', exclusiveId: 'xw_bell', order: 1, name: '安魂钟鸣', desc: '铃响升格钟鸣——治疗量 ×2.5，领域内亡者类额外 12 伤 + 减速 20%/2s', machine: { healMult: 2.5, undeadBonusDamage: 12, undeadSlowPct: 0.2, undeadSlowDuration: 2 } },
+  { id: 'mc_bell_1', exclusiveId: 'xw_bell', order: 1, name: '誓约钟鸣', desc: '铃响升格钟鸣——治疗量 ×2.5，领域内亡者类额外 12 伤 + 减速 20%/2s', machine: { healMult: 2.5, undeadBonusDamage: 12, undeadSlowPct: 0.2, undeadSlowDuration: 2 } },
   { id: 'mc_bell_2', exclusiveId: 'xw_bell', order: 2, name: '守誓誓约', desc: '承伤转移 50%→65%、撕咬 8→14 伤、墓碑回血 2→4 HP/s；治疗转化率 50%→70%', machine: { transferPct: 0.65, biteDamage: 14, tombHealPerSec: 4, reviveConvertRate: 0.7 } },
   // 圣辉十字
   { id: 'mc_cross_1', exclusiveId: 'xw_cross', order: 1, name: '审判降临', desc: '落点悬停 2s 持续灼烧 12 伤/s 后再爆（单点总伤 ≈ ×2.1）', machine: { hoverDuration: 2, hoverDps: 12 } },
-  { id: 'mc_cross_2', exclusiveId: 'xw_cross', order: 2, name: '三重颂歌', desc: '一次掷出三枚十字品字落点，命中同目标的相邻爆炸每枚 +30%（去重单次加成，不叠乘）', machine: { crossCount: 3, adjacentBonusPct: 0.3 } },
+  { id: 'mc_cross_2', exclusiveId: 'xw_cross', order: 2, name: '三重连掷', desc: '一次掷出三枚十字品字落点，命中同目标的相邻爆炸每枚 +30%（去重单次加成，不叠乘）', machine: { crossCount: 3, adjacentBonusPct: 0.3 } },
   // 葬仪巨斧
   { id: 'mc_axe_1', exclusiveId: 'xw_axe', order: 1, name: '血债血偿', desc: '挥击伤害 +40%，每击杀回复 3 HP', machine: { damageMult: 1.4, killHeal: 3 } },
   { id: 'mc_axe_2', exclusiveId: 'xw_axe', order: 2, name: '葬仪狂欢', desc: '当前 HP 每低 10%，伤害 +6%（上限 +30%）；间隔 2.2→1.8s', machine: { lowHpStepPct: 0.06, lowHpStepPer: 0.1, lowHpBonusCap: 0.3, cooldown: 1.8 } },
@@ -144,8 +144,12 @@ export interface ExclusiveWeaponParams {
   /** 圣铃治疗 */
   healInterval?: number;
   healAmount?: number;
-  /** 守誓者（圣铃专属；GDD §4.4，HP 口径 EG-4 = 固定 200） */
-  companion?: { hp: number; transferPct: number; biteDamage: number; biteInterval: number; leashRadius: number; tombDurationMin: number; tombDurationMax: number; tombHealPerSec: number; reviveConvertRate: number; resummonCd: number };
+  /**
+   * 守誓者（圣铃专属；GDD §4.4 v1.4 口径，EN-06）。
+   * `hpPctOfPlayerMax`：守誓者最大生命 = 玩家「**当局当前**」最大生命 × 此比例（**动态跟随**，
+   * 非入场快照、非固定值）——原硬编码 `hp: 200` 已废止（D8 定案 ×150%）。
+   */
+  companion?: { hpPctOfPlayerMax: number; transferPct: number; biteDamage: number; biteInterval: number; leashRadius: number; tombDurationMin: number; tombDurationMax: number; tombHealPerSec: number; reviveConvertRate: number; resummonCd: number };
 }
 
 export interface ExclusiveWeaponConfig {
@@ -191,16 +195,16 @@ export const EXCLUSIVE_WEAPONS: Record<ExclusiveWeaponId, ExclusiveWeaponConfig>
     effect: '22 伤/2.2s，直线，贯穿 3，弹速 500px/s',
   },
   xw_bell: {
-    id: 'xw_bell', name: '安魂圣铃', heroId: 'hero_violet', powerTag: 'HALLOWED',
+    id: 'xw_bell', name: '誓约圣铃', heroId: 'hero_violet', powerTag: 'HALLOWED',
     feel: 'B 环绕/领域（辅助流）', dpsAnchor: [6, 8], derivativeShareAnchor: [0.12, 0.15],
-    params: { damage: 3, interval: 0.8, radius: 110, healInterval: 8, healAmount: 8, companion: { hp: 200, transferPct: 0.5, biteDamage: 8, biteInterval: 1.0, leashRadius: 150, tombDurationMin: 8, tombDurationMax: 10, tombHealPerSec: 2, reviveConvertRate: 0.5, resummonCd: 20 } },
+    params: { damage: 3, interval: 0.8, radius: 110, healInterval: 8, healAmount: 8, companion: { hpPctOfPlayerMax: 1.5, transferPct: 0.5, biteDamage: 8, biteInterval: 1.0, leashRadius: 150, tombDurationMin: 8, tombDurationMax: 10, tombHealPerSec: 2, reviveConvertRate: 0.5, resummonCd: 20 } },
     effect: '常驻铃音领域 110px，对敌 3 伤/0.8s（自身 DPS 锚 6~8，合计口径 ≈13~14）；每 8s 铃响治疗自身与守誓者 8 HP；守誓者开局自带（FQ-2）',
   },
   xw_cross: {
-    id: 'xw_cross', name: '圣辉十字', heroId: 'hero_violet', powerTag: 'HALLOWED',
+    id: 'xw_cross', name: '圣辉轮刃', heroId: 'hero_violet', powerTag: 'HALLOWED',
     feel: 'C 清屏（定点爆发变体）', dpsAnchor: [9, 11], derivativeShareAnchor: [0.15, 0.18],
     params: { damage: 28, interval: 3.0, radius: 100 },
-    effect: '每 3.0s 掷出旋转十字飞向最近敌群，落点爆炸 28 伤/半径 100px',
+    effect: '每 3.0s 掷出旋转光刃环飞向最近敌群，落点爆炸 28 伤/半径 100px',
   },
   xw_axe: {
     id: 'xw_axe', name: '葬仪巨斧', heroId: 'hero_galvan', powerTag: 'BEAST',
@@ -215,6 +219,14 @@ export const EXCLUSIVE_WEAPONS: Record<ExclusiveWeaponId, ExclusiveWeaponConfig>
     effect: '每 12s 吹号召唤 1 头月狼（存在 10s，撕咬 8 伤/1.0s，场上限 2）',
   },
 };
+
+/**
+ * 守誓者最大生命（EN-06 · GDD §4.4 v1.4）：= 玩家「**当局当前**」最大生命 × `hpPctOfPlayerMax`（150%）。
+ * **动态跟随**（非入场快照、非固定 200）；调用方以玩家当前最大生命传入，随其成长同步。
+ */
+export function oathkeeperMaxHp(playerCurrentMaxHp: number): number {
+  return playerCurrentMaxHp * EXCLUSIVE_WEAPONS.xw_bell.params.companion!.hpPctOfPlayerMax;
+}
 
 // ============================================================================
 // 衍生技（8；CD 锚 轻技 12~15s / 复合技 ≥20s，§3.3；CC 全走状态层 §4.8）
@@ -260,7 +272,7 @@ export const DERIVATIVE_SKILLS: Record<DerivativeSkillId, DerivativeSkillConfig>
     effect: '1.2s 蓄力后发射贯穿全屏巨矢（60 伤、全贯穿）+ 首个命中目标眩晕 1s（Boss 免疫、精英 ×0.5）',
   },
   dv_requiem: {
-    id: 'dv_requiem', name: '安魂曲', sourceExclusiveId: 'xw_bell',
+    id: 'dv_requiem', name: '誓约回响', sourceExclusiveId: 'xw_bell',
     cd: 20, shareAnchor: [0.12, 0.15],
     params: { slowPct: 0.3, slowDuration: 3, heal: 20, radius: 300 },
     effect: '周身减速 30%/3s + 回复 20 HP + 守誓者立即回满（若为墓碑则复活进度直接充满）',
@@ -322,15 +334,16 @@ export const RELICS: Record<RelicId, RelicConfig> = {
   },
   relic_twelve_lamps: {
     id: 'relic_twelve_lamps', name: '十二灯誓约', powerTag: 'HALLOWED', pools: ['altar'],
-    params: { duration: 8, burnDps: 8, damageReductionPct: 0.2, auraRadius: 140 },
-    effect: '十二盏圣辉提灯虚影环列，灯环内亡者类敌人持续灼烧 8 伤/s、玩家承伤 −20%，持续 8s',
+    // D12 v1.3 锚：8 伤/s · 半径 140px · 目标数软上限 5 · 8s · 承伤 −20%（软上限为 <5% 红线成立必要条件）
+    params: { duration: 8, burnDps: 8, damageReductionPct: 0.2, auraRadius: 140, softCapTargets: 5 },
+    effect: '十二盏圣辉提灯虚影环列，灯环内亡者类敌人持续灼烧 8 伤/s（目标数软上限 5）、玩家承伤 −20%，持续 8s',
     lore: '千年前 First Vigil 十二守夜人提灯残影仍记得誓词（§2 封印之锁）',
   },
   relic_silver_tide: {
     id: 'relic_silver_tide', name: '银潮汐', powerTag: 'SILVER', pools: ['boss'],
-    // P0-1：GDD 尾章未列伤害值（KNOWN-GAP）→ 工程锚「落场银雨」220px / 6 伤/s / 8s（须守住 <5% 红线）
-    params: { duration: 8, radius: 220, burnDps: 6 },
-    effect: '8s 落场银雨（220px 银质灼烧 6 伤/s，对血族类生成银光爆点）+ 全场攻击附带银质演出——伤害段不进 DPS 预算主线（<5% 红线）',
+    // D12 v1.3 锚：落场银雨 220px / 6 伤/s / 8s / 目标数软上限 7（软上限为 <5% 红线成立必要条件）
+    params: { duration: 8, radius: 220, burnDps: 6, softCapTargets: 7 },
+    effect: '8s 落场银雨（220px 银质灼烧 6 伤/s，目标数软上限 7，对血族类生成银光爆点）+ 全场攻击附带银质演出——伤害段不进 DPS 预算主线（<5% 红线）',
     lore: '守夜驻地银炉最后一炉银，今夜铸成弹雨（§6.4）',
   },
   relic_wolf_spirit: {
@@ -344,7 +357,7 @@ export const RELICS: Record<RelicId, RelicConfig> = {
 /** 圣物层规则（§3.4：CD 锚 240s；每局保底 1 上限 2；局内每枚 1 次；伤害占比 <5%） */
 export const RELIC_RULES = {
   CD_SECONDS: 240,
-  /** 每局保底（Boss 击杀必掉 1 枚） */
+  /** 每局保底（Boss **出场即发** 1 枚；D6 定案，原「Boss 击杀必掉」口径废止——EN-08） */
   GUARANTEED_PER_RUN: 1,
   /** 每局上限（祭坛概率第 2 枚） */
   MAX_PER_RUN: 2,

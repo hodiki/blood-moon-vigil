@@ -1,0 +1,113 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "A character-bible combat COLOR KEY sheet on pale textured parchment paper. Graphic design production sheet, not an illustration. Same pair and stance as Violet Oath lock O-3. Two full-body figures on a thin ground line, separated, not overlapping. Left shorter woman near-frontal, long dark hair (no headscarf, no wimple), cloak, breastplate, floor-length skirt, small candle at chest. Right taller standing knight in 3/4 view facing her, closed visor helmet, large plume curving back, hip sword. Standing guard, not kneeling. FLAT HARD COLOR BLOCKS only. Cel-shaded, about 7 solid colors, no gradients, no painterly folds, no eyes, no photoreal metal speckle, no white holes inside armor, no stipple, no mosaic. Violet color areas (D1, large silver like the locked portrait): pale silver #E8F0FA breastplate and pauldrons as LARGE chest-shoulder masses; dark charcoal cloak and floor-length skirt #3A4250 and #131722; dark hair not silver; warm pale skin; candle body dull, only the tiny flame is gold #FFC93C. Oathkeeper color areas (D1): bright silver plate armor as the LARGE body mass #E8F0FA; crimson helm plume #7E1E1E; dark cloak hanging down #131722; hip sword as a dark-and-silver block. Centered title: VIOLET OATH COLOR KEY D1. Labels VIOLET and OATHKEEPER under the ground line. Tiny 64 thumbnail of the same pair at bottom right. No extra people, no wings, no horns, no nun habit, no scenery, no anime painting.",
+      "clip": [
+        "3",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609901,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_vo_ck_d1",
+      "images": [
+        "9",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "Krea2T-Enhancer-Advanced",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "enabled": false,
+      "strength": 1,
+      "text_scale": 1,
+      "debug": false
+    }
+  }
+}

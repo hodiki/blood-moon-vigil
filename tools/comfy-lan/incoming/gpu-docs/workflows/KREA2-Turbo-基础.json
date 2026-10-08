@@ -1,0 +1,825 @@
+{
+  "id": "krea2-turbo-base",
+  "revision": 0,
+  "last_node_id": 16,
+  "last_link_id": 21,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [
+        -560,
+        80
+      ],
+      "size": [
+        500,
+        740
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Krea 2 Turbo 日常基础（非二次元主力）",
+      "properties": {},
+      "widgets_values": [
+        "## 这张图是什么\n\n**非二次元主力。** 日常 / Hodiki 用的 **Krea 2 Turbo INT8 扁平链**。二次元立绘仍用 WAI。相对裸跑 `KREA2-Turbo-t2i.json` 只多一处：UNET 与 KSampler 之间接了 **Krea2T Enhancer Advanced**。\n\n- **不要改**任何 `WAI-*.json`。立绘 / Danbooru 仍用 WAI。\n- **不要覆盖**裸跑图；对照基线仍以那张为准。\n- 本图 **不挂** 风格 LoRA / Filter Bypass / Anything2Real。那些在 `KREA2-Turbo-仓库.json`，单挂 + 备注，按需复制过来再接线。\n\n## 本机文件\n\n- UNET：`krea2_turbo_int8_convrot.safetensors`\n- CLIP：`qwen3vl_4b_fp8_scaled.safetensors`，type 必须是 **krea2**，device **cpu**\n- VAE：`qwen_image_vae.safetensors`\n- 节点：`custom_nodes/ComfyUI-Krea2T-Enhancer`，类名 `Krea2T-Enhancer-Advanced`\n\n## 采样（跟 Comfy 0.34 官方 INT8 模板）\n\n- Euler + simple，**8 步**，CFG **1**\n- 负向 = ConditioningZeroOut\n- 分辨率先 **1024**\n- 不要开官方 `prompt_enhance`\n- 模型自带 shift≈1.15\n\n## Enhancer 怎么关\n\n节点上有 **enabled**。关掉即可回到接近裸跑，**不必拆线**。strength / text_scale 默认 1。debug 保持关，避免刷日志。\n\n装节点后必须**重启 Comfy** 才会出现；只 `POST /free` 不够。\n\n## 8GB / 分 Queue\n\n- 不要和 WAI 同一 Queue；换引擎前 `POST /free`\n- 不要默认再叠 IPA / OpenPose / 官方 style LoRA\n- 一次只从仓库拷 **一个** LoRA 进本图\n- 任务管理器里专用显存掉下去不等于还能再挂一张大模型（`--lowvram` 会摊到共享显存）"
+      ],
+      "widgets_values_named": {
+        "text": "## 这张图是什么\n\n**非二次元主力。** 日常 / Hodiki 用的 **Krea 2 Turbo INT8 扁平链**。二次元立绘仍用 WAI。相对裸跑 `KREA2-Turbo-t2i.json` 只多一处：UNET 与 KSampler 之间接了 **Krea2T Enhancer Advanced**。\n\n- **不要改**任何 `WAI-*.json`。立绘 / Danbooru 仍用 WAI。\n- **不要覆盖**裸跑图；对照基线仍以那张为准。\n- 本图 **不挂** 风格 LoRA / Filter Bypass / Anything2Real。那些在 `KREA2-Turbo-仓库.json`，单挂 + 备注，按需复制过来再接线。\n\n## 本机文件\n\n- UNET：`krea2_turbo_int8_convrot.safetensors`\n- CLIP：`qwen3vl_4b_fp8_scaled.safetensors`，type 必须是 **krea2**，device **cpu**\n- VAE：`qwen_image_vae.safetensors`\n- 节点：`custom_nodes/ComfyUI-Krea2T-Enhancer`，类名 `Krea2T-Enhancer-Advanced`\n\n## 采样（跟 Comfy 0.34 官方 INT8 模板）\n\n- Euler + simple，**8 步**，CFG **1**\n- 负向 = ConditioningZeroOut\n- 分辨率先 **1024**\n- 不要开官方 `prompt_enhance`\n- 模型自带 shift≈1.15\n\n## Enhancer 怎么关\n\n节点上有 **enabled**。关掉即可回到接近裸跑，**不必拆线**。strength / text_scale 默认 1。debug 保持关，避免刷日志。\n\n装节点后必须**重启 Comfy** 才会出现；只 `POST /free` 不够。\n\n## 8GB / 分 Queue\n\n- 不要和 WAI 同一 Queue；换引擎前 `POST /free`\n- 不要默认再叠 IPA / OpenPose / 官方 style LoRA\n- 一次只从仓库拷 **一个** LoRA 进本图\n- 任务管理器里专用显存掉下去不等于还能再挂一张大模型（`--lowvram` 会摊到共享显存）"
+      },
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 12,
+      "type": "Krea2T-Enhancer-Advanced",
+      "pos": [
+        20,
+        200
+      ],
+      "size": [
+        400,
+        150
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "localized_name": "enabled",
+          "name": "enabled",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "enabled"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength",
+          "name": "strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "text_scale",
+          "name": "text_scale",
+          "type": "FLOAT",
+          "widget": {
+            "name": "text_scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "debug",
+          "name": "debug",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "debug"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "title": "Krea2T Enhancer Advanced（可关）",
+      "properties": {
+        "Node name for S&R": "Krea2T-Enhancer-Advanced"
+      },
+      "widgets_values": [
+        true,
+        1,
+        1,
+        false
+      ],
+      "widgets_values_named": {
+        "enabled": true,
+        "strength": 1,
+        "text_scale": 1,
+        "debug": false
+      },
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 3,
+      "type": "CLIPLoader",
+      "pos": [
+        20,
+        390
+      ],
+      "size": [
+        400,
+        110
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "CLIP名称",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "类型",
+          "name": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "设备",
+          "name": "device",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "title": "Qwen3-VL 4B（type=krea2，CPU）",
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3vl_4b_fp8_scaled.safetensors",
+        "krea2",
+        "cpu"
+      ],
+      "widgets_values_named": {
+        "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+        "type": "krea2",
+        "device": "cpu"
+      }
+    },
+    {
+      "id": 4,
+      "type": "VAELoader",
+      "pos": [
+        20,
+        540
+      ],
+      "size": [
+        400,
+        60
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "vae名称",
+          "name": "vae_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "vae_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "title": "qwen_image_vae",
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "qwen_image_vae.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "qwen_image_vae.safetensors"
+      }
+    },
+    {
+      "id": 6,
+      "type": "ConditioningZeroOut",
+      "pos": [
+        460,
+        340
+      ],
+      "size": [
+        280,
+        40
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "条件",
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "条件",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "title": "Negative = zero",
+      "properties": {
+        "Node name for S&R": "ConditioningZeroOut"
+      }
+    },
+    {
+      "id": 7,
+      "type": "EmptyLatentImage",
+      "pos": [
+        460,
+        420
+      ],
+      "size": [
+        280,
+        110
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "宽度",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "高度",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "批量大小",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "Latent",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "title": "1024 画布",
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ],
+      "widgets_values_named": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 8,
+      "type": "KSampler",
+      "pos": [
+        940,
+        80
+      ],
+      "size": [
+        300,
+        270
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "模型",
+          "name": "model",
+          "type": "MODEL",
+          "link": 11
+        },
+        {
+          "localized_name": "正面条件",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 4
+        },
+        {
+          "localized_name": "负面条件",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "localized_name": "Latent图像",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "localized_name": "种子",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "步数",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "采样器名称",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "调度器",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "降噪",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "Latent",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "title": "8 steps / CFG 1 / euler / simple",
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        20260909,
+        "fixed",
+        8,
+        1,
+        "euler",
+        "simple",
+        1
+      ],
+      "widgets_values_named": {
+        "seed": 20260909,
+        "control_after_generate": "fixed",
+        "steps": 8,
+        "cfg": 1,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1
+      }
+    },
+    {
+      "id": 9,
+      "type": "VAEDecode",
+      "pos": [
+        940,
+        390
+      ],
+      "size": [
+        220,
+        50
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "Latent",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 8
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "图像",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            9,
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 10,
+      "type": "PreviewImage",
+      "pos": [
+        1280,
+        80
+      ],
+      "size": [
+        360,
+        280
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "图像",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": [],
+      "widgets_values_named": {}
+    },
+    {
+      "id": 11,
+      "type": "SaveImage",
+      "pos": [
+        1280,
+        390
+      ],
+      "size": [
+        360,
+        270
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "图片",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
+        },
+        {
+          "localized_name": "文件名前缀",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "krea2_base"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "krea2_base"
+      }
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [
+        460,
+        80
+      ],
+      "size": [
+        440,
+        220
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        },
+        {
+          "localized_name": "文本",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "条件",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            4,
+            5
+          ]
+        }
+      ],
+      "title": "Prompt（自然语言，不enhance）",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "Professional photorealistic portrait photograph, natural skin texture, vertical composition, masterpiece, best quality, very aesthetic, soft shading, 1girl, solo,  demon horns, demon wings, demon tail, black hair, long hair, golden eyes, big breasts, sexy lingerie, lace lingerie, long white thighhighs, white stockings, barefoot, both upper and lower body exposed, seductive smile, half-lidded eyes, sultry gaze, full body view, curvy body, wide hips, thick thighs, outdoors,  soft lighting, gentle light, detailed hair, detailed eyes,  elegant pose, high detail, sharp focus, cinematic composition"
+      ],
+      "widgets_values_named": {
+        "text": "Professional photorealistic portrait photograph, natural skin texture, vertical composition, masterpiece, best quality, very aesthetic, soft shading, 1girl, solo,  demon horns, demon wings, demon tail, black hair, long hair, golden eyes, big breasts, sexy lingerie, lace lingerie, long white thighhighs, white stockings, barefoot, both upper and lower body exposed, seductive smile, half-lidded eyes, sultry gaze, full body view, curvy body, wide hips, thick thighs, outdoors,  soft lighting, gentle light, detailed hair, detailed eyes,  elegant pose, high detail, sharp focus, cinematic composition"
+      },
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 2,
+      "type": "UNETLoader",
+      "pos": [
+        20,
+        80
+      ],
+      "size": [
+        400,
+        82
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "UNet名称",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "数据类型",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "模型",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "title": "Krea 2 Turbo INT8 ConvRot",
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "krea2_turbo_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "krea2_turbo_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      12,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      3,
+      0,
+      5,
+      0,
+      "CLIP"
+    ],
+    [
+      3,
+      4,
+      0,
+      9,
+      1,
+      "VAE"
+    ],
+    [
+      4,
+      5,
+      0,
+      8,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      5,
+      5,
+      0,
+      6,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      6,
+      6,
+      0,
+      8,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      7,
+      0,
+      8,
+      3,
+      "LATENT"
+    ],
+    [
+      8,
+      8,
+      0,
+      9,
+      0,
+      "LATENT"
+    ],
+    [
+      9,
+      9,
+      0,
+      11,
+      0,
+      "IMAGE"
+    ],
+    [
+      10,
+      9,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ],
+    [
+      11,
+      12,
+      0,
+      8,
+      0,
+      "MODEL"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Krea 2 Turbo 日常基础（Enhancer 可关；与 WAI 分 Queue）",
+      "bounding": [
+        0,
+        20,
+        1680,
+        620
+      ],
+      "color": "#88A",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9583200000000002,
+      "offset": [
+        415.1533568551263,
+        249.5736223923485
+      ]
+    },
+    "frontendVersion": "1.51.9"
+  },
+  "version": 0.4
+}

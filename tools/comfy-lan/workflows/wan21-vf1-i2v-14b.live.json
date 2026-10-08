@@ -1,0 +1,107 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "wan2.1_i2v_480p_14B_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "12": {
+    "class_type": "ModelSamplingSD3",
+    "inputs": {
+      "model": ["2", 0],
+      "shift": 8
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "wan_2.1_vae.safetensors"
+    }
+  },
+  "21": {
+    "class_type": "CLIPVisionLoader",
+    "inputs": {
+      "clip_name": "clip_vision_h.safetensors"
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "22": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": ["21", 0],
+      "image": ["10", 0],
+      "crop": "none"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "The video starts from the given still image and only the arms move. Same woman, same face, same short horns (black roots, red tips only, not long, not spiral, not striped), same long wavy black hair, same black evening gown, same lace high-collar bib, same black gloves ending on the forearms, same high slit with red lining only, same red high heels, same empty dark void with no ground and no stars. She slowly places both hands on her hips. Do not redraw the character. Do not change the art style. Flat hard cel color blocks like the start image.",
+      "clip": ["3", 0]
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "new character, different face, long spiral horns, striped horns, ram horns, animal ears, glowing red eyes, opera gloves, red tights, red stockings, starry sky, ground plane, landscape, ruins, vector clipart, smooth illustration, morphing, extra arms, extra legs, costume change, gold eyes, bat wings, demon tail, white lingerie, blurry, still image, worst quality",
+      "clip": ["3", 0]
+    }
+  },
+  "7": {
+    "class_type": "WanImageToVideo",
+    "inputs": {
+      "positive": ["5", 0],
+      "negative": ["6", 0],
+      "vae": ["4", 0],
+      "width": 480,
+      "height": 832,
+      "length": 17,
+      "batch_size": 1,
+      "clip_vision_output": ["22", 0],
+      "start_image": ["10", 0]
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091014,
+      "steps": 20,
+      "cfg": 5,
+      "sampler_name": "uni_pc",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": ["12", 0],
+      "positive": ["7", 0],
+      "negative": ["7", 1],
+      "latent_image": ["7", 2]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_vf1_wan14_frames",
+      "images": ["9", 0]
+    }
+  }
+}

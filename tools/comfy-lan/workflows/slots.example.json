@@ -1,0 +1,10 @@
+{
+  "_comment": "把 Comfy Save (API Format) 里的节点 ID 填进来。路径是 prompt[nodeId][inputs][field]。",
+  "seed": ["SAMPLER_NODE_ID", "inputs", "seed"],
+  "denoise": ["SAMPLER_NODE_ID", "inputs", "denoise"],
+  "ckpt": ["CKPT_NODE_ID", "inputs", "ckpt_name"],
+  "positive": ["POS_NODE_ID", "inputs", "text"],
+  "negative": ["NEG_NODE_ID", "inputs", "text"],
+  "image_idle": ["LOAD_IDLE_NODE_ID", "inputs", "image"],
+  "image_walk_a": ["LOAD_WALKA_NODE_ID", "inputs", "image"]
+}

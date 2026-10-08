@@ -27,7 +27,10 @@ export const FRAME_BY_CONTENT_ID: Readonly<Record<string, readonly string[]>> = 
   // ---- §1 角色（4）----
   hero_edmund: ['player', 'player-v', 'player-skill-a', 'player-skill-b'],
   hero_cassandra: ['hero-cassandra', 'hero-cassandra-v', 'hero-cassandra-skill-a', 'hero-cassandra-skill-b'],
-  hero_violet: ['hero-violet', 'hero-violet-v', 'hero-violet-skill-a', 'hero-violet-skill-b'],
+  hero_violet: [
+    'hero-violet', 'hero-violet-v', 'hero-violet-skill-a', 'hero-violet-skill-b',
+    'hero-violet-fallen', 'hero-violet-fallen-v',
+  ],
   hero_galvan: ['hero-galvan', 'hero-galvan-v', 'hero-galvan-skill-a', 'hero-galvan-skill-b'],
   // ---- §2 武器（14）+ 超武（7）----
   wpn_a_1: ['missile'],

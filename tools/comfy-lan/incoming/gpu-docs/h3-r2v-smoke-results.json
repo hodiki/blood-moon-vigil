@@ -1,0 +1,166 @@
+{
+  "ok": true,
+  "started": "2026-09-15T19:47:16+08:00",
+  "finished": "2026-09-15T19:50:43+08:00",
+  "prompt_id": "200aa2dc-9035-467d-8cd9-f1e99c10d659",
+  "seconds": 203.8,
+  "error": null,
+  "error_class": null,
+  "files": [
+    "video/MiniMax_H3_r2v_00001_.mp4"
+  ],
+  "status": {
+    "status_str": "success",
+    "completed": true,
+    "messages": [
+      [
+        "execution_start",
+        {
+          "prompt_id": "200aa2dc-9035-467d-8cd9-f1e99c10d659",
+          "timestamp": 1789472840089
+        }
+      ],
+      [
+        "execution_cached",
+        {
+          "nodes": [],
+          "prompt_id": "200aa2dc-9035-467d-8cd9-f1e99c10d659",
+          "timestamp": 1789472840109
+        }
+      ],
+      [
+        "execution_success",
+        {
+          "prompt_id": "200aa2dc-9035-467d-8cd9-f1e99c10d659",
+          "timestamp": 1789473042355
+        }
+      ]
+    ]
+  },
+  "rung": "r2v",
+  "spec": {
+    "width": 352,
+    "height": 608,
+    "length": 5,
+    "steps": 4,
+    "turbo": true,
+    "clip_device": "cpu",
+    "unet": "MiniMax-H3-REF2VA-Q3_K_M.gguf",
+    "clip": "qwen3vl-32B-MiniMax-H3-Q2_K.gguf",
+    "lora": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+    "seed": 20260916,
+    "prompt": "Same woman as <Picture 1>. Keep her face, black-root red-tip horns, red eyes, long wavy black hair, pale skin, black evening gown with high slit and red lining, sheer black gloves. Full body from horns to heels. Locked camera, empty studio, soft light. No wings, tail, extra people, text, logos, or subtitles. She stands in place; hair and the dress hem sway slightly. Quiet room tone.",
+    "prefix": "video/MiniMax_H3_r2v",
+    "image": "S01.png"
+  },
+  "mem": [
+    {
+      "t": "2026-09-15T19:47:19+08:00",
+      "vram_free_mb": 7004,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 531,
+      "ram_used_total_mb": "9,657/32,479",
+      "nvidia_smi": "442, 8188, 21"
+    },
+    {
+      "t": "2026-09-15T19:47:20+08:00",
+      "vram_free_mb": 7004,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 903,
+      "ram_used_total_mb": "9,690/32,479",
+      "nvidia_smi": "435, 8188, 20"
+    },
+    {
+      "t": "2026-09-15T19:47:41+08:00",
+      "vram_free_mb": 6491,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 3054,
+      "ram_used_total_mb": "11,862/32,479",
+      "nvidia_smi": "1108, 8188, 27"
+    },
+    {
+      "t": "2026-09-15T19:48:02+08:00",
+      "vram_free_mb": 6491,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 4169,
+      "ram_used_total_mb": "13,658/32,479",
+      "nvidia_smi": "1089, 8188, 20"
+    },
+    {
+      "t": "2026-09-15T19:48:22+08:00",
+      "vram_free_mb": 6491,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 5945,
+      "ram_used_total_mb": "14,867/32,479",
+      "nvidia_smi": "1089, 8188, 20"
+    },
+    {
+      "t": "2026-09-15T19:48:44+08:00",
+      "vram_free_mb": 6491,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 7049,
+      "ram_used_total_mb": "16,257/32,479",
+      "nvidia_smi": "1101, 8188, 21"
+    },
+    {
+      "t": "2026-09-15T19:49:05+08:00",
+      "vram_free_mb": 6491,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 8933,
+      "ram_used_total_mb": "17,070/32,479",
+      "nvidia_smi": "1089, 8188, 21"
+    },
+    {
+      "t": "2026-09-15T19:49:26+08:00",
+      "vram_free_mb": 2411,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 15827,
+      "ram_used_total_mb": "25,434/32,479",
+      "nvidia_smi": "5057, 8188, 36"
+    },
+    {
+      "t": "2026-09-15T19:49:47+08:00",
+      "vram_free_mb": 590,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 23957,
+      "ram_used_total_mb": "32,261/32,479",
+      "nvidia_smi": "7443, 8188, 82"
+    },
+    {
+      "t": "2026-09-15T19:50:08+08:00",
+      "vram_free_mb": 590,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24026,
+      "ram_used_total_mb": "32,174/32,479",
+      "nvidia_smi": "7443, 8188, 98"
+    },
+    {
+      "t": "2026-09-15T19:50:28+08:00",
+      "vram_free_mb": 590,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 24010,
+      "ram_used_total_mb": "31,562/32,479",
+      "nvidia_smi": "7443, 8188, 94"
+    },
+    {
+      "t": "2026-09-15T19:50:43+08:00",
+      "vram_free_mb": 1849,
+      "vram_total_mb": 8188,
+      "torch_vram_used_mb": 0,
+      "python_working_set_mb": 7755,
+      "ram_used_total_mb": "14,432/32,479",
+      "nvidia_smi": "5603, 8188, 40"
+    }
+  ]
+}

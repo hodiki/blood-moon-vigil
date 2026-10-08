@@ -5,6 +5,46 @@
 
 import { familyKey, isAnimationVariant } from './layout.mjs';
 
+/** 已过 C/E 仍 64。守誓 idle/-v/walk/skill 已过 128。魔化 idle/-v 已过 128（B-lo；族 `hero-violet-fallen`）。 */
+export const COMBAT_CANVAS = {
+  passedHero: 64,
+  newHero: 128,
+  oathkeeperLive: 48,
+  oathkeeperNew: 192,
+  worldDisplay: 128,
+};
+
+export const COMBAT_128_LOCK_PLAN = {
+  'hero-violet': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-fallen': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'summon-oathkeeper': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+};
+
+export function resizeKernel(spec) {
+  if (!spec) return 'lanczos3';
+  if (spec.kernel === 'nearest') return 'nearest';
+  if (spec.kernel === 'lanczos3') return 'lanczos3';
+  if (spec.w >= 128 && spec.atlas === 'characters') return 'nearest';
+  return 'lanczos3';
+}
+
+/** 主理人「过」并替换 PNG 之后的契约尺寸。现网 resolveFrameSpec 仍返回旧档。 */
+export function specAfterCombat128Lock(frameName) {
+  const live = resolveFrameSpec(frameName);
+  if (!live) return null;
+  const family = familyKey(frameName);
+  const planned = COMBAT_128_LOCK_PLAN[family];
+  if (!planned) return { ...live };
+  return { ...planned };
+}
+
+export function combatDisplayScale(frameW, worldPx = COMBAT_CANVAS.worldDisplay) {
+  if (!frameW) return 1;
+  if (frameW >= worldPx) return 1;
+  return worldPx / frameW;
+}
+
 // 图集 key（工程 5 图集口径）
 export const ATLAS_KEYS = ['characters', 'effects', 'ui', 'ui-portraits', 'ui-slots'];
 
@@ -20,10 +60,20 @@ const EXPLICIT = {
   'hero-cassandra-v': { w: 64, h: 64, atlas: 'characters' },
   'hero-cassandra-skill-a': { w: 64, h: 64, atlas: 'characters' },
   'hero-cassandra-skill-b': { w: 64, h: 64, atlas: 'characters' },
-  'hero-violet': { w: 64, h: 64, atlas: 'characters' },
-  'hero-violet-v': { w: 64, h: 64, atlas: 'characters' },
-  'hero-violet-skill-a': { w: 64, h: 64, atlas: 'characters' },
-  'hero-violet-skill-b': { w: 64, h: 64, atlas: 'characters' },
+  'hero-violet': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  // 技能已过 128（A1 举烛 / B2 张臂留烛，主理人 2026-09-17）。旧修女 64 退对照。
+  'hero-violet-skill-a': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-skill-b': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-walk-a': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-walk-b': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-walk-c': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-walk-d': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-walk-e': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-walk-f': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  // 魔化 idle 已过 128（B-lo）。skill / walk 跟族 128 nearest，未过不写 frames。
+  'hero-violet-fallen': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-violet-fallen-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-galvan': { w: 64, h: 64, atlas: 'characters' },
   'hero-galvan-v': { w: 64, h: 64, atlas: 'characters' },
   'hero-galvan-skill-a': { w: 64, h: 64, atlas: 'characters' },

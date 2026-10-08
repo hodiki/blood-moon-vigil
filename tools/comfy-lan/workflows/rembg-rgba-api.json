@@ -1,0 +1,22 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "e5-person.png"
+    }
+  },
+  "2": {
+    "class_type": "InspyrenetRembg",
+    "inputs": {
+      "image": ["1", 0],
+      "torchscript_jit": "default"
+    }
+  },
+  "3": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_e5_cut",
+      "images": ["2", 0]
+    }
+  }
+}

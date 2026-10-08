@@ -1,0 +1,10 @@
+C skeleton branch. Legal: passed B-lo stamp i2i + DWPose control. Not thedeoxen t2i-from-skeleton.
+
+KEEP: two horns black roots red tips; two red eyes; long wavy black hair; pale skin; black evening gown sweetheart plus lace bib/high collar; black gloves to elbow; high slit red lining; red high heels. Night void #00040C. ONE woman.
+
+C1 akimbo: control = 21-c-dwpose-akimbo.png. denoise 0.40 seed 2026091005. LoRA strength 0.85.
+C2 shift: control = 22-c-dwpose-shift.png. denoise 0.40 seed 2026091006. LoRA strength 0.85.
+
+2026-09-10 first gun failed: Krea2ControlLoRALoader wants expanded first projection (6144, 128). thedeoxen LoRA does not have it. Do not retry facok+thedeoxen. Wait A2 Ostris. Do not queue thedeoxen EmptyLatent t2i graph.
+
+Do not raise denoise. Do not hang IPA. Do not write frames/.

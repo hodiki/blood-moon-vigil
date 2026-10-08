@@ -67,6 +67,7 @@ import { loadSave, writeSave, recordMapCleared, type SaveData } from '@/stats/sa
 import { createProceduralTextures } from '@/fx/procedural-textures';
 import { sceneHasFrame } from '@/fx/external-atlas';
 import { createCharacterAnims, tickPlayer as tickPlayerAnim, tickEnemy as tickEnemyAnim, hasCharacterFrame } from '@/fx/anim';
+import { skillPoseStanceForExclusive } from '@/fx/skill-pose';
 import { FxManager } from '@/fx/fx-manager';
 import { StatusMarkerLayer } from '@/fx/status-markers';
 import { FloatTextLayer } from '@/fx/float-text';
@@ -737,6 +738,12 @@ export class PlayScene extends Phaser.Scene {
     // 1) 玩家移动（velocity 驱动，fixedStep 60Hz）+ TASK-28 idle/移动动画
     const move = this.inputSource.getMove();
     this.player.update(move, now);
+    const lanternEquipped = Boolean(
+      (this.weaponSystem.exclusiveBehaviors.xw_lantern as { isEnabled?: boolean }).isEnabled,
+    );
+    this.player.setWeaponStance(
+      skillPoseStanceForExclusive(this.player.visualFrame, lanternEquipped ? 'xw_lantern' : null),
+    );
     tickPlayerAnim(this.player);
     // P1-5 R-5 圣域重叠区：双武启用状态帧级刷新（廉价赋值；状态变化才会改变写入值）
     this.refreshSanctuaryOverlap();
@@ -905,7 +912,7 @@ export class PlayScene extends Phaser.Scene {
     this.requiemRingTimer = null;
     this.player.stats.setRageBonus(0);
     this.player.stats.rageSpeedPct = 0;
-    this.player.setScale(1);
+    this.player.setCombatRageMult(1);
     // M3 真机埋点：局终汇入经验拾取总量（xpGainedPerRun；XpManager 为唯一经验入口，须在 finish 快照前）
     this.stats.recordXpGained(this.xp.xpGained);
     const result = this.stats.finish(victory, this.spawner.elapsedSeconds);

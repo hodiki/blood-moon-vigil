@@ -2,12 +2,13 @@
 // P-1 填充装进「画布 − 2×5%边距」（描边环宽度现为 0）
 // P-2 边距量填充包围盒
 // P-3 外部 AI 轨不后置描边
-// P-4 L* 分治：玩家/召唤物须 ≥45 或高亮；其余靠剪影/体型
-// P-5 量化：同色相明度阶；角色禁止草地 token；降采样 lanczos3 后再取整，避免 nearest 椒盐
+// P-4 L* 分治：玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L* 高于敌潮基线）；其余靠剪影/体型
+// P-5 量化：14 token 锚 + §2.2 派生族（酒/巡夜/肤/橄榄/骨灰）；角色禁止草地 token
 // P-6 动画族：同一实体共用 contain 缩放（矮姿势不再撑满）；脚底对齐；成对时间轴门禁
 //
 // 用法：
 //   node process.mjs <帧名1> <帧名2> ...     # 处理指定帧（同族 raw 会一并纳入共享缩放）
+//   node process.mjs --solo <帧名>           # 只处理点名帧，不 expandToFamilies（色修 idle 用）
 //   node process.mjs --all                   # 处理 assets/raw/ 下所有已识别的原图
 //   node process.mjs --list                  # 列出全部契约帧名
 //   node process.mjs --check [帧名]          # 只校验不重处理（无帧名 = 校验已有成品 + 时间轴）
@@ -25,7 +26,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { quantizePixels, silhouetteLstats, nearestToken, luminanceL } from './tokens.mjs';
-import { resolveFrameSpec, isKnownFrame, allFrameNames } from './frame-specs.mjs';
+import { resolveFrameSpec, isKnownFrame, allFrameNames, resizeKernel } from './frame-specs.mjs';
 import {
   familyKey,
   silhouetteMetrics,
@@ -370,7 +371,7 @@ async function rasterEntity(prep, sharedScale) {
   const th = Math.max(1, Math.round(prep.crop.height * sharedScale));
   const fitted = await sharp(cutData, { raw: { width: cutInfo.width, height: cutInfo.height, channels: 4 } })
     .extract(prep.crop)
-    .resize(tw, th, { fit: 'fill', kernel: 'lanczos3' })
+    .resize(tw, th, { fit: 'fill', kernel: resizeKernel(spec) })
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
@@ -585,8 +586,10 @@ function validate(frameName, data, info, spec, { entry = {}, method = null } = {
     let ok;
     let note;
     if (isPlayerLike) {
-      ok = !!(lstat && (lstat.avg >= 45 || brightRatio >= 0.03));
-      note = '玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免';
+      // 方案 B：大衣可有色，不再要求「银主体」。敌潮基线 ≈ 现网普通敌均 L*
+      const ENEMY_L_BASELINE = 18;
+      ok = !!(lstat && (lstat.avg >= 45 || brightRatio >= 0.03 || lstat.avg > ENEMY_L_BASELINE));
+      note = '玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮';
     } else if (isOrdinaryEnemy) {
       ok = true;
       note = '暗红普通敌 L*豁免（靠剪影形状）';
@@ -603,7 +606,7 @@ function validate(frameName, data, info, spec, { entry = {}, method = null } = {
       note
     };
     if (!checks.luminance.ok) {
-      issues.push(`剪影 L* ${lstat ? lstat.avg.toFixed(1) : 'N/A'} < 45 且高亮 ${(brightRatio * 100).toFixed(1)}% < 3%（玩家/召唤物不可用描边豁免）`);
+      issues.push(`剪影 L* ${lstat ? lstat.avg.toFixed(1) : 'N/A'} 未高于敌潮且高亮 ${(brightRatio * 100).toFixed(1)}% < 3%`);
     }
     if (!lstat) issues.push('无可统计像素');
   } else {
@@ -653,12 +656,15 @@ async function main() {
   if (frameArgs.length === 0) {
     console.log(`用法：
   node process.mjs <帧名>...      处理指定帧（同族 raw 一并纳入共享缩放）
+  node process.mjs --solo <帧名>  只处理点名帧（不纳入 walk/skill）
   node process.mjs --all          批量处理 assets/raw/
   node process.mjs --list         列出契约帧名
   node process.mjs --check [帧名] 校验已有产物（无帧名 = 全部成品 + 时间轴）`);
     return;
   }
-  await runBatch(expandToFamilies(frameArgs));
+  const names = args.includes('--solo') ? frameArgs : expandToFamilies(frameArgs);
+  if (args.includes('--solo')) log('solo', `不扩展同族：${names.join(' ')}`);
+  await runBatch(names);
 }
 
 function roundMetrics(m) {

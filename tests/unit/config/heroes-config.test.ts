@@ -33,7 +33,7 @@ const EXPECTED_GROWTH: Array<{
 }> = [
   { hero: 'hero_edmund', name: '守夜人·艾德蒙', initialHp: 100, hpPerLevel: 8, initialSpeed: 220, speedEveryNLevels: 5, speedPerStep: 4, damagePctPerLevel: 0.04, initialWeapon: 'wpn_a_1', powerTag: 'HALLOWED' },
   { hero: 'hero_cassandra', name: '血猎手·卡珊德拉', initialHp: 85, hpPerLevel: 6, initialSpeed: 245, speedEveryNLevels: 4, speedPerStep: 4, damagePctPerLevel: 0.04, initialWeapon: 'wpn_a_2', powerTag: 'SILVER' },
-  { hero: 'hero_violet', name: '夜祷修女·薇奥莱', initialHp: 115, hpPerLevel: 10, initialSpeed: 205, speedEveryNLevels: 6, speedPerStep: 4, damagePctPerLevel: 0.04, initialWeapon: 'wpn_a_3', powerTag: 'HALLOWED' },
+  { hero: 'hero_violet', name: '秉烛人·薇奥莱', initialHp: 115, hpPerLevel: 10, initialSpeed: 205, speedEveryNLevels: 6, speedPerStep: 4, damagePctPerLevel: 0.04, initialWeapon: 'wpn_a_3', powerTag: 'HALLOWED' },
   { hero: 'hero_galvan', name: '狼裔·加尔文', initialHp: 125, hpPerLevel: 12, initialSpeed: 215, speedEveryNLevels: 5, speedPerStep: 4, damagePctPerLevel: 0.04, initialWeapon: 'wpn_d_2', powerTag: 'BEAST' },
 ];
 
@@ -93,10 +93,10 @@ describe('E1-S6 主动技关联（HEROES.activeSkillName ↔ ACTIVE_SKILLS 跨�
     }
   });
 
-  it('技能名锚点：提灯闪耀 / 血影突袭 / 安魂曲 / 血月狂化', () => {
+  it('技能名锚点：提灯闪耀 / 血影突袭 / 誓约回响 / 血月狂化', () => {
     expect(HEROES.hero_edmund.activeSkillName).toBe('提灯闪耀');
     expect(HEROES.hero_cassandra.activeSkillName).toBe('血影突袭');
-    expect(HEROES.hero_violet.activeSkillName).toBe('安魂曲');
+    expect(HEROES.hero_violet.activeSkillName).toBe('誓约回响');
     expect(HEROES.hero_galvan.activeSkillName).toBe('血月狂化');
   });
 });

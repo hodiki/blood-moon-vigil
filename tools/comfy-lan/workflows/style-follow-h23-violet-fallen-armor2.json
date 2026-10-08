@@ -1,0 +1,91 @@
+{
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    }
+  },
+  "17": {
+    "class_type": "CLIPSetLastLayer",
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": ["4", 1]
+    }
+  },
+  "12": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "vf-gpt-e-face.png"
+    }
+  },
+  "11": {
+    "class_type": "IPAdapterUnifiedLoader",
+    "inputs": {
+      "model": ["4", 0],
+      "preset": "PLUS (high strength)"
+    }
+  },
+  "10": {
+    "class_type": "IPAdapter",
+    "inputs": {
+      "model": ["11", 0],
+      "ipadapter": ["11", 1],
+      "image": ["12", 0],
+      "weight": 0.55,
+      "start_at": 0.0,
+      "end_at": 0.35,
+      "weight_type": "prompt is more important"
+    }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "masterpiece, best quality, amazing quality, very aesthetic, newest, 1girl, solo, adult woman, succubus, demon girl, two horns, messy dark wavy hair, dark armor, black plate armor, demonic armor, dark navy armor, glossy metal, shoulder armor, horned pauldron, sharp plates, gauntlets, high-cut armor, thigh gap, armored leotard, fitted, slim waist, wide hips, lidded eyes, looking at viewer, full body, standing, simple background, solid color background",
+      "clip": ["17", 0]
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "gown, evening dress, lace, wedding, nun, candle, silver armor, gold armor, wine-red coat, silver ponytail, knight, wings, hourglass, floating eyes, scared, young child, extra limbs, extra digits, lowres, worst quality, nsfw, nude, scenery",
+      "clip": ["17", 0]
+    }
+  },
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609501,
+      "steps": 28,
+      "cfg": 6,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": ["10", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_style_vf_armor2",
+      "images": ["8", 0]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+C I2V backup. Do not Queue until ImageOnlyCheckpointLoader lists svd_xt*.safetensors.
+
+Input: passed B-lo stamp 12-idle-blo-passed-stamp.png (512x1024).
+Output: 8 frame PNGs 576x1024. Pick files *00003* and *00007* (1-based frames 3 and 7), nearest-neighbor box 128.
+
+576x1024, 8 frames, motion_bucket 70, fps 6, euler+karras 20 steps, CFG 2.5.
+8GB: keep --lowvram. Do not also load WAI/Krea in the same Queue. POST /free first.
+
+SVD mostly breathes / pans. Not a hands-on-hips author.
+Do not write frames/.

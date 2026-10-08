@@ -1,0 +1,118 @@
+﻿{
+    "DWPreprocessor":  {
+                           "input":  {
+                                         "required":  {
+                                                          "image":  [
+                                                                        "IMAGE"
+                                                                    ]
+                                                      },
+                                         "optional":  {
+                                                          "detect_hand":  [
+                                                                              [
+                                                                                  "enable",
+                                                                                  "disable"
+                                                                              ],
+                                                                              {
+                                                                                  "default":  "enable"
+                                                                              }
+                                                                          ],
+                                                          "detect_body":  [
+                                                                              [
+                                                                                  "enable",
+                                                                                  "disable"
+                                                                              ],
+                                                                              {
+                                                                                  "default":  "enable"
+                                                                              }
+                                                                          ],
+                                                          "detect_face":  [
+                                                                              [
+                                                                                  "enable",
+                                                                                  "disable"
+                                                                              ],
+                                                                              {
+                                                                                  "default":  "enable"
+                                                                              }
+                                                                          ],
+                                                          "resolution":  [
+                                                                             "INT",
+                                                                             {
+                                                                                 "default":  512,
+                                                                                 "min":  64,
+                                                                                 "max":  16384,
+                                                                                 "step":  64
+                                                                             }
+                                                                         ],
+                                                          "bbox_detector":  [
+                                                                                [
+                                                                                    "None",
+                                                                                    "yolox_l.torchscript.pt",
+                                                                                    "yolox_l.onnx",
+                                                                                    "yolo_nas_l_fp16.onnx",
+                                                                                    "yolo_nas_m_fp16.onnx",
+                                                                                    "yolo_nas_s_fp16.onnx"
+                                                                                ],
+                                                                                {
+                                                                                    "default":  "yolox_l.onnx"
+                                                                                }
+                                                                            ],
+                                                          "pose_estimator":  [
+                                                                                 [
+                                                                                     "dw-ll_ucoco_384_bs5.torchscript.pt",
+                                                                                     "dw-ll_ucoco_384.onnx",
+                                                                                     "dw-ll_ucoco.onnx"
+                                                                                 ],
+                                                                                 {
+                                                                                     "default":  "dw-ll_ucoco_384_bs5.torchscript.pt"
+                                                                                 }
+                                                                             ],
+                                                          "scale_stick_for_xinsr_cn":  [
+                                                                                           [
+                                                                                               "disable",
+                                                                                               "enable"
+                                                                                           ],
+                                                                                           {
+                                                                                               "default":  "disable"
+                                                                                           }
+                                                                                       ]
+                                                      }
+                                     },
+                           "input_order":  {
+                                               "required":  [
+                                                                "image"
+                                                            ],
+                                               "optional":  [
+                                                                "detect_hand",
+                                                                "detect_body",
+                                                                "detect_face",
+                                                                "resolution",
+                                                                "bbox_detector",
+                                                                "pose_estimator",
+                                                                "scale_stick_for_xinsr_cn"
+                                                            ]
+                                           },
+                           "is_input_list":  false,
+                           "output":  [
+                                          "IMAGE",
+                                          "POSE_KEYPOINT"
+                                      ],
+                           "output_is_list":  [
+                                                  false,
+                                                  false
+                                              ],
+                           "output_name":  [
+                                               "IMAGE",
+                                               "POSE_KEYPOINT"
+                                           ],
+                           "name":  "DWPreprocessor",
+                           "display_name":  "DWPose Estimator",
+                           "description":  "",
+                           "python_module":  "custom_nodes.comfyui_controlnet_aux",
+                           "category":  "ControlNet Preprocessors/Faces and Poses Estimators",
+                           "output_node":  false,
+                           "has_intermediate_output":  false,
+                           "search_aliases":  [
+
+                                              ]
+                       }
+}

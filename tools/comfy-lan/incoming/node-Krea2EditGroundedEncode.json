@@ -1,0 +1,79 @@
+﻿{
+    "Krea2EditGroundedEncode":  {
+                                    "input":  {
+                                                  "required":  {
+                                                                   "clip":  [
+                                                                                "CLIP"
+                                                                            ],
+                                                                   "prompt":  [
+                                                                                  "STRING",
+                                                                                  {
+                                                                                      "multiline":  true,
+                                                                                      "default":  ""
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                  "optional":  {
+                                                                   "image":  [
+                                                                                 "IMAGE"
+                                                                             ],
+                                                                   "image_b":  [
+                                                                                   "IMAGE",
+                                                                                   {
+                                                                                       "tooltip":  "2nd reference (subject) for multi-ref LoRAs; vision blocks in training order: scene, subject"
+                                                                                   }
+                                                                               ],
+                                                                   "grounding_px":  [
+                                                                                        "INT",
+                                                                                        {
+                                                                                            "default":  768,
+                                                                                            "min":  0,
+                                                                                            "max":  4096,
+                                                                                            "step":  64,
+                                                                                            "tooltip":  "cap longest side fed to Qwen3-VL; 0 = native"
+                                                                                        }
+                                                                                    ],
+                                                                   "system_prompt":  [
+                                                                                         "STRING",
+                                                                                         {
+                                                                                             "multiline":  true,
+                                                                                             "default":  "",
+                                                                                             "tooltip":  "advanced (optional): override the grounding system prompt (empty = training default). Steers what the vision encoder attends to, e.g. facial identity detail."
+                                                                                         }
+                                                                                     ]
+                                                               }
+                                              },
+                                    "input_order":  {
+                                                        "required":  [
+                                                                         "clip",
+                                                                         "prompt"
+                                                                     ],
+                                                        "optional":  [
+                                                                         "image",
+                                                                         "image_b",
+                                                                         "grounding_px",
+                                                                         "system_prompt"
+                                                                     ]
+                                                    },
+                                    "is_input_list":  false,
+                                    "output":  [
+                                                   "CONDITIONING"
+                                               ],
+                                    "output_is_list":  [
+                                                           false
+                                                       ],
+                                    "output_name":  [
+                                                        "CONDITIONING"
+                                                    ],
+                                    "name":  "Krea2EditGroundedEncode",
+                                    "display_name":  "Krea2 Edit (grounded encode)",
+                                    "description":  "Encodes the edit instruction grounded on the source image (training-matched semantic path).",
+                                    "python_module":  "custom_nodes.comfyui-krea2edit",
+                                    "category":  "krea2edit",
+                                    "output_node":  false,
+                                    "has_intermediate_output":  false,
+                                    "search_aliases":  [
+
+                                                       ]
+                                }
+}

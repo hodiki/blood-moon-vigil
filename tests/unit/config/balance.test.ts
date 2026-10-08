@@ -36,6 +36,7 @@ describe('balance 数值常量表与 GDD 一致（test-framework §4 埋点断�
     expect(PALETTE.baseLight).toBe('#131722');
     expect(PALETTE.player).toBe('#E8F0FA');
     expect(PALETTE.playerAccent).toBe('#54E6C9');
+    expect(PALETTE.amber).toBe('#FFC93C');
     expect(PALETTE.blocker).toBe('#2A3346');
     expect(PALETTE.danger).toBe('#FF3B30');
   });

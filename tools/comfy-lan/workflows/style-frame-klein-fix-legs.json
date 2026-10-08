@@ -1,0 +1,134 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "flux-2-klein-4b.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_4b.safetensors",
+      "type": "flux2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    }
+  },
+  "16": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "17": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "upscale_method": "lanczos",
+      "width": 768,
+      "height": 1344,
+      "crop": "disabled",
+      "image": ["16", 0]
+    }
+  },
+  "18": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": ["17", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "Keep the head, face, both eyes, hair, wine-red coat, black turtleneck, white chest cross, belts and chains exactly as they are. Do not change the eyes. Do not make one eye bigger. Only rewrite the lower body: feminine slim thighs, a visible hip curve, calves tapering to a thin ankle, not masculine thick legs, not column-like boots, not a wide planted stance. Knee-high pointed black leather high-heeled long boots, a thin stiletto heel at the back, empty space under the arch of the foot, no flat sole, no round-toe combat boots. The wine-red coat hem stops at mid-calf so the ankles and heels are clearly visible. Full-body standing, three-quarter view, empty hands, void black background, no text.",
+      "clip": ["3", 0]
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": ["5", 0]
+    }
+  },
+  "19": {
+    "class_type": "ReferenceLatent",
+    "inputs": {
+      "conditioning": ["5", 0],
+      "latent": ["18", 0]
+    }
+  },
+  "20": {
+    "class_type": "ReferenceLatent",
+    "inputs": {
+      "conditioning": ["6", 0],
+      "latent": ["18", 0]
+    }
+  },
+  "7": {
+    "class_type": "EmptyFlux2LatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "CFGGuider",
+    "inputs": {
+      "cfg": 1,
+      "model": ["2", 0],
+      "positive": ["19", 0],
+      "negative": ["20", 0]
+    }
+  },
+  "9": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "euler"
+    }
+  },
+  "10": {
+    "class_type": "Flux2Scheduler",
+    "inputs": {
+      "steps": 4,
+      "width": 768,
+      "height": 1344
+    }
+  },
+  "11": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 202609087
+    }
+  },
+  "12": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": ["11", 0],
+      "guider": ["8", 0],
+      "sampler": ["9", 0],
+      "sigmas": ["10", 0],
+      "latent_image": ["7", 0]
+    }
+  },
+  "13": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["12", 0],
+      "vae": ["4", 0]
+    }
+  },
+  "15": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_style_c_klein_legs",
+      "images": ["13", 0]
+    }
+  }
+}

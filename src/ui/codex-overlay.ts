@@ -559,11 +559,11 @@ export function detailFor(entry: CodexEntry): { label: string; value: string }[]
       return [
         { label: '名讳', value: `${arch.name}（${arch.enName}）` },
         { label: '阵营', value: arch.faction },
-        { label: '力量', value: NP[arch.powerTag] },
+        { label: '力量', value: arch.powerTags.map((t) => NP[t]).join(' / ') },
         { label: '身份', value: arch.identity },
         { label: '背景', value: arch.background },
-        { label: '主动技', value: `${arch.activeSkill.name} —— ${arch.activeSkill.desc}` },
-        { label: '初始武器', value: `${arch.initialWeapon.name} —— ${arch.initialWeapon.desc}` },
+        { label: '专武', value: arch.exclusiveWeapons.map((w) => `${w.name} —— ${w.desc}`).join('　') },
+        { label: '衍生技', value: arch.derivedSkills.map((s) => `${s.name} —— ${s.desc}`).join('　') },
         { label: '台词', value: `入场「${arch.lines.enter}」／濒死「${arch.lines.dying}」／死亡「${arch.lines.death}」` },
         { label: '解锁条件', value: arch.unlock },
       ];

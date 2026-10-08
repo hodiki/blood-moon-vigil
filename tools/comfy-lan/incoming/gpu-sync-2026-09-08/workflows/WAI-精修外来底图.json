@@ -1,0 +1,202 @@
+{
+  "id": "wai-refine-external",
+  "revision": 0,
+  "last_node_id": 20,
+  "last_link_id": 30,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [-500, 80],
+      "size": [460, 480],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "外来底图 → WAI 精修",
+      "properties": {},
+      "widgets_values": [
+        "## 配合方式（两段，两引擎）\n\n1. 先用 `FLUX2-Klein4B-个人学习.json` 出底（或任何已有图）\n2. **换到这张图**，Load Image 选那张底\n3. Queue（只有 WAI，不加载 Klein）\n\n这样 8GB 不会同时扛两个引擎。采样仍是 WAI：Euler a、CFG 6、denoise 0.35–0.5。\n\n**没有改** `WAI-底图加精修.json`。那张仍是 WAI 自己两轮。\n\n提示词用 Danbooru + `docs/提示词预设.txt`，不要把 Klein 的长散文整段贴进来。"
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [20, 80],
+      "size": [340, 320],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [1] },
+        { "name": "MASK", "type": "MASK", "links": null }
+      ],
+      "title": "外来底图（Klein 或其它）",
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["ref_character.png", "image"]
+    },
+    {
+      "id": 3,
+      "type": "ImageScale",
+      "pos": [20, 440],
+      "size": [340, 130],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [{ "name": "image", "type": "IMAGE", "link": 1 }],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [2] }],
+      "title": "收到 832×1216 再修",
+      "properties": { "Node name for S&R": "ImageScale" },
+      "widgets_values": ["lanczos", 832, 1216, "center"]
+    },
+    {
+      "id": 4,
+      "type": "CheckpointLoaderSimple",
+      "pos": [400, 80],
+      "size": [340, 110],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [3] },
+        { "name": "CLIP", "type": "CLIP", "links": [4] },
+        { "name": "VAE", "type": "VAE", "links": [5, 6] }
+      ],
+      "properties": { "Node name for S&R": "CheckpointLoaderSimple" },
+      "widgets_values": ["waiIllustriousSDXL_v170.safetensors"]
+    },
+    {
+      "id": 5,
+      "type": "CLIPSetLastLayer",
+      "pos": [400, 230],
+      "size": [340, 70],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 4 }],
+      "outputs": [{ "name": "CLIP", "type": "CLIP", "links": [7, 8] }],
+      "title": "CLIP Skip 2",
+      "properties": { "Node name for S&R": "CLIPSetLastLayer" },
+      "widgets_values": [-2]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [780, 80],
+      "size": [380, 160],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 7 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [9] }],
+      "title": "Positive（WAI 标签）",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": [
+        "masterpiece, best quality, general, cinematic lighting, rim light, detailed shading, oil painting (medium), indoor, window light"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [780, 280],
+      "size": [380, 110],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 8 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [10] }],
+      "title": "Negative",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": ["lowres, worst quality, bad anatomy, extra digits, flat lighting"],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 8,
+      "type": "VAEEncode",
+      "pos": [400, 340],
+      "size": [220, 50],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "name": "pixels", "type": "IMAGE", "link": 2 },
+        { "name": "vae", "type": "VAE", "link": 5 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [11] }],
+      "properties": { "Node name for S&R": "VAEEncode" }
+    },
+    {
+      "id": 9,
+      "type": "KSampler",
+      "pos": [1200, 80],
+      "size": [290, 270],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 3 },
+        { "name": "positive", "type": "CONDITIONING", "link": 9 },
+        { "name": "negative", "type": "CONDITIONING", "link": 10 },
+        { "name": "latent_image", "type": "LATENT", "link": 11 }
+      ],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [12] }],
+      "title": "WAI 精修 denoise 0.4",
+      "properties": { "Node name for S&R": "KSampler" },
+      "widgets_values": [170020, "randomize", 18, 6, "euler_ancestral", "normal", 0.4]
+    },
+    {
+      "id": 10,
+      "type": "VAEDecode",
+      "pos": [1540, 80],
+      "size": [220, 50],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 12 },
+        { "name": "vae", "type": "VAE", "link": 6 }
+      ],
+      "outputs": [{ "name": "IMAGE", "type": "IMAGE", "links": [13] }],
+      "properties": { "Node name for S&R": "VAEDecode" }
+    },
+    {
+      "id": 11,
+      "type": "SaveImage",
+      "pos": [1540, 170],
+      "size": [360, 280],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 13 }],
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["wai_from_ext"]
+    }
+  ],
+  "links": [
+    [1, 2, 0, 3, 0, "IMAGE"],
+    [2, 3, 0, 8, 0, "IMAGE"],
+    [3, 4, 0, 9, 0, "MODEL"],
+    [4, 4, 1, 5, 0, "CLIP"],
+    [5, 4, 2, 8, 1, "VAE"],
+    [6, 4, 2, 10, 1, "VAE"],
+    [7, 5, 0, 6, 0, "CLIP"],
+    [8, 5, 0, 7, 0, "CLIP"],
+    [9, 6, 0, 9, 1, "CONDITIONING"],
+    [10, 7, 0, 9, 2, "CONDITIONING"],
+    [11, 8, 0, 9, 3, "LATENT"],
+    [12, 9, 0, 10, 0, "LATENT"],
+    [13, 10, 0, 11, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": { "ds": { "scale": 0.72, "offset": [520, 40] }, "frontendVersion": "1.51.9" },
+  "version": 0.4
+}

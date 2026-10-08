@@ -49,7 +49,7 @@ describe('W-4 承伤转移 50%→65%（R-5 圣域叠加 = mc_bell_2 machine 参�
     const rt = new OathkeeperRuntime(80, 0);
     rt.setEnabled(true);
     expect(rt.routePlayerHurt(20, 10, player)).toBeCloseTo(10, 6); // 50% 转移
-    expect(rt.state.hp).toBe(200 - 10); // 守誓者承伤 10
+    expect(rt.state.hp).toBeCloseTo(172.5 - 10); // 守誓者承伤 10（基数 115 ×150% = 172.5）
   });
 
   it('mc_bell_2（质变卡 2）→ 65% 转移（R-5 口径经 machine 覆写自动生效）', () => {
@@ -57,7 +57,7 @@ describe('W-4 承伤转移 50%→65%（R-5 圣域叠加 = mc_bell_2 machine 参�
     rt.setEnabled(true);
     applyCompanionMachine(rt.state, { transferPct: 0.65 });
     expect(rt.routePlayerHurt(20, 10, player)).toBeCloseTo(7, 6); // 65% 转移
-    expect(rt.state.hp).toBe(200 - 13);
+    expect(rt.state.hp).toBeCloseTo(172.5 - 13);
   });
 
   it('替身圈外 → 全额承受（不转移）', () => {

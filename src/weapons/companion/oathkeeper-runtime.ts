@@ -18,6 +18,7 @@ import {
   fillReviveProgress,
   oathkeeperHealFull,
   oathkeeperTargetable,
+  syncOathkeeperMaxHp,
   tickBite,
   tickResummon,
   tickTombstone,
@@ -46,8 +47,16 @@ export class OathkeeperRuntime {
   readonly state: OathkeeperState;
   private enabled = false;
 
-  constructor(x = 0, y = 0) {
-    this.state = createOathkeeperState(x, y);
+  constructor(x = 0, y = 0, playerMaxHp?: number) {
+    this.state = createOathkeeperState(x, y, playerMaxHp);
+  }
+
+  /**
+   * EN-06 动态跟随：以玩家「当局当前」最大生命同步守誓者上限（×150%，**非入场快照**）。
+   * 调用方（PlayScene 开局/升级）在玩家最大生命变化时调用——接线待补（见工程批A执行报告）。
+   */
+  syncMaxHp(playerMaxHp: number): void {
+    syncOathkeeperMaxHp(this.state, playerMaxHp);
   }
 
   /** FQ-2 启用判定（修女 + 圣铃开局自带；PlayScene create 末尾调用） */

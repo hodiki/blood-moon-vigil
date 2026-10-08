@@ -29,3 +29,32 @@ tmp/
 .vscode/
 .idea/
 tools/sim/output/
+
+# 局域网 Comfy 握手与探测（含本机 IP）
+tools/comfy-lan/incoming/handshake.json
+tools/comfy-lan/incoming/client-env.json
+tools/comfy-lan/incoming/last-ping.json
+tools/comfy-lan/incoming/last-job.json
+
+# codebase-memory-mcp 知识图谱工件（本地生成，不入库）
+.codebase-memory/
+
+# ============================================================
+# 美术产线过程档（2026-10-08 主理人批准）
+# 原则：入库「交付物 + 锁稿 + 文档」，不入库「GPU 作业输出 / 过目过程 / 数据集 / 预览档」。
+# 以下目录合计约 1.4 GB，均为可重跑或可再生的过程产物，留在本机不进 git 历史。
+# ============================================================
+
+# 角色目录过程档（characters/ 下的交付帧仍在 assets/frames/，不受影响）
+# 用 **/ 覆盖嵌套层（如 characters/<id>/portraits/_park/）
+characters/**/_park/
+characters/**/review/
+characters/**/lora/
+characters/**/video/
+characters/**/identity/face-gate/
+
+# UI 菜单预览档（顶层 ui-menu-*.png 仍需入库，仅排除 preview/ 过程档）
+assets/ui-menu/preview/
+
+# 局域网 Comfy 工具链的本机 ffmpeg 二进制（ffmpeg-static 安装产物）
+tools/comfy-lan/.ffmpeg/

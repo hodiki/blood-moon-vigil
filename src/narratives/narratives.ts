@@ -1,15 +1,21 @@
 /**
- * narratives/narratives.ts —— 轻叙事文本表数据层（narrative-framework v1.1 / narratives-spec v1.0 终稿）
+ * narratives/narratives.ts —— 轻叙事文本表数据层（narrative-framework v1.5 / narratives-spec v1.4 终稿）
  *
- * 设计源头：`design/official-v1/narratives-spec.md`（M3-DESIGN-2 文本表终稿）
- * - 42 条文本条目（台词 30 / 序章 4 / 结算标题 2 / 事件档案 6）+ 8 档案对象（角色 4 / Boss 4）。
+ * 设计源头：`design/official-v1/narratives-spec.md`（v1.4 文本表终稿）
+ * - 目标 45 条文本条目（台词 33 / 序章 4 / 结算标题 2 / 事件档案 6）+ 14 档案对象
+ *   （角色 4 / Boss 4 / 独立实体 1 / 圣物 5）。
+ *   ⚠ 本批（NV-ENG-EXEC-02）只落 schema 地基：**新条目待人工文案落表**——圣物释放 ×5 / 共鸣寻获 ×1 /
+ *   薇奥莱双路线变体 ×2（§7）/ 守誓者实体档案 ×1 / 圣物档案 ×5（§4A）。故实际计数暂低于红线目标，
+ *   属**预期缺口**：目标常量见 `TARGET_DIALOGUE_LINE_COUNT` / `TARGET_TEXT_ENTRY_COUNT` /
+ *   `TARGET_ARCHIVE_COUNT`，实际计数由 `dialogueLineCount()` / `textEntryCount()` / `archiveCount()` 现算。
  * - 数据驱动纪律：全部文案进本表（`NARRATIVES`）+ 档案常量（`HERO_ARCHIVES` / `BOSS_ARCHIVES` /
- *   `EVENT_ARCHIVES`），工程读取渲染，**禁止在组件/分发器内硬编码文案**（spec §1.1）。
+ *   `EVENT_ARCHIVES` / `ENTITY_ARCHIVES` / `RELIC_ARCHIVES`），工程读取渲染，
+ *   **禁止在组件/分发器内硬编码文案**（spec §1.1）。
  * - 专有名词拼写表（spec §10 / world-bible §7 对齐）导出 `NP` 常量，UI/图鉴/结算统一引用，
  *   禁止手写变体（consistency-anchors A4）。
  * - 时长口径（spec §1.2）：`max(字数×0.25, 下限)` 四舍五入至 0.1s；序章/开局固定 3s；
- *   Boss 登场 `max(×0.25, 3.0)s`；侧边浮字 `max(×0.25, 1.0)s` 上限 3s；进化播报固定 2.5s；
- *   结算标题常驻 0。
+ *   Boss 登场 `max(×0.25, 3.0)s`；侧边浮字 `max(×0.25, 1.0)s` 上限 3s；
+ *   圣物释放/共鸣寻获固定 2.5s（moment 读出节奏）；结算标题常驻 0。
  * - 双端约束（spec §1.3/§11）：移动单行 ≤14 字（折行兜底）；移动字号 ≥16px 物理——
  *   设计字号 = `16/scale` 向上取整（`designFontSizeForPhysical`），overlay 经 overlay-scale 注入
  *   `--bmv-overlay-scale` 后在 CSS 侧保证（narrative-overlays.ts）。
@@ -17,20 +23,22 @@
  * 本模块为纯数据层（无 DOM、无 Phaser），可脱离环境单测（test-framework §1.2）。
  */
 
-import { EVOLUTIONS, WEAPON_CONFIGS, type EvoId, type WeaponId } from '@/config/balance';
+import { WEAPON_CONFIGS, type WeaponId } from '@/config/balance';
 
-export type PowerTag = 'HALLOWED' | 'SILVER' | 'BLOOD' | 'BEAST' | 'MOON';
+export type PowerTag = 'HALLOWED' | 'SILVER' | 'BLOOD' | 'BEAST' | 'MOON' | 'BONE';
 
 /** 渲染形式（spec §1.4 五形态；横幅含 top/bottom 位置变体，不新增形式类） */
 export type NarrativeForm = 'top-banner' | 'bottom-banner' | 'side-toast' | 'center-gold' | 'result-title';
 
-/** 内容语境（spec §2 NarrativeContext） */
-export type NarrativeContext = 'prologue' | 'hero' | 'boss' | 'toast' | 'evolution' | 'result' | 'event';
+/** 内容语境（spec §2 NarrativeContext v1.2：去 evolution，增 relic/resonance） */
+export type NarrativeContext = 'prologue' | 'hero' | 'boss' | 'toast' | 'relic' | 'resonance' | 'result' | 'event';
 
 /**
  * 触发场景（spec §2 trigger 列；分发器按 trigger 路由事件）。
- * - 同 trigger 多条 = 随机取一（`map-open` 除外：按 payload.mapId 选择当前地图序章句）。
- * - `boss:spawned(boss_X)` / `evolution:<tag>` / `new-weapon:<tag>` 为携带细分条件的触发键。
+ * - 同 trigger 多条 = 随机取一（`map-open` / `relic:released` 除外：按 payload 选择具体条目）。
+ * - `boss:spawned(boss_X)` / `new-weapon:<tag>` 为携带细分条件的触发键。
+ * - v1.2：**移除全部 `evolution:*`**（超武/进化机制退役，spec §7「整体废止」，触发基础不复存在）；
+ *   增 `relic:released`（圣物释放）/ `resonance:get`（共鸣寻获）。
  */
 export type NarrativeTrigger =
   /** 开局横幅（地图序章句；spec §3 开局 5s） */
@@ -50,12 +58,10 @@ export type NarrativeTrigger =
   | 'boss:spawned(boss_4)'
   /** 图鉴新条目（side-toast；同帧合并 1 条） */
   | 'codex-updated'
-  /** 进化播报（center-gold，按主武器 powerTag 分句） */
-  | 'evolution:hallowed'
-  | 'evolution:silver'
-  | 'evolution:blood'
-  | 'evolution:beast'
-  | 'evolution:moon';
+  /** 圣物释放播报（center-gold 固定 2.5s；按 payload.relicId 选择对应圣物句，spec §7） */
+  | 'relic:released'
+  /** 共鸣寻获播报（center-gold 固定 2.5s；形态原子切换后 0.2s，spec §7） */
+  | 'resonance:get';
 
 /** 移动端约束（spec §2 mobile：单行上限 / 物理字号目标 px） */
 export interface NarrativeMobile {
@@ -81,24 +87,50 @@ export interface NarrativeText {
   trigger: string;
   /** 移动端约束 */
   mobile: NarrativeMobile;
-  /** 例外标注（仅薇奥莱濒死台词 religious-word-exception） */
-  exception?: string;
+  // v1.2 SC-07：`exception?` 字段删除（去圣职化后无例外口径，spec §13-7「无宗教实指（无例外）」）。
 }
 
-/** 角色档案（spec §2 HeroArchiveText / §4；供图鉴/选人界面） */
+/**
+ * 角色档案（spec §2 HeroArchiveText / §4；v1.2 双专武模型；供图鉴/选人界面）。
+ * v1.2：单 `powerTag` → `powerTags[]`（双专武双标签）；`activeSkill` + `initialWeapon` 单模型
+ * → `exclusiveWeapons[]`（专武 ×2，开局 2 选 1）+ `derivedSkills[]`（落选专武转化，同序对应）；
+ * 增 `companionKey?`（伴生实体引用）/ `routeVariants?`（双路线入场变体）；去 `exception`。
+ */
 export interface HeroArchiveText {
   key: string; // hero_<id>
   name: string;
   enName: string;
   faction: string;
+  powerTags: PowerTag[]; // 双专武双标签（如艾德蒙 ['MOON','SILVER']）
+  identity: string; // 一句话（与选人立绘符号对齐）
+  background: string; // ≤80 字
+  exclusiveWeapons: { name: string; desc: string }[]; // 专武 ×2，开局 2 选 1 不可反悔
+  derivedSkills: { name: string; desc: string }[]; // 衍生技（落选专武转化，同序对应）
+  companionKey?: string; // 伴生实体引用（薇奥莱 → entity_oathkeeper）
+  lines: { enter: string; dying: string; death: string }; // ≤20 字/条
+  routeVariants?: { route: 'oath' | 'corruption'; enterLine: string }[]; // 双路线入场变体（仅薇奥莱）
+  unlock: string;
+}
+
+/** 独立实体档案（spec §2 EntityArchiveText / §4A；图鉴独立条目，守誓者等） */
+export interface EntityArchiveText {
+  key: string; // entity_<id>
+  name: string;
+  enName?: string;
   powerTag: PowerTag;
   identity: string; // 一句话
-  background: string; // ≤80 字（加尔文 85 见 spec §4.4 注，待批）
-  activeSkill: { name: string; desc: string };
-  initialWeapon: { name: string; desc: string };
-  lines: { enter: string; dying: string; death: string }; // ≤20 字/条
+  background: string; // ≤100 字
+  detail?: string; // 图鉴细节（伏笔级，不点破）
   unlock: string;
-  exception?: string; // 薇奥莱 dying 例外
+}
+
+/** 圣物档案（spec §2 RelicArchiveText / §4A；图鉴独立条目；`line` 同时用作释放播报台词） */
+export interface RelicArchiveText {
+  key: string; // relic_<id>
+  name: string;
+  powerTag: PowerTag;
+  line: string; // ≤20 字（图鉴档案基线 + 释放时 center-gold 播报，一句两用）
+  unlock: string;
 }
 
 /** Boss 档案（spec §2 BossArchiveText / §5） */
@@ -129,12 +161,13 @@ export interface EventArchiveText {
  * UI/图鉴/结算统一引用本常量，禁止手写变体（consistency-anchors A4）。
  */
 export const NP = {
-  // 力量（五标签）
+  // 力量（六标签，spec §10 / world-bible §4.1）
   HALLOWED: '圣辉',
   SILVER: '银器',
   BEAST: '兽血',
   BLOOD: '血术',
   MOON: '月光',
+  BONE: '骸骨',
   // 阵营
   FACTION_VIGIL: '守夜会',
   FACTION_COURT: '血族·血廷',
@@ -169,8 +202,9 @@ const MOBILE = { maxLineChars: 14, fontSize: 16 } as const;
 export const SHOW_OPEN_BANNER = true;
 
 /**
- * 文本表 20 条（spec §9：台词 14 条表内 + 序章 4 + 结算 2；档案台词 16 条另计，
- * 文本条目合计 = 表内 20 + 角色台词 12 + Boss 击败 4 + 事件 6 = 42）。
+ * 文本表（spec §3/§6/§8）：本批现存 15 条 = 序章 4 + 局内点缀 5 + Boss 登场 4 + 结算 2。
+ * v1.2 待人工文案落表：圣物释放 ×5（context 'relic'，§7）+ 共鸣寻获 ×1（context 'resonance'，§7）；
+ * 旧 `n_evo_*`（5 条）已随超武退役整批删除（C-3 / SC-04）。
  * durationSec 为 spec §1.2 权威值（与 spec 表逐条对齐）。
  */
 export const NARRATIVES: readonly NarrativeText[] = [
@@ -299,52 +333,9 @@ export const NARRATIVES: readonly NarrativeText[] = [
     mobile: MOBILE,
   },
 
-  // —— 进化播报 5（spec §7；center-gold 固定 2.5s；按 powerTag 分句）——
-  {
-    key: 'n_evo_hallowed',
-    context: 'evolution',
-    text: '圣辉燃尽暗影。',
-    form: 'center-gold',
-    durationSec: 2.5,
-    trigger: 'evolution:hallowed',
-    mobile: MOBILE,
-  },
-  {
-    key: 'n_evo_silver',
-    context: 'evolution',
-    text: '银器淬火。',
-    form: 'center-gold',
-    durationSec: 2.5,
-    trigger: 'evolution:silver',
-    mobile: MOBILE,
-  },
-  {
-    key: 'n_evo_blood',
-    context: 'evolution',
-    text: '血池为你沸腾。',
-    form: 'center-gold',
-    durationSec: 2.5,
-    trigger: 'evolution:blood',
-    mobile: MOBILE,
-  },
-  {
-    key: 'n_evo_beast',
-    context: 'evolution',
-    text: '兽血在骨中低吼。',
-    form: 'center-gold',
-    durationSec: 2.5,
-    trigger: 'evolution:beast',
-    mobile: MOBILE,
-  },
-  {
-    key: 'n_evo_moon',
-    context: 'evolution',
-    text: '月光凝成猎手之形。',
-    form: 'center-gold',
-    durationSec: 2.5,
-    trigger: 'evolution:moon',
-    mobile: MOBILE,
-  },
+  // —— 圣物释放 / 共鸣寻获（spec §7）：n_relic_* ×5 + n_resonance_get ×1 待人工文案落表 ——
+  // （context 'relic' / 'resonance'，center-gold 固定 2.5s；本批未落条目，故 0 条）
+  // —— 旧「进化播报」5 条（n_evo_*，trigger evolution:*）已整批退役删除（C-3 / SC-04，spec §7「整体废止」）——
 
   // —— 结算标题 2（spec §8.1；result-title 常驻 0；results-overlay 按 key 读取）——
   {
@@ -367,18 +358,28 @@ export const NARRATIVES: readonly NarrativeText[] = [
   },
 ] as const;
 
-/** 角色档案 4（spec §4；文本与 spec 表逐字对齐；专有名词引用 NP 常量） */
+/**
+ * 角色档案 4（spec §4 v1.2 双专武模型；专有名词引用 NP 常量）。
+ * SC-01/SC-02：`powerTags[]` / `exclusiveWeapons[]` / `derivedSkills[]` 按 spec §4 落表；
+ * `identity` / `background` / `lines` 为既有文案内容（C-10/C-11），本批不动（交人工文案）。
+ */
 export const HERO_ARCHIVES: readonly HeroArchiveText[] = [
   {
     key: 'hero_edmund',
     name: NP.HERO_EDMUND,
     enName: 'Edmund the Vigilant',
     faction: NP.FACTION_VIGIL,
-    powerTag: 'HALLOWED',
+    powerTags: ['MOON', 'SILVER'],
     identity: '守夜会末代提灯人',
     background: '初代守夜人的血脉传到今日只剩他一人——提灯认血，只有他能重新点亮祖传之灯。他提着它走回千年封印之地，灯里是初代守夜人留下的最后一点圣辉。',
-    activeSkill: { name: '提灯闪耀', desc: '爆发圣光，眩晕周围亡者片刻，给自己一瞬喘息。' },
-    initialWeapon: { name: '血月猎手', desc: '银制月光箭。' },
+    exclusiveWeapons: [
+      { name: '破旧提灯', desc: '祖传滤月灯的残骸：容器属月，灯中圣辉属光；灯环所照，亡者迟滞。' },
+      { name: '圣徒左轮', desc: '守夜会银炉铸的最后一把左轮，六发弹巢，射完自动装填。' },
+    ],
+    derivedSkills: [
+      { name: '圣徒左轮技', desc: '银弹连射 + 圣痕易伤。' },
+      { name: '破旧提灯技', desc: '眩晕 + 射速爆发。' },
+    ],
     lines: { enter: '灯还亮着，夜就还没输。', dying: '灯芯……快尽了。', death: '替我……守到天亮。' },
     unlock: '默认',
   },
@@ -387,11 +388,17 @@ export const HERO_ARCHIVES: readonly HeroArchiveText[] = [
     name: NP.HERO_CASSANDRA,
     enName: 'Cassandra',
     faction: NP.FACTION_VIGIL,
-    powerTag: 'SILVER',
+    powerTags: ['BLOOD', 'MOON'],
     identity: '猎杀血族的银器赏金猎人，半血裔',
     background: '她以自愿饮下的血族之血完成自我改造，换取不被血月支配的体质——代价是永远介于人与猎物之间。半血裔对银器灼烧免疫，银弩是她对血廷的投名状，银是她的驯服之刃。',
-    activeSkill: { name: '血影突袭', desc: '向移动方向冲刺，路径上敌人被银刃割伤并标记，标记目标受武器伤害额外加成。' },
-    initialWeapon: { name: '银针连弩', desc: '快速穿透银矢。' },
+    exclusiveWeapons: [
+      { name: '血契双刃', desc: '以自身血契驭使的双刃，斩击吸血、积血成爆；借贷必偿。' },
+      { name: '月痕长弓', desc: '蓄力贯穿的长弓，满蓄月痕矢洞穿一切；高风险高倍率。' },
+    ],
+    derivedSkills: [
+      { name: '月痕狙击', desc: '全屏贯穿 + 眩晕。' },
+      { name: '血影突袭', desc: '突进斩击 + 血契印记。' },
+    ],
     lines: { enter: '猎物和猎人，今夜只有一个能走。', dying: '我的血……也在沸腾。', death: '血债……清了。' },
     unlock: '通关地图 1（月下墓地）',
   },
@@ -400,25 +407,37 @@ export const HERO_ARCHIVES: readonly HeroArchiveText[] = [
     name: NP.HERO_VIOLET,
     enName: 'Violet',
     faction: NP.FACTION_VIGIL,
-    powerTag: 'HALLOWED',
+    powerTags: ['HALLOWED'],
     identity: '血教堂幸存的执烛修女，以圣诗驱魔的夜祷者',
     background: '教堂沦陷那夜，她唱完了最后一首安魂曲，从血井边爬出来。从此她不再为死者安魂——她为亡者送行。',
-    activeSkill: { name: '安魂曲', desc: '圣诗震荡周围空间，亡者行动迟缓，她自身的伤缓缓愈合。' },
-    initialWeapon: { name: '圣银火铳', desc: '近距圣银散射。' },
+    exclusiveWeapons: [
+      { name: '誓约圣铃', desc: '铃音是誓约的回声，治愈她与守誓者（守誓路线核心）。' },
+      { name: '圣辉轮刃', desc: '掷出旋转光刃环，落点爆发；两路线通用。' },
+    ],
+    derivedSkills: [
+      { name: '圣辉审判', desc: '坠落 + 眩晕 + 治疗光环。' },
+      { name: '誓约回响', desc: '减速 + 回复 + 守誓者回满。' },
+    ],
     lines: { enter: '尘归尘，血归血。', dying: '主……不，月亮不会怜悯。', death: '让安魂曲……替我唱完。' },
     unlock: '通关地图 2（血教堂）',
-    exception: 'religious-word-exception', // spec §4.3：全游戏唯一宗教实指例外（刻意改口修辞）
+    // companionKey / routeVariants（守誓者实体引用 / 双路线变体）待人工文案随 §4A/§7 落表（SC-06）
   },
   {
     key: 'hero_galvan',
     name: NP.HERO_GALVAN,
     enName: 'Galvan',
     faction: NP.FACTION_VIGIL,
-    powerTag: 'BEAST',
+    powerTags: ['BEAST'],
     identity: '狼群中的异类，兽血诅咒的持有者',
     background: '血月之夜他出生在狼穴，被狼群养大，曾是狼王麾下的前锋。盈满之夜，狼王要踏平北境——他选择了背叛。他能在人形与狂化间切换：狼群视他为叛徒，人类视他为怪物，他只为黎明而战。',
-    activeSkill: { name: '血月狂化', desc: '短暂进入狂化：移速与伤害飙升，爪牙撕咬接触的敌人并汲取生命。' },
-    initialWeapon: { name: '狼影猎犬', desc: '召唤兽影猎犬自动索敌。' },
+    exclusiveWeapons: [
+      { name: '葬仪巨斧', desc: '为昔日狼群同袍送葬的斧：以自身生命为薪的重斩，每一次挥击都是一句告别。' },
+      { name: '月啸号角', desc: '叛逃者的号角没有狼王，只有自愿赴约的月下亡魂（月狼）。' },
+    ],
+    derivedSkills: [
+      { name: '月啸冲锋', desc: '狼影全屏冲锋。' },
+      { name: '血月狂化', desc: '不耗生命、移速伤害飙升。' },
+    ],
     lines: { enter: '月光是我的血，也是我的枷锁。', dying: '狼群……咬得更紧些。', death: '我终究……不是人。' },
     unlock: '通关地图 3（狼穴）',
   },
@@ -516,6 +535,20 @@ export const EVENT_ARCHIVES: readonly EventArchiveText[] = [
     unlock: '任意地图击杀血月化身',
   },
 ];
+
+/**
+ * 独立实体档案（spec §4A；图鉴独立条目）。
+ * ⚠ 本批（NV-ENG-EXEC-02）**仅落接口与容器**：守誓者 `entity_oathkeeper` 档案待人工文案落表（§3.4），
+ * 故当前为空数组——`archiveCount()` 因此低于目标 14（属预期缺口）。
+ */
+export const ENTITY_ARCHIVES: readonly EntityArchiveText[] = [];
+
+/**
+ * 圣物档案 ×5（spec §4A；`line` 一句两用 = 图鉴档案基线 + 释放播报）。
+ * ⚠ 本批**仅落接口与容器**：`relic_mooneclipse` / `relic_bloodtide` / `relic_twelve_lamps` /
+ * `relic_silver_tide` / `relic_wolf_spirit` 待人工文案落表（§3.5），故当前为空数组。
+ */
+export const RELIC_ARCHIVES: readonly RelicArchiveText[] = [];
 
 // —— 查询助手 ——
 
@@ -643,37 +676,17 @@ export function mobileFontSizeMeetsPhysical(entry: NarrativeText, scale: number)
   return designPx * scale >= entry.mobile.fontSize;
 }
 
-// —— 触发映射（spec §6/§7）——
+// —— 触发映射（spec §5/§6/§7）——
 
 /** 武器 powerTag（供 new-weapon:silver/hallowed 触发路由） */
 export function weaponPowerTag(wid: WeaponId): PowerTag | null {
   return WEAPON_CONFIGS[wid]?.powerTag ?? null;
 }
 
-/** 超武 → 主武器 powerTag（spec §7：powerTag 取主武器，content-design-outline §3.4 合成表） */
-export function evolutionPowerTag(evoId: EvoId): PowerTag | null {
-  const evo = EVOLUTIONS.find((e) => e.evoId === evoId);
-  if (!evo) return null;
-  return WEAPON_CONFIGS[evo.wpnId]?.powerTag ?? null;
-}
-
-/** powerTag → 进化播报触发键（spec §7 5 句；BLOOD/MOON 各命中 2 把超武） */
-export function evolutionTriggerForPowerTag(tag: PowerTag | null): NarrativeTrigger | null {
-  switch (tag) {
-    case 'HALLOWED':
-      return 'evolution:hallowed';
-    case 'SILVER':
-      return 'evolution:silver';
-    case 'BLOOD':
-      return 'evolution:blood';
-    case 'BEAST':
-      return 'evolution:beast';
-    case 'MOON':
-      return 'evolution:moon';
-    default:
-      return null;
-  }
-}
+// 注：原 `evolutionPowerTag` / `evolutionTriggerForPowerTag`（超武 → 主武器 powerTag → `evolution:*`
+// 触发键）随超武/进化机制退役一并删除（C-3 / SC-04，spec §7「整体废止」）。圣物释放 / 共鸣寻获的
+// 触发由事件侧直接派发（`relic:released` 携带 payload.relicId 供选择器路由；`resonance:get`），
+// 不再经 powerTag 映射。
 
 /** Boss id → 登场触发键（spec §5/§6） */
 export function bossEnterTriggerFor(bossId: string): NarrativeTrigger | null {
@@ -703,40 +716,70 @@ export function newWeaponTriggerForPowerTag(tag: PowerTag | null): NarrativeTrig
   }
 }
 
-// —— 红线统计（spec §9）——
+// —— 红线统计（spec §9；v1.2 口径回写）——
+// SC-08：统计函数一律「按实际条目数现算」；红线目标另以 `TARGET_*` 常量暴露，**不做硬编码返回值**。
+// 本批（schema 地基）下，新条目（圣物释放 / 共鸣寻获 / 双路线变体 / 实体档案 / 圣物档案）尚未落表，
+// 故实际计数 < 目标，属**预期缺口**（详见工程批 B 执行报告 §四）。
 
-/** 台词组（spec §9：角色 12 + Boss 登场 4 + Boss 击败 4 + 局内点缀 5 + 进化 5 = 30） */
-export function dialogueLineCount(): number {
-  // 表内台词：toast 5 + boss 登场 4 + evolution 5 = 14
-  const inTable = NARRATIVES.filter((e) => e.context === 'toast' || e.context === 'boss' || e.context === 'evolution').length;
-  // 档案台词：角色 4×3 + Boss 击败 4
-  const heroLines = HERO_ARCHIVES.length * 3;
-  const bossDefeat = BOSS_ARCHIVES.length;
-  return inTable + heroLines + bossDefeat;
+/** 台词红线目标（spec §9：33 ≤ 33）—— 口径目标，非现值；现值见 `dialogueLineCount()` */
+export const TARGET_DIALOGUE_LINE_COUNT = 33;
+
+/** 文本条目红线目标（spec §9/§13：45 条）—— 口径目标，非现值；现值见 `textEntryCount()` */
+export const TARGET_TEXT_ENTRY_COUNT = 45;
+
+/** 档案对象红线目标（spec §13：角色 4 / Boss 4 / 实体 1 / 圣物 5 = 14）—— 口径目标，非现值；现值见 `archiveCount()` */
+export const TARGET_ARCHIVE_COUNT = 14;
+
+/** 计入「台词」红线的内容语境（spec §9：局内点缀 + Boss 登场 + 圣物释放 + 共鸣寻获） */
+const DIALOGUE_CONTEXTS: readonly NarrativeContext[] = ['toast', 'boss', 'relic', 'resonance'];
+
+/** 双路线入场变体条数（落于 `HeroArchiveText.routeVariants`；spec §9 计入台词红线） */
+function routeVariantCount(): number {
+  return HERO_ARCHIVES.reduce((n, h) => n + (h.routeVariants?.length ?? 0), 0);
 }
 
 /**
- * 文本条目合计（spec §9：台词 30 + 序章 4 + 结算 2 + 事件 6 = 42）。
- * 口径 = 表内 20 条 + 角色档案台词 12 + Boss 击败台词 4 + 事件档案 6。
+ * 台词组**现值**（按实际条目现算）。
+ * 口径（spec §9）= 表内台词（context toast/boss/relic/resonance）+ 角色档案台词（角色 ×3）+ Boss 击败
+ * + 双路线变体（触发时替代默认入场句，不叠加）＝ 目标 **33**。
+ * 本批现值 = 表内 9（toast 5 + boss 4）+ 12 + 4 + 0 = **25**
+ * （缺口 8 = 圣物释放 5 + 共鸣寻获 1 + 双路线变体 2，待人工文案落表）。
+ */
+export function dialogueLineCount(): number {
+  const inTable = NARRATIVES.filter((e) => DIALOGUE_CONTEXTS.includes(e.context)).length;
+  const heroLines = HERO_ARCHIVES.length * 3;
+  const bossDefeat = BOSS_ARCHIVES.length;
+  return inTable + heroLines + bossDefeat + routeVariantCount();
+}
+
+/**
+ * 文本条目**现值**（按实际条目现算）。
+ * 口径（spec §9/§13）= 表内（序章 4 + toast 5 + Boss 登场 4 + 圣物释放 5 + 共鸣 1 + 结算 2）
+ * + 角色档案台词 12 + Boss 击败 4 + 双路线变体 2 + 事件档案 6 ＝ 目标 **45**。
+ * 本批现值 = 15 + 12 + 4 + 0 + 6 = **37**（缺口 8）。
  */
 export function textEntryCount(): number {
   const heroLines = HERO_ARCHIVES.length * 3;
   const bossDefeat = BOSS_ARCHIVES.length;
-  return NARRATIVES.length + heroLines + bossDefeat + EVENT_ARCHIVES.length;
+  return NARRATIVES.length + heroLines + bossDefeat + routeVariantCount() + EVENT_ARCHIVES.length;
 }
 
-/** 角色档案对象数（4）+ Boss 档案对象数（4）= 8 */
+/**
+ * 档案对象**现值**（按实际数组长度现算）。
+ * 口径（spec §13）= 角色 4 + Boss 4 + 独立实体 `ENTITY_ARCHIVES` + 圣物 `RELIC_ARCHIVES` ＝ 目标 **14**。
+ * 本批现值 = 4 + 4 + 0 + 0 = **8**（缺口 6 = 实体 1 + 圣物 5）。
+ */
 export function archiveCount(): number {
-  return HERO_ARCHIVES.length + BOSS_ARCHIVES.length;
+  return HERO_ARCHIVES.length + BOSS_ARCHIVES.length + ENTITY_ARCHIVES.length + RELIC_ARCHIVES.length;
 }
 
 /** 台词 ≤20 字红线校验（spec §11：全部台词条目 ≤20 字；最长 15 字卡珊德拉入场） */
 export function dialogueMaxLength(): number {
   const candidates: string[] = [];
   for (const e of NARRATIVES) {
-    if (e.context === 'toast' || e.context === 'boss' || e.context === 'evolution') candidates.push(e.text);
+    if (DIALOGUE_CONTEXTS.includes(e.context)) candidates.push(e.text);
   }
   for (const h of HERO_ARCHIVES) candidates.push(h.lines.enter, h.lines.dying, h.lines.death);
   for (const b of BOSS_ARCHIVES) candidates.push(b.enterLine, b.defeatLine);
-  return Math.max(...candidates.map((s) => s.length));
+  return candidates.length > 0 ? Math.max(...candidates.map((s) => s.length)) : 0;
 }

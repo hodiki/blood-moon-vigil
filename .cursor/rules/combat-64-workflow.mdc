@@ -1,0 +1,24 @@
+---
+description: 战斗层 64 未过帧不得当锁；开工前读流程红线
+alwaysApply: true
+---
+
+# 战斗层 64
+
+完整条文：`design/art-bible/combat-64-workflow-v1.md`（**v1.25**）· 产线：`pipeline-gpu-first-v1.md` · 成法：`combat-identity-chengfa-v1.md` · 脸门：`face-gate-spec-v1.md` · 条：`pipelines/README.md` · 风格帧经验：`style-frame-h23-lessons-v1.md` · 像素：`combat-64-pixel-workflow-v1.md`
+
+- **角色目录。** 源 / 锁 / 印戳 / 过关帧源在 `characters/<id>/`（索引 `characters/README.md`）。新 GPU 落盘：`run-job --char <id>` → `characters/<id>/_park/<ISO>/`；无旗标仍进历史 `_park/comfy-lan/`。新过目夹：`characters/<id>/review/<yyyymmdd-topic>/`。`assets/frames/` 仍是出货契约，不搬。
+- **现网 ≠ 已过。** `player` idle **已过（v9）**。走 **已过（V4）**。`player-skill-a/b` **已过（v1）**。`hero-violet` 守誓 idle **已过（128 · from-a）**；走 **已过（128 · E2 S3c-b）**；技能 **已过（128 · A1 / B2）**。`hero-violet-fallen` 魔化 idle **已过（128 · B-lo）**；**skill 待技能设计（美术暂停）**；走未开。加尔文 128 idle **开工**。守誓者过了改 **192**（必须比她高；96 是她还 64 时的比例，作废）。**形象套：守誓 O-3 + 色键 D2 已过；魔化 F-3 + 色键 E1 已过；O-2 退对照。评 C：新战斗帧 128。** **卡珊德拉风格帧已过（H23）**。艾德蒙身份已锁。守誓双人亮银红羽立绘已锁。魔化 **优先身份 = 优雅 GPT**（`violet-fallen-gpt-e`）；战斗向 **备用已锁**（`violet-fallen-armor3-a`），不是过、不开新帧。加尔文 **身份已锁**（`galvan-bulk-a`；三道痕/披偏黑已知），战斗未过。色键 C/E/G 留。专武第二波未开。已过 C/E **不重切**。已过 idle / walk / skill **不改**。
+- **GenerateImage** 调用前须主理人**明确授权或当场确认**（本会话 E6 首帧未授权则不准调）。不当走条、不当角色抽卡、不当战斗锁稿。身份底和补强仍可。**场景工序：少枪优先考虑闭源融景**（人已设计、非抽人、复杂场景+光、未触闭源限制、极少枪）。E5 过关：魔化 `identity/scene/e5-graveyard-tombstone` / `e5-church-pew`。Krea 路 B 更好、不过。姿势优化只记想法，本轮不改。条款仍待核。
+- **引擎（2026-09-23）。** **图片编辑与非二次元 = Qwen-Image-2.1**（`QWEN21-图片编辑.json` / `QWEN21-T2I-基础.json`；要透明走 `QWEN21-T2I-透明RGBA.json` 或 `QWEN21-去背景.json`。编码器默认 `qwen3vl_8b_w4a8`，VAE `qwen_image_2.1_vae_bf16`，与 Krea 的 `qwen_image_vae` 不通用）。**二次元风格 = Krea 2**（`KREA2-Turbo-基础.json`）。H23 仍是已过风格蓝本；新二次元作者改 Krea，不准拿别的引擎去平均 H23。**WAI 只作备用或风格化**，主理人点名才 Queue。**走循环 = Wan Animate 2**（现网守誓走已过；权重不在盘，新走帧先确认，没有就停并反馈，不准用 H3 冒充走条）。**视频 = 本机 MiniMax H3，分辨率受限**：日常停在已通的 I2V 0.4MP、约 5 秒。效果不好，或需求更复杂 / 更高 / 更长 / 要参考视频 / 要宣传级：停，反馈主理人，由主理人调线上满血 H3。助理不代调官方 API，也不在本机硬撑未达规格。Krea Identity Edit 与 Krea i2i 印戳是已过留档，新枪不默认走。Klein 停用，不要 Queue。Qwen / Krea / WAI / H3 分 Queue，换引擎先 `POST /free`。不要叠 IP-Adapter + OpenPose。Qwen 许可未核，进 `frames/` 前补核。
+- **脸门（R24）。** 立绘 / 场景 / 视频 / D 轨料先过 `face-gate-spec-v1.md`。战斗 128 / 192 仍呼吸级，不走此门。
+- **已过 walk / skill 不改。** 不准重抽、重切、脚本改姿。艾德蒙 a/b 禁止做成联动 GIF（R22）。
+- **走循环抽卡（§10）** 仍适用于未过角色。守誓走已过（E2）；量化/收腿只作次要。坑与成法见 **§11**。
+- **形象套** = 剪影 + 立绘 + 战斗设计。后续必须守这套。新形象或新风格须三层补齐。
+- 风格也是套：Q 与写实横跳 = 另一套人，不准混。
+- 形锚锁人，不锁死动作；元素出入必须可分类记录。管线空心/碎马赛克（真洞或大面积近墨）= 废。
+- **站姿 ≠ 步帧。** 已过 idle 只作起点/停点。禁止用站姿分腿或扭曲当 walk。
+- **禁止硬切绘画大图。** 新帧按 **128 硬色块**直出（512–768 → 4× 近邻入盒）。BOX / 中位色 / token 重涂 / 脚本补脸灯 / 128 再压回 64 = 废（R19 / 否决 D）。
+- 卡珊德拉战斗套 **已过**：不重切、不加呼吸、不加走帧。
+- 主理人说「过」之前不准写 `assets/frames/`。废稿进 `_park/`。守誓 idle 已过，现网 `hero-violet` / `-v` 就是那张 128，禁止再量化重切。魔化 idle 已过，现网 `hero-violet-fallen` / `-v` 就是那张 128，禁止再量化重切。守誓与魔化互不当参考。
+- **一致性漂立刻停。** 换人 / 丢脸 / 选人表 / 风格横跳 / 同底 3 枪不认 → 停 Queue，按 `combat-identity-drift-v1.md` 解析，禁止无限试错。未到档 C 不练每人 LoRA。

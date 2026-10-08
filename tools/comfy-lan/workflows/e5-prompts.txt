@@ -1,0 +1,33 @@
+# E5 指令 · 2026-09-15 编码机准备
+# 场景词：只写环境 / 镜头 / 光 / 视平线 / 主光方位。不写人。
+# 路 A 身份句去掉虚空底（人要进场景）。路 B 只写光影，不改人、不改场景。
+
+[scene A]
+A graveyard path under a blood-red full moon. Distant church silhouette on the horizon, near tombstones and a leafless tree, packed earth with room for a contact shadow. Camera looks down the path at chest height, horizon line at 55 percent of the frame. Main light is the blood moon from the upper right, long cool-red shadows toward the lower left. Empty of people, no figures, no faces, no text. Dark gothic landscape plate, painterly.
+
+[scene B]
+Interior of a ruined stone church at night. Wooden pews, stone columns, a cluster of candles on the left throwing warm orange light across the aisle. Vanishing point at 50 percent of the frame, stone floor visible in the middle distance for a contact shadow. Empty of people, no figures, no faces, no text. Dark gothic interior plate, painterly.
+
+[identity violet-fallen]
+Keep this exact woman and her costume unchanged: two horns with black roots and red tips, red eyes, pale skin, long wavy jet-black hair past the shoulders, black evening gown with a lace bib high collar, black lace gloves ending on the forearms, high slit with red lining, red high heels, same flat cel-shaded illustration style.
+
+[identity cassandra]
+Keep this exact woman and her costume unchanged: silver-white high ponytail, pale sharp face with red hunter eyes and light black eyeshadow, wine-red open long coat over a black turtleneck with a white cross on the chest, two black belts with silver buckles, black pantyhose, matte black stiletto pointed boots, same clean anime illustration style.
+
+[routeA A violet-fallen]
+Place the woman from the second image into this scene. She stands on the path in the middle distance, full body visible from head to heels, facing the viewer, about two thirds of the frame height. Keep her face, hair, horns, gown, gloves, red heels exactly as in the second image. Light her with the same red moonlight from the upper right as the scene, with a soft contact shadow under her feet. Do not change the scene otherwise.
+
+[routeA B violet-fallen]
+Place the woman from the second image into this scene. She stands in the aisle in the middle distance, full body visible from head to heels, facing the viewer, about two thirds of the frame height. Keep her face, hair, horns, gown, gloves, red heels exactly as in the second image. Light her with the same warm candle light from the left as the scene, with a soft contact shadow under her feet. Do not change the scene otherwise.
+
+[routeA A cassandra]
+Place the woman from the second image into this scene. She stands on the path in the middle distance, full body visible from head to heels, facing the viewer, about two thirds of the frame height. Keep her face, silver-white ponytail, wine-red coat, black turtleneck with white cross, belts, pantyhose, and matte black heels exactly as in the second image. Light her with the same red moonlight from the upper right as the scene, with a soft contact shadow under her feet. Do not change the scene otherwise.
+
+[routeA B cassandra]
+Place the woman from the second image into this scene. She stands in the aisle in the middle distance, full body visible from head to heels, facing the viewer, about two thirds of the frame height. Keep her face, silver-white ponytail, wine-red coat, black turtleneck with white cross, belts, pantyhose, and matte black heels exactly as in the second image. Light her with the same warm candle light from the left as the scene, with a soft contact shadow under her feet. Do not change the scene otherwise.
+
+[routeB A]
+Match the lighting of the woman to the scene: red moonlight from the upper right, cooler shadows, a soft contact shadow under her feet. Do not change her face, hair, costume, pose or position. Do not change the scene.
+
+[routeB B]
+Match the lighting of the woman to the scene: warm candle light from the left, cooler shadows on her right, a soft contact shadow under her feet. Do not change her face, hair, costume, pose or position. Do not change the scene.

@@ -1,0 +1,45 @@
+{
+  "schema": "comfy-lan-handshake/v1",
+  "generated_at": "2026-09-07T00:00:00+08:00",
+  "gpu": {
+    "hostname": "GPU-HOST",
+    "os": "windows|linux",
+    "lan_ip": "192.168.101.REPLACE",
+    "port": 8188,
+    "url": "http://192.168.101.REPLACE:8188",
+    "listen": "0.0.0.0"
+  },
+  "allow": {
+    "client_hostname": "Hodiki",
+    "client_ip": "192.168.101.82",
+    "client_mac": "7C-21-4A-DD-A9-EB"
+  },
+  "firewall": {
+    "kind": "windows|ufw|firewalld|other",
+    "rule": "allow tcp/8188 from 192.168.101.82 only",
+    "verified_local": false
+  },
+  "comfy": {
+    "version": "",
+    "system_stats_ok": false,
+    "devices": [],
+    "custom_nodes": {
+      "ipadapter_plus": false,
+      "controlnet_aux": false,
+      "krea2t_enhancer": false
+    }
+  },
+  "models": {
+    "checkpoints": [],
+    "ipadapter": [],
+    "controlnet": [],
+    "clip_vision": []
+  },
+  "workflows": {
+    "smoke": false,
+    "walk_strip_api": false,
+    "skill_strip_api": false,
+    "reference": []
+  },
+  "notes": "二次元 WAI；非二次元 Krea 2（KREA2-Turbo-基础.json）。Klein 停用未删盘，不要日常 Queue。"
+}

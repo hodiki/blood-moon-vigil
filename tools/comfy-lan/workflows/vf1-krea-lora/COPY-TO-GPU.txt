@@ -1,0 +1,18 @@
+LoRA sheet (2026-09-11): KREA2-Turbo-Vf1-设定表.json
+Copy to GPU: D:\ComfyUI\user\default\workflows\KREA2-Turbo-Vf1-设定表.json
+Then Workflows sidebar → refresh / reopen Comfy.
+
+From Hodiki when :8188 is up:
+
+  curl.exe -sS -X POST "http://192.168.101.200:8188/api/userdata/workflows%2FKREA2-Turbo-Vf1-设定表.json?overwrite=true" -H "Content-Type: application/json" --data-binary "@tools\comfy-lan\workflows\vf1-krea-lora\KREA2-Turbo-Vf1-设定表.json"
+
+Prompts: prompts-sheet-v1.md (freeze + T01–T15)
+Rebuild: node workflows\build-krea2-vf1-sheet-ui.mjs
+
+t2i, EmptyLatent 768x1280, denoise 1, Euler 8, CFG 1, CLIP type=krea2, Enhancer off.
+Default only T01 unmuted. Ctrl+M to open another shot. Max 2 shots per Queue (8GB).
+Do not use KREA2-Turbo-Vf1-底图.json as the daily path.
+Do not Queue with WAI or Wan. POST /free first.
+Do not write game assets\frames.
+
+Old one-off pack: vf1-krea2-20260911\ (S01-S14). Nylon vs B-lo still do not mix.

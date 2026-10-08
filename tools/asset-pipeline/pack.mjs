@@ -200,7 +200,7 @@ function writePivotsSidecar() {
 }
 
 const REVIEW_FRAMES = [
-  'player', 'player-skill-a', 'hero-cassandra', 'hero-violet', 'hero-galvan',
+  'player', 'player-skill-a', 'hero-cassandra', 'hero-violet', 'hero-violet-fallen', 'hero-galvan',
   'enemy-zombie', 'enemy-gravekeeper', 'enemy-boss'
 ];
 

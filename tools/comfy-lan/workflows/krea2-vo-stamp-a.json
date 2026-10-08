@@ -1,0 +1,124 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "krea2_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2",
+      "device": "cpu"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "Graphic production STAMP of ONE woman, hard cel color blocks, about 8 solid fills. Not an oil painting, not anime illustration, not photoreal metal. Keep the SAME PERSON as the reference: adult woman, long black hair down the back (not a nun wimple, not a hood covering the face), pale skin, calm expression. FACE MUST STAY READABLE: two dark almond eyes, a small nose, a short mouth line. Not a blank skin oval. Not a featureless peach block. Eyes are mandatory. 3/4 camera facing RIGHT. Full body idle stand. Both hands hold one small candle at chest. Hem on the bottom. Figure fills most of the height. Empty void #00040C on the sides. No ground shadow. Combat color budget D2: LARGE masses are night-gray cloak and floor-length skirt #3A4250. Silver #C8D0DA ONLY as a small chest plate and pointed shoulder caps, not a silver dress. Tiny gold flame #FFC93C only. Simplify folds into flat stamps. Keep identity. ONE woman only. No knight, no parchment sheet, no labels, no sprite sheet, no grid, no extra people, no horns, no wings.",
+      "clip": [
+        "3",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091301,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.74,
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "latent_image": [
+        "14",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "ref_character.png"
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_vo_stamp_a",
+      "images": [
+        "9",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "Krea2T-Enhancer-Advanced",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "enabled": false,
+      "strength": 1,
+      "text_scale": 1,
+      "debug": false
+    }
+  },
+  "14": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  }
+}

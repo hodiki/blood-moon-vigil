@@ -1,0 +1,66 @@
+{
+  "3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 202609402,
+      "steps": 28,
+      "cfg": 6,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    }
+  },
+  "4": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "waiIllustriousSDXL_v170.safetensors"
+    }
+  },
+  "17": {
+    "class_type": "CLIPSetLastLayer",
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": ["4", 1]
+    }
+  },
+  "5": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "masterpiece, best quality, amazing quality, very aesthetic, newest, 1boy, solo, adult, full body, standing, three-quarter view, full plate armor, blackened steel, weathered armor, closed helmet, narrow visor, dark pauldrons, no plume, guard, looming, simple background, solid color background",
+      "clip": ["17", 0]
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "1girl, woman, candle, kneeling, gold armor, lion emblem, red plume, dress, nun, extra limbs, extra digits, lowres, worst quality, nsfw, scenery, chibi",
+      "clip": ["17", 0]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["3", 0],
+      "vae": ["4", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_style_ok_dark",
+      "images": ["8", 0]
+    }
+  }
+}

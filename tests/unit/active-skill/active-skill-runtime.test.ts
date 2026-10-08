@@ -78,7 +78,7 @@ describe('ActiveSkillRuntimeConfig 结构', () => {
     const list: Array<[string, string]> = [
       ['hero_edmund', '提灯闪耀'],
       ['hero_cassandra', '血影突袭'],
-      ['hero_violet', '安魂曲'],
+      ['hero_violet', '誓约回响'],
       ['hero_galvan', '血月狂化'],
     ];
     for (const [hero, name] of list) {

@@ -1,0 +1,4 @@
+{
+  "seed": ["8", "inputs", "seed"],
+  "image_ref": ["10", "inputs", "image"]
+}

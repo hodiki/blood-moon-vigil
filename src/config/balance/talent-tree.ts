@@ -1,10 +1,13 @@
 /**
  * config/balance/talent-tree.ts —— 局外天赋树「滤月余辉」配置（B5-W1，gdd-talent-tree §③/§④）
  *
- * 树结构 T3 混合（GT-3）：全局主干 26（树根 1 + 质变 10 + 属性铺位 15）+ 角色支线 4×3~4（锚 14）≈ 40 节点。
- * 成本锚（§3.3，BUG-5 关闭前不定版——EG-8 只调配置）：质变 42 / 属性 12/层 / 支线 18（顶点 25）
- * → 总成本 990 ∈ [800, 1000] 区间断言（属性 10/层 · 支线 15/顶点 25）。
- * 属性三桶折算（GT-5 R3）：伤害 ≤8% / 生存 ≤6% / 合成 ≤10%（折算系数为锚，模拟批次校准）。
+ * 树结构 T3 混合（GT-3）：全局主干 26（树根 1 + 质变 10 + 属性铺位 15）+ 角色支线 4×3 = 12
+ * → 总 38 节点（A-11 统一；原「4×3~4（锚 14）≈ 40」废止）。
+ * 成本锚（§3.3，BUG-5 关闭前不定版——EG-8 只调配置）：质变 42 / 属性 10/层 / 支线 15（顶点 25）
+ * → 总成本 980 ∈ [800, 1000] 区间断言（D1 降档 a_attack_speed 层数 2→1：属性层数 23→22）。
+ * 属性三桶折算（GT-5 R3）：伤害 ≤8% / 生存 ≤6% / 合成 = d + s ≤10%（折算系数为锚，模拟批次校准）。
+ * D1 定案（v1.3 · 落法 D-1，EN-12）：a_life 单点 15→10（等效 0.7→0.47）＋ a_attack_speed 层数 2→1
+ * → α 实算 伤害 6.1% / 生存 3.4% / 合成 9.5%（余量 0.5pp）。
  * 深度 ≤4 层 / 每层宽 ≤3 / 防跳点门槛（层2=30 / 层3=120 / 层4=260 累计消耗）。
  */
 
@@ -56,15 +59,32 @@ export const TALENT_LAYER_THRESHOLDS = { 1: 0, 2: 30, 3: 120, 4: 260 } as const;
 /** 进入层 N 的实际门槛（浅层累计消耗；层 1/2 仅需父点亮） */
 export const TALENT_LAYER_ENTRY = { 1: 0, 2: 0, 3: 30, 4: 120 } as const;
 
-/** 三桶折算系数（每层 DPS/承伤等效 %——锚，模拟批次校准；合成断言 ≤10% 联动） */
+/**
+ * 三桶折算系数（每层 DPS/承伤等效 %——锚，模拟批次校准；合成断言 ≤10% 联动）。
+ * EN-01：补 `a_attack_2` / `a_damage_2` / `a_life_2` 键（第二铺位为独立 id，原缺键被静默漏算 → 假 PASS）。
+ * EN-12（D1 降档）：`a_life` 单点 +15→+10 → 生存桶系数 0.7→0.47（`a_life_2` 取同值，10/15 比例）。
+ * EN-03：支线节点计入所属桶（`br_*` 系数为占位 0，待设计/模拟校准——见下表下方 ⚠ 注）。
+ */
 export const TALENT_BUCKET_EQUIV = {
   /** 伤害桶每层 DPS 等效 % */
-  damage: { a_attack: 0.4, a_damage: 1.2, a_attack_speed: 0.5, a_cooldown: 0.4 },
+  damage: { a_attack: 0.4, a_attack_2: 0.4, a_damage: 1.2, a_damage_2: 1.2, a_attack_speed: 0.5, a_cooldown: 0.4, br_edmund_2: 0 },
   /** 生存桶每层承伤等效 % */
-  survival: { a_life: 0.7, a_move_speed: 0.5, a_heal_efficiency: 0.5 },
+  survival: { a_life: 0.47, a_life_2: 0.47, a_move_speed: 0.5, a_heal_efficiency: 0.5, br_cassandra_1: 0, br_cassandra_2: 0, br_violet_1: 0, br_violet_2: 0, br_galvan_1: 0, br_galvan_2: 0 },
 } as const;
 
-/** 红线（§3.6）：伤害 ≤8% / 生存 ≤6% / 合成 ≤10% */
+/**
+ * ⚠ 支线折算系数占位说明（EN-03 · 待主理人 / 设计裁决）：
+ * GDD §4.3 要求「支线效果计入所属三桶折算」，但 GDD **未给支线等效锚**；且 6 项生存类支线效果
+ * 若按属性同尺度折算（实测合计 +2.2pp 量级）将突破 §6.1「合成 ≤10%」红线（D 案余量仅 0.5pp）。
+ * 本批按结构补 `bucket` 字段 + 占位系数键（0），**不改红线目标值**（保持 6.1 / 3.4 / 9.5）。
+ * 支线系数终值属**设计 / 模拟裁决项**（详见 `production/official-v1/工程批A执行报告-2026-10-08.md`）。
+ */
+
+/**
+ * 红线（§3.6）：伤害 ≤8% / 生存 ≤6% / 合成 ≤10%。
+ * EN-05：`combined` 语义 = **合成 = 伤害等效% + 生存等效%（= `d + s`，口径 α；tempo 桶不计）**
+ * ——防下游按「独立第三指标」误读（GDD §3.6/§6.1/§⑩-2）。
+ */
 export const TALENT_REDLINE = { damage: 0.08, survival: 0.06, combined: 0.10 } as const;
 
 /** 属性节点每层效果（锚，§4.2；应用进 PlayerStats） */
@@ -75,7 +95,7 @@ export const TALENT_ATTRIBUTE_EFFECTS = {
   a_cooldown: { cooldownPct: 0.03 },      // −3%（全源折减下限 −40%，A-4）
   a_xp_gain: { xpGainPct: 0.05 },         // +5%
   a_magnet: { magnetRadius: 20 },         // +20px
-  a_life: { maxHp: 15 },                  // +15 HP
+  a_life: { maxHp: 10 },                  // +10 HP（D1 降档 15→10，EN-12；等效 0.7→0.47）
   a_move_speed: { moveSpeedPct: 0.02 },   // +2%
   a_heal_efficiency: { healEfficiencyPct: 0.10 }, // +10%
   a_pickup_radius: { pickupRadius: 10 },  // +10px
@@ -104,6 +124,20 @@ const BRANCH_MACHINES: Record<'edmund' | 'cassandra' | 'violet' | 'galvan', [Rec
   galvan: [{ killHealFlat: 0.5 }, { rageMoveSpeedPct: 0.05 }], // ① 击杀回血 +0.5 HP ② 狂化期移速 +5%
 };
 
+/**
+ * 支线节点所属三桶（EN-03 · GDD §4.3「支线效果计入所属三桶折算」）：
+ * ① 节点 → 桶；② 节点 → 桶。顶点「同袍之诺」无数值 → `none`。
+ * - edmund ① 拾取半径 = 节奏类；② 范围 +5% → 伤害类（DPS 覆盖等效，系数占位 0）。
+ * - cassandra ① 受击移速 ② 吸血效 → 生存类；violet ① 治疗效能 ② 墓碑回血 → 生存类；
+ *   galvan ① 击杀回血 ② 狂化移速 → 生存类。
+ */
+const BRANCH_BUCKETS: Record<'edmund' | 'cassandra' | 'violet' | 'galvan', [TalentBucket, TalentBucket]> = {
+  edmund: ['tempo', 'damage'],
+  cassandra: ['survival', 'survival'],
+  violet: ['survival', 'survival'],
+  galvan: ['survival', 'survival'],
+};
+
 /** 全节点表（§④；主干 26 + 支线 12+4 顶点 = 全部 38 条目 ≈40 锚） */
 export const TALENT_TREE: readonly TalentNodeConfig[] = [
   // ---- 树根（1）----
@@ -119,12 +153,12 @@ export const TALENT_TREE: readonly TalentNodeConfig[] = [
   { id: 'q_s3', kind: 'mutation', name: '遗言余烬', desc: '倒下的那一刻，灯芯里溅出一粒不肯熄的火。（首次 HP 归零掉 30 XP 余烬；无复活终局 +2 余辉）', cost: 42, layer: 3, parent: 'q_s1', maxPurchases: 1, machine: { emberXp: 30, emberMerit: 2 }, codexPrerequisite: 'codex_moon_avatar' },
   { id: 'q_f3', kind: 'mutation', name: '三钟', desc: '第三次钟声为猎手而鸣。', cost: 42, layer: 3, parent: 'q_f2', maxPurchases: 1, machine: {} },
   { id: 'q_s4', kind: 'mutation', name: '双灯并祀', desc: '落选的灯不必等深夜——今夜它与你同坛受祀。（消耗 1 次升级换衍生技强化卡 P4 前置）', cost: 42, layer: 3, parent: 'q_d', maxPurchases: 1, machine: {} },
-  // ---- 属性铺位 15（10 类型，5 双点位；层数合计 23）----
+  // ---- 属性铺位 15（10 类型，5 双点位；层数合计 22，D1 降档 a_attack_speed 2→1）----
   { id: 'a_attack', kind: 'attribute', name: '攻击', desc: '手比昨日更稳一分。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_attack },
   { id: 'a_attack_2', kind: 'attribute', name: '攻击·Ⅱ', desc: '手比昨日更稳一分。', cost: 10, layer: 3, parent: 'a_attack', maxPurchases: 1, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_attack },
   { id: 'a_damage', kind: 'attribute', name: '伤害', desc: '灯焰烧得更透。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_damage },
   { id: 'a_damage_2', kind: 'attribute', name: '伤害·Ⅱ', desc: '灯焰烧得更透。', cost: 10, layer: 3, parent: 'a_damage', maxPurchases: 1, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_damage },
-  { id: 'a_attack_speed', kind: 'attribute', name: '攻速', desc: '心跳追上了弹巢。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_attack_speed },
+  { id: 'a_attack_speed', kind: 'attribute', name: '攻速', desc: '心跳追上了弹巢。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 1, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_attack_speed }, // D1 降档 2→1（EN-12）
   { id: 'a_cooldown', kind: 'attribute', name: '冷却', desc: '祷言短了，落得更密。', cost: 10, layer: 3, parent: 'a_attack_speed', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_cooldown },
   { id: 'a_xp_gain', kind: 'attribute', name: '经验获取', desc: '你开始看得懂夜的语法。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 1, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_xp_gain },
   { id: 'a_xp_gain_2', kind: 'attribute', name: '经验获取·Ⅱ', desc: '你开始看得懂夜的语法。', cost: 10, layer: 3, parent: 'a_xp_gain', maxPurchases: 1, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_xp_gain, codexPrerequisite: 'codex_entries_25' },
@@ -135,14 +169,15 @@ export const TALENT_TREE: readonly TalentNodeConfig[] = [
   { id: 'a_move_speed', kind: 'attribute', name: '移速', desc: '影子跟不上你。', cost: 10, layer: 3, parent: 'a_life', maxPurchases: 2, bucket: 'survival', machine: TALENT_ATTRIBUTE_EFFECTS.a_move_speed },
   { id: 'a_heal_efficiency', kind: 'attribute', name: '治疗效能', desc: '伤口在圣辉里合拢得更快。', cost: 10, layer: 3, parent: 'a_life_2', maxPurchases: 2, bucket: 'survival', machine: TALENT_ATTRIBUTE_EFFECTS.a_heal_efficiency },
   { id: 'a_pickup_radius', kind: 'attribute', name: '拾取半径', desc: '伸手即是所得。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_pickup_radius },
-  // ---- 角色支线（4×3 + 顶点 4 = 14~16 锚；轻规格 §4.3；machine 锚见 BRANCH_MACHINES）----
+  // ---- 角色支线（4 角色 × 3 = 12 节点；轻规格 §4.3；machine 锚见 BRANCH_MACHINES，bucket 见 BRANCH_BUCKETS）----
   ...(['edmund', 'cassandra', 'violet', 'galvan'] as const).flatMap((hero): TalentNodeConfig[] => {
     const descs = BRANCH_DESCS[hero];
     const [m1, m2] = BRANCH_MACHINES[hero];
+    const [b1, b2] = BRANCH_BUCKETS[hero];
     return [
-      { id: `br_${hero}_1` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ①`, desc: descs[0], cost: 15, layer: 2, parent: 'q_a', maxPurchases: 2, machine: m1 },
-      { id: `br_${hero}_2` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ②`, desc: descs[1], cost: 15, layer: 3, parent: `br_${hero}_1`, maxPurchases: 2, machine: m2 },
-      { id: `br_${hero}_top` as TalentNodeId, kind: 'branch', name: '同袍之诺', desc: descs[2], cost: 25, layer: 4, parent: `br_${hero}_2`, maxPurchases: 1, machine: {}, codexPrerequisite: 'codex_heroes_all' },
+      { id: `br_${hero}_1` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ①`, desc: descs[0], cost: 15, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: b1, machine: m1 },
+      { id: `br_${hero}_2` as TalentNodeId, kind: 'branch', name: `${hero} 支线 ②`, desc: descs[1], cost: 15, layer: 3, parent: `br_${hero}_1`, maxPurchases: 2, bucket: b2, machine: m2 },
+      { id: `br_${hero}_top` as TalentNodeId, kind: 'branch', name: '同袍之诺', desc: descs[2], cost: 25, layer: 4, parent: `br_${hero}_2`, maxPurchases: 1, bucket: 'none', machine: {}, codexPrerequisite: 'codex_heroes_all' },
     ];
   }),
 ] as const;
@@ -158,10 +193,10 @@ export const TALENT_TREE_COUNTS = {
   MUTATION: 10,
   ATTRIBUTE_SLOTS: 15, // 10 类型 + 5 双点位
   TRUNK: 26,
-  BRANCH_TOTAL: 14, // 12 普通 + 4 顶点 − 2（3~4 弹性锚 14）
-  TOTAL_ANCHOR: 40,
-  /** 属性层数合计（§4.2 全表） */
-  ATTRIBUTE_LAYERS: 23,
+  BRANCH_TOTAL: 12, // A-11 统一：4 角色 × 3 = 12（原「12 普通 + 4 顶点 − 2（锚 14）」废止）
+  TOTAL_ANCHOR: 38, // A-11 统一：主干 26 + 支线 12 = 38（原「锚 ≈40」废止）
+  /** 属性层数合计（§4.2 全表；D1 降档 a_attack_speed 2→1 → 23→22） */
+  ATTRIBUTE_LAYERS: 22,
 } as const;
 
 /** 树总成本区间（EG-8：BUG-5 关闭前不定版，只调配置） */

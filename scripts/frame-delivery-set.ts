@@ -15,6 +15,7 @@ export const FRAME_DELIVERY_SET: readonly string[] = [
   'player', 'player-v', 'player-skill-a', 'player-skill-b',
   'hero-cassandra', 'hero-cassandra-v', 'hero-cassandra-skill-a', 'hero-cassandra-skill-b',
   'hero-violet', 'hero-violet-v', 'hero-violet-skill-a', 'hero-violet-skill-b',
+  'hero-violet-fallen', 'hero-violet-fallen-v',
   'hero-galvan', 'hero-galvan-v', 'hero-galvan-skill-a', 'hero-galvan-skill-b',
   // §2 武器（14）
   'missile', 'proj-crossbow', 'proj-blunderbuss', 'proj-boomerang', 'proj-javelin',

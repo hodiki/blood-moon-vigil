@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "note": "Attempt 1 generated AV but SaveVideo dropped the DynamicCombo format dict. Attempt 2 reused cached latents/video and saved MP4.",
+  "spec": {
+    "width": 608,
+    "height": 352,
+    "length": 5,
+    "fps": 24,
+    "steps": 8,
+    "turbo": true,
+    "clip_device": "cpu",
+    "unet": "MiniMax-H3-FL2VA-Q3_K_M.gguf",
+    "clip": "qwen3vl-32B-MiniMax-H3-Q2_K.gguf",
+    "seed": 20260915
+  },
+  "attempt1": {
+    "prompt_id": "6cb7f63d-e51c-4b82-885c-e5094509f8a0",
+    "started": "2026-09-15T16:35:32+08:00",
+    "finished": "2026-09-15T16:39:41+08:00",
+    "seconds": 245.0,
+    "ok": false,
+    "error_class": "savevideo_format_api",
+    "exception": "SaveVideo.execute() missing 1 required positional argument: 'format'",
+    "generated_nodes": ["UnetLoaderGGUF", "CLIPLoaderGGUF", "VAELoader x2", "LoraLoaderModelOnly", "MiniMaxH3ImageToVideo", "SamplerCustomAdvanced", "VAEDecode", "VAEDecodeAudio", "CreateVideo"]
+  },
+  "attempt2": {
+    "prompt_id": "9180447d-84db-4f8f-80d9-98a2a96ebc24",
+    "started": "2026-09-15T16:40:44+08:00",
+    "finished": "2026-09-15T16:40:46+08:00",
+    "seconds": 0.8,
+    "ok": true,
+    "cached_nodes": ["2", "3", "4", "11", "12", "13", "14"],
+    "files": ["video/MiniMax_H3_smoke_00001_.mp4"]
+  },
+  "output": {
+    "path": "D:\\ComfyUI\\output\\video\\MiniMax_H3_smoke_00001_.mp4",
+    "bytes": 30031,
+    "video": "h264 608x352 24fps 5 frames 0.208s",
+    "audio": "aac 32000Hz stereo"
+  },
+  "wall_clock": {
+    "cold_generate_s": 245.0,
+    "save_retry_cached_s": 0.8,
+    "effective_first_shot_min": 4.1,
+    "envelope": "video; do not use still-image 1-2 / 5 min envelope"
+  },
+  "memory_peak": {
+    "ram_used_total_mb": "32,348/32,479",
+    "python_working_set_mb": 25103,
+    "nvidia_smi_used_total_mb": "7406, 8188",
+    "gpu_util_pct_during_sample": 98,
+    "class": "system_ram_ceiling_not_cuda_oom"
+  }
+}

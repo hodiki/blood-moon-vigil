@@ -1,0 +1,32 @@
+# E4 指令 · S1 第一轮（2026-09-14 · 对照用 · 不作现行）
+# 机位句过短，卡珊德拉 P1–P3 贴死 H23，魔化 P2 未转，P6 选人表。
+
+[identity violet-fallen]
+Keep this exact woman and her costume unchanged: two horns with black roots and red tips, red eyes, pale skin, long wavy jet-black hair past the shoulders, black evening gown with a lace bib high collar, black lace gloves ending on the forearms, high slit with red lining, red high heels, empty dark void background, same flat cel-shaded illustration style.
+
+[identity cassandra]
+Keep this exact woman and her costume unchanged: silver-white high ponytail, pale sharp face with red hunter eyes and light black eyeshadow, wine-red open long coat over a black turtleneck with a white cross on the chest, two black belts with silver buckles, black pantyhose, matte black stiletto pointed boots, empty dark void background, same clean anime illustration style.
+
+[cell P1]
+Full-body, facing the camera straight on, arms relaxed, neutral expression, camera at chest height.
+
+[cell P2]
+Full-body, camera at her front-left three-quarter angle, weight even, neutral expression.
+
+[cell P3]
+Full-body, true right profile, nose and near eye readable, arms relaxed.
+
+[cell P4]
+Full-body, back view, hair and coat back visible, no face required.
+
+[cell P5 violet-fallen]
+Waist-up close shot, camera at eye height, she gives a faint knowing smile.
+
+[cell P5 cassandra]
+Waist-up close shot, camera at eye height, she gives a proud smirk.
+
+[cell P6]
+Waist-up close shot, camera at eye height, cold hard stare, brows lowered.
+
+[wai-positive]
+masterpiece, best quality, amazing quality, very aesthetic, newest, 1girl, solo, adult woman, clean anime illustration, empty dark void background, simple background

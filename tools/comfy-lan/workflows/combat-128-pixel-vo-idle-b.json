@@ -1,0 +1,76 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "Anything-v5.0-PRT.safetensors"
+    }
+  },
+  "2": {
+    "class_type": "LoraLoader",
+    "inputs": {
+      "model": ["1", 0],
+      "clip": ["1", 1],
+      "lora_name": "PixelArtRedmond15V-PixelArt-PIXARFK.safetensors",
+      "strength_model": 0.85,
+      "strength_clip": 0.85
+    }
+  },
+  "3": {
+    "class_type": "CLIPSetLastLayer",
+    "inputs": {
+      "clip": ["2", 1],
+      "stop_at_clip_layer": -2
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "pixel art, PixArFK, ONE isolated full-body woman only, not a sprite sheet, not a grid, not four poses, single figure centered, 1girl, adult woman, 3/4 view facing right, idle stand, pale skin FACE with two dark eye pixels a small nose and a mouth line, readable face, long black hair down the back, night-gray cloak and floor-length skirt, small silver chest plate and pointed shoulder caps only, both hands hold one small gold candle at chest, black void background, hard chunky pixels",
+      "clip": ["3", 0]
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "sprite sheet, character select, multiple poses, collage, grid, 2x2, four characters, extra people, blank face, no eyes, featureless skin blob, photoreal, 3d, oil painting, anime illustration, blurry, antialias, gradient, wimple, nun habit, knight, text, watermark, lowres mush",
+      "clip": ["3", 0]
+    }
+  },
+  "6": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 512,
+      "height": 768,
+      "batch_size": 1
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026091502,
+      "steps": 24,
+      "cfg": 6.5,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": ["2", 0],
+      "positive": ["4", 0],
+      "negative": ["5", 0],
+      "latent_image": ["6", 0]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["1", 2]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "comfy_lan_c128_vo_idle_b",
+      "images": ["8", 0]
+    }
+  }
+}

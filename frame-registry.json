@@ -71,6 +71,8 @@
         "hero-violet-v",
         "hero-violet-skill-a",
         "hero-violet-skill-b",
+        "hero-violet-fallen",
+        "hero-violet-fallen-v",
         "hero-galvan",
         "hero-galvan-v",
         "hero-galvan-skill-a",
@@ -318,7 +320,9 @@
       "hero-violet",
       "hero-violet-v",
       "hero-violet-skill-a",
-      "hero-violet-skill-b"
+      "hero-violet-skill-b",
+      "hero-violet-fallen",
+      "hero-violet-fallen-v"
     ],
     "hero_galvan": [
       "hero-galvan",
@@ -839,6 +843,8 @@
     "hero-violet-v",
     "hero-violet-skill-a",
     "hero-violet-skill-b",
+    "hero-violet-fallen",
+    "hero-violet-fallen-v",
     "hero-galvan",
     "hero-galvan-v",
     "hero-galvan-skill-a",

@@ -1,0 +1,12 @@
+C Ostris legal branch. Not thedeoxen EmptyLatent t2i.
+
+Stamp = VAEEncode i2i latent. Pose = TextEncodeKrea2OstrisEdit image1 only.
+Do not put the stamp on image2: that would attach idle as a second reference latent and fight 叉腰.
+UNET -> Krea2OstrisEditModelPatch (kv_cache false) -> LoraLoaderModelOnly thedeoxen 0.85.
+FluxKontextMultiReferenceLatentMethod = index_timestep_zero.
+denoise 0.40. Euler simple 8. CFG 1. CLIP cpu.
+
+C1 seed 2026091007 pose 21-c-dwpose-akimbo.png
+C2 seed 2026091008 pose 22-c-dwpose-shift.png
+
+No IPA. No raise denoise. No frames/.

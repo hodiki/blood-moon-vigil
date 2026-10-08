@@ -1,0 +1,5 @@
+{
+  "seed": ["11", "inputs", "noise_seed"],
+  "positive": ["5", "inputs", "text"],
+  "image_idle": ["16", "inputs", "image"]
+}

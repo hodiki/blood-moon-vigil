@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { visualFrameForContent } from '@/config/frame-registry';
+import { FRAME_BY_CONTENT_ID, visualFrameForContent } from '@/config/frame-registry';
 import { idleAnimKey, moveAnimKey } from '@/fx/anim';
 
 describe('visualFrameForContent', () => {
@@ -7,6 +7,8 @@ describe('visualFrameForContent', () => {
     expect(visualFrameForContent('hero_edmund')).toBe('player');
     expect(visualFrameForContent('hero_cassandra')).toBe('hero-cassandra');
     expect(visualFrameForContent('hero_violet')).toBe('hero-violet');
+    expect(FRAME_BY_CONTENT_ID.hero_violet?.[0]).toBe('hero-violet');
+    expect(FRAME_BY_CONTENT_ID.hero_violet).toContain('hero-violet-fallen');
     expect(visualFrameForContent('hero_galvan')).toBe('hero-galvan');
   });
 

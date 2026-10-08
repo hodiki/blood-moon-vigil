@@ -4,13 +4,14 @@ import {
   TALENT_TREE_COUNTS,
   TALENT_TOTAL_COST_RANGE,
   TALENT_REDLINE,
+  TALENT_BUCKET_EQUIV,
   TALENT_REVIVE,
   talentNodeById,
 } from '@/config/balance';
 import {
   createTreeLedger, unlockNode, canUnlockNode, respec, totalSpent,
   computeTreeApplication, damageBucketEquiv, survivalBucketEquiv, allTreeBonusesWithinRedline,
-  treeTotalCost, treeTotalCostWithinRange, ledgerFromSaveData, 
+  treeTotalCost, treeTotalCostWithinRange, ledgerFromSaveData, baseBucketNodeId,
   type CodexQuery,
 } from '@/progression/tree-state';
 import {
@@ -19,23 +20,27 @@ import {
 import { computeLoadout } from '@/weapons/loadout';
 
 describe('B5-W1 树配置（gdd-talent-tree §3.1~3.3/§4；验收判据 1/2）', () => {
-  it('节点计数：树根 1 + 质变 10 + 属性铺位 15 = 主干 26；支线锚 14；属性层数 23', () => {
+  it('节点计数：树根 1 + 质变 10 + 属性铺位 15 = 主干 26；支线 12；属性层数 22（D1 降档）', () => {
     expect(TALENT_TREE.filter((n) => n.kind === 'root')).toHaveLength(1);
     expect(TALENT_TREE.filter((n) => n.kind === 'mutation')).toHaveLength(10);
     expect(TALENT_TREE.filter((n) => n.kind === 'attribute')).toHaveLength(15);
     expect(TALENT_TREE_COUNTS.TRUNK).toBe(26);
-    expect(TALENT_TREE_COUNTS.ATTRIBUTE_LAYERS).toBe(23);
+    expect(TALENT_TREE_COUNTS.ATTRIBUTE_LAYERS).toBe(22);
     // 层数合计 = Σ maxPurchases（属性节点）
     const layers = TALENT_TREE.filter((n) => n.kind === 'attribute').reduce((a, n) => a + n.maxPurchases, 0);
-    expect(layers).toBe(23);
-    // 支线 4 角色
+    expect(layers).toBe(22);
+    // 支线 4 角色 × 3 = 12
     const branches = TALENT_TREE.filter((n) => n.kind === 'branch');
     expect(branches).toHaveLength(12);
     expect(branches.filter((n) => n.id.endsWith('_top'))).toHaveLength(4);
+    // A-11 计数锚统一
+    expect(TALENT_TREE_COUNTS.BRANCH_TOTAL).toBe(12);
+    expect(TALENT_TREE_COUNTS.TOTAL_ANCHOR).toBe(38);
+    expect(TALENT_TREE).toHaveLength(38);
   });
 
-  it('总成本 990 落 800~1000 区间（EG-8：BUG-5 关闭前只调配置；属性 10/层 · 支线 15/顶点 25）', () => {
-    expect(treeTotalCost()).toBe(990);
+  it('总成本 980 落 800~1000 区间（EG-8：BUG-5 关闭前只调配置；属性 10/层 · 支线 15/顶点 25）', () => {
+    expect(treeTotalCost()).toBe(980);
     expect(treeTotalCostWithinRange()).toBe(true);
     const [lo, hi] = TALENT_TOTAL_COST_RANGE;
     expect(treeTotalCost()).toBeGreaterThanOrEqual(lo);
@@ -51,11 +56,43 @@ describe('B5-W1 树配置（gdd-talent-tree §3.1~3.3/§4；验收判据 1/2）'
     }
   });
 
-  it('三桶红线：伤害 ≤8% / 生存 ≤6% / 合成 ≤10%（tree 版 allBonusesWithinRedline，§⑩-2）', () => {
+  // EN-04：红线用例 = **独立真值**（硬编码 GDD §6.1 目标，不拿被测函数当自身 oracle）——
+  // 原用例断言的正是 `damageBucketEquiv()/allTreeBonusesWithinRedline()` 自身（自证/同义反复，测不出公式对错）。
+  it('三桶红线（EN-04 · 独立真值）：伤害 6.1% / 生存 3.4% / 合成 9.5%（≤8 / ≤6 / ≤10）', () => {
+    // 独立期望值（GDD §6.1 v1.3 D1 定案：a_life +10×3 等效 0.47、a_attack_speed 层数 1）
+    expect(damageBucketEquiv()).toBeCloseTo(0.061, 3);
+    expect(survivalBucketEquiv()).toBeCloseTo(0.034, 3);
+    expect(damageBucketEquiv() + survivalBucketEquiv()).toBeCloseTo(0.095, 3);
+    // 红线判定（阈值取自 TALENT_REDLINE 常量）
     expect(damageBucketEquiv()).toBeLessThanOrEqual(TALENT_REDLINE.damage);
     expect(survivalBucketEquiv()).toBeLessThanOrEqual(TALENT_REDLINE.survival);
     expect(damageBucketEquiv() + survivalBucketEquiv()).toBeLessThanOrEqual(TALENT_REDLINE.combined);
     expect(allTreeBonusesWithinRedline()).toBe(true);
+  });
+
+  // EN-04：覆盖守卫 ①——每个 damage/survival 桶节点必有折算系数键（含 `_2` 归一），
+  // 防「加了 `_2` 节点却没加系数键」的配置漂移无声通过（A-13 假 PASS 的根因）。
+  it('EN-04 覆盖守卫：每个 damage/survival 桶节点必有折算系数键（含 `_2` 归一）', () => {
+    let checked = 0;
+    for (const node of TALENT_TREE) {
+      if (node.bucket !== 'damage' && node.bucket !== 'survival') continue;
+      const table = TALENT_BUCKET_EQUIV[node.bucket] as Record<string, number>;
+      const hasKey = table[node.id] !== undefined || table[baseBucketNodeId(node.id)] !== undefined;
+      expect(hasKey, `${node.id} 缺折算系数键`).toBe(true);
+      checked += 1;
+    }
+    expect(checked).toBe(17); // 10 属性 damage/survival 铺位（含 _2）+ 7 支线（damage/survival）
+  });
+
+  // EN-03/EN-04：覆盖守卫 ②——全 12 支线节点均有 `bucket` 字段（不再被 `node.bucket !== bucket` 直接跳过）。
+  it('EN-03/EN-04 覆盖守卫：全 12 支线节点均有 bucket 字段', () => {
+    const branches = TALENT_TREE.filter((n) => n.kind === 'branch');
+    expect(branches).toHaveLength(12);
+    for (const b of branches) expect(b.bucket, `${b.id} 缺 bucket`).toBeDefined();
+    expect(branches.filter((n) => n.bucket === 'survival')).toHaveLength(6); // cassandra/violet/galvan ① ②
+    expect(branches.filter((n) => n.bucket === 'damage')).toHaveLength(1);   // edmund ②
+    expect(branches.filter((n) => n.bucket === 'tempo')).toHaveLength(1);    // edmund ① 拾取半径
+    expect(branches.filter((n) => n.bucket === 'none')).toHaveLength(4);     // 顶点 ×4
   });
 
   it('图鉴轻联动恰 4 项（GT-12 ≤5 上限）：L-1~L-4', () => {
@@ -146,7 +183,7 @@ describe('B5-W2 树状态（解锁/门槛/洗点；验收判据 8）', () => {
       eliteOffers: 3, openingWindow: true, emberOnDeath: true, derivativeUpgradePrereq: true,
     });
     expect(normal.attributes.damagePct).toBeCloseTo(0.04); // a_damage ×2
-    expect(normal.attributes.maxHp).toBe(15);
+    expect(normal.attributes.maxHp).toBe(10); // a_life ×1（D1 降档 +10/层）
     const pure = computeTreeApplication(ledger, true);
     expect(pure.mutations.companionWeapon).toBe(true); // 质变全开
     expect(pure.attributes.damagePct).toBe(0); // 属性段空
