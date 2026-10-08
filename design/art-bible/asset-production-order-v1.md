@@ -130,9 +130,9 @@
 |---|---|---|---|---|
 | D-1 | 主菜单背景 | `ui-menu-bg` | 1920×1080 **独立纹理** | 血月+守夜会钟楼剪影+十二灯阵；背景 L\*≤18、月面主体 L\*≥45 |
 | D-2 | 标题字效 | `ui-logo` | 长边 ~1024 | 月银白主体+暗红月晕；禁动画发光（减少闪烁） |
-| D-3 | 通用按钮框体 | `ui-btn-frame` | 9-slice 源 ~96×48 | 常态 ×1；选中态冷青引擎 tint |
+| D-3 | 通用按钮框体 | `ui-btn-frame` | 9-slice 源 ~96×48 | 常态 ×1；选中态余辉金引擎 tint（handoff v1.3 §1.4） |
 | D-4 | 角色选择背景 | `ui-sel-bg` | 1920×1080 独立纹理 | 守夜会堂内景 |
-| D-5 | 英雄头像 ×4 | `ui-sel-face-galvan` / `-cassandra` / `-violet` / `-edmund` | 64（桌面 2x 128） | 入 `ui` 图集；对齐英雄 slug |
+| D-5 | 英雄头像 ×4 | `ui-sel-face-galvan` / `-cassandra` / `-violet` / `-edmund` | 64（桌面 2x 128） | 入 `ui` 图集；对齐英雄 slug。**接稿门：`character-art-bible-v1.md` 节点 5 通过**（现禁止在剪影未锁时出四人成片） |
 | D-6 | 选人卡框 | `ui-sel-card` | 9-slice | 卡面光晕走 CSS（T-1 装饰层），帧不画光晕 |
 | D-7 | 地图选择背景 | `ui-map-bg` | 1920×1080 独立纹理 | 守夜作战星图台 |
 | D-8 | 封印节点卡插画 ×3 | `ui-map-card-graveyard` / `-cathedral` / `-den` | ~480×270 | 色语言对齐 frame-map §4 各图 tile；未解锁引擎灰化 |

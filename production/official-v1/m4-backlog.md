@@ -1,6 +1,7 @@
 # 《血月守夜》M4 美术素材集成 · 待办清单（backlog）
 
 > 版本：v0.1（TA 批次 1 入局审查后建立）· 日期：2026-08-25 · 记录：工程主程 程基岩
+> **2026-09-17 注：** 本文写于走帧到货前。现网 **已有** `player-walk-*`（V4 已过）、`hero-cassandra` 走全套（已过）、`hero-violet-walk-*`（E2 已过）。开工前对照 `assets/frames/` 与 `combat-64-workflow-v1.md` §0，勿再当「走帧未到货」。pivot / flipX 等工程项仍有效。
 > 定位：M4（外部素材替换程序剪影 + 战斗特效升级，plan-v1 §五）启动前必须处理的接入项。
 > 上游：`design/art-bible/ta-review-handoff.md`、`design/art-bible/asset-spec-v1.md` §2.7、`content-id-frame-map.md` §7.4。
 

@@ -1,0 +1,61 @@
+# ============================================================
+# codebase-memory-mcp 索引排除规则（gitignore 语法）
+#
+# 背景：cbm 的忽略是分层的 ——
+#   硬编码（.git / node_modules / .git 等）
+#     → 本仓库 .gitignore（已覆盖 dist / test-results / .vitest-cache /
+#       .tmp-analysis / .v2check / tmp / .git.broken-* / *.zip / *.log /
+#       playwright-report / tools/sim/output/）
+#     → 本文件 .cbmignore（项目特定补充）
+#
+# 本文件只补充「会被解析进图、但对代码理解无价值」的部分。
+# 维护者：Hodiki ｜ 建档：2026-09-21
+# ============================================================
+
+# --- 美术资产（png 本就不被索引，但随附的 json / md 会被解析）---
+# assets/ 约 2587 文件（2225 png + 165 资产 json）
+/assets/
+
+# --- 角色设定与素材库 ---
+# characters/ 约 1527 文件（909 png + 320 json + 169 md + 29 mp4）
+/characters/
+
+# --- 外部工具链 ---
+# tools/ 约 826 文件，含第三方 comfy-lan 与 79MB ffmpeg 二进制
+# 注：若日后需要索引自家的 tools/asset-pipeline/，把下面一行替换为
+#     /tools/comfy-lan/
+/tools/
+
+# --- 归档代码（旧版本实现，会产生重复符号与假 entry point）---
+# src/_archived/ 与 tests/archived/ 存放 v1 实现（active-skill-v1-effects /
+# merit-overlay / upgrade-pool-v1 等）。保留会带来两个副作用：
+#   1) search_graph 出现新旧两份同名符号（如 applyMarkInRadius）
+#   2) 归档函数无人调用 → 被判为 entry point，挤占 get_architecture 的入口清单
+/src/_archived/
+/tests/archived/
+
+# --- cbm 自身工件 ---
+/.codebase-memory/
+
+# --- 敏感信息兜底（.env 已被 .gitignore 覆盖，此处二次保险）---
+.env
+.env.*
+*.env
+!.env.example
+**/secrets/
+*.pem
+*.key
+*.pfx
+*.p12
+*.npmrc
+*.netrc
+
+# --- 临时与缓存（与 .gitignore 对齐，冗余保险）---
+/.tmp-analysis/
+/.v2check/
+/.vitest-cache/
+/test-results/
+/playwright-report/
+/tmp/
+*.log
+*.zip

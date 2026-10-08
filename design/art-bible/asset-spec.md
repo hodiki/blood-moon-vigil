@@ -1,5 +1,7 @@
 # 《血月守夜》资产规格（Asset Spec）· 垂直切片 Demo
 
+> **已退役。** 现行契约是 `asset-spec-v1.md`。本文是 Demo / 程序剪影时代规格，禁止当帧名或画布权威。
+>
 > 版本：v0.2 · Phase 4 预制作 / Phase 6 并行线 B 更新 · 作者：林绘澄（美术总监）
 > 依据：art-bible v0.3（C2 定案：桌面 1920×1080 / 移动端 720×1280）、concept.md §5、weapons/enemies/upgrade-pool GDD
 > 范围：严格垂直切片——1 角色、3 武器、3 敌人、1 Boss、12 升级项、1 地图

@@ -1,10 +1,12 @@
 # 《血月守夜》内容 ID ↔ 帧名 slug 映射表（content-id-frame-map）
 
-> 版本：v1.3（C-1~C-3 UI 帧名冻结编入：天赋树节点 22 + 圣物背包图标 5 + 专武徽记 8，见 §5A）· 日期：2026-08-31 · 作者：文策渊（设计策略师） / TA 回填
-> 上游引用：`content-design-outline.md` §1.3（内容 ID 规范）· `asset-spec-v1.md` §2.1.1（帧名契约：`<类目前缀>-<slug>[-<后缀>]`，全小写 ASCII 连字符）· `asset-spec-v1.md` §1.1~§1.6（各资产帧名）· `asset-production-order-v1.md` v1.2
+> 版本：v1.5（图鉴条目派生口径同步·帧名零改动）· 日期：2026-09-24 · 作者：文策渊（设计策略师） / TA 回填
+> 上游引用：`content-design-outline.md` §1.3（内容 ID 规范）· `asset-spec-v1.md` §2.1.1（帧名契约：`<类目前缀>-<slug>[-<后缀>]`，全小写 ASCII 连字符）· `asset-spec-v1.md` §1.1~§1.6（各资产帧名）· `asset-production-order-v1.md` v1.2 · `gdd-codex.md` **v1.4**（图鉴条目**派生口径**·当前快照 61）
 > 用途：**闭合 CONCERN C2**——供美术规格全局替换与工程帧名注册表对照；M4 资产集成以本表为唯一映射基准。
 > 说明：✅ = Demo 保留帧名（不可改名，无痛替换基准）；🔵 = 新增帧名（已冻结）；全部内容 ID ↔ 帧名一一对应，无歧义。
 > v1.1：R-C3-RULING 新增 `enemy_g1_6 守墓者`。v1.2：对齐 gdd-enemies-v3 / 专武 / 圣物层；当时未冻 `tree-q-*`、C-2、C-3。v1.3：**C-1~C-3 全量编入冻结**（35 帧全部对应引擎真实内容 ID，逐一核对 `talent-tree.ts` / `exclusive.ts`，无半截补造；见 §5A）。
+> v1.5（2026-09-24）：**图鉴条目派生口径同步**（主理人裁决「图鉴数量以内容为准，不提前定死」；回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·图鉴派生）——§5 图鉴行口径由「终态 61」改记为「**条目数派生 · 当前快照 61**」，并注明**帧名与条目数无关、帧名零改动**（派生口径指向 `gdd-codex` v1.4 §3.1）。
+> v1.4（2026-09-24）：**图鉴条目口径对齐**（设计侧审查 D4/B-4 裁决，回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md`）——§5「图鉴（35）」的 **35 系「帧需求估算」而非条目数**，本版注明口径并指向 `gdd-codex` v1.3 的终态 **61**（首批 59）；**帧名零改动**（图鉴条目复用实体帧，帧数不随条目数线性增长）。
 
 ---
 
@@ -14,7 +16,7 @@
 |---|---|---|---|---|
 | hero_edmund | 守夜人·艾德蒙 | HALLOWED | ✅ `player` / `player-v` / 🔵 `player-skill-a` / `player-skill-b` | Demo 保留；提灯手持画进帧内（`player-lantern-close` 道具槽可选打包，不入引用表） |
 | hero_cassandra | 血猎手·卡珊德拉 | SILVER | 🔵 `hero-cassandra` / `-v` / `-skill-a` / `-skill-b` | — |
-| hero_violet | 夜祷修女·薇奥莱 | HALLOWED | 🔵 `hero-violet` / `-v` / `-skill-a` / `-skill-b` | — |
+| hero_violet | 秉烛人·薇奥莱 | HALLOWED | 🔵 `hero-violet` / `-v` / `-skill-a` / `-skill-b`；魔化 🔵 `hero-violet-fallen` / `-v` | 一体两面。`[0]` 仍守誓。魔化 skill/walk 未过不入表 |
 | hero_galvan | 狼裔·加尔文 | BEAST | 🔵 `hero-galvan` / `-v` / `-skill-a` / `-skill-b` | 玩家侧剪影（人形 + 冷青 2px 描边），暗红仅 accent（R-A） |
 
 ## 2. 武器（14）+ 超武（7）
@@ -99,7 +101,7 @@
 
 共享帧：`tile-obstacle`（通用障碍）· `tile-trap`（危险贴花，可选）· `moon` / `vignette` / `decal-rock` / `decal-grass` / `decal-blood`
 
-## 5. 升级池（40）+ 主动技（4）+ 图鉴（35）
+## 5. 升级池（40）+ 主动技（4）+ 图鉴（条目数派生 · 当前快照 61）
 
 | 内容 | 帧名 | 说明 |
 |---|---|---|
@@ -107,9 +109,9 @@
 | 武器槽图标 ×21 | 🔵 `wslot-<slug>` | slug = 武器/超武帧名去前缀（missile → wslot-missile；super-moonwrath → wslot-super-moonwrath） |
 | 主动技图标 ×4 | 🔵 `skill-edmund` / `skill-cassandra` / `skill-violet` / `skill-galvan` | 对齐英雄 slug |
 | 主动技按钮（移动） | 🔵 `hud-skillbtn` | 视觉 96×96 / 热区 ≥44；冷却转圈引擎绘制 |
-| 图鉴条目 ×35 | 🔵 `codex-event-<id>` ×6 + 复用角色/敌人/武器帧 | 事件条目专属帧；战斗条目复用实体帧 |
-| 治疗道具 | ⏸ `heal`（M3 随修女落地） | 预留 |
-| 稀有宝箱 | 🔵 `chest` | 血月化身掉落（升级三选一箱；**不是**圣髑匣） |
+| 图鉴条目（条目数**派生** · 当前快照 **61** / 首批 59，gdd-codex v1.4） | 🔵 `codex-event-<id>` ×6 + 复用角色/敌人/武器帧 | 事件条目专属帧；战斗条目复用实体帧。**帧数 = 6 专属 + 复用实体帧**，**不随条目数线性增长**（原列「×35」系帧需求估算，非条目数）。⚠ **图鉴条目数由内容册实际收录派生（非定死）——本表帧名与条目数无关，帧名零改动**（派生口径见 gdd-codex v1.4 §3.1；v1.5 同步） |
+| 治疗道具 | ⏸ `heal`（M3 随薇奥莱落地） | 预留 |
+| 稀有宝箱 | 🔵 `chest` | 血月化身掉落（升级三选一箱；**不是**遗物匣） |
 | 专武选择卡 ×8 | 🔵 `exw-card-lantern` / `revolver` / `twinblade` / `longbow` / `bell` / `cross` / `axe` / `horn` | 内容 ID `xw_cards`；样张最长边 512 |
 | 复活灯焰 / 余辉货币 | 🔵 `hud-revive` / `hud-merit-glow` | 24×24；余辉**不可**复用旧 merit 加成卡 |
 | 敌头顶状态 | 🔵 `sticon-hard` / `sticon-soft` / `sticon-vuln` | 24×24；引擎 tint |
@@ -173,8 +175,8 @@ C-1～C-3 见 **§5A**（已冻结）。
 | xw_revolver | 圣徒左轮 | 🔵 `exw-emblem-revolver` |
 | xw_twinblades | 血契双刃 | 🔵 `exw-emblem-twinblade` |
 | xw_longbow | 月痕长弓 | 🔵 `exw-emblem-longbow` |
-| xw_bell | 安魂圣铃 | 🔵 `exw-emblem-bell` |
-| xw_cross | 圣辉十字 | 🔵 `exw-emblem-cross` |
+| xw_bell | 誓约圣铃 | 🔵 `exw-emblem-bell` |
+| xw_cross | 圣辉轮刃 | 🔵 `exw-emblem-cross`（帧名沿用旧形态契约勿改；形态已由十字改旋转光刃环，GDD v1.2） |
 | xw_axe | 葬仪巨斧 | 🔵 `exw-emblem-axe` |
 | xw_horn | 月啸号角 | 🔵 `exw-emblem-horn` |
 
@@ -189,14 +191,14 @@ C-1～C-3 见 **§5A**（已冻结）。
 | 召唤怪标记 | 🔵 `marker-rune` | 圣杯侍僧头顶符文 |
 | 冲锋怪标记 | 🔵 `marker-warningline`（引擎绘制） | 狼裔猎手/狼王蓄力线 |
 | 相位怪残影 | 引擎 ghost（复用 `p-circle`） | 亡魂残影 |
-| 眩晕/减速/标记 | 🔵 `marker-stun` / `marker-slow` / `marker-mark` | 提灯闪耀眩晕 / 安魂曲减速 / 血影突袭标记 |
-| 圣髑匣 | 🔵 `relic-reliquary` | 32×32 世界拾取；**不复用** `chest` |
+| 眩晕/减速/标记 | 🔵 `marker-stun` / `marker-slow` / `marker-mark` | 提灯闪耀眩晕 / 誓约回响减速 / 血影突袭标记 |
+| 遗物匣 | 🔵 `relic-reliquary`（帧名沿用勿改） | 32×32 世界拾取；**不复用** `chest`（v1 去宗教化：原"圣髑匣"） |
 | 圣物演出覆盖 | 🔵 `relic-mooneclipse` / `relic-bloodtide` / `relic-twelvelamps` / `relic-silvertide` / `relic-wolfspirit` | 对应 `relic_moonfall` / `relic_bloodtide` / `relic_twelve_lamps` / `relic_silver_tide` / `relic_wolf_spirit`；64×64 |
 
 ## 7. 映射规则（供扩展）
 
 1. 内容 ID → slug：`<类别>_<地图或类>_<id>` 取 `<id>` 语义 slug（`enemy_g1_4 → wraith`）；已冻结，新内容须按 asset-spec §2.1.1 模板。
-2. 帧名模板：`<类目前缀>-<slug>[-<后缀>]`；后缀 `-v`（pose 变体）/`-skill-a/-b`（前摇/施放）/`-entrance`（Boss 出场霸体）/`-walk-a/-b`（步态）/`-broken`（石甲狼破甲，同族）/`-tombstone`（守誓者墓碑，同族）。
+2. 帧名模板：`<类目前缀>-<slug>[-<后缀>]`；后缀 `-v`（pose 变体）/`-skill-a/-b`（前摇/施放）/`-entrance`（Boss 出场霸体）/`-walk-a/-b`（步态；卡珊德拉另有 `-c/-d`）/`-broken`（石甲狼破甲，同族）/`-tombstone`（守誓者墓碑，同族）。
 3. **保留帧名不可改名**：`player/player-v/missile/orb/shockwave/enemy-zombie/enemy-zombie-v/enemy-hound/enemy-hound-v/enemy-boss/enemy-boss-v/gem/tile-ground/tile-grass/tile-obstacle/p-circle/p-ring/p-streak/moon/vignette/decal-rock/decal-grass/decal-blood`。
 4. 替换铁律：外部素材只需把帧画成同名 PNG 重建图集，实体代码零改动（asset-spec §4.3）。
 5. 可选道具槽/特写帧（`boss-lantern-rusty`/`player-lantern-close`）为打包素材，**不进入引擎引用表**。

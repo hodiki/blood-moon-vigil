@@ -213,16 +213,16 @@ upg-a-effect-galvan
 
 ## R-1 走循环（不是四向）
 
-**规则**：每实体恰好 2 帧：`<基帧>-walk-a` + `<基帧>-walk-b`。画布 **等于该角色 idle**。图集 `characters`。引擎 6fps 正向循环；两帧必须成对进仓，缺一帧则整段仍播 idle。
+**规则**：默认每实体 2 帧：`<基帧>-walk-a` + `<基帧>-walk-b`。**卡珊德拉例外：6 帧** `-walk-a/e/b/c/f/d`（已锁，8fps）。画布 **等于该角色 idle**。图集 `characters`。2 帧须成对、C 须 a–f 齐，否则回落 idle。
 
-时间轴（相对 idle 基帧）：重心 hypot ≤3px（64 档）/ 4px（96 档）；脚底 ΔY 与 idle 同档（直立 0 / 四足 1px）；面积 Δ≤20%。同剪影换步，禁止 stretch-compress，脚钉死。默认朝右。
+时间轴（相对 idle 基帧）：重心 hypot ≤3px（64 档）/ 4px（96 档）；脚底 ΔY 与 idle 同档（直立 0 / 四足 1px）；面积 Δ≤25%。同剪影换步，禁止 stretch-compress，脚钉死。默认朝右。
 
 ### R-1a 四英雄 · 本包必做（8 张 · 64×64）
 
 | 基帧 | 走帧 | 角色 |
 |---|---|---|
 | `player` | `player-walk-a` `player-walk-b` | 守夜人 |
-| `hero-cassandra` | `hero-cassandra-walk-a` `hero-cassandra-walk-b` | 血猎手 |
+| `hero-cassandra` | `hero-cassandra-walk-a` … `-f`（**6 帧已锁**，序 a,e,b,c,f,d） | 血猎手 |
 | `hero-violet` | `hero-violet-walk-a` `hero-violet-walk-b` | 修女 |
 | `hero-galvan` | `hero-galvan-walk-a` `hero-galvan-walk-b` | 狼裔 |
 
