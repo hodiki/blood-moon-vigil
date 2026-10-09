@@ -47,10 +47,16 @@ export class RelicDirector {
   }
 
   /**
-   * Boss 渠道保底 1 枚（GDD §3.4「Boss 必掉」）。
-   * ⚠ 工程偏离（挂主理人裁决）：本作 Boss 击杀即胜利终局，`onBossDefeated` 才发牌则圣物永远不可释放。
-   * 故保底改为「Boss 渠道首次触发即发」——出场（进 Boss 战可释放，GDD §186「圣物在 Boss 战中触发（允许）」）
-   * 与击败（字面「击杀必掉」补齐）共用同一 `hasGuaranteedDrop` 闸门，每局至多 1 枚。
+   * 圣物保底 1 枚（口径 B —— 主理人裁决已下，2026-10-09）。
+   *
+   * 渠道语义 =「**血月化身优先 + 地图 Boss 兜底**」，二者**共用同一 `hasGuaranteedDrop` 闸门**
+   * （先到先得，第二次调用 no-op），保住红线 `RELIC_RULES.GUARANTEED_PER_RUN = 1`（每局保底 1 枚）：
+   * - 血月化身出场（4:30 后稀有随机遭遇）→ 发保底第 1 枚，化身成为**更早的更优渠道**；
+   * - 地图 Boss 出场（6:00 进度门）→ 亦调用本方法；化身已发则此处 no-op（兜底）。
+   * 出场即发牌（非「击杀必掉」字面）的原因：本作地图 Boss 击杀即胜利终局，若仅击杀发牌则圣物不可释放；
+   * GDD §186「圣物在 Boss 战中触发（允许）」支持出场发放。方法名 `grantBossGuaranteed` 保留
+   * （避免散点重命名；「Boss 渠道」在口径 B 下已涵盖化身 + 地图 Boss 两类）。
+   *
    * 返回授予的圣物 id（已保底/池空 = null）。
    */
   grantBossGuaranteed(): RelicId | null {

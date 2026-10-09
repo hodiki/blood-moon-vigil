@@ -25,8 +25,10 @@ import { shouldDropHeal } from '@/xp/heal-manager';
 /** enemy:killed 事件负载 */
 export interface EnemyKilledPayload {
   enemyType: string;
-  /** E4-S6 图鉴：内容 ID（15 敌/Boss；旧 kind 三敌 null） */
+  /** E4-S6 图鉴：内容 ID（15 敌；旧 kind 三敌/Boss 为 null） */
   enemyId?: string | null;
+  /** P0-1：Boss 身份（boss_1/2/3/4；非 Boss 恒 null）——击杀分流 + census 用 */
+  bossId?: string | null;
   xp: number;
   /** W-12 召唤物 noXp：true = 击杀反馈链跳过宝石生成（零 XP 路径，gdd-spawner-v2 §③-7） */
   noXp?: boolean;
@@ -121,15 +123,34 @@ export class KillLootConsumer {
       p.onBossSummonKilled(payload.groupId);
     }
     // B6-W5 占比分母近似：击杀敌面板 HP 计入总伤害（1D/沙盘校准口径；精确伤害流留遥测批次）
-    const cfg = payload.enemyId ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[payload.enemyId] ?? (BOSSES as Record<string, { hp?: number }>)[payload.enemyId] : undefined;
+    // P0-1 口径 B：内容 ID 取值优先 bossId（Boss/化身）→ 否则 enemyId（15 内容敌）；旧 kind 三敌均 null。
+    // 旧实现仅判 `payload.enemyId`，对 Boss 恒 false（Boss 的 enemyId 恒 null）→ Boss/化身产出链整块死代码。
+    const contentId = payload.bossId ?? payload.enemyId ?? null;
+    const cfg = contentId
+      ? (ENEMY_CONFIGS as Record<string, { hp?: number }>)[contentId] ??
+        (BOSSES as Record<string, { hp?: number }>)[contentId]
+      : undefined;
     if (cfg?.hp) p.runStats().recordTotalDamage(cfg.hp);
-    // E4-S6 图鉴：首杀记录（15 敌/Boss；内容 ID 幂等；旧 kind 三敌 enemyId 为 null 跳过）
-    if (payload.enemyId) {
-      if (p.codex().recordKill(payload.enemyId)) {
+    // E4-S6 图鉴：首杀记录（15 敌 / Boss 4；内容 ID 幂等；旧 kind 三敌 enemyId===null 跳过）
+    if (contentId) {
+      if (p.codex().recordKill(contentId)) {
         p.setCodexToastPending(); // 图鉴 toast（同帧合并，update 末尾 emit）
-        // 首杀 Boss/精英 → 功绩 +2/只（E4-S7；精英 = tank 运行时类，Boss = boss 类）
         const kind = payload.enemyType as EnemyKindId;
-        if (kind === 'boss' || kind === 'tank') this.firstBossKills += 1;
+        if (contentId === 'boss_4') {
+          // 血月化身（boss_4）= 独立事件 / 特殊 Boss：隐藏条目 codex_boss_boss_4 已由上方
+          // recordKill('boss_4') 幂等解锁（recordKill 对 boss_* 走 `codex_boss_` 前缀 = MOON_AVATAR_ENTRY_ID，
+          // unlock 类型 'kill'）。查证裁决：旧 `recordTrigger(MOON_AVATAR_ENTRY_ID)` 与 recordKill **同 entryId**，
+          // 为重复记账 / same-id 幂等 no-op（不冲突、不双解锁）；以 `recordKill` 为唯一权威解锁路径，
+          // 下方 recordTrigger 保留为显式 trigger 语义调用（幂等，零副作用），非第二权威源。
+          p.codex().recordTrigger(MOON_AVATAR_ENTRY_ID);
+          if (p.codex().recordProgress('codex_event_6')) p.setCodexToastPending();
+          this.avatarKills += 1;
+          this.dropRareChest(payload.x, payload.y);
+        } else if (kind === 'boss' || kind === 'tank') {
+          // 首杀地图 Boss/精英 → 功绩 +2/只（E4-S7；精英 = tank 运行时类，Boss = boss 类）。
+          // 化身（boss_4）走专属 +5（avatarKills），**不计入**本条，避免同一次击杀重复计功（化身产出 = +5）。
+          this.firstBossKills += 1;
+        }
         // B3-W3 渠道 1（默认开）：首精英击杀必掉卡 2（待发队列防卡死 §6.1-4）
         if (kind === 'tank') {
           p.notifyEliteKilled();
@@ -138,13 +159,6 @@ export class KillLootConsumer {
             p.consumeTreeEliteOffer();
             p.notifyEliteOffers(p.treeEliteOffers());
           }
-        }
-        // 血月化身（boss_4）：任意图稀有月坠 → 图鉴隐藏条目 + 功绩 +5（gdd-codex §3.2/§3.4）
-        if (payload.enemyId === 'boss_4') {
-          p.codex().recordTrigger(MOON_AVATAR_ENTRY_ID);
-          if (p.codex().recordProgress('codex_event_6')) p.setCodexToastPending();
-          this.avatarKills += 1;
-          this.dropRareChest(payload.x, payload.y);
         }
       }
     }

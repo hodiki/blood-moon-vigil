@@ -357,7 +357,11 @@ export const RELICS: Record<RelicId, RelicConfig> = {
 /** 圣物层规则（§3.4：CD 锚 240s；每局保底 1 上限 2；局内每枚 1 次；伤害占比 <5%） */
 export const RELIC_RULES = {
   CD_SECONDS: 240,
-  /** 每局保底（Boss **出场即发** 1 枚；D6 定案，原「Boss 击杀必掉」口径废止——EN-08） */
+  /**
+   * 每局保底 1 枚（**口径 B**，主理人裁决 2026-10-09）：渠道 =「血月化身出场优先 + 地图 Boss 兜底」，
+   * 二者共用同一 `hasGuaranteedDrop` 闸门（先到先得，第二次 no-op）。均为**出场即发**；
+   * 原「Boss 击杀必掉」口径废止（D6 定案 / EN-08）。
+   */
   GUARANTEED_PER_RUN: 1,
   /** 每局上限（祭坛概率第 2 枚） */
   MAX_PER_RUN: 2,

@@ -11,7 +11,7 @@
 
 import Phaser from 'phaser';
 import { enemyPanel, runtimeKindForEnemyId, type EnemyKindId } from '@/enemies/enemy-types';
-import type { EnemyConfig, EnemyId } from '@/config/balance';
+import type { EnemyConfig, EnemyId, BossId } from '@/config/balance';
 import { GameEvents, GameEvent } from '@/core/events';
 import { slowedSpeed } from '@/active-skill/active-skill-effects';
 import { emptyStatusState, isStunned, slowMultiplier, clearStatuses, type StatusState } from '@/combat/status/status-engine';
@@ -35,6 +35,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   spawnGeneration = 0;
   /** E3-S1 内容 ID（15 敌；旧 kind 三敌/Boss 为 null） */
   enemyId: EnemyId | null = null;
+  /**
+   * P0-1 口径 B：Boss 身份字段（内容 ID；非 Boss 实体恒 null）。
+   * 与 `enemyId` 解耦——不改 `enemyId` 语义（Boss 仍为 null）。本字段由 `spawnByBossConfig` 落
+   * `cfg.id`，其余 spawn 路径复位 null。
+   * ⚠ 行为增量（已登记 · 需主理人知晓）：击杀消费端改用 `contentId = bossId ?? enemyId` 后，
+   * Boss/化身击杀**现在会计入** `runStats.recordTotalDamage(面板 HP)`（旧实现 `payload.enemyId`
+   * 对 Boss 恒 null → 不执行）→ `totalDamageDealt` 分母含 Boss 3000~4500 面板 HP → 圣物
+   * `<5%`（`relicDpsShareOf`）与衍生技占比（`derivativeDamageShare`）分母上升、占比下降。
+   * 判定为**有意修正**（Boss HP 本属「全源总伤」，GDD 尾章分母 440×40 已隐含 Boss 战时段）。
+   * 用途：① Boss.kill() 终局判据分化（boss_4 = 独立事件不发 BossDefeated）；② EnemyKilled payload
+   * 透出供击杀消费端按内容 ID 分流 + 遥测 census（审查 #9）。
+   */
+  bossId: BossId | null = null;
   maxHp = 0;
   hp = 0;
   speed = 0;
@@ -161,6 +174,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const panel = enemyPanel(kind);
     this.kind = kind;
     this.enemyId = null;
+    this.bossId = null; // P0-1：非 Boss 路径复位（防池复用串味）
     this.maxHp = panel.hp;
     this.hp = panel.hp;
     this.speed = panel.speed;
@@ -211,6 +225,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   ): void {
     this.spawnGeneration += 1;
     this.enemyId = cfg.id;
+    this.bossId = null; // P0-1：内容敌非 Boss → 复位（防池复用串味）
     this.kind = runtimeKindForEnemyId(cfg.id);
     // W-8 面板链：HP = 基础面板 × hpMult（scale(t)×c 案联动×宽容，由生成侧组装；
     // 仅 HP——伤害/移速/攻击间隔不缩放 MN-2）；缺省 1 = 无缩放（测试确定性路径）
@@ -263,6 +278,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   spawnByBossConfig(cfg: import('@/config/balance').BossConfig, x: number, y: number): void {
     this.spawnGeneration += 1;
     this.enemyId = null;
+    this.bossId = cfg.id; // P0-1：Boss 身份（终局判据分化 + 击杀分流 + census）
     this.kind = 'boss';
     this.maxHp = cfg.hp;
     this.hp = cfg.hp;
@@ -348,6 +364,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       enemyType: this.kind,
       // E4-S6 图鉴数据层：15 敌/Boss 内容 ID（旧 kind 三敌为 null，图鉴只记录内容 ID 击杀）
       enemyId: this.enemyId,
+      // P0-1：Boss 身份（击杀消费端按内容 ID 分流 + 遥测 census；非 Boss 恒 null）
+      bossId: this.bossId,
       xp: this.xp,
       // W-12：击杀反馈链挂点——PlayScene 宝石生成按 noXp 跳过（召唤物零宝石路径）
       noXp: this.noXp,

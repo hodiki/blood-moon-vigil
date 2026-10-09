@@ -15,9 +15,15 @@
 
 import { Enemy } from '@/enemies/enemy';
 import { GameEvents, GameEvent } from '@/core/events';
-import { bossGraceEndsAt, isBossInGrace } from '@/enemies/boss-math';
+import { bossGraceEndsAt, isBossInGrace, shouldEmitBossDefeated } from '@/enemies/boss-math';
 import type { EnemyKindId } from '@/enemies/enemy-types';
 
+/**
+ * Boss「血月尊者」实体（S4 / E4-S2 / enemies §③/§⑥.5）。
+ *
+ * P0-1 口径 B：Boss 身份字段 `bossId`（内容 ID）由基类 `Enemy` 承载（非 Boss 实体恒 null），
+ * 在 `spawnByBossConfig` 内落 `cfg.id`；本类 kill() 读取该字段做终局判据分化。
+ */
 export class Boss extends Enemy {
   /** 霸体截止（秒时间戳）：期内不承伤（weapons refreshEnemies 过滤） */
   graceUntil = 0;
@@ -39,10 +45,14 @@ export class Boss extends Enemy {
 
   override kill(): void {
     if (!this.active) return;
-    super.kill(); // enemy:killed（enemyType 'boss'，xp 100）
-    if (this.kind === 'boss') {
-      // E4-S3 终局入口：PlayScene 监听 → 记录 Boss 战时长 → 胜利结算
-      GameEvents.emit(GameEvent.BossDefeated, { bossHp: this.hp });
+    const bossId = this.bossId; // 击瞬间身份（super.kill() 不改写）
+    super.kill(); // enemy:killed（enemyType 'boss'，xp 100；payload 已带 bossId）
+    // P0-1 口径 B 终局判据分化：
+    // - boss_4（血月化身）= 独立事件 / 特殊 Boss（4:30 稀有随机遭遇，非进度门）→ **不发** BossDefeated，
+    //   其余产出（图鉴隐藏条目 + 稀有宝箱 + 功绩 +5 + 圣物保底渠道）由 PlayScene 化身击杀分支承担；
+    // - boss_1/2/3 及未知路径（bossId===null）→ 保持 emit（E4-S3 终局入口，PlayScene 唯一胜利结算）。
+    if (this.kind === 'boss' && shouldEmitBossDefeated(bossId)) {
+      GameEvents.emit(GameEvent.BossDefeated, { bossHp: this.hp, bossId });
     }
   }
 }

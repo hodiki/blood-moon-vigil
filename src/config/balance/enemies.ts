@@ -153,7 +153,7 @@ export const BOSSES: Record<BossId, BossConfig> = {
   // MN-9 覆写名额 ①：芬里厄蓄力期减速 ×0.5（迟滞不锁死；蓄力期条件由 Boss 技能运行时判定）
   boss_3: { id: 'boss_3', name: '狼王·芬里厄', map: 'map_den', hp: 4200, speed: 32, damage: 30, attackInterval: 2.0, radius: 42, xp: 120, powerTag: 'BEAST', frame: 'boss-fenrir', phase2: '阶段 2（HP<50%）：蓄力冲锋扑击（警告线，逼走位）；召唤 2 灰狼', visual: '≥3x·猩红金·狼鬃王冠', /* P1-18：芬里厄减速 ×0.5 仅蓄力期（运行时相位覆写，不写常驻） */ ccProfile: { tier: 'boss' } },
   // MN-9 覆写名额 ②：化身易伤免疫（防猎物标记把短战打穿下限）
-  boss_4: { id: 'boss_4', name: '血月化身', map: 'any', hp: 3000, speed: 40, damage: 25, attackInterval: 1.8, radius: 40, xp: 150, powerTag: 'MOON', frame: 'boss-moonavatar', phase2: '4:30 后 5% 触发「月坠」（预警后降临）；不掉通关进度，掉稀有图鉴', visual: '半透明猩红金·月光人形·无角饰·边缘月白描边', ccProfile: { tier: 'boss', ccResistance: { vulnerable: { immune: true } } } },
+  boss_4: { id: 'boss_4', name: '血月化身', map: 'any', hp: 3000, speed: 40, damage: 25, attackInterval: 1.8, radius: 40, xp: 150, powerTag: 'MOON', frame: 'boss-moonavatar', phase2: '4:30 后 5% 触发「月坠」（预警后降临）；击杀不触发通关终局（独立事件/特殊 Boss，非进度门）；产出 = 图鉴隐藏条目 + 稀有宝箱 + 功绩 +5 + 圣物保底', visual: '半透明猩红金·月光人形·无角饰·边缘月白描边', ccProfile: { tier: 'boss', ccResistance: { vulnerable: { immune: true } } } },
 };
 
 /**

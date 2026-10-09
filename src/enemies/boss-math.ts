@@ -48,6 +48,20 @@ export function moonAvatarTriggerDue(elapsedSeconds: number, roll: number): bool
   return elapsedSeconds >= MOON_AVATAR.AFTER_SECONDS && roll < MOON_AVATAR.TRIGGER_CHANCE;
 }
 
+/**
+ * P0-1 口径 B：终局判据分化 —— Boss 击杀是否应发 `GameEvent.BossDefeated`（＝进度门语义）。
+ *
+ * 血月化身 `boss_4` = **独立事件 / 特殊 Boss**（4:30 后稀有随机遭遇，非 6:00 进度门）→ `false`：
+ *   化身击杀不得触发胜利终局（不 finishGame / 不 recordMapCleared / 不按 victory 计功绩）。
+ * 其余（`boss_1/2/3` 及未知路径 `bossId === null`）→ `true`：保持 emit，PlayScene.onBossDefeated 是
+ *   唯一 `finishGame(true)` 入口（向后兼容旧 kind==='boss' 语义）。
+ *
+ * 纯函数（可脱离 Phaser 单测）：Boss 实体是 Phaser Sprite，判据落在这里供单测锚定。
+ */
+export function shouldEmitBossDefeated(bossId: BossId | null): boolean {
+  return bossId !== 'boss_4';
+}
+
 /** Boss 战时长（sim-verify §7：HP ÷ (DPS × 实战折减)；埋点 bossFightSeconds） */
 export function bossFightSeconds(
   hp: number,

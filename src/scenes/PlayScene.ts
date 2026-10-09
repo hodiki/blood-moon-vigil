@@ -480,7 +480,10 @@ export class PlayScene extends Phaser.Scene {
     // W-4 守誓者运行时（FQ-2：修女选圣铃开局自带；墓碑回血 sink = 玩家回血钳上限）
     // NV-INTEG-FIX ③：原条件 ownedWeaponIds.includes('xw_bell') 在 create 期恒 false（圣铃开局
     // 自带但专武入册在此之后）→ 启用判定改为「修女 && 选中圣铃」，随专武选择结果联动（见下）。
-    this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y);
+    // EN-06（D8 / GDD §4.4 v1.4）：守誓者上限 = 玩家「**当局当前**」最大生命 ×150%——**动态跟随**，
+    // 非入场快照、非固定 200。入场即按「此刻」玩家面板值初始化（此处 stats.maxHp 已含角色初始 HP +
+    // 天赋树生存节点，见上方 treeApplier.applyToStats）；运行期玩家生命成长由下方 HpChanged 订阅同步。
+    this.oathkeeper = new OathkeeperRuntime(this.player.x + 40, this.player.y, this.player.stats.maxHp);
     // P1-7 支线墓碑回血：applyTreeToStats 早于守誓者装配 → 暂存加值在此写入 machine（+1 HP/s ×层数）
     if (this.treeApplier.tombHealBonus > 0) {
       this.oathkeeper.state.machine['tombHealFlatBonus'] = this.treeApplier.tombHealBonus;
@@ -651,12 +654,27 @@ export class PlayScene extends Phaser.Scene {
 
     // 事件订阅（ARCH §3.4：统一在 create 注册，shutdown 清空）
     GameEvents.on(GameEvent.PlayerDied, this.onPlayerDied, this);
+    // EN-06（D8 / GDD §4.4 v1.4）：玩家最大生命运行期变更 → 守誓者上限同步 ×150%（**动态跟随**，
+    // 非快照）。运行期「玩家当局当前最大生命」变更源——升级成长（hpPerLevel）/ 升级池 up_g_3
+    // 生命上限 +20——写回后统一 emit HpChanged（payload { hp, maxHp }）→ 此处单点接线；入场值
+    // （角色初始 HP + 天赋树生存节点）已由上方构造参数带入。纯受击/治疗（maxHp 不变）时
+    // syncMaxHp 幂等；守誓者未启用（非修女/非圣铃）时该调用为无害空写。
+    GameEvents.on(
+      GameEvent.HpChanged,
+      (args: unknown) => {
+        this.oathkeeper.syncMaxHp((args as { maxHp: number }).maxHp);
+      },
+      this,
+    );
     // P2-7②：Boss 硬控免疫 → 飘「免疫」短文本（FloatTextLayer 同位节流 1.2s）
     GameEvents.on(GameEvent.StatusImmune, (args: unknown) => {
       const p = args as { x: number; y: number; now: number };
       this.floatTexts.showImmune(p.x, p.y, p.now);
     }, this);
     GameEvents.on(GameEvent.EnemyKilled, (args: unknown) => this.killLoot.onEnemyKilled(args), this);
+    // P0-1 口径 B：血月化身击杀独立分支（非进度门）—— 订阅序在 killLoot 之后，产出链先结算
+    //   （图鉴/宝箱/功绩 +5），再收口场景侧副作用（技能召唤物清场 / 方阵复位）。见 onAvatarKilled。
+    GameEvents.on(GameEvent.EnemyKilled, (args: unknown) => this.onAvatarKilled(args), this);
     GameEvents.on(GameEvent.PlayerRevived, (args: unknown) => this.killLoot.onPlayerRevived(args), this);
     GameEvents.on(GameEvent.LevelUp, (args: unknown) => this.upgrades.onLevelUp(args as { level: number; xpNeeded: number }), this);
     GameEvents.on(GameEvent.UpgradeChosen, (args: unknown) => this.upgrades.onUpgradeChosen(args as UpgradeChosenPayload), this);
@@ -874,8 +892,12 @@ export class PlayScene extends Phaser.Scene {
     this.finishGame(false);
   }
 
-  /** E4-S3 胜利终局（Boss 击杀） */
-  private onBossDefeated(): void {
+  /** E4-S3 胜利终局（地图进度门 Boss 击杀；P0-1 口径 B：化身 boss_4 不走此路径） */
+  private onBossDefeated(args?: unknown): void {
+    // P0-1 口径 B 防御性守卫：收到 boss_4 则早退（化身 = 独立事件，非进度门）。
+    // 正常路径 boss.ts 已不发此事件；此守卫防未来有人误发导致化身"白嫖"通关。
+    const bossId = (args as { bossId?: string | null } | undefined)?.bossId;
+    if (bossId === 'boss_4') return;
     // MN-23：Boss 死亡随 BOSS 清场（召唤物一并清除，不掉 XP——静默回收语义）
     this.bossConsumer.endFight((tag) => {
       this.enemyPool.eachActive((e) => {
@@ -885,7 +907,7 @@ export class PlayScene extends Phaser.Scene {
     // P2 修复（AI 测试报告 §4.8.4）：elapsedSeconds 在 6:00 收束后冻结于 360，spawn/defeat 相减恒 0——
     // Boss 计时改用游戏时钟（收束后继续走动），bossFightSeconds 才能测出真实战斗墙钟（60~85s 锚）
     this.stats.recordBossDefeated(this.time.now / 1000);
-    // P0-1「Boss 击杀必掉 1 枚」保底补齐（Boss 出场已发则此处 no-op）
+    // 口径 B 圣物保底兜底：Boss 击杀补齐（出场/化身已发则此处 no-op，共用闸门每局至多 1 枚）
     if (this.relicFields.relics.grantBossGuaranteed()) this.relicFields.syncRelicHud(this.time.now / 1000);
     // E4-S6 图鉴 progress：首通地图 → 事件条目（墓地→起源/守夜会；教堂→血廷；狼穴→兽群）
     if (this.saveData) {
@@ -896,6 +918,32 @@ export class PlayScene extends Phaser.Scene {
       if (isNewClear) writeSave(window.localStorage, this.saveData, this.cfg.isMobile ? 'mobile' : 'desktop');
     }
     this.finishGame(true);
+  }
+
+  /**
+   * P0-1 口径 B：血月化身（boss_4）击杀独立分支 —— 化身 = **独立事件 / 特殊 Boss**，非进度门。
+   *
+   * 由 EnemyKilled 二次订阅触发（`payload.bossId === 'boss_4'`）；产出链（图鉴隐藏条目 / 事件条目 /
+   * 稀有宝箱 / 功绩 +5）已由 KillLootConsumer 结算，这里只收口场景侧副作用：
+   *   ① `bossConsumer.endFight` —— 清化身技能同源召唤物 + 技能区/状态机复位。**否则**化身技能运行时
+   *      （月坠 / 月相脉冲 / 引力潮汐）在化身死后继续施放（endFight 原唯一调用点在 onBossDefeated 终局路径）。
+   *   ② `spawner.boss4OnField = false` —— 复位方阵停掷。**否则**方阵永久停掷（原唯一置位在 spawnAvatar，
+   *      全仓无复位点，是此前被"化身通关"掩盖的现存缺陷）。
+   *   ③ **不**调 finishGame / **不**调 recordMapCleared / **不**按 victory=true 计功绩；亦不调
+   *      stats.recordBossSpawn/recordBossDefeated（主理人口径：化身属 45~60s 有意偏差的稀有短战，不计入
+   *      60~90s Boss 战时长锚）。地图 Boss 的 6:00 出场与终局结算不受影响。
+   */
+  private onAvatarKilled(args: unknown): void {
+    const bossId = (args as { bossId?: string | null }).bossId;
+    if (bossId !== 'boss_4') return;
+    // ① 化身技能召唤物静默清场（tag 由 BossSkillConsumer.BOSS_SUMMON_TAG 内部注入）+ 状态机复位
+    this.bossConsumer.endFight((tag) => {
+      this.enemyPool.eachActive((e) => {
+        if (e.groupId === tag) e.kill();
+      });
+    });
+    // ② 方阵停掷复位（W-A F-2：化身不再在场）
+    this.spawner.boss4OnField = false;
   }
 
   /** 统一终局：停止生成/清武器/隐藏选卡 → 聚合统计 → GAMEOVER → 结算页（CM R5 / E4-S4） */
@@ -1058,6 +1106,9 @@ export class PlayScene extends Phaser.Scene {
     avatar.beginGrace(now);
     this.bossConsumer.beginSkills('boss_4', null); // 无阶段短战高密度；化身不改写常规 boss 引用（原语义）
     this.spawner.boss4OnField = true; // W-A F-2：化身在场方阵停掷
+    // 口径 B（主理人裁决）：圣物保底渠道 =「血月化身优先 + 地图 Boss 兜底」，共用 hasGuaranteedDrop
+    // 闸门、每局至多 1 枚；化身出场即发（更早的更优渠道），6:00 地图 Boss 出场处 / 击杀处为 no-op 兜底。
+    if (this.relicFields.relics.grantBossGuaranteed()) this.relicFields.syncRelicHud(now);
     this.tweens.add({
       targets: avatar,
       alpha: 0.35,
@@ -1101,7 +1152,7 @@ export class PlayScene extends Phaser.Scene {
     }
     // TASK-28：Boss 出场特效 —— 猩红金冲击环 + 金点爆发 + 屏幕震动（移动端震动关闭）
     this.fx.bossEntrance(bx, by);
-    // P0-1 圣物保底 1 枚：Boss 渠道发牌（进 Boss 战即可释放；详见 RelicDirector.grantBossGuaranteed 的偏离说明）
+    // 口径 B 圣物保底兜底：Boss 渠道发牌（化身已发则此处 no-op；共用 hasGuaranteedDrop 闸门，每局至多 1 枚）
     if (this.relicFields.relics.grantBossGuaranteed()) this.relicFields.syncRelicHud(now);
     if (this.cfg.screenShake) this.cameras.main.shake(150, 0.004);
     // M3 叙事：Boss 登场按 bossId 分句（spec §5/§6 bottom-banner；narrative-bindings 路由）

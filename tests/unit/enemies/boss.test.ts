@@ -19,7 +19,10 @@ import {
   moonAvatarTriggerDue,
   bossFightSeconds,
   neroEffectiveHp,
+  shouldEmitBossDefeated,
 } from '@/enemies/boss-math';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 /**
  * E4-S2 Boss「血月尊者」：面板 / 体型 / 猩红金 / 0.5s 霸体（纯逻辑层）。
@@ -161,3 +164,46 @@ describe('E3-S5/S10 Boss 战时长判据 60~90s（sim-verify §7 / gdd-enemies �
     expect(BOSS_FIGHT.PRACTICAL_FACTOR).toBe(0.85);
   });
 });
+
+/**
+ * P0-1 口径 B：终局判据分化 —— 血月化身（boss_4）击杀不得触发胜利终局。
+ * 判据落纯函数 shouldEmitBossDefeated（Boss 实体是 Phaser Sprite，不做 node 单测）；
+ * 实体/接线用源码断言守卫（参照 review-fix-f 纪律）。
+ */
+describe('P0-1 终局判据分化：血月化身不触发通关（口径 B）', () => {
+  it('shouldEmitBossDefeated：boss_1/2/3 发；boss_4（化身）不发；未知路径 null 发（兼容）', () => {
+    expect(shouldEmitBossDefeated('boss_1')).toBe(true);
+    expect(shouldEmitBossDefeated('boss_2')).toBe(true);
+    expect(shouldEmitBossDefeated('boss_3')).toBe(true);
+    expect(shouldEmitBossDefeated('boss_4')).toBe(false); // 化身 = 独立事件 / 特殊 Boss，非进度门
+    expect(shouldEmitBossDefeated(null)).toBe(true); // 未知/legacy kind==='boss' 路径保持 emit
+  });
+});
+
+describe('P0-1 bossId 落地 + 终局分化接线守卫（源码断言）', () => {
+  const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf-8');
+  const bossSrc = read('../../../src/enemies/boss.ts');
+  const enemySrc = read('../../../src/enemies/enemy.ts');
+
+  it('boss.ts kill() 经 shouldEmitBossDefeated(bossId) 分流；boss_4 不发 BossDefeated', () => {
+    expect(bossSrc).toContain('shouldEmitBossDefeated');
+    expect(bossSrc).toMatch(/shouldEmitBossDefeated\(bossId\)/);
+    expect(bossSrc).toMatch(/kind === 'boss' && shouldEmitBossDefeated/);
+  });
+
+  it('BossDefeated payload 携带 bossId（供 onBossDefeated 防御守卫）', () => {
+    expect(bossSrc).toMatch(/GameEvent\.BossDefeated,\s*\{\s*bossHp:\s*this\.hp,\s*bossId\s*\}/);
+  });
+
+  it('enemy.ts：新增 bossId 字段 + spawnByBossConfig 落 cfg.id + 其余 spawn 路径复位 null', () => {
+    expect(enemySrc).toMatch(/bossId:\s*BossId \| null = null/);
+    expect(enemySrc).toMatch(/spawnByBossConfig[\s\S]{0,160}this\.bossId = cfg\.id/);
+    // 分两条 spawn 路径复位 null（spawn / spawnByConfig）→ 至少 2 处
+    expect((enemySrc.match(/this\.bossId = null/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('enemy.ts kill() payload 透出 bossId（击杀分流 + census #9）', () => {
+    expect(enemySrc).toMatch(/bossId: this\.bossId,/);
+  });
+});
+
