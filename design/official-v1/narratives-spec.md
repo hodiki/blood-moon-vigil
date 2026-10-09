@@ -1,7 +1,8 @@
 # 《血月守夜》文本表终稿（narratives-spec）
 
-> 版本：v1.5（P0-1 口径 B：化身定位 / 圣物渠道登记）· 日期：2026-09-24（v1.5 修订 2026-10-09）· 作者：文策渊（设计策略师）
-> v1.5 范围（**P0-1 裁决 · 口径 B 回写**，2026-10-09；回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·第五轮）：① §4A 圣物「解锁」列「Boss 出场即发池」→「**Boss 出场保底池（化身优先 / 地图 Boss 兜底）**」；② §5.4 `boss_4` 掉落由「不掉通关进度；图鉴隐藏条目 + 稀有宝箱（chest）」改**显式**「**击杀不触发通关终局**（独立事件 / 特殊 Boss，非进度门）；产出 = 图鉴隐藏条目 + 稀有宝箱 + 功绩 +5 + 圣物保底」。**文案字面零改写**（名讳 / table line / 广播句均不动）；**不改任何 relic id**（`relic_mooneclipse` vs `relic_moonfall` 口径不一致另登记待裁决，见回执 §附·第五轮）。
+> 版本：v1.6（圣物 id 口径统一：代码真源 `relic_moonfall`）· 日期：2026-09-24（v1.5 修订 2026-10-09 / v1.6 修订 2026-10-09）· 作者：文策渊（设计策略师）
+> v1.6 范围（**圣物 id 口径裁决执行**，2026-10-09；主理人裁决 + 回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·第六轮）：§4A 圣物 id `relic_mooneclipse` → **`relic_moonfall`**、§7 `n_relic_mooneclipse` → **`n_relic_moonfall`**——统一为**代码真源**（`RelicId` 类型 / `RELICS` 表 / `frame-registry` 注册键 / 存档契约均用 `relic_moonfall`）。**帧名 `relic-icon-mooneclipse`（背包图标）/ `relic-mooneclipse`（演出帧）词形冻结不动**（frame-name drop-in contract）——「**id 用 `moonfall` / 帧名用 `mooneclipse`**」为**有意共存**，非残留。**文案字面零改写**（名讳「月蚀之陨」/ table line「月亮，眨了下眼。」均不动）。
+> v1.5 范围（**P0-1 裁决 · 口径 B 回写**，2026-10-09；回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·第五轮）：① §4A 圣物「解锁」列「Boss 出场即发池」→「**Boss 出场保底池（化身优先 / 地图 Boss 兜底）**」；② §5.4 `boss_4` 掉落由「不掉通关进度；图鉴隐藏条目 + 稀有宝箱（chest）」改**显式**「**击杀不触发通关终局**（独立事件 / 特殊 Boss，非进度门）；产出 = 图鉴隐藏条目 + 稀有宝箱 + 功绩 +5 + 圣物保底」。**文案字面零改写**（名讳 / table line / 广播句均不动）；**relic id 口径已于 v1.6 统一为代码真源 `relic_moonfall`**（含 §7 `n_relic_moonfall`）；帧名 `relic-icon-mooneclipse` / `relic-mooneclipse` 保留词形不动。
 > v1.4 范围（主理人文案六问裁决回写，回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·第三轮裁决执行）：**① ⑤2 = A：§6 `n_toast_codex` 时长 2.3s → 1.3s**（依工程真值 `src/narratives/narratives.ts:259 durationSec: 1.3`；NV-PLAYER-UI W-B6 外测反馈口径）——**同时关闭 `narratives.ts:257-258` 的「spec §6 权威值待下轮 spec 修订回写」挂账**；**② ⑤4 = A：§4A 守誓者「解锁」定稿**为「使用薇奥莱并选择誓约圣铃（守誓路线）」（删「待玩法侧回填后定稿」）；**③ ⑤5 = 确认：§7 双路线变体段加状态注记**（corruption 分支在魔化玩法落地前不触发）；**④ ⑤1/⑤3 = 术语登记**：§10 登记「未接线 UI 别名集」与定名「**誓约的守护**」（替代禁用词「安魂者」）；**⑤ §12 C-6 状态同步**。**文案字面零改写**（双路线变体 / 拼写表名均不动字面）。
 > v1.3 范围（设计侧审查 D3/B-3 裁决回写，回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md`）：**衍生技命名以 `gdd-exclusive-weapons.md` §4.8 为唯一口径**——§4 艾德蒙档案「左轮化『圣痕六连射』/ 提灯化『圣辉领域』」回写为「左轮化『**圣徒左轮技**』/ 提灯化『**破旧提灯技**』」；§10 拼写表「衍生技 ×8」同序回写。其余 6 套名（血影突袭/月痕狙击/誓约回响/圣辉审判/血月狂化/月啸冲锋）原已一致，无改动；专武冻结名（誓约圣铃/圣辉轮刃）不动。
 > v1.2 范围：schema 重构（双专武模型 + BONE 第六标签 + 圣物/实体档案类型）；4 角色档案表全量重写；§7 进化播报（5 句）退役 → 圣物释放 ×5 + 共鸣寻获 + 薇奥莱双路线变体 ×2；血月尊者档案补腐朽骑士联动；台词红线 30→**33**（C-2 按裁决②分配）；C-1~C-4 清账。
@@ -193,7 +194,7 @@ interface EventArchiveText {   // 事件档案（§8.2，供图鉴事件页）
 **圣物 ×5**（line 一句两用：图鉴档案基线 + 释放播报）：
 | key | 名讳 / powerTag | line（≤20 字） | 解锁 |
 |---|---|---|---|
-| relic_mooneclipse | 月蚀之陨 / MOON | 月亮，眨了下眼。 | Boss 出场保底池（化身优先 / 地图 Boss 兜底）获取 |
+| relic_moonfall | 月蚀之陨 / MOON | 月亮，眨了下眼。 | Boss 出场保底池（化身优先 / 地图 Boss 兜底）获取 |
 | relic_bloodtide | 血海退潮 / BLOOD | 血，也有退潮的时候。 | Boss 出场保底池（化身优先 / 地图 Boss 兜底） / 祭坛概率池 |
 | relic_twelve_lamps | 十二灯誓约 / HALLOWED | 十二盏灯，今夜齐燃。 | 祭坛概率池专属 |
 | relic_silver_tide | 银潮汐 / SILVER | 最后一炉银，落地成雨。 | Boss 出场保底池（化身优先 / 地图 Boss 兜底）专属 |
@@ -266,7 +267,7 @@ interface EventArchiveText {   // 事件档案（§8.2，供图鉴事件页）
 
 | key | 圣物 | powerTag | 文案 | 字数 | 形式 | 时长 |
 |---|---|---|---|---|---|---|
-| n_relic_mooneclipse | 月蚀之陨 | MOON | 月亮，眨了下眼。 | 7 | center-gold | 2.5s |
+| n_relic_moonfall | 月蚀之陨 | MOON | 月亮，眨了下眼。 | 7 | center-gold | 2.5s |
 | n_relic_bloodtide | 血海退潮 | BLOOD | 血，也有退潮的时候。 | 9 | center-gold | 2.5s |
 | n_relic_twelve_lamps | 十二灯誓约 | HALLOWED | 十二盏灯，今夜齐燃。 | 9 | center-gold | 2.5s |
 | n_relic_silver_tide | 银潮汐 | SILVER | 最后一炉银，落地成雨。 | 10 | center-gold | 2.5s |

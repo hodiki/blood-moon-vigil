@@ -545,7 +545,7 @@ export const ENTITY_ARCHIVES: readonly EntityArchiveText[] = [];
 
 /**
  * 圣物档案 ×5（spec §4A；`line` 一句两用 = 图鉴档案基线 + 释放播报）。
- * ⚠ 本批**仅落接口与容器**：`relic_mooneclipse` / `relic_bloodtide` / `relic_twelve_lamps` /
+ * ⚠ 本批**仅落接口与容器**：`relic_moonfall` / `relic_bloodtide` / `relic_twelve_lamps` /
  * `relic_silver_tide` / `relic_wolf_spirit` 待人工文案落表（§3.5），故当前为空数组。
  */
 export const RELIC_ARCHIVES: readonly RelicArchiveText[] = [];

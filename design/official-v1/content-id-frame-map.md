@@ -1,10 +1,11 @@
 # 《血月守夜》内容 ID ↔ 帧名 slug 映射表（content-id-frame-map）
 
-> 版本：v1.5（图鉴条目派生口径同步·帧名零改动）· 日期：2026-09-24 · 作者：文策渊（设计策略师） / TA 回填
+> 版本：v1.6（新增命名口径注·圣物 id ↔ 帧名有意共存）· 日期：2026-09-24 · 作者：文策渊（设计策略师） / TA 回填
 > 上游引用：`content-design-outline.md` §1.3（内容 ID 规范）· `asset-spec-v1.md` §2.1.1（帧名契约：`<类目前缀>-<slug>[-<后缀>]`，全小写 ASCII 连字符）· `asset-spec-v1.md` §1.1~§1.6（各资产帧名）· `asset-production-order-v1.md` v1.2 · `gdd-codex.md` **v1.4**（图鉴条目**派生口径**·当前快照 61）
 > 用途：**闭合 CONCERN C2**——供美术规格全局替换与工程帧名注册表对照；M4 资产集成以本表为唯一映射基准。
 > 说明：✅ = Demo 保留帧名（不可改名，无痛替换基准）；🔵 = 新增帧名（已冻结）；全部内容 ID ↔ 帧名一一对应，无歧义。
 > v1.1：R-C3-RULING 新增 `enemy_g1_6 守墓者`。v1.2：对齐 gdd-enemies-v3 / 专武 / 圣物层；当时未冻 `tree-q-*`、C-2、C-3。v1.3：**C-1~C-3 全量编入冻结**（35 帧全部对应引擎真实内容 ID，逐一核对 `talent-tree.ts` / `exclusive.ts`，无半截补造；见 §5A）。
+> v1.6（2026-09-24）：**新增命名口径注**——§5A.2 圣物表下立「id ↔ 帧名有意共存」注（`relic_moonfall` = 内容 id / `relic-icon-mooneclipse` 背包图标帧 / `relic-mooneclipse` 演出帧，**勿误判为命名残留**）；**帧名零改动**。
 > v1.5（2026-09-24）：**图鉴条目派生口径同步**（主理人裁决「图鉴数量以内容为准，不提前定死」；回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·图鉴派生）——§5 图鉴行口径由「终态 61」改记为「**条目数派生 · 当前快照 61**」，并注明**帧名与条目数无关、帧名零改动**（派生口径指向 `gdd-codex` v1.4 §3.1）。
 > v1.4（2026-09-24）：**图鉴条目口径对齐**（设计侧审查 D4/B-4 裁决，回执见 `production/official-v1/设计裁决执行回执-2026-09-24.md`）——§5「图鉴（35）」的 **35 系「帧需求估算」而非条目数**，本版注明口径并指向 `gdd-codex` v1.3 的终态 **61**（首批 59）；**帧名零改动**（图鉴条目复用实体帧，帧数不随条目数线性增长）。
 
@@ -164,6 +165,8 @@ C-1～C-3 见 **§5A**（已冻结）。
 | relic_twelve_lamps | 十二灯誓约 | 🔵 `relic-icon-twelvelamps` |
 | relic_silver_tide | 银潮汐 | 🔵 `relic-icon-silvertide` |
 | relic_wolf_spirit | 狼灵巡夜 | 🔵 `relic-icon-wolfspirit` |
+
+> **注 · 命名口径（勿误判为残留）**：`relic_moonfall` 为**内容 id**（代码真源：`RelicId` 类型 / `RELICS` 表 / `frame-registry` 注册键 / 存档契约）；帧名为 **`relic-icon-mooneclipse`**（背包图标）/ **`relic-mooneclipse`**（演出帧，见 §6）——**「id 用 `moonfall` / 帧名用 `mooneclipse`」为有意共存，非命名残留**（帧名受 frame-name drop-in contract 冻结）。后续扫描命中 `mooneclipse` 时**先判语境**：带 `relic-` / `icon-` 前缀 = **帧名（合法）**；仅**无前缀且直接作内容 id 使用**时才需处理。裁决与执行记录见 `production/official-v1/设计裁决执行回执-2026-09-24.md` §附·第六轮。
 
 ### 5A.3 专武徽记（C-3 · 8）
 
