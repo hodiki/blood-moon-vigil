@@ -5,9 +5,11 @@
  * → 总 38 节点（A-11 统一；原「4×3~4（锚 14）≈ 40」废止）。
  * 成本锚（§3.3，BUG-5 关闭前不定版——EG-8 只调配置）：质变 42 / 属性 10/层 / 支线 15（顶点 25）
  * → 总成本 980 ∈ [800, 1000] 区间断言（D1 降档 a_attack_speed 层数 2→1：属性层数 23→22）。
- * 属性三桶折算（GT-5 R3）：伤害 ≤8% / 生存 ≤6% / 合成 = d + s ≤10%（折算系数为锚，模拟批次校准）。
+ * 属性三桶折算（GT-5 R3）：伤害 ≤8% / 生存 ≤6% / 合成 = d + s ≤12.5%（折算系数为锚，模拟批次校准）。
  * D1 定案（v1.3 · 落法 D-1，EN-12）：a_life 单点 15→10（等效 0.7→0.47）＋ a_attack_speed 层数 2→1
- * → α 实算 伤害 6.1% / 生存 3.4% / 合成 9.5%（余量 0.5pp）。
+ * → 主干 α 实算 伤害 6.1% / 生存 3.4% / 合成 9.5%（余量 0.5pp）。
+ * EN-16（v1.4 §6.1.1 · EN-03 裁决）：支线折算计入所属桶（7 计入 / 5 豁免）＋ 合成红线放宽 0.10→0.125
+ * → 含支线 α 实算 伤害 6.3% / 生存 5.6% / 合成 11.9%。
  * 深度 ≤4 层 / 每层宽 ≤3 / 防跳点门槛（层2=30 / 层3=120 / 层4=260 累计消耗）。
  */
 
@@ -60,32 +62,43 @@ export const TALENT_LAYER_THRESHOLDS = { 1: 0, 2: 30, 3: 120, 4: 260 } as const;
 export const TALENT_LAYER_ENTRY = { 1: 0, 2: 0, 3: 30, 4: 120 } as const;
 
 /**
- * 三桶折算系数（每层 DPS/承伤等效 %——锚，模拟批次校准；合成断言 ≤10% 联动）。
+ * 三桶折算系数（**每层** DPS/承伤等效 %——锚，模拟批次校准；合成断言 ≤12.5% 联动，EN-16）。
  * EN-01：补 `a_attack_2` / `a_damage_2` / `a_life_2` 键（第二铺位为独立 id，原缺键被静默漏算 → 假 PASS）。
  * EN-12（D1 降档）：`a_life` 单点 +15→+10 → 生存桶系数 0.7→0.47（`a_life_2` 取同值，10/15 比例）。
- * EN-03：支线节点计入所属桶（`br_*` 系数为占位 0，待设计/模拟校准——见下表下方 ⚠ 注）。
+ * EN-16（支线系数真值 · 依据 gdd-talent-tree **v1.4 §6.1.1** 逐节点折算表）：支线节点计入所属桶——
+ *   **计入 7 节点（本表建非零键）**：伤害 `br_edmund_2`；生存 `br_cassandra_1/2`、`br_violet_1/2`、
+ *   `br_galvan_1/2`。每层值 × `maxPurchases`(2) = 节点计入合计 → 伤害支线 +0.20 / 生存支线 +2.20。
+ *   **豁免 5 节点（不建键 / 保持 0，按配置字段自动判定，非硬编码名单）**：
+ *     ① 节奏桶 `br_edmund_1`（拾取半径，`bucket === 'tempo'`，沿 §3.6「tempo 不计红线」）；
+ *     ② 4 顶点 `br_*_top`（`machine === {}` 无数值，`bucket === 'none'`，§5.3 L-2 图鉴联动节点）。
  */
 export const TALENT_BUCKET_EQUIV = {
   /** 伤害桶每层 DPS 等效 % */
-  damage: { a_attack: 0.4, a_attack_2: 0.4, a_damage: 1.2, a_damage_2: 1.2, a_attack_speed: 0.5, a_cooldown: 0.4, br_edmund_2: 0 },
+  damage: { a_attack: 0.4, a_attack_2: 0.4, a_damage: 1.2, a_damage_2: 1.2, a_attack_speed: 0.5, a_cooldown: 0.4, br_edmund_2: 0.10 },
   /** 生存桶每层承伤等效 % */
-  survival: { a_life: 0.47, a_life_2: 0.47, a_move_speed: 0.5, a_heal_efficiency: 0.5, br_cassandra_1: 0, br_cassandra_2: 0, br_violet_1: 0, br_violet_2: 0, br_galvan_1: 0, br_galvan_2: 0 },
+  survival: { a_life: 0.47, a_life_2: 0.47, a_move_speed: 0.5, a_heal_efficiency: 0.5, br_cassandra_1: 0.15, br_cassandra_2: 0.15, br_violet_1: 0.50, br_violet_2: 0.10, br_galvan_1: 0.10, br_galvan_2: 0.10 },
 } as const;
 
 /**
- * ⚠ 支线折算系数占位说明（EN-03 · 待主理人 / 设计裁决）：
- * GDD §4.3 要求「支线效果计入所属三桶折算」，但 GDD **未给支线等效锚**；且 6 项生存类支线效果
- * 若按属性同尺度折算（实测合计 +2.2pp 量级）将突破 §6.1「合成 ≤10%」红线（D 案余量仅 0.5pp）。
- * 本批按结构补 `bucket` 字段 + 占位系数键（0），**不改红线目标值**（保持 6.1 / 3.4 / 9.5）。
- * 支线系数终值属**设计 / 模拟裁决项**（详见 `production/official-v1/工程批A执行报告-2026-10-08.md`）。
+ * 支线折算**豁免依据**（EN-16 · 可自动化判定，非主观 / 非硬编码节点名单）：
+ * 设计侧 `gdd-talent-tree` v1.4 §6.1.1 明示豁免规则 =「**节奏桶 ∨ 无数值节点**」——
+ * ① `bucket === 'tempo'`（节奏桶，`br_edmund_1` 拾取半径）；
+ * ② `machine` 无键（无数值可折，4 顶点 `br_*_top`，其 `bucket === 'none'`）。
+ * 工程实现（双保险，均按字段判定）：`TALENT_BUCKET_EQUIV` 只含 damage/survival 两桶系数；`tree-state.bucketEquiv()`
+ * 仅遍历 `node.bucket === bucket` 的节点，并经 `tree-state.isBucketExempt()` 二次防御——
+ * **任意新增 tempo/none/空 machine 节点自动豁免，无需维护节点白名单**。
+ * 注：`br_edmund_2`（范围 +5%）为设计侧标注的**边界项**，本工程按保守计入伤害桶（设计口径 A）。
  */
 
 /**
- * 红线（§3.6）：伤害 ≤8% / 生存 ≤6% / 合成 ≤10%。
+ * 红线（§3.6）：伤害 ≤8% / 生存 ≤6% / **合成 ≤12.5%**。
  * EN-05：`combined` 语义 = **合成 = 伤害等效% + 生存等效%（= `d + s`，口径 α；tempo 桶不计）**
  * ——防下游按「独立第三指标」误读（GDD §3.6/§6.1/§⑩-2）。
+ * EN-16（红线放宽）：支线折算计入后实算 伤害 6.3% / 生存 5.6% / 合成 11.9% → `combined` 由 `0.10 → 0.125`
+ * （主理人裁决「EN-03 暂按放宽红线处理」；`damage` / `survival` **维持 0.08 / 0.06**）。
+ * ⚠ 设计侧判定：放宽至 ≥0.13 即实质废掉红线（退化为近乎不约束），故止于 0.125。
  */
-export const TALENT_REDLINE = { damage: 0.08, survival: 0.06, combined: 0.10 } as const;
+export const TALENT_REDLINE = { damage: 0.08, survival: 0.06, combined: 0.125 } as const;
 
 /** 属性节点每层效果（锚，§4.2；应用进 PlayerStats） */
 export const TALENT_ATTRIBUTE_EFFECTS = {

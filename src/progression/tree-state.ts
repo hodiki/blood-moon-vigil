@@ -233,12 +233,27 @@ export function baseBucketNodeId(id: string): string {
   return id.replace(/_2$/, '');
 }
 
+/**
+ * 节点是否**豁免**三桶折算（EN-16 · 依据现行配置字段判定，**非硬编码节点名单**）。
+ *
+ * 设计侧 `gdd-talent-tree` v1.4 §6.1.1 明示豁免判定规则（「可实现的判定规则」）：
+ * - `bucket === 'tempo'`：节奏桶（如 `br_edmund_1` 拾取半径），沿 §3.6「tempo 不计红线」；
+ * - `bucket === 'none'` / `machine` 无键：无数值可折（如 4 顶点「同袍之诺」`machine: {}`）。
+ *
+ * 因判定完全由字段驱动，**任意新增 tempo/none/空 machine 节点自动豁免**，无需改本函数或维护白名单。
+ */
+export function isBucketExempt(node: TalentNodeConfig): boolean {
+  return node.bucket === 'tempo' || node.bucket === 'none' || Object.keys(node.machine).length === 0;
+}
+
 function bucketEquiv(bucket: TalentBucket): number {
   const table = TALENT_BUCKET_EQUIV[bucket as 'damage' | 'survival'];
   if (!table) return 0;
   let sum = 0;
   for (const node of TALENT_TREE) {
     if (node.bucket !== bucket) continue;
+    // EN-16：豁免按配置字段自动判定（damage/survival 桶正常不命中，防御「桶归 damage 却无数值」等新节点）。
+    if (isBucketExempt(node)) continue;
     // EN-02 修复：原按 `node.id` 精确匹配 → `_2` 独立 id 查不到被 `if (per)` 静默跳过（假 PASS）。
     // 现先按精确 id 查（EN-01 已补 `_2` 键），再回落归一化基础 id（防再添新铺位时同类失配）。
     const rec = table as Record<string, number>;
@@ -258,7 +273,7 @@ export function survivalBucketEquiv(): number {
   return bucketEquiv('survival');
 }
 
-/** tree 版红线断言（§⑩-2 / EN-04）：伤害 ≤8% / 生存 ≤6% / 合成 = d + s ≤10%（口径 α，EN-05） */
+/** tree 版红线断言（§⑩-2 / EN-04 / EN-16）：伤害 ≤8% / 生存 ≤6% / 合成 = d + s ≤12.5%（口径 α，EN-05） */
 export function allTreeBonusesWithinRedline(): boolean {
   const d = damageBucketEquiv();
   const s = survivalBucketEquiv();

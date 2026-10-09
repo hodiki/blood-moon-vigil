@@ -11,7 +11,7 @@ import {
 import {
   createTreeLedger, unlockNode, canUnlockNode, respec, totalSpent,
   computeTreeApplication, damageBucketEquiv, survivalBucketEquiv, allTreeBonusesWithinRedline,
-  treeTotalCost, treeTotalCostWithinRange, ledgerFromSaveData, baseBucketNodeId,
+  treeTotalCost, treeTotalCostWithinRange, ledgerFromSaveData, baseBucketNodeId, isBucketExempt,
   type CodexQuery,
 } from '@/progression/tree-state';
 import {
@@ -58,16 +58,57 @@ describe('B5-W1 树配置（gdd-talent-tree §3.1~3.3/§4；验收判据 1/2）'
 
   // EN-04：红线用例 = **独立真值**（硬编码 GDD §6.1 目标，不拿被测函数当自身 oracle）——
   // 原用例断言的正是 `damageBucketEquiv()/allTreeBonusesWithinRedline()` 自身（自证/同义反复，测不出公式对错）。
-  it('三桶红线（EN-04 · 独立真值）：伤害 6.1% / 生存 3.4% / 合成 9.5%（≤8 / ≤6 / ≤10）', () => {
-    // 独立期望值（GDD §6.1 v1.3 D1 定案：a_life +10×3 等效 0.47、a_attack_speed 层数 1）
-    expect(damageBucketEquiv()).toBeCloseTo(0.061, 3);
-    expect(survivalBucketEquiv()).toBeCloseTo(0.034, 3);
-    expect(damageBucketEquiv() + survivalBucketEquiv()).toBeCloseTo(0.095, 3);
-    // 红线判定（阈值取自 TALENT_REDLINE 常量）
+  // EN-16：真值更新为「含支线」口径 A（GDD v1.4 §6.1 含支线合计）：伤害 6.3% / 生存 5.6% / 合成 11.9%。
+  it('三桶红线（EN-04 · 独立真值 · EN-16 含支线）：伤害 6.3% / 生存 5.6% / 合成 11.9%（≤8 / ≤6 / ≤12.5）', () => {
+    // 独立期望值（GDD v1.4 §6.1 含支线合计：主干 6.1/3.4/9.5 + 支线 0.2/2.2/2.4）
+    expect(damageBucketEquiv()).toBeCloseTo(0.063, 3);
+    expect(survivalBucketEquiv()).toBeCloseTo(0.056, 3);
+    expect(damageBucketEquiv() + survivalBucketEquiv()).toBeCloseTo(0.119, 3);
+    // 红线判定（阈值取自 TALENT_REDLINE 常量：0.08 / 0.06 / 0.125）
     expect(damageBucketEquiv()).toBeLessThanOrEqual(TALENT_REDLINE.damage);
     expect(survivalBucketEquiv()).toBeLessThanOrEqual(TALENT_REDLINE.survival);
     expect(damageBucketEquiv() + survivalBucketEquiv()).toBeLessThanOrEqual(TALENT_REDLINE.combined);
     expect(allTreeBonusesWithinRedline()).toBe(true);
+  });
+
+  // EN-16：支线系数真值逐节点校验（每层值 × maxPurchases(2)）——防「支线键仍为 0」的静默未落地。
+  it('EN-16 支线折算真值：7 节点计入（伤害 1 / 生存 6）、5 节点豁免', () => {
+    const dTable = TALENT_BUCKET_EQUIV.damage as Record<string, number>;
+    const sTable = TALENT_BUCKET_EQUIV.survival as Record<string, number>;
+    // 计入项每层系数（GDD v1.4 §6.1.1）
+    expect(dTable.br_edmund_2).toBeCloseTo(0.10, 4);
+    expect(sTable.br_cassandra_1).toBeCloseTo(0.15, 4);
+    expect(sTable.br_cassandra_2).toBeCloseTo(0.15, 4);
+    expect(sTable.br_violet_1).toBeCloseTo(0.50, 4);
+    expect(sTable.br_violet_2).toBeCloseTo(0.10, 4);
+    expect(sTable.br_galvan_1).toBeCloseTo(0.10, 4);
+    expect(sTable.br_galvan_2).toBeCloseTo(0.10, 4);
+    // 支线折算合计（每层 × 2 层）：伤害 +0.20 / 生存 +2.20
+    const branchDamage = (dTable.br_edmund_2 ?? 0) * talentNodeById('br_edmund_2')!.maxPurchases;
+    const branchSurvival =
+      ((sTable.br_cassandra_1 ?? 0) + (sTable.br_cassandra_2 ?? 0) + (sTable.br_violet_1 ?? 0) + (sTable.br_violet_2 ?? 0) + (sTable.br_galvan_1 ?? 0) + (sTable.br_galvan_2 ?? 0)) * 2;
+    expect(branchDamage).toBeCloseTo(0.20, 4);
+    expect(branchSurvival).toBeCloseTo(2.20, 4);
+  });
+
+  // EN-16：豁免按**配置字段自动判定**（非硬编码名单）——tempo 桶 / none 桶 / 空 machine 均豁免。
+  it('EN-16 豁免判定可自动化：tempo/none/空 machine 自动豁免，计入项不豁免', () => {
+    // 节奏桶 br_edmund_1（拾取半径）→ 豁免
+    expect(isBucketExempt(talentNodeById('br_edmund_1')!)).toBe(true);
+    // 4 顶点 br_*_top（machine:{}）→ 豁免
+    for (const id of ['br_edmund_top', 'br_cassandra_top', 'br_violet_top', 'br_galvan_top'] as const) {
+      expect(isBucketExempt(talentNodeById(id)!), `${id} 应豁免`).toBe(true);
+    }
+    // 计入项（damage/survival，machine 非空）→ 不豁免
+    for (const id of ['br_edmund_2', 'br_cassandra_1', 'br_cassandra_2', 'br_violet_1', 'br_violet_2', 'br_galvan_1', 'br_galvan_2'] as const) {
+      expect(isBucketExempt(talentNodeById(id)!), `${id} 不应豁免`).toBe(false);
+    }
+    // 判定依据 = 字段（非主观）：豁免节点恒满足 bucket∈{tempo,none} ∨ machine 无键
+    for (const node of TALENT_TREE) {
+      if (isBucketExempt(node)) {
+        expect(node.bucket === 'tempo' || node.bucket === 'none' || Object.keys(node.machine).length === 0).toBe(true);
+      }
+    }
   });
 
   // EN-04：覆盖守卫 ①——每个 damage/survival 桶节点必有折算系数键（含 `_2` 归一），
