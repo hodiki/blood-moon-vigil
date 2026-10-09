@@ -58,3 +58,6 @@ assets/ui-menu/preview/
 
 # 局域网 Comfy 工具链的本机 ffmpeg 二进制（ffmpeg-static 安装产物）
 tools/comfy-lan/.ffmpeg/
+
+# ===== WorkBuddy 项目工作区数据（本地记忆，不入库） =====
+.workbuddy/
