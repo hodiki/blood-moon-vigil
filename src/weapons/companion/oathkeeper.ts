@@ -70,7 +70,19 @@ export function createOathkeeperState(x = 0, y = 0, playerMaxHp: number = OATHKE
 
 /**
  * 动态跟随（EN-06）：玩家「当局当前」最大生命变化 → 守誓者上限同步 ×150%（**非入场快照**）。
- * 原为满血则保持满血；否则按新上限钳制（不溢出）。调用方以玩家当前最大生命传入。
+ * 调用方以玩家当前最大生命传入（PlayScene：入场构造 + HpChanged 订阅）。
+ *
+ * **上限抬升后当前 HP 的处理口径（显式选择，防含糊）**：
+ * - 同步前「满血」→ 同步后仍满血（当前 HP 随新上限一并抬升到顶）；
+ * - 同步前「未满血」→ 只抬上限、当前 HP 保持绝对值不变（仅在当前值 > 新上限时钳制）。
+ *
+ * 理由：守誓者是玩家「生命的延伸」替身——
+ * 1) 无伤态（满血）随玩家成长自然变强：新上限即新的满血值，不构成「治疗」（它本就没受伤）；
+ * 2) 已负伤态保留其创伤：当前 HP 为绝对值，不因玩家升级/加生命而被「顺手治愈」，避免「玩家成长白嫖
+ *    守誓者回血」的廉价收益，也不产生任何溢出。
+ * 该口径与 `createOathkeeperState`（入场即满血 = 上限）语义自洽：生命上限只随玩家成长移动，受伤
+ * 与治愈仍由 transferDamage / healCompanion / tickTombstone 独立驱动。**不得退化为「入场快照」**
+ * （即不得只在 create 计算一次、此后不随玩家 maxHp 变动），那是本函数存在的全部意义。
  */
 export function syncOathkeeperMaxHp(state: OathkeeperState, playerMaxHp: number): void {
   const next = oathkeeperMaxHp(playerMaxHp);

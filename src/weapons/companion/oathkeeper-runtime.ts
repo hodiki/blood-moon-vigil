@@ -53,7 +53,10 @@ export class OathkeeperRuntime {
 
   /**
    * EN-06 动态跟随：以玩家「当局当前」最大生命同步守誓者上限（×150%，**非入场快照**）。
-   * 调用方（PlayScene 开局/升级）在玩家最大生命变化时调用——接线待补（见工程批A执行报告）。
+   * 接线点（工程批 C 已落地 · PlayScene）：
+   * - 入场初始化：PlayScene 构造时传入玩家面板 `stats.maxHp`（已含角色初始 HP + 天赋树生存节点）；
+   * - 运行期跟随：PlayScene 订阅 `GameEvent.HpChanged`（payload { hp, maxHp }）→ 本方法，
+   *   覆盖升级成长（hpPerLevel）与升级池生命上限（up_g_3）等玩家最大生命变更源。
    */
   syncMaxHp(playerMaxHp: number): void {
     syncOathkeeperMaxHp(this.state, playerMaxHp);
