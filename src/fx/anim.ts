@@ -79,8 +79,16 @@ function stripVariantSuffixes(visualFrame: string): string {
 }
 
 /**
- * 原图默认是否朝右。批次 1 朝向不统一（犬/尸多朝左，守夜人偏右），
- * 未登记的实体不翻转，避免月步。美术统一朝右后把表扩全。
+ * 原图默认是否朝右。命中 true 才启用 flipX 镜像；返回 null 的实体**不翻转**（保持原图朝向）。
+ *
+ * ⚠ `enemy-*` / `boss-*` 为**有意不登记（非缺陷/非遗漏）**：批次 1 现网敌种朝向**不统一**——
+ * 守夜人 + 四英雄偏右（已登记），但犬/尸多偏左、`boss-fenrir` 偏左，而部分敌种（如 `enemy-greywolf`）偏右。
+ * 混朝向下若对敌人统一启用 flipX，会在横移时产生「月步」（倒退着走）。故仅登记朝向已锁定为
+ * 「默认朝右」的实体；未登记实体保持原图朝向 = 正确表现。
+ *
+ * 扩表触发条件：美术完成 16 敌种 + 4 Boss 的「默认朝右」重绘后（`ta-review-handoff.md` §2 朝向契约 /
+ * `m4-backlog.md` §1.2 阻塞项 / `asset-production-order-v1.md:21` 待办契约），再把 `enemy-*`（含 `boss-*`）
+ * 扩入本表或改查表。Boss/化身朝向**仅在 applyFacing 一处处理**（无第二处翻转，无双重镜像风险）。
  */
 export function defaultFacesRight(visualFrame: string): boolean | null {
   const base = stripVariantSuffixes(visualFrame);

@@ -21,8 +21,8 @@ export type ExclusiveWeaponId =
   | 'xw_revolver'    // 圣徒左轮（守夜人）
   | 'xw_twinblades'  // 血契双刃（血猎手）
   | 'xw_longbow'     // 月痕长弓（血猎手）
-  | 'xw_bell'        // 安魂圣铃（修女）
-  | 'xw_cross'       // 圣辉十字（修女）
+  | 'xw_bell'        // 誓约圣铃（修女）
+  | 'xw_cross'       // 圣辉轮刃（修女）
   | 'xw_axe'         // 葬仪巨斧（狼裔）
   | 'xw_horn';       // 月啸号角（狼裔）
 
@@ -32,7 +32,7 @@ export type DerivativeSkillId =
   | 'dv_revolver_burst'  // 圣徒左轮技（选提灯时）
   | 'dv_blood_dash'      // 血影突袭（双刃落选）
   | 'dv_moon_snipe'      // 月痕狙击（长弓落选）
-  | 'dv_requiem'         // 安魂曲（圣铃落选）
+  | 'dv_requiem'         // 誓约回响（圣铃落选）
   | 'dv_holy_judgment'   // 圣辉审判（十字落选）
   | 'dv_blood_rage'      // 血月狂化（巨斧落选）
   | 'dv_wolf_charge';    // 月啸冲锋（号角落选）
@@ -49,7 +49,7 @@ export const EXCLUSIVE_TO_DERIVATIVE: Record<ExclusiveWeaponId, DerivativeSkillI
   xw_twinblades: 'dv_moon_snipe',     // 选双刃 → 长弓落选 → 月痕狙击
   xw_longbow: 'dv_blood_dash',        // 选长弓 → 双刃落选 → 血影突袭
   xw_bell: 'dv_holy_judgment',        // 选圣铃 → 十字落选 → 圣辉审判
-  xw_cross: 'dv_requiem',             // 选十字 → 圣铃落选 → 安魂曲
+  xw_cross: 'dv_requiem',             // 选十字 → 圣铃落选 → 誓约回响
   xw_axe: 'dv_wolf_charge',           // 选巨斧 → 号角落选 → 月啸冲锋
   xw_horn: 'dv_blood_rage',           // 选号角 → 巨斧落选 → 血月狂化
 };
@@ -95,10 +95,10 @@ export const MUTATION_CARDS: readonly MutationCardConfig[] = [
   // 月痕长弓
   { id: 'mc_longbow_1', exclusiveId: 'xw_longbow', order: 1, name: '月相贯矢', desc: '每第 3 矢为满蓄月痕矢——伤害 ×2.2、贯穿 3→全部', machine: { chargeEveryN: 3, chargedDamageMult: 2.2, chargedPierceAll: 1 } },
   { id: 'mc_longbow_2', exclusiveId: 'xw_longbow', order: 2, name: '猎首之约', desc: '满蓄矢命中标记「猎物」（易伤 +20%/8s，单目标）；对猎物普通矢伤害 ×1.3', machine: { preyVulnerable: 0.2, preyDuration: 8, preyDamageMult: 1.3 } },
-  // 安魂圣铃
+  // 誓约圣铃
   { id: 'mc_bell_1', exclusiveId: 'xw_bell', order: 1, name: '誓约钟鸣', desc: '铃响升格钟鸣——治疗量 ×2.5，领域内亡者类额外 12 伤 + 减速 20%/2s', machine: { healMult: 2.5, undeadBonusDamage: 12, undeadSlowPct: 0.2, undeadSlowDuration: 2 } },
   { id: 'mc_bell_2', exclusiveId: 'xw_bell', order: 2, name: '守誓誓约', desc: '承伤转移 50%→65%、撕咬 8→14 伤、墓碑回血 2→4 HP/s；治疗转化率 50%→70%', machine: { transferPct: 0.65, biteDamage: 14, tombHealPerSec: 4, reviveConvertRate: 0.7 } },
-  // 圣辉十字
+  // 圣辉轮刃
   { id: 'mc_cross_1', exclusiveId: 'xw_cross', order: 1, name: '审判降临', desc: '落点悬停 2s 持续灼烧 12 伤/s 后再爆（单点总伤 ≈ ×2.1）', machine: { hoverDuration: 2, hoverDps: 12 } },
   { id: 'mc_cross_2', exclusiveId: 'xw_cross', order: 2, name: '三重连掷', desc: '一次掷出三枚十字品字落点，命中同目标的相邻爆炸每枚 +30%（去重单次加成，不叠乘）', machine: { crossCount: 3, adjacentBonusPct: 0.3 } },
   // 葬仪巨斧
@@ -281,7 +281,7 @@ export const DERIVATIVE_SKILLS: Record<DerivativeSkillId, DerivativeSkillConfig>
     id: 'dv_holy_judgment', name: '圣辉审判', sourceExclusiveId: 'xw_cross',
     cd: 20, shareAnchor: [0.15, 0.18],
     params: { radius: 160, damage: 50, stunDuration: 2, healAuraDuration: 5, healAuraPerSec: 3 },
-    effect: '大十字从天而降——160px 半径 50 伤 + 眩晕 2s（Boss 免疫、精英 ×0.5）+ 5s 治疗光环（3 HP/s）',
+    effect: '旋转光刃环从天而降——160px 半径 50 伤 + 眩晕 2s（Boss 免疫、精英 ×0.5）+ 5s 治疗光环（3 HP/s）',
   },
   dv_blood_rage: {
     id: 'dv_blood_rage', name: '血月狂化', sourceExclusiveId: 'xw_axe',
