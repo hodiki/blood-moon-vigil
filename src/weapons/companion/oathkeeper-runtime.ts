@@ -2,7 +2,7 @@
  * weapons/companion/oathkeeper-runtime.ts —— 守誓者运行时驱动（W-4 收官，gdd-exclusive-weapons §4.4）
  *
  * B2-W5 状态机（oathkeeper.ts 纯函数）的运行时消费端（无 Phaser 依赖）：
- * - FQ-2：修女（hero_violet）+ 安魂圣铃（xw_bell）→ 开局自带（setEnabled 启用）
+ * - FQ-2：修女（hero_violet）+ 誓约圣铃（xw_bell）→ 开局自带（setEnabled 启用）
  * - 跟随：companion 相位下距玩家 > 60px → 以 180px/s 移向玩家（x/y 数据点，无实体渲染=B6）
  * - 索敌切换：friendlyTarget() 供 targeting.pickTarget 消费（150px 替身圈强制索敌，
  *   EnemyAiDirector 每帧消费 → 敌移动目标切守誓者——R-2/B2 遗留「updateMovement 接线」本批收口）
@@ -98,13 +98,13 @@ export class OathkeeperRuntime {
     return 0;
   }
 
-  /** P0-7b 安魂曲协同：立即回满（墓碑 = 复活进度充满） */
+  /** P0-7b 誓约回响协同：立即回满（墓碑 = 复活进度充满） */
   healFull(): void {
     if (!this.enabled) return;
     oathkeeperHealFull(this.state);
   }
 
-  /** P0-7b 安魂曲协同：墓碑复活进度直接充满（显式语义，与 healFull 同果异名） */
+  /** P0-7b 誓约回响协同：墓碑复活进度直接充满（显式语义，与 healFull 同果异名） */
   fillReviveProgress(): void {
     if (!this.enabled) return;
     fillReviveProgress(this.state);

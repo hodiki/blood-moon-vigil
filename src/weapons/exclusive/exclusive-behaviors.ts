@@ -67,7 +67,7 @@ export class ExclusiveWeaponBehavior<S> implements WeaponBehavior {
   totalDamage = 0;
   /** 击杀回调（左轮补弹等；装配层按武注入） */
   onEnemyKilled?: (target: ExclusiveTarget) => void;
-  /** B4 R-6 圣火十诫：十字落点爆炸回调（WeaponSystem 注入 → 余焰登记） */
+  /** B4 R-6 圣火判词：十字落点爆炸回调（WeaponSystem 注入 → 余焰登记） */
   onExplode?: (x: number, y: number) => void;
   /**
    * P0-7c 治疗同源落点：圣铃每 8s 铃响治疗「自身 + 守誓者」——装配层（PlayScene）

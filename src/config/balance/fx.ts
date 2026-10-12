@@ -67,7 +67,7 @@ export const FX = {
    */
   SKILL_POSE_A_MS: 300,
   SKILL_POSE_B_MS: 150,
-  /** 安魂曲双环间隔 ms（asset-spec §3.2） */
+  /** 誓约回响双环间隔 ms（asset-spec §3.2） */
   SKILL_REQUIEM_RING_GAP_MS: 150,
   /** 血月狂化体型倍率（asset-spec §3.2；主体仍月银白，不靠 PNG 放大） */
   SKILL_RAGE_SCALE: 1.1,

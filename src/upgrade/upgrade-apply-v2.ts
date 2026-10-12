@@ -35,7 +35,7 @@ export interface KeyPassiveState {
   /** key_pact 召唤数 +1 */
   summonCountBonus: number;
   /**
-   * key_bone 兽骨图腾：地面火（圣火十诫 R-6 审判余焰）时长 +20%（GDD R-6 FQ-3 定稿）。
+   * key_bone 兽骨图腾：地面火（圣火判词 R-6 审判余焰）时长 +20%（GDD R-6 FQ-3 定稿）。
    * P2-5 语义修正：旧「召唤存在 +20%」实现退役（EG-2 归档原则——消费口已拆除，
    * 仅保留本字段新语义）；消费点 = weapon-system.placeResonanceResidueAt → 余焰登记 durationMult。
    */

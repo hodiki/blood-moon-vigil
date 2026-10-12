@@ -72,7 +72,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   graceUntil = 0;
   /** M1b 主动技：眩晕截止（秒时间戳）：> now 期间冻结移动（updateMovement）且不造成接触伤害（contact） */
   stunnedUntil = 0;
-  /** E4-S2 主动技「安魂曲」：减速截止（秒时间戳）+ 减速比例（40% = 0.4） */
+  /** E4-S2 主动技「誓约回响」：减速截止（秒时间戳）+ 减速比例（40% = 0.4） */
   slowUntil = 0;
   slowPct = 0;
   /** E4-S2 主动技「血影突袭」：标记截止（秒时间戳）+ 标记武器伤害倍率（+20% = 1.2） */
@@ -187,7 +187,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.orbitHitCooldownUntil = 0;
     this.graceUntil = 0; // 霸体由 Boss.beginGrace 显式设置；普通敌恒 0
     this.stunnedUntil = 0; // M1b 主动技：眩晕截止重置（重开/复用不残留）
-    this.slowUntil = 0; // E4-S2 安魂曲：减速重置
+    this.slowUntil = 0; // E4-S2 誓约回响：减速重置
     this.slowPct = 0;
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;
@@ -244,7 +244,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.orbitHitCooldownUntil = 0;
     this.graceUntil = 0;
     this.stunnedUntil = 0;
-    this.slowUntil = 0; // E4-S2 安魂曲：减速重置
+    this.slowUntil = 0; // E4-S2 誓约回响：减速重置
     this.slowPct = 0;
     this.markUntil = 0; // E4-S2 血影突袭：标记重置
     this.markDamageMult = 1;

@@ -630,7 +630,7 @@ export class WeaponSystem {
     if (this.resonance.isAchieved('R4')) {
       stepResonanceTotems(this.resonanceTotems, ctx.dt, ctx.now, targets, resonancePairByExclusive('xw_longbow')!.machine);
     }
-    // R-6 圣火十诫：十字落点余焰（落点由 exclusive-behaviors 经 stepCross onExplode 注入）
+    // R-6 圣火判词：十字落点余焰（落点由 exclusive-behaviors 经 stepCross onExplode 注入）
     if (this.resonance.isAchieved('R6')) {
       stepResonanceResidues(this.resonanceCross, ctx.dt, ctx.now, targets, ctx.damageMultiplier, resonancePairByExclusive('xw_cross')!.machine);
     }

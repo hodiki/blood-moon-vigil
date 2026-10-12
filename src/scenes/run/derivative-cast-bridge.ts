@@ -121,7 +121,7 @@ export class DerivativeCastBridge {
         const applied = p.stats().heal(h);
         if (applied > 0) GameEvents.emit(GameEvent.HpChanged, { hp: p.stats().hp, maxHp: p.stats().maxHp });
       },
-      // P0-7b 安魂曲协同：守誓者回满 / 墓碑复活进度充满（旧实现不传 companion → 协同段从不执行）
+      // P0-7b 誓约回响协同：守誓者回满 / 墓碑复活进度充满（旧实现不传 companion → 协同段从不执行）
       companion: {
         healFull: () => p.oathkeeper().healFull(),
         fillReviveProgress: () => p.oathkeeper().fillReviveProgress(),

@@ -1,7 +1,7 @@
 /**
  * weapons/companion/oathkeeper.ts —— 守誓者召唤物状态机（B2-W5，gdd-exclusive-weapons §4.4）
  *
- * 规格（R2 §D 收录；FQ-2 定稿：修女·薇奥莱选安魂圣铃时**开局自带**）：
+ * 规格（R2 §D 收录；FQ-2 定稿：修女·薇奥莱选誓约圣铃时**开局自带**）：
  * - HP = 玩家「当局当前」最大生命 ×150%（EN-06 / GDD §4.4 v1.4；**动态跟随**，非快照、非固定 200）；
  * - 承伤替身：150px 强制索敌（targeting.pickTarget）+ 接触伤害转移 50%（质变卡 2 → 65%）；
  * - 低频撕咬 8 伤/1.0s（质变卡 2 → 14）；
@@ -214,7 +214,7 @@ export function tickBite(
   return dealt;
 }
 
-/** 协同治疗（安魂曲/铃响落点：立即回满；墓碑则复活进度直接充满——dv_requiem 消费） */
+/** 协同治疗（誓约回响/铃响落点：立即回满；墓碑则复活进度直接充满——dv_requiem 消费） */
 export function oathkeeperHealFull(state: OathkeeperState): void {
   if (state.phase === 'companion') {
     state.hp = state.maxHp;

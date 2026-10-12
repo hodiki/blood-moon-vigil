@@ -441,7 +441,7 @@ function queryVulnerable(target: ExclusiveTarget, now: number, source: string): 
 }
 
 // ============================================================================
-// 5. 安魂圣铃（B 领域辅助；卡1 安魂钟鸣；守誓者协同另见 companion/oathkeeper.ts）
+// 5. 誓约圣铃（B 领域辅助；卡1 誓约钟鸣；守誓者协同另见 companion/oathkeeper.ts）
 // ============================================================================
 
 export interface BellState {
@@ -478,7 +478,7 @@ export function stepBell(
       if (!e.active || e.hp <= 0) continue;
       if (distSq(e.x, e.y, player.x, player.y) > radius * radius) continue;
       dealDamage(e, base.damage! * damageMultiplier, now, result);
-      // 卡 1 安魂钟鸣：亡者类额外 12 伤 + 减速 20%/2s
+      // 卡 1 誓约钟鸣：亡者类额外 12 伤 + 减速 20%/2s
       if ((machine['undeadBonusDamage'] ?? 0) > 0 && e.kind === 'zombie') {
         dealDamage(e, machine['undeadBonusDamage']! * damageMultiplier, now, result);
         applyCc(e, 'slow', machine['undeadSlowPct'] ?? 0.2, machine['undeadSlowDuration'] ?? 2, now, 'xw_bell_chime');
@@ -496,14 +496,14 @@ export function stepBell(
 }
 
 // ============================================================================
-// 6. 圣辉十字（C 定点爆发；卡1 审判降临悬停灼烧；卡2 三重颂歌）
+// 6. 圣辉轮刃（C 定点爆发；卡1 审判降临悬停灼烧；卡2 三重连掷）
 // ============================================================================
 
 export interface PendingCross {
   x: number;
   y: number;
   explodeAt: number;
-  /** 相邻加成（三重颂歌：同目标去重单次 +30%） */
+  /** 相邻加成（三重连掷：同目标去重单次 +30%） */
   adjacentBonus: boolean;
 }
 
@@ -527,7 +527,7 @@ export function stepCross(
   enemies: readonly ExclusiveTarget[],
   damageMultiplier: number,
   machine: Readonly<Record<string, number>> = {},
-  /** 落点爆炸回调（B4 R-6 圣火十诫余焰挂点；参数 = 爆炸位置） */
+  /** 落点爆炸回调（B4 R-6 圣火判词余焰挂点；参数 = 爆炸位置） */
   onExplode?: (x: number, y: number) => void,
 ): StepResult {
   const result = emptyStep();
@@ -560,7 +560,7 @@ export function stepCross(
     if (target) {
       const count = Math.max(1, machine['crossCount'] ?? 1);
       for (let i = 0; i < count; i += 1) {
-        // 品字近似：主目标 ±40px 偏移（三重颂歌）；单枚 = 主目标位置
+        // 品字近似：主目标 ±40px 偏移（三重连掷）；单枚 = 主目标位置
         const offset = count > 1 ? (i === 0 ? 0 : 40) : 0;
         const cross: PendingCross = {
           x: target.x + offset,
@@ -597,7 +597,7 @@ function explodeCross(
   for (const e of enemies) {
     if (!e.active || e.hp <= 0) continue;
     if (distSq(e.x, e.y, cross.x, cross.y) > rSq) continue;
-    // 三重颂歌：相邻爆炸 +30%（同目标去重单次加成，不叠乘——按枚独立判定取单次）
+    // 三重连掷：相邻爆炸 +30%（同目标去重单次加成，不叠乘——按枚独立判定取单次）
     const bonus = cross.adjacentBonus ? 1 + (machine['adjacentBonusPct'] ?? 0) : 1;
     dealDamage(e, damage * bonus * damageMultiplier, now, result);
   }

@@ -178,7 +178,7 @@ export class PlayScene extends Phaser.Scene {
   private treeS3Active = false;
   /** 当前树应用快照（HUD/结算数据接口） */
   private treeApp: TreeApplication | null = null;
-  /** 安魂曲第二环 delayedCall（场景销毁时移除） */
+  /** 誓约回响第二环 delayedCall（场景销毁时移除） */
   private requiemRingTimer: Phaser.Time.TimerEvent | null = null;
   /** E4-S2 血月狂化 buff（8s 窗口；玩家死亡/重开清空） */
   private rage = new RageBuff();

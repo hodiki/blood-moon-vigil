@@ -413,13 +413,13 @@ export class FxManager {
     this.spawnParticle('p-streak', x, y, FX_COLORS.dash, dirX * 40, dirY * 40, 2.5, 0.18);
   }
 
-  /** 安魂曲：圣诗震荡环（双环由调用方隔 150ms 再调一次） */
+  /** 誓约回响：圣诗震荡环（双环由调用方隔 150ms 再调一次） */
   requiemWave(x: number, y: number, radius: number): void {
     if (!this.cfg.fxBursts) return;
     this.emitRing('p-ring', x, y, [FX_COLORS.lanternFlash], 12, radius, 50, 3, 0.45);
   }
 
-  /** 安魂曲回血绿点 */
+  /** 誓约回响回血绿点 */
   requiemHeal(x: number, y: number): void {
     if (!this.cfg.fxBursts) return;
     this.emitBurst('p-circle', x, y, [FX_COLORS.heal], 6, 70, 2.4, 0.4);

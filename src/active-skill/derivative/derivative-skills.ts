@@ -280,7 +280,7 @@ function castMoonSnipe(p: Readonly<Record<string, number>>, ctx: DerivativeCastC
   return result;
 }
 
-/** 安魂曲：周身减速 30%/3s + 回复 20 HP + 守誓者回满/墓碑复活充满 */
+/** 誓约回响：周身减速 30%/3s + 回复 20 HP + 守誓者回满/墓碑复活充满 */
 function castRequiem(p: Readonly<Record<string, number>>, ctx: DerivativeCastContext): DerivativeCastResult {
   const result = emptyResult();
   for (const e of ctx.enemies) {

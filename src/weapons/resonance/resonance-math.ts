@@ -238,7 +238,7 @@ export function resonanceSanctuaryBonus(machine: Readonly<Record<string, number>
 }
 
 // ============================================================================
-// R-6 圣火十诫（十字 × 审判圣火）：十字落点余焰（100px 8伤/s 3s）
+// R-6 圣火判词（十字 × 审判圣火）：十字落点余焰（100px 8伤/s 3s）
 // ============================================================================
 
 export interface ResonanceResidue {
