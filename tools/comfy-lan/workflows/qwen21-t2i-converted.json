@@ -1,0 +1,53 @@
+{
+  "13": {
+    "class_type": "ResolutionSelector",
+    "inputs": {
+      "aspect_ratio": "1:1 (Square)",
+      "megapixels": 1,
+      "multiple": 8,
+      "preview": "1:1 (Square)"
+    },
+    "_meta": {
+      "title": "ResolutionSelector"
+    }
+  },
+  "459": {
+    "class_type": "c291ceec-b98f-4751-9d0b-7bc288f27b30",
+    "inputs": {
+      "prompt": "A single adult woman is centered in a polished digital illustration, posed on a bed in a softly lit bedroom. She faces the viewer directly with a calm, confident expression, pale skin, delicate facial features, full lips, defined brows, and large eyes emphasized by dark eyeliner, long lashes, warm eyeshadow, subtle blush, and highlighted cheekbones. Her dark brown hair is styled in a loose, voluminous updo with wispy strands framing her face. She has a curvy figure with a narrow waist, broad hips, and smooth thighs, rendered with detailed skin texture and soft shading. She is bare-chested but covered by sheer black gloves, black stockings, and black stiletto heels, creating an elegant, sensual fashion-portrait impression. Her pose is reclining diagonally across the bed: one arm supports her body near the lower-left area, one leg extends toward the lower-right foreground, and the other bends upward behind her, adding depth and movement to the composition. The bedroom background includes a dark wooden headboard behind her, white pillows and rumpled bedding beneath her, a bedside table on the left, a warm glowing lamp with a beige shade, small framed pictures on the wall, and a vase of flowers near the right side. The room uses warm amber lighting, muted beige walls, dark wood tones, and soft shadows, giving the scene a cinematic, intimate atmosphere. The image is composed as a professional semi-realistic illustration with smooth painterly rendering, high detail, shallow depth of field, and dramatic warm color grading.",
+      "negative_prompt": "",
+      "cfg": 1,
+      "steps": 40,
+      "width": [
+        "13",
+        0
+      ],
+      "height": [
+        "13",
+        1
+      ],
+      "scheduler": "euler",
+      "scheduler_1": "simple",
+      "seed": 20260922,
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "clip_name": "qwen3vl_8b_w4a8.safetensors",
+      "vae_name": "qwen_image_2.1_vae_bf16.safetensors"
+    },
+    "_meta": {
+      "title": "c291ceec-b98f-4751-9d0b-7bc288f27b30"
+    }
+  },
+  "461": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "459",
+        0
+      ],
+      "filename_prefix": "Qwen_image_2.1"
+    },
+    "_meta": {
+      "title": "SaveImage"
+    }
+  }
+}

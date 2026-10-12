@@ -1,0 +1,106 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "_meta": {
+      "title": "UNETLoader"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_8b_w4a8.safetensors",
+      "type": "qwen_image",
+      "device": "cpu"
+    },
+    "_meta": {
+      "title": "CLIPLoader"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_2.1_vae_bf16.safetensors"
+    },
+    "_meta": {
+      "title": "VAELoader"
+    }
+  },
+  "4": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "prompt": "App 图标设计，一枚拼图块形状的取景框居中放置，主体占画面约 70%。拼图块内部是一幅微缩治愈场景：黄昏时分的窗台，一轮暖橙色落日悬在窗边，一小只猫的圆润剪影坐在窗台望向落日，两三粒光斑漂浮。拼图块外部为纯净的奶油米色背景。扁平插画风格，配色限定：暖橙、蜜桃、奶油白、少量暮色淡紫。外轮廓圆润清晰，无任何文字，无边框，治愈感。",
+      "negative_prompt": "文字, 字母, 数字, 水印, 签名, logo, 边框, 真实人物, 人脸, 写实照片, 复杂背景, 多主体堆叠, 暗色调, 恐怖, 低对比, 模糊, 变形的拼图块, 错误的拼图形状, 多余的拼图凸起, 低质量",
+      "resolution": 1024
+    },
+    "_meta": {
+      "title": "TextEncodeQwenImage21"
+    }
+  },
+  "5": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026101003,
+      "steps": 40,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "4",
+        1
+      ],
+      "latent_image": [
+        "4",
+        2
+      ]
+    },
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "6": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "5",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "VAEDecode"
+    }
+  },
+  "7": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "6",
+        0
+      ],
+      "filename_prefix": "avatar_B1_qwen"
+    },
+    "_meta": {
+      "title": "SaveImage"
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "_meta": {
+      "title": "UNETLoader"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_8b_w4a8.safetensors",
+      "type": "qwen_image",
+      "device": "cpu"
+    },
+    "_meta": {
+      "title": "CLIPLoader"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_2.1_vae_bf16.safetensors"
+    },
+    "_meta": {
+      "title": "VAELoader"
+    }
+  },
+  "4": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "clip": [
+        "2",
+        0
+      ],
+      "prompt": "扁平治愈系插画，雪夜村庄上空舞动的绿色极光，屋顶积雪，几扇窗透出暖橙灯光，柔和淡彩配色（奶油白、暖米、陶土橘、雾霾蓝、豆绿、浅粉、鹅黄、可可棕），圆润柔和的形体，干净的矢量风着色，温馨绘本氛围，居中构图，细节在整个画面均匀分布且密度适中，无任何文字，无水印，无 logo，无人类",
+      "negative_prompt": "文字, 字母, 数字, 水印, 签名, logo, 边框, 人类, 真实人脸, 照片写实, 3D 渲染, 黑暗恐怖, 血腥, 品牌角色, 名人, 有版权的角色, 国旗, 宗教符号, 政治符号, 低质量",
+      "resolution": 1024
+    },
+    "_meta": {
+      "title": "TextEncodeQwenImage21"
+    }
+  },
+  "5": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 2026101062,
+      "steps": 40,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "4",
+        1
+      ],
+      "latent_image": [
+        "4",
+        2
+      ]
+    },
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "6": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "5",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "VAEDecode"
+    }
+  },
+  "7": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "6",
+        0
+      ],
+      "filename_prefix": "f_night_008"
+    },
+    "_meta": {
+      "title": "SaveImage"
+    }
+  }
+}

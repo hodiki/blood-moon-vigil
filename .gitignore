@@ -61,3 +61,7 @@ tools/comfy-lan/.ffmpeg/
 
 # ===== WorkBuddy 项目工作区数据（本地记忆，不入库） =====
 .workbuddy/
+
+# ===== Comfy 局域网工具链：机器产物与运行日志不入库 =====
+tools/comfy-lan/incoming/
+tools/comfy-lan/logs/
