@@ -8,6 +8,7 @@ import {
   codexTotalUnlocked,
   codexUnlockedSet,
   codexConditionText,
+  detailFor,
 } from '@/ui/codex-overlay';
 import { emptySave } from '@/stats/save';
 
@@ -57,5 +58,19 @@ describe('图鉴「守夜日志」UI 纯逻辑（codex-ui-spec v1.0）', () => {
     expect(set.has('codex_hero_hero_edmund')).toBe(true);
     expect(set.has('codex_bad_id')).toBe(true); // 未知 id 由 data 层 record 拦截，读集不过滤
     expect(codexUnlockedSet({ ...emptySave(), codexUnlocked: undefined as unknown as string[] }).size).toBe(0);
+  });
+
+  it('渲染路径守护（C-9c）：薇奥莱详情字段只含 §4.3 定稿文案，无退役用语', () => {
+    // 独立真值：直接断言 detailFor 渲染出的字面量（不调用 narratives 侧被测函数自证）。
+    const entry = CODEX_ENTRIES.find((e) => e.entryId === 'codex_hero_hero_violet')!;
+    const joined = detailFor(entry)
+      .map((f) => `${f.label}:${f.value}`)
+      .join('\n');
+    expect(joined).toContain('秉烛人·薇奥莱');
+    expect(joined).toContain('守夜会的守约者，从血教堂活着走出来');
+    expect(joined).toContain('烛在，约在。');
+    expect(joined).not.toContain('夜祷修女');
+    expect(joined).not.toContain('安魂曲');
+    expect(joined).not.toContain('圣诗');
   });
 });

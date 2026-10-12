@@ -173,18 +173,59 @@ describe('narratives 文本表（narratives-spec v1.4 §2~§9；SC-01~SC-09 sche
     for (const h of HERO_ARCHIVES) {
       expect((h as { exception?: unknown }).exception).toBeUndefined();
     }
-    // 文本层残留（薇奥莱濒死句「主……不」旧文）属人工文案批 C-9c 范围，本批不动；
-    // 除该句外全表无宗教实指「神」，且除该句外无「主」。
+    // 文本层去圣职化（C-9c 人工文案批已回写，spec §4.3 定稿）：旧濒死句「主……不，月亮不会怜悯。」退役。
     const violet = HERO_ARCHIVES.find((h) => h.key === 'hero_violet')!;
-    expect(violet.lines.dying).toBe('主……不，月亮不会怜悯。');
+    expect(violet.lines.dying).toBe('烛别灭……还没守完。');
+    // 全表（正文 + 档案台词）无宗教实指「神」、无「主」——去圣职化后无任何例外口径。
     const allTexts: string[] = [];
     for (const e of NARRATIVES) allTexts.push(e.text);
     for (const h of HERO_ARCHIVES) allTexts.push(h.background, h.lines.enter, h.lines.dying, h.lines.death);
     for (const b of BOSS_ARCHIVES) allTexts.push(b.background, b.enterLine, b.defeatLine);
     for (const t of allTexts) {
-      if (t.includes('神')) expect(t).toBe(violet.lines.dying); // 全表不含「神」
-      if (t.includes('主') && t !== violet.lines.dying) expect(t).toBe(violet.lines.dying);
+      expect(t).not.toContain('神');
+      expect(t).not.toContain('主');
     }
+  });
+
+  it('术语零命中守护（narratives-spec §4.3 定稿 / 去圣职化）：玩家可见字段不含退役用语', () => {
+    // 独立真值：期望值直接取 §4.3 字面量，不调用被测函数自证。
+    const RETIRED = ['夜祷修女', '夜祷者', '安魂曲', '圣诗'] as const;
+
+    const visible: string[] = [];
+    for (const e of NARRATIVES) visible.push(e.text);
+    for (const h of HERO_ARCHIVES) {
+      visible.push(h.name, h.identity, h.background, h.lines.enter, h.lines.dying, h.lines.death);
+      for (const w of h.exclusiveWeapons) visible.push(w.name, w.desc);
+      for (const s of h.derivedSkills) visible.push(s.name, s.desc);
+      for (const rv of h.routeVariants ?? []) visible.push(rv.enterLine);
+    }
+    for (const b of BOSS_ARCHIVES) visible.push(b.name, b.identity, b.background, b.enterLine, b.defeatLine);
+    for (const ev of EVENT_ARCHIVES) visible.push(ev.name, ev.text);
+    for (const en of ENTITY_ARCHIVES) visible.push(en.name, en.identity, en.background, en.detail ?? '');
+    for (const r of RELIC_ARCHIVES) visible.push(r.name, r.line);
+
+    for (const s of visible) {
+      for (const bad of RETIRED) expect(s).not.toContain(bad); // 退役用语零命中
+      expect(s).not.toContain('神'); // 无宗教实指「神」（spec §13-7）
+    }
+    // 旧宗教实指感叹「主……」（薇奥莱濒死句）已退役
+    expect(visible.some((s) => s.includes('主……'))).toBe(false);
+
+    // §4.3 定稿字面量（薇奥莱玩家可见字段，整组替换、非单词替换）
+    const violet = HERO_ARCHIVES.find((h) => h.key === 'hero_violet')!;
+    expect(violet.name).toBe('秉烛人·薇奥莱');
+    expect(violet.identity).toBe('守夜会的守约者，从血教堂活着走出来——烛是她从那夜带出的唯一东西。');
+    expect(violet.background).toBe(
+      '教堂沦陷那夜，她吹熄了所有烛，只带走一支，从血井边爬出来。从此她不再替死者歌唱——她为亡者送行，为自己的约守夜。',
+    );
+    expect(violet.lines.enter).toBe('烛在，约在。');
+    expect(violet.lines.dying).toBe('烛别灭……还没守完。');
+    expect(violet.lines.death).toBe('它……会替我守完。');
+    expect(NP.HERO_VIOLET).toBe('秉烛人·薇奥莱');
+    // 旁白（事件档案·守夜会）仅名词替换：夜祷修女 → 秉烛人，其余字句不动
+    expect(EVENT_ARCHIVES.find((e) => e.key === 'n_event_vigil')!.text).toContain(
+      '银器猎手、秉烛人，以圣辉与银器对抗亡潮',
+    );
   });
 
   it('专有名词走 NP 常量（spec §10 / world-bible §7；consistency-anchors A4）', () => {

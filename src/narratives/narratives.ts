@@ -181,7 +181,7 @@ export const NP = {
   // 角色
   HERO_EDMUND: '守夜人·艾德蒙',
   HERO_CASSANDRA: '血猎手·卡珊德拉',
-  HERO_VIOLET: '夜祷修女·薇奥莱',
+  HERO_VIOLET: '秉烛人·薇奥莱',
   HERO_GALVAN: '狼裔·加尔文',
   // Boss
   BOSS_1: '血月尊者',
@@ -408,8 +408,8 @@ export const HERO_ARCHIVES: readonly HeroArchiveText[] = [
     enName: 'Violet',
     faction: NP.FACTION_VIGIL,
     powerTags: ['HALLOWED'],
-    identity: '血教堂幸存的执烛修女，以圣诗驱魔的夜祷者',
-    background: '教堂沦陷那夜，她唱完了最后一首安魂曲，从血井边爬出来。从此她不再为死者安魂——她为亡者送行。',
+    identity: '守夜会的守约者，从血教堂活着走出来——烛是她从那夜带出的唯一东西。',
+    background: '教堂沦陷那夜，她吹熄了所有烛，只带走一支，从血井边爬出来。从此她不再替死者歌唱——她为亡者送行，为自己的约守夜。',
     exclusiveWeapons: [
       { name: '誓约圣铃', desc: '铃音是誓约的回声，治愈她与守誓者（守誓路线核心）。' },
       { name: '圣辉轮刃', desc: '掷出旋转光刃环，落点爆发；两路线通用。' },
@@ -418,7 +418,7 @@ export const HERO_ARCHIVES: readonly HeroArchiveText[] = [
       { name: '圣辉审判', desc: '坠落 + 眩晕 + 治疗光环。' },
       { name: '誓约回响', desc: '减速 + 回复 + 守誓者回满。' },
     ],
-    lines: { enter: '尘归尘，血归血。', dying: '主……不，月亮不会怜悯。', death: '让安魂曲……替我唱完。' },
+    lines: { enter: '烛在，约在。', dying: '烛别灭……还没守完。', death: '它……会替我守完。' },
     unlock: '通关地图 2（血教堂）',
     // companionKey / routeVariants（守誓者实体引用 / 双路线变体）待人工文案随 §4A/§7 落表（SC-06）
   },
@@ -507,7 +507,7 @@ export const EVENT_ARCHIVES: readonly EventArchiveText[] = [
   {
     key: 'n_event_vigil',
     name: '守夜会',
-    text: '人类守卫者：提灯守夜人、银器猎手、夜祷修女，以圣辉与银器对抗亡潮。圣辉是有限资源——每次守夜都在消耗封印的余力，这是封印渗血、守夜会衰微的根因。',
+    text: '人类守卫者：提灯守夜人、银器猎手、秉烛人，以圣辉与银器对抗亡潮。圣辉是有限资源——每次守夜都在消耗封印的余力，这是封印渗血、守夜会衰微的根因。',
     unlock: '首通地图 1',
   },
   {
@@ -712,7 +712,7 @@ export function newWeaponTriggerForPowerTag(tag: PowerTag | null): NarrativeTrig
     case 'HALLOWED':
       return 'new-weapon:hallowed';
     default:
-      return null; // 台词红线已满 30 条（spec §9），其余系新武器不弹
+      return null; // 台词红线已满 33 条（spec §9），其余系新武器不弹
   }
 }
 
