@@ -1,0 +1,331 @@
+{
+  "version": "1.0",
+  "asOf": "2026-10-12",
+  "author": "art-director (林绘澄)",
+  "sourceAtlas": "assets/atlas/characters.json",
+  "scope": "敌种+Boss base 帧朝向白名单（服务 B2 解锁 + M4 flipX）",
+  "frameSetHash": "3e781df832dfd63885d4dccde8cb8c2eb28b8fa06b4a162b62adcb4354adf22f",
+  "frameSetHashAlgo": "sha256(newline-joined sorted frame list, utf-8)",
+  "frameSetHashScope": "21 gated base frames (enemy-* ×18 + boss-* ×3)",
+  "count": {
+    "gated": 21,
+    "ok": 11,
+    "redrawToRight": 4,
+    "exemptSymmetric": 5,
+    "needsRecheck": 1,
+    "informational": 4
+  },
+  "gateConstraints": {
+    "C1_explicitSet": "禁用前缀 glob（boss-* 会漏 enemy-boss）；一律用显式 base 集合。",
+    "C2_baseKey": "查表前先 stripVariantSuffixes（剥 -v/-skill-*/-entrance/-walk-*/-broken/-tombstone）取 base 为主键。",
+    "C3_frameSetHash": "用本对象 frameSetHash 校验帧集，变化即报错（防 bit-rot）。",
+    "C4_prefixAllowlist": "characters.json 混装 22 帧非角色帧（missile/proj-*/orb*/ring-*/aura-*/beam-*/shockwave/super-*）；派生待判集须按 ^(player|hero-|enemy-|boss-) 白名单且排除 summon-*。"
+  },
+  "whitelistSemantics": "inGate=true（ok ∪ exempt-symmetric）= 可安全启用 flipX；action∈{redraw-to-right,needs-recheck} = 门禁 FAIL，须重绘/复核后方可入表。",
+  "frames": [
+    {
+      "frame": "enemy-zombie",
+      "familyBase": "enemy-zombie",
+      "facing": "right",
+      "confidence": "low",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-zombie-v"
+      ],
+      "note": "8× 目视：颅面朝右下、前伸爪手在画面右侧 ⇒ 朝右；躯干近侧视，前次初判曾记「偏左」，本轮复判改判为「朝右」，仍标低置信"
+    },
+    {
+      "frame": "enemy-hound",
+      "familyBase": "enemy-hound",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-hound-v"
+      ],
+      "note": "四足侧视：吻部/头在画面右、尾在左"
+    },
+    {
+      "frame": "enemy-beetle",
+      "familyBase": "enemy-beetle",
+      "facing": "left",
+      "confidence": "medium",
+      "action": "redraw-to-right",
+      "inGate": false,
+      "coversVariants": [
+        "enemy-beetle-v"
+      ],
+      "note": "10× 目视：头（复眼+口器）与足簇在画面左下，鞘翅（十字高光）在右上 ⇒ 现图朝左"
+    },
+    {
+      "frame": "enemy-wraith",
+      "familyBase": "enemy-wraith",
+      "facing": "symmetric",
+      "confidence": "medium",
+      "action": "exempt-symmetric",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-wraith-v"
+      ],
+      "note": "半透明·无脸幽灵；剪影近轴对称，flipX 无观感差异"
+    },
+    {
+      "frame": "enemy-necro",
+      "familyBase": "enemy-necro",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-necro-v"
+      ],
+      "note": "法杖顶端幽紫宝珠在画面右上"
+    },
+    {
+      "frame": "enemy-acolyte",
+      "familyBase": "enemy-acolyte",
+      "facing": "left",
+      "confidence": "medium",
+      "action": "redraw-to-right",
+      "inGate": false,
+      "coversVariants": [
+        "enemy-acolyte-v"
+      ],
+      "note": "兜帽开口 + 血色短杖指向画面左下"
+    },
+    {
+      "frame": "enemy-bat",
+      "familyBase": "enemy-bat",
+      "facing": "symmetric",
+      "confidence": "medium",
+      "action": "exempt-symmetric",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-bat-v"
+      ],
+      "note": "展翼正面飞行剪影，近双边对称"
+    },
+    {
+      "frame": "enemy-cupbearer",
+      "familyBase": "enemy-cupbearer",
+      "facing": "symmetric",
+      "confidence": "high",
+      "action": "exempt-symmetric",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-cupbearer-v"
+      ],
+      "note": "正面立姿、圣杯居中——无侧向锚点"
+    },
+    {
+      "frame": "enemy-fleshmass",
+      "familyBase": "enemy-fleshmass",
+      "facing": "symmetric",
+      "confidence": "high",
+      "action": "exempt-symmetric",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-fleshmass-v"
+      ],
+      "note": "无定形肉块、近放射状对称"
+    },
+    {
+      "frame": "enemy-penitent",
+      "familyBase": "enemy-penitent",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-penitent-v"
+      ],
+      "note": "画面右手高举报烛（烛火）/ 双角在顶，朝向锚点在右"
+    },
+    {
+      "frame": "enemy-greywolf",
+      "familyBase": "enemy-greywolf",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-greywolf-v"
+      ],
+      "note": "四足侧视：吻部在画面右、尾在左"
+    },
+    {
+      "frame": "enemy-shadowwolf",
+      "familyBase": "enemy-shadowwolf",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-shadowwolf-v"
+      ],
+      "note": "奔袭姿：狼头在画面右、尾在左"
+    },
+    {
+      "frame": "enemy-stonewolf",
+      "familyBase": "enemy-stonewolf",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-stonewolf-broken",
+        "enemy-stonewolf-broken-v",
+        "enemy-stonewolf-v"
+      ],
+      "note": "四足侧视：吻部在画面右（含 -broken 破甲族）"
+    },
+    {
+      "frame": "enemy-wolfhunter",
+      "familyBase": "enemy-wolfhunter",
+      "facing": "right",
+      "confidence": "medium",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-wolfhunter-v"
+      ],
+      "note": "长爪/獠牙前伸至画面右下（前肢为朝向锚点）"
+    },
+    {
+      "frame": "enemy-gravekeeper",
+      "familyBase": "enemy-gravekeeper",
+      "facing": "indeterminate",
+      "confidence": "low",
+      "action": "needs-recheck",
+      "inGate": false,
+      "coversVariants": [
+        "enemy-gravekeeper-v"
+      ],
+      "note": "铲刃（黑）在画面右上、握柄在左下，而躯干/兜帽面朝左下——强线索冲突，需人工目视定夺"
+    },
+    {
+      "frame": "enemy-decayedknight",
+      "familyBase": "enemy-decayedknight",
+      "facing": "left",
+      "confidence": "medium",
+      "action": "redraw-to-right",
+      "inGate": false,
+      "coversVariants": [
+        "enemy-decayedknight-v"
+      ],
+      "note": "长剑与持剑臂明确指向画面左下"
+    },
+    {
+      "frame": "enemy-bonethrower",
+      "familyBase": "enemy-bonethrower",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-bonethrower-v"
+      ],
+      "note": "长矛尖在画面右上"
+    },
+    {
+      "frame": "enemy-boss",
+      "familyBase": "enemy-boss",
+      "facing": "right",
+      "confidence": "medium",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "enemy-boss-v"
+      ],
+      "note": "锈蚀提灯（血光）垂在画面右侧；合 art-bible §2.7「灯在画面右侧」锚点（血月尊者 = boss_1）"
+    },
+    {
+      "frame": "boss-cardinal",
+      "familyBase": "boss-cardinal",
+      "facing": "right",
+      "confidence": "high",
+      "action": "ok",
+      "inGate": true,
+      "coversVariants": [
+        "boss-cardinal-entrance",
+        "boss-cardinal-v"
+      ],
+      "note": "高举圣杯在画面右上"
+    },
+    {
+      "frame": "boss-fenrir",
+      "familyBase": "boss-fenrir",
+      "facing": "left",
+      "confidence": "high",
+      "action": "redraw-to-right",
+      "inGate": false,
+      "coversVariants": [
+        "boss-fenrir-entrance",
+        "boss-fenrir-v"
+      ],
+      "note": "狼首+鬃+发光眼在画面左，躯干与尾向右 ⇒ 现图朝左"
+    },
+    {
+      "frame": "boss-moonavatar",
+      "familyBase": "boss-moonavatar",
+      "facing": "symmetric",
+      "confidence": "medium",
+      "action": "exempt-symmetric",
+      "inGate": true,
+      "coversVariants": [
+        "boss-moonavatar-entrance",
+        "boss-moonavatar-v"
+      ],
+      "note": "正面人形光体、无五官、无角饰"
+    }
+  ],
+  "informational": [
+    {
+      "frame": "summon-oathkeeper",
+      "familyBase": "summon-oathkeeper",
+      "facing": "n/a",
+      "confidence": "n/a",
+      "action": "informational",
+      "inGate": false,
+      "coversVariants": [
+        "summon-oathkeeper-tombstone",
+        "summon-oathkeeper-v"
+      ],
+      "note": "召唤物：不调用 applyFacing ⇒ 恒按原图渲染、永不月步，朝向不入门禁"
+    },
+    {
+      "frame": "summon-moonwolf",
+      "familyBase": "summon-moonwolf",
+      "facing": "n/a",
+      "confidence": "n/a",
+      "action": "informational",
+      "inGate": false,
+      "coversVariants": [
+        "summon-moonwolf-v"
+      ],
+      "note": "同上"
+    },
+    {
+      "frame": "summon-bat",
+      "familyBase": "summon-bat",
+      "facing": "n/a",
+      "confidence": "n/a",
+      "action": "informational",
+      "inGate": false,
+      "coversVariants": [],
+      "note": "召唤物（effects 图集）：不入门禁"
+    },
+    {
+      "frame": "summon-hound",
+      "familyBase": "summon-hound",
+      "facing": "n/a",
+      "confidence": "n/a",
+      "action": "informational",
+      "inGate": false,
+      "coversVariants": [],
+      "note": "召唤物（effects 图集）：不入门禁"
+    }
+  ]
+}
