@@ -5,7 +5,7 @@ alwaysApply: true
 
 # 战斗层 64
 
-完整条文：`design/art-bible/combat-64-workflow-v1.md`（**v1.25**）· 产线：`pipeline-gpu-first-v1.md` · 成法：`combat-identity-chengfa-v1.md` · 脸门：`face-gate-spec-v1.md` · 条：`pipelines/README.md` · 风格帧经验：`style-frame-h23-lessons-v1.md` · 像素：`combat-64-pixel-workflow-v1.md`
+完整条文：`design/art-bible/combat-64-workflow-v1.md`（**v1.25**）· 产线：`pipeline-gpu-first-v1.md` · 成法：`combat-identity-chengfa-v1.md` · **战斗裁定（2026-10-15）：`combat-scheme-a-directive-v1.md`。新战斗帧的验收、两轮停手、方案 C 未开工，听该裁定；与成法的零件表验收冲突时听裁定。** 脸门：`face-gate-spec-v1.md` · 条：`pipelines/README.md` · 风格帧经验：`style-frame-h23-lessons-v1.md` · 像素：`combat-64-pixel-workflow-v1.md`
 
 - **角色目录。** 源 / 锁 / 印戳 / 过关帧源在 `characters/<id>/`（索引 `characters/README.md`）。新 GPU 落盘：`run-job --char <id>` → `characters/<id>/_park/<ISO>/`；无旗标仍进历史 `_park/comfy-lan/`。新过目夹：`characters/<id>/review/<yyyymmdd-topic>/`。`assets/frames/` 仍是出货契约，不搬。
 - **现网 ≠ 已过。** `player` idle **已过（v9）**。走 **已过（V4）**。`player-skill-a/b` **已过（v1）**。`hero-violet` 守誓 idle **已过（128 · from-a）**；走 **已过（128 · E2 S3c-b）**；技能 **已过（128 · A1 / B2）**。`hero-violet-fallen` 魔化 idle **已过（128 · B-lo）**；**skill 待技能设计（美术暂停）**；走未开。加尔文 128 idle **开工**。守誓者过了改 **192**（必须比她高；96 是她还 64 时的比例，作废）。**形象套：守誓 O-3 + 色键 D2 已过；魔化 F-3 + 色键 E1 已过；O-2 退对照。评 C：新战斗帧 128。** **卡珊德拉风格帧已过（H23）**。艾德蒙身份已锁。守誓双人亮银红羽立绘已锁。魔化 **优先身份 = 优雅 GPT**（`violet-fallen-gpt-e`）；战斗向 **备用已锁**（`violet-fallen-armor3-a`），不是过、不开新帧。加尔文 **身份已锁**（`galvan-bulk-a`；三道痕/披偏黑已知），战斗未过。色键 C/E/G 留。专武第二波未开。已过 C/E **不重切**。已过 idle / walk / skill **不改**。
