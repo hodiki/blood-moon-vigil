@@ -223,6 +223,10 @@ export class PlayScene extends Phaser.Scene {
     return this.exclusiveRun.exclusive;
   }
 
+  constructor() {
+    super('Play');
+  }
+
   create(): void {
     this.cfg = getRuntimeConfig(detectIsMobile());
     createProceduralTextures(this, this.cfg);
