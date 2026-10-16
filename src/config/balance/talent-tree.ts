@@ -172,7 +172,7 @@ export const TALENT_TREE: readonly TalentNodeConfig[] = [
   { id: 'a_damage', kind: 'attribute', name: '伤害', desc: '灯焰烧得更透。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_damage },
   { id: 'a_damage_2', kind: 'attribute', name: '伤害·Ⅱ', desc: '灯焰烧得更透。', cost: 10, layer: 3, parent: 'a_damage', maxPurchases: 1, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_damage },
   { id: 'a_attack_speed', kind: 'attribute', name: '攻速', desc: '心跳追上了弹巢。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 1, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_attack_speed }, // D1 降档 2→1（EN-12）
-  { id: 'a_cooldown', kind: 'attribute', name: '冷却', desc: '祷言短了，落得更密。', cost: 10, layer: 3, parent: 'a_attack_speed', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_cooldown },
+  { id: 'a_cooldown', kind: 'attribute', name: '冷却', desc: '灯焰的间歇短了，落得更密。', cost: 10, layer: 3, parent: 'a_attack_speed', maxPurchases: 2, bucket: 'damage', machine: TALENT_ATTRIBUTE_EFFECTS.a_cooldown },
   { id: 'a_xp_gain', kind: 'attribute', name: '经验获取', desc: '你开始看得懂夜的语法。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 1, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_xp_gain },
   { id: 'a_xp_gain_2', kind: 'attribute', name: '经验获取·Ⅱ', desc: '你开始看得懂夜的语法。', cost: 10, layer: 3, parent: 'a_xp_gain', maxPurchases: 1, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_xp_gain, codexPrerequisite: 'codex_entries_25' },
   { id: 'a_magnet', kind: 'attribute', name: '磁力', desc: '散落的余辉认得回家的路。', cost: 10, layer: 2, parent: 'q_a', maxPurchases: 1, bucket: 'tempo', machine: TALENT_ATTRIBUTE_EFFECTS.a_magnet },
