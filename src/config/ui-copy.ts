@@ -52,7 +52,7 @@ export const SEAT_COPY: Record<GuaranteeSeat, { label: string; hint: string }> =
 /** 地图 → 氛围语（自拟；镇守者名 = MAP_CONFIGS.boss → BOSSES.name 真名，禁止编造） */
 export const MAP_ATMOSPHERE: Record<MapId, string> = {
   map_graveyard: '碑影之间灯火最亮，亡者也最饿。',
-  map_cathedral: '彩窗漏下红光，祷告声在血池里发胀。',
+  map_cathedral: '彩窗漏下红光，血池的翻涌声中带着扭曲的祷告',
   map_den: '嚎声贴着地面走，连石头都竖起了耳朵。',
 };
 

@@ -1,0 +1,80 @@
+# 《血月守夜》CI 门禁 · Linux runner 硬保障（NV-ENG-EXEC-18 任务 B）
+#
+# 背景：本机为 Windows，Playwright 关闭 webServer 时依赖 `taskkill /T` 回收
+#   cmd → node(vite) 进程树（见 playwright.config.ts 注释）。Windows 侧只能「收窄漏杀面」，
+#   不能给出进程回收的硬保证（详见 production/official-v1/e2e进程退出修复报告-2026-10-14.md）。
+#   POSIX runner 支持 SIGTERM/SIGINT → `webServer.gracefulShutdown` 生效 →
+#   e2e 退出码语义清晰、无残留进程，构成进程回收的硬保障。
+#
+# 触发策略（论证）：
+#   - push 到 master：主线每次落地全量门禁。
+#   - pull_request：所有 PR 在合入前接受同门禁。
+#   - 刻意不加 pull_request 的 paths 过滤与高频触发（避免拖慢）；两事件已覆盖「入口」与「出口」。
+#
+# 关闭方式：删除本文件（.github/workflows/ci.yml）即可一键停用；本 workflow 不产生任何运行时依赖。
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# 同一 ref 上并发触发时取消旧运行，避免排队堆积（不改变门禁语义）。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: 门禁（typecheck → unit → build → e2e）
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node 版本依据：本地实测 node v22.22.2；devDependencies @types/node ^22.10.5；
+      # package.json 无 engines 约束 → 与本地/现网一致，锁定 Node 22。
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 确定性安装：严格按 package-lock.json 重建 node_modules。
+      - name: Install deps (npm ci)
+        run: npm ci
+
+      # 类型门禁（build 内亦含 tsc --noEmit，此处单列以独立暴露类型错误）。
+      - name: Typecheck (tsc --noEmit)
+        run: npx tsc --noEmit
+
+      # 单测基线：120 文件 / 1449 用例，只增不减。
+      - name: Unit tests (vitest run)
+        run: npx vitest run
+
+      # 生产构建（tsc --noEmit && vite build），产出 dist/ 供 preview 使用。
+      - name: Build
+        run: npm run build
+
+      # 安装 chromium 及系统依赖（CI runner 为最小镜像，--with-deps 必需）。
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      # e2e 冒烟：webServer 直接调用 Vite CLI 起 preview(4173)。
+      # gracefulShutdown 在 POSIX 生效（SIGTERM），此处不显式排除。
+      - name: E2E smoke (playwright)
+        run: npm run test:e2e
+
+      # 失败时上传 Playwright 报告，便于定位。
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
