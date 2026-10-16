@@ -43,6 +43,7 @@ import {
 import { DEFAULT_NARRATIVE_BINDINGS } from '@/narratives/narrative-bindings';
 import { resultTitle } from '@/ui/results-overlay';
 import type { WeaponId } from '@/config/balance';
+import { TALENT_TREE } from '@/config/balance';
 import type { NarrativeComponent } from '@/narratives/narrative-overlays';
 
 /** 测试用假组件（记录调用；不碰 DOM） */
@@ -126,7 +127,7 @@ describe('narratives 文本表（narratives-spec v1.4 §2~§9；SC-01~SC-09 sche
     expect(entry('n_toast_elite').durationSec).toBe(specDurationSec('有大家伙来了。', 1.0));
     // bottom-banner（Boss 登场 floor 3.0）
     expect(entry('n_boss_1_enter').durationSec).toBe(specDurationSec('凡人，你守不住这夜。', 3.0)); // 3.0
-    expect(entry('n_boss_2_enter').durationSec).toBe(specDurationSec('圣血已污，你的祷言没有回音。', 3.0)); // 3.5
+    expect(entry('n_boss_2_enter').durationSec).toBe(specDurationSec('圣血已污，你的誓约没有回音。', 3.0)); // 3.5
     // 圣物释放 / 共鸣寻获固定 2.5s（spec §7）——条目待人工文案落表，本批 NARRATIVES 内暂无
     expect(NARRATIVES.filter((x) => x.context === 'relic' || x.context === 'resonance')).toHaveLength(0);
     // 序章固定 3
@@ -189,7 +190,9 @@ describe('narratives 文本表（narratives-spec v1.4 §2~§9；SC-01~SC-09 sche
 
   it('术语零命中守护（narratives-spec §4.3 定稿 / 去圣职化）：玩家可见字段不含退役用语', () => {
     // 独立真值：期望值直接取 §4.3 字面量，不调用被测函数自证。
-    const RETIRED = ['夜祷修女', '夜祷者', '安魂曲', '圣诗'] as const;
+    // ⚠ NV-ENG-EXEC-16：`祷言` 与其余四词同级纳入；扫描面同时覆盖「配置表文案」（原先只覆盖叙事文件，
+    //    `talent-tree.ts` 的玩家可见节点 desc 由此前口径「扫不到」→ 本次补齐）。
+    const RETIRED = ['夜祷修女', '夜祷者', '安魂曲', '圣诗', '祷言'] as const;
 
     const visible: string[] = [];
     for (const e of NARRATIVES) visible.push(e.text);
@@ -203,6 +206,8 @@ describe('narratives 文本表（narratives-spec v1.4 §2~§9；SC-01~SC-09 sche
     for (const ev of EVENT_ARCHIVES) visible.push(ev.name, ev.text);
     for (const en of ENTITY_ARCHIVES) visible.push(en.name, en.identity, en.background, en.detail ?? '');
     for (const r of RELIC_ARCHIVES) visible.push(r.name, r.line);
+    // 配置表文案（tree-overlay 直接渲染 `name` + `desc`，玩家可见；NV-ENG-EXEC-16 新增扫描面）
+    for (const n of TALENT_TREE) visible.push(n.name, n.desc);
 
     for (const s of visible) {
       for (const bad of RETIRED) expect(s).not.toContain(bad); // 退役用语零命中
@@ -356,7 +361,7 @@ describe('NarrativeDispatcher 触发分发器（spec §6/§7）', () => {
     const comps = makeAllComponents();
     const d = new NarrativeDispatcher({ entries: NARRATIVES, components: comps });
     expect(d.show('boss:spawned(boss_2)')).toBe(true);
-    expect(comps['bottom-banner'].calls).toEqual([{ text: '圣血已污，你的祷言没有回音。', durationMs: 3500 }]);
+    expect(comps['bottom-banner'].calls).toEqual([{ text: '圣血已污，你的誓约没有回音。', durationMs: 3500 }]);
   });
 
   it('已退役的 evolution trigger → 无条目 no-op（SC-04）', () => {

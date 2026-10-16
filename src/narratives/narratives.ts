@@ -308,7 +308,7 @@ export const NARRATIVES: readonly NarrativeText[] = [
   {
     key: 'n_boss_2_enter',
     context: 'boss',
-    text: '圣血已污，你的祷言没有回音。',
+    text: '圣血已污，你的誓约没有回音。',
     form: 'bottom-banner',
     durationSec: 3.5, // max(14×0.25, 3)
     trigger: 'boss:spawned(boss_2)',
@@ -464,7 +464,7 @@ export const BOSS_ARCHIVES: readonly BossArchiveText[] = [
     powerTag: 'BLOOD',
     identity: '叛变的教堂主教，血廷在人间的代行者',
     background: '为求永生，尼禄打开地下血井，以整座教堂的信众献祭。如今他站在井口，等着把最后一位闯入者也献进井里。',
-    enterLine: '圣血已污，你的祷言没有回音。',
+    enterLine: '圣血已污，你的誓约没有回音。',
     defeatLine: '井……会记得每一个名字。',
     map: NP.MAP_CATHEDRAL,
     drop: 'XP 120',
