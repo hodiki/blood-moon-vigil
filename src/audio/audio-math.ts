@@ -114,6 +114,48 @@ export function canStartVoice(activeVoices: number, maxVoices: number): boolean 
   return activeVoices < maxVoices;
 }
 
+/**
+ * 同发让位决策结果（audio-bible §3 优先级表）：
+ * - start：直接开声
+ * - preempt：抢占 index 处的在场最低优先实例（新来优先级更高）
+ * - drop：弃新保旧（新来优先级 ≤ 在场最低）
+ */
+export type VoiceAdmission =
+  | { action: 'start' }
+  | { action: 'preempt'; index: number }
+  | { action: 'drop' };
+
+/**
+ * 同发冲突时的让位判定（bible §3：受击/选卡确认/Boss 出场 > 击杀 > 拾取 > 武器发射 > BGM > 装饰）。
+ * - 未满员：start
+ * - 满员：新来优先级 **严格高于** 在场最低 → preempt 最低者（同优先取最早开声的）；否则 drop
+ *
+ * 让位手段取舍 = **丢弃/抢占淡出**（不做 ducking）：
+ * 1. 全部 SFX 为 8~500ms 短音，对短音做音量下压在听感上不可感知，反而增加自动化复杂度；
+ * 2. 装饰音（卡滑入/tick）本就 -18~-20dB，丢弃几乎无损体验，关键音（受击/确认/Boss）必须保全；
+ * 3. BGM 的"让位"由总线分离（BGM 独立 -18dB 底垫）+ 总线末端压缩器承担，不走发声池抢占。
+ */
+export function resolveVoiceAdmission(
+  activePriorities: readonly number[],
+  newPriority: number,
+  maxVoices: number,
+): VoiceAdmission {
+  if (maxVoices <= 0) return { action: 'drop' };
+  if (activePriorities.length < maxVoices) return { action: 'start' };
+  // 满员：找在场最低优先（同优先取最早 = 遍历首个）
+  let minIdx = 0;
+  let minPriority = activePriorities[0] ?? 0;
+  for (let i = 1; i < activePriorities.length; i += 1) {
+    const p = activePriorities[i] ?? 0;
+    if (p < minPriority) {
+      minPriority = p;
+      minIdx = i;
+    }
+  }
+  if (newPriority > minPriority) return { action: 'preempt', index: minIdx };
+  return { action: 'drop' };
+}
+
 /** 读布尔设置（缺键/损坏/异常 → dflt，不抛错，隐私模式不阻断） */
 export function readAudioFlag(storage: AudioStorage, key: string, dflt = false): boolean {
   try {

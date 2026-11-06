@@ -13,7 +13,9 @@
  * - BGM 两层（bible §1）：氛围垫层（低八度正弦 pad + 空气噪声，恒定低音量）+ 程序心跳层
  *   （单例振荡器 55~70Hz + 短 envelope；BPM 消费 spawner.elapsedSeconds 分段线性 60→140；
  *   濒死 HP<30% BPM+10/音量+2dB；暂停/选卡 -4dB；Boss 双拍 +3dB；死亡/胜利瞬间 0.3s 静默）。
- * - SFX：min-gap 限流 + 同发上限 6 路，超限弃新保旧（bible §4）。
+ * - SFX：min-gap 限流 + 同发上限 6 路；同发冲突按 bible §3 优先级让位
+ *   （受击/确认/Boss > 击杀 > 拾取 > 武器 > 装饰）——高优先抢占在场最低优先实例，
+ *   否则弃新保旧。让位手段 = 抢占淡出丢弃（不做 ducking，短音不可感知）。
  * - 静音：masterGain=0（≠ 关 AudioContext，保持 unlock 状态，恢复零延迟，bible §6）。
  * - 触觉：navigator.vibrate（受击 15ms / Boss 双震 [30,50,30]），默认关，随「减少闪烁」
  *   入口可选开启（bible §6）。
@@ -31,7 +33,7 @@ import {
   heartbeatFrequency,
   heartbeatGainDb,
   shouldFire,
-  canStartVoice,
+  resolveVoiceAdmission,
   readMuted,
   writeMuted,
   readReduceFlash,
@@ -63,6 +65,16 @@ function createNoiseBuffer(ctx: BaseAudioContext, seconds = 1): AudioBuffer {
 interface AudioManagerOptions {
   isMobile?: boolean;
   storage?: AudioStorage;
+}
+
+/** 在场 SFX 发声实例（同发让位抢占目标；bible §3 优先级表） */
+interface ActiveVoice {
+  /** 同发让位优先级（SFX_PRIORITY 层级） */
+  priority: number;
+  /** 各 part 的 gain 节点（抢占时 8ms 淡出） */
+  gains: GainNode[];
+  /** 已回收标记（自然播完/抢占，防 onended 双回收） */
+  released: boolean;
 }
 
 export class AudioManager {
@@ -100,9 +112,10 @@ export class AudioManager {
   private heartbeatGain: GainNode | null = null;
   private padGain: GainNode | null = null;
 
-  // —— SFX 限流 ——
+  // —— SFX 限流 + 同发让位 ——
   private lastSfxAt = new Map<string, number>();
-  private activeVoices = 0;
+  /** 在场 SFX 发声实例表（同发上限 = AUDIO_LIMITS.MAX_SFX_VOICES；满员按优先级让位） */
+  private activeVoiceList: ActiveVoice[] = [];
 
   // —— 生命周期监听 ——
   private onVisibilityChange: (() => void) | null = null;
@@ -267,6 +280,7 @@ export class AudioManager {
   }
 
   private teardownGraph(): void {
+    this.activeVoiceList = []; // 图拆除后旧实例不再回收，直接清空（防泄漏）
     try {
       this.heartbeatOsc?.stop();
       this.heartbeatOsc?.disconnect();
@@ -399,16 +413,19 @@ export class AudioManager {
 
   // —— SFX ——
 
-  /** 事件类 SFX（限流 + 同发上限，弃新保旧） */
-  playSfx(id: SfxId): void {
+  /**
+   * 事件类 SFX（min-gap 限流 + 同发上限；满员按 bible §3 优先级让位，弃新保旧兜底）。
+   * opts.duringSilence=true：装饰层例外通道（结算 tick 在 0.3s 死亡静默窗口内发声，
+   * -18dB 极轻不破坏「世界静止」的听感；见报告 NV-AUDIO-EXEC-01 §让位/静默取舍）。
+   */
+  playSfx(id: SfxId, opts: { duringSilence?: boolean } = {}): void {
     if (!this.ctx || !this.unlocked || this.muted) return;
-    if (this.ctx.currentTime < this.silenceUntil) return;
+    if (!opts.duringSilence && this.ctx.currentTime < this.silenceUntil) return;
     const spec = SFX_PALETTE[id];
     if (!spec) return;
     if (!shouldFire(this.lastSfxAt.get(id) ?? 0, performance.now(), spec.minGapMs)) return;
-    if (!canStartVoice(this.activeVoices, AUDIO_LIMITS.MAX_SFX_VOICES)) return;
+    if (!this.admitVoice(spec)) return;
     this.lastSfxAt.set(id, performance.now());
-    this.activeVoices += 1;
     this.scheduleSpec(spec);
   }
 
@@ -418,10 +435,53 @@ export class AudioManager {
     if (this.ctx.currentTime < this.silenceUntil) return;
     const spec = KILL_VARIANTS[variant] ?? KILL_VARIANTS.zombie;
     if (!shouldFire(this.lastSfxAt.get('kill') ?? 0, performance.now(), spec.minGapMs)) return;
-    if (!canStartVoice(this.activeVoices, AUDIO_LIMITS.MAX_SFX_VOICES)) return;
+    if (!this.admitVoice(spec)) return;
     this.lastSfxAt.set('kill', performance.now());
-    this.activeVoices += 1;
     this.scheduleSpec(spec);
+  }
+
+  /**
+   * 同发让位判定与执行（bible §3）：未满员放行；满员时新来抢占在场最低优先实例
+   * （8ms 淡出丢弃），否则弃新保旧。min-gap 限流在调用方先行，两层互不替代。
+   */
+  private admitVoice(spec: SfxSpec): boolean {
+    const admission = resolveVoiceAdmission(
+      this.activeVoiceList.map((v) => v.priority),
+      spec.priority,
+      AUDIO_LIMITS.MAX_SFX_VOICES,
+    );
+    if (admission.action === 'drop') return false;
+    if (admission.action === 'preempt') {
+      const target = this.activeVoiceList[admission.index];
+      if (target) this.preemptVoice(target);
+    }
+    return true;
+  }
+
+  /** 抢占：8ms 快速淡出（丢弃法，短音 ducking 不可感知——见 audio-math resolveVoiceAdmission 注释） */
+  private preemptVoice(voice: ActiveVoice): void {
+    if (voice.released) return;
+    this.releaseVoice(voice);
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    for (const g of voice.gains) {
+      try {
+        g.gain.cancelScheduledValues(now);
+        g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), now);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
+      } catch {
+        // 已断开/参数异常忽略：节点会随 onended 自然回收
+      }
+    }
+  }
+
+  /** 从在场表回收（自然播完或抢占；幂等） */
+  private releaseVoice(voice: ActiveVoice): void {
+    if (voice.released) return;
+    voice.released = true;
+    const i = this.activeVoiceList.indexOf(voice);
+    if (i >= 0) this.activeVoiceList.splice(i, 1);
   }
 
   /** 合成并调度一条 SFX：每 part 独立振荡器/噪声源，onended 统一回收节点与并发计数 */
@@ -432,15 +492,18 @@ export class AudioManager {
     if (!ctx || !master || !sfxBus) return;
     const t0 = ctx.currentTime;
     const baseGain = dbToGain(spec.gainDb) * 0.9; // 预留 headroom（压缩器限幅前）
+    const voice: ActiveVoice = { priority: spec.priority, gains: [], released: false };
+    this.activeVoiceList.push(voice);
     let remaining = spec.parts.length;
     const onPartEnd = (): void => {
       remaining -= 1;
-      if (remaining <= 0) this.activeVoices = Math.max(0, this.activeVoices - 1);
+      if (remaining <= 0) this.releaseVoice(voice);
     };
     for (const part of spec.parts) {
       const start = t0 + (part.delay ?? 0);
       const voiceGain = ctx.createGain();
       voiceGain.connect(sfxBus);
+      voice.gains.push(voiceGain);
       applyEnvelope(voiceGain, start, part.dur, baseGain * part.gain);
       if (part.kind === 'tone') {
         const osc = ctx.createOscillator();
@@ -461,8 +524,9 @@ export class AudioManager {
         const src = ctx.createBufferSource();
         src.buffer = this.ensureNoiseBuffer(ctx);
         const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
+        filter.type = part.filterType ?? 'lowpass';
         filter.frequency.setValueAtTime(part.filterFreq, start);
+        if (part.filterQ !== undefined) filter.Q.value = part.filterQ;
         src.connect(filter);
         filter.connect(voiceGain);
         src.start(start);

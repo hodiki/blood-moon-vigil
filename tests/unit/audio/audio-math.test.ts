@@ -10,6 +10,7 @@ import {
   dbToGain,
   shouldFire,
   canStartVoice,
+  resolveVoiceAdmission,
   readMuted,
   writeMuted,
   readReduceFlash,
@@ -107,6 +108,50 @@ describe('限流与同发上限（audio-bible §3/§4：min-gap + 弃新保旧�
     expect(canStartVoice(5, AUDIO_LIMITS.MAX_SFX_VOICES)).toBe(true);
     expect(canStartVoice(6, AUDIO_LIMITS.MAX_SFX_VOICES)).toBe(false);
     expect(canStartVoice(10, AUDIO_LIMITS.MAX_SFX_VOICES)).toBe(false);
+  });
+});
+
+describe('同发优先级让位（audio-bible §3：受击/确认/Boss > 击杀 > 拾取 > 武器 > 装饰）', () => {
+  // 层级对齐 SFX_PRIORITY（sfx-palette）：装饰 0 / 武器 1 / 拾取 2 / 击杀 3 / 关键 4
+  const DECORATION = 0;
+  const WEAPON = 1;
+  const PICKUP = 2;
+  const KILL = 3;
+  const CRITICAL = 4;
+
+  it('未满员一律 start（让位只在同发冲突时介入）', () => {
+    expect(resolveVoiceAdmission([], CRITICAL, 6)).toEqual({ action: 'start' });
+    expect(resolveVoiceAdmission([WEAPON, PICKUP], DECORATION, 6)).toEqual({ action: 'start' });
+  });
+
+  it('满员且新来 ≤ 在场最低 → drop（弃新保旧兜底）', () => {
+    const active = [KILL, PICKUP, WEAPON, KILL, PICKUP, WEAPON];
+    expect(resolveVoiceAdmission(active, WEAPON, 6)).toEqual({ action: 'drop' });
+    expect(resolveVoiceAdmission(active, DECORATION, 6)).toEqual({ action: 'drop' });
+  });
+
+  it('满员且新来 > 在场最低 → preempt 最低者', () => {
+    const active = [CRITICAL, KILL, PICKUP, WEAPON, KILL, DECORATION];
+    // 受击（CRITICAL）来 → 抢占装饰（index 5）
+    expect(resolveVoiceAdmission(active, CRITICAL, 6)).toEqual({ action: 'preempt', index: 5 });
+    // 击杀（KILL）来 → 仍抢占装饰（最低）
+    expect(resolveVoiceAdmission(active, KILL, 6)).toEqual({ action: 'preempt', index: 5 });
+    // 拾取（PICKUP）来 → 抢占装饰
+    expect(resolveVoiceAdmission(active, PICKUP, 6)).toEqual({ action: 'preempt', index: 5 });
+  });
+
+  it('同优先不抢占（严格大于才让位，防同级互相踩）', () => {
+    const active = [WEAPON, WEAPON, WEAPON, WEAPON, WEAPON, WEAPON];
+    expect(resolveVoiceAdmission(active, WEAPON, 6)).toEqual({ action: 'drop' });
+  });
+
+  it('多个同最低优先时取最早开声者（index 最小）', () => {
+    const active = [DECORATION, KILL, DECORATION, PICKUP, CRITICAL, KILL];
+    expect(resolveVoiceAdmission(active, CRITICAL, 6)).toEqual({ action: 'preempt', index: 0 });
+  });
+
+  it('maxVoices ≤ 0 防御性 drop（不越界）', () => {
+    expect(resolveVoiceAdmission([], CRITICAL, 0)).toEqual({ action: 'drop' });
   });
 });
 
