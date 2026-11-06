@@ -65,7 +65,7 @@ describe('anim 朝向与步态策略（TA：idle 变体不当 9fps 走路）', (
       'hero-cassandra-walk-f',
       'hero-cassandra-walk-d',
     ]);
-    expect(walkFrameRate(['a', 'e', 'b', 'c', 'f', 'd'])).toBe(8);
+    expect(walkFrameRate(['a', 'e', 'b', 'c', 'f', 'd'])).toBe(6.5);
     expect(walkFrameRate(['a', 'b', 'c', 'd'])).toBe(6);
   });
 

@@ -5,7 +5,7 @@
 
 import { familyKey, isAnimationVariant } from './layout.mjs';
 
-/** 已过 C/E 仍 64。守誓 idle/-v/walk/skill 已过 128。魔化 idle/-v 已过 128（B-lo；族 `hero-violet-fallen`）。 */
+/** 已过 C/E 仍 64。守誓 idle/-v/walk/skill 已过 128。魔化 idle/-v 已过 128（B-lo）。加尔文 idle/-v 已过 128（方案 A r1）；走/技能仍 64。 */
 export const COMBAT_CANVAS = {
   passedHero: 64,
   newHero: 128,
@@ -74,8 +74,11 @@ const EXPLICIT = {
   // 魔化 idle 已过 128（B-lo）。skill / walk 跟族 128 nearest，未过不写 frames。
   'hero-violet-fallen': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-violet-fallen-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
-  'hero-galvan': { w: 64, h: 64, atlas: 'characters' },
-  'hero-galvan-v': { w: 64, h: 64, atlas: 'characters' },
+  'hero-galvan': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  // 走 / 技能未过，仍是旧 64。不跟 idle 升 128。
+  'hero-galvan-walk-a': { w: 64, h: 64, atlas: 'characters' },
+  'hero-galvan-walk-b': { w: 64, h: 64, atlas: 'characters' },
   'hero-galvan-skill-a': { w: 64, h: 64, atlas: 'characters' },
   'hero-galvan-skill-b': { w: 64, h: 64, atlas: 'characters' },
 

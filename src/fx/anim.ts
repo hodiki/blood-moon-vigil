@@ -49,7 +49,9 @@ export function walkCycleFrames(base: string, hasFrame: (name: string) => boolea
 }
 
 export function walkFrameRate(frames: string[]): number {
-  return frames.length >= 6 ? 8 : 6;
+  // 六帧一轮含左右各一步。8fps 约 0.75 秒，步频偏急。
+  // 6.5fps ≈ 0.92 秒一轮，约 130 步/分钟。四帧及以下仍是 6fps。
+  return frames.length >= 6 ? 6.5 : 6;
 }
 
 /** idle 循环：有 `-v` 才两帧呼吸；否则单帧（C 已锁不做 1–2px 呼吸）。 */

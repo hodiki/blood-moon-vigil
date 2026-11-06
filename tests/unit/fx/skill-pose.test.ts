@@ -64,17 +64,22 @@ describe('SkillPoseClock（Player 委托的姿态计时；释放瞬间 start，e
     expect(skillPosePhase(clock.elapsedMs(450), play)).toBeNull();
   });
 
-  it('艾德蒙：提灯技 hold-a；左轮技无姿；其它角色 combo', () => {
+  it('艾德蒙：提灯技 hold-a；左轮技无姿。卡珊德拉按专武分槽，不连播', () => {
     expect(skillPosePlayForCast('player', 'dv_lantern_flash')).toEqual({ kind: 'hold', phase: 'a' });
     expect(skillPosePlayForCast('player', 'dv_revolver_burst')).toBeNull();
-    expect(skillPosePlayForCast('hero-cassandra', 'dv_blood_dash')).toEqual({ kind: 'combo' });
+    expect(skillPosePlayForCast('hero-cassandra', 'dv_blood_dash')).toEqual({ kind: 'hold', phase: 'a' });
+    expect(skillPosePlayForCast('hero-cassandra', 'dv_moon_snipe')).toEqual({ kind: 'hold', phase: 'b' });
+    expect(skillPosePlayForCast('hero-violet', 'dv_requiem')).toEqual({ kind: 'hold', phase: 'a' });
+    expect(skillPosePlayForCast('hero-violet', 'dv_holy_judgment')).toEqual({ kind: 'hold', phase: 'b' });
+    expect(skillPosePlayForCast('hero-galvan', 'dv_blood_rage')).toEqual({ kind: 'combo' });
   });
 
-  it('艾德蒙：提灯在手站住用 skill-b；左轮在手不叠层', () => {
-    expect(skillPoseStanceForExclusive('player', 'xw_lantern')).toBe('b');
+  it('站姿就是 idle，不借用 skill-b', () => {
+    expect(skillPoseStanceForExclusive('player', 'xw_lantern')).toBeNull();
     expect(skillPoseStanceForExclusive('player', 'xw_revolver')).toBeNull();
     expect(skillPoseStanceForExclusive('player', null)).toBeNull();
-    expect(skillPoseStanceForExclusive('hero-cassandra', 'xw_lantern')).toBeNull();
+    expect(skillPoseStanceForExclusive('hero-cassandra', 'xw_twinblades')).toBeNull();
+    expect(skillPoseStanceForExclusive('hero-cassandra', 'xw_longbow')).toBeNull();
   });
 
   it('anim.ts 姿态消费链路端到端：四角色姿态帧在 characters 图集中真实存在（holdFrame 不落空）', () => {

@@ -3,6 +3,8 @@
  *
  * 玩法无蓄力资源（gdd-active-skill §3.1）；本模块只决定播哪一帧。
  * 艾德蒙 skill-a / skill-b 是两套独立基础姿，禁止 a→b 连播。
+ * 卡珊德拉 `-skill-a` = 血影突袭，`-skill-b` = 月痕狙击，各钉一帧。
+ * 薇奥莱 `-skill-a` = 誓约回响，`-skill-b` = 圣辉审判，各钉一帧。
  * 其它角色仍可 combo（前摇→施放）。
  */
 
@@ -49,19 +51,26 @@ export function skillPosePhase(elapsedMs: number, play: SkillPosePlay = { kind: 
   return null;
 }
 
-/** 艾德蒙按衍生技钉一帧；左轮开火姿未过则不叠层。其余角色仍 combo。 */
+/** 艾德蒙按衍生技钉一帧；左轮开火姿未过则不叠层。卡珊德拉、薇奥莱按专武形态分槽，不连播。其余角色仍 combo。 */
 export function skillPosePlayForCast(visualFrame: string, skillId: string): SkillPosePlay | null {
   if (visualFrame === 'player') {
     if (skillId === 'dv_lantern_flash') return { kind: 'hold', phase: 'a' };
     if (skillId === 'dv_revolver_burst') return null;
     return { kind: 'hold', phase: 'a' };
   }
+  if (visualFrame === 'hero-cassandra') {
+    if (skillId === 'dv_blood_dash') return { kind: 'hold', phase: 'a' };
+    if (skillId === 'dv_moon_snipe') return { kind: 'hold', phase: 'b' };
+  }
+  if (visualFrame === 'hero-violet') {
+    if (skillId === 'dv_requiem') return { kind: 'hold', phase: 'a' };
+    if (skillId === 'dv_holy_judgment') return { kind: 'hold', phase: 'b' };
+  }
   return { kind: 'combo' };
 }
 
-/** 专武在手的站姿（不挡走循环）。艾德蒙提灯 → skill-b 灯前探。左轮开火姿归专武阶段。 */
-export function skillPoseStanceForExclusive(visualFrame: string, exclusiveId: string | null): SkillPosePhase | null {
-  if (visualFrame === 'player' && exclusiveId === 'xw_lantern') return 'b';
+/** 专武在手不改站姿。站姿就是 idle。`-skill-b` 是专武技，不再借给提灯。 */
+export function skillPoseStanceForExclusive(_visualFrame: string, _exclusiveId: string | null): SkillPosePhase | null {
   return null;
 }
 

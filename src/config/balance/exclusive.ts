@@ -100,7 +100,7 @@ export const MUTATION_CARDS: readonly MutationCardConfig[] = [
   { id: 'mc_bell_2', exclusiveId: 'xw_bell', order: 2, name: '守誓誓约', desc: '承伤转移 50%→65%、撕咬 8→14 伤、墓碑回血 2→4 HP/s；治疗转化率 50%→70%', machine: { transferPct: 0.65, biteDamage: 14, tombHealPerSec: 4, reviveConvertRate: 0.7 } },
   // 圣辉轮刃
   { id: 'mc_cross_1', exclusiveId: 'xw_cross', order: 1, name: '审判降临', desc: '落点悬停 2s 持续灼烧 12 伤/s 后再爆（单点总伤 ≈ ×2.1）', machine: { hoverDuration: 2, hoverDps: 12 } },
-  { id: 'mc_cross_2', exclusiveId: 'xw_cross', order: 2, name: '三重连掷', desc: '一次掷出三枚十字品字落点，命中同目标的相邻爆炸每枚 +30%（去重单次加成，不叠乘）', machine: { crossCount: 3, adjacentBonusPct: 0.3 } },
+  { id: 'mc_cross_2', exclusiveId: 'xw_cross', order: 2, name: '三重连掷', desc: '一次掷出三枚轮刃品字落点，命中同目标的相邻爆炸每枚 +30%（去重单次加成，不叠乘）', machine: { crossCount: 3, adjacentBonusPct: 0.3 } },
   // 葬仪巨斧
   { id: 'mc_axe_1', exclusiveId: 'xw_axe', order: 1, name: '血债血偿', desc: '挥击伤害 +40%，每击杀回复 3 HP', machine: { damageMult: 1.4, killHeal: 3 } },
   { id: 'mc_axe_2', exclusiveId: 'xw_axe', order: 2, name: '葬仪狂欢', desc: '当前 HP 每低 10%，伤害 +6%（上限 +30%）；间隔 2.2→1.8s', machine: { lowHpStepPct: 0.06, lowHpStepPer: 0.1, lowHpBonusCap: 0.3, cooldown: 1.8 } },
