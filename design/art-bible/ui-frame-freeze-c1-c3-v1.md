@@ -68,8 +68,8 @@
 | `exw-emblem-revolver` | 圣徒左轮徽记 | 银白 #E8F0FA | 同上 | ui |
 | `exw-emblem-twinblade` | 血契双刃徽记 | 血橙红 #FF3B30 | 同上 | ui |
 | `exw-emblem-longbow` | 月痕长弓徽记 | 电光蓝 #4FC3F7 | 同上 | ui |
-| `exw-emblem-bell` | 安魂圣铃徽记 | 纸白 #F2F5F9 高透明派生 | 同上 | ui |
-| `exw-emblem-cross` | 圣辉十字徽记 | 亮焰金（#FFC93C 提亮焰心） | 同上 | ui |
+| `exw-emblem-bell` | 誓约圣铃徽记（旧名安魂圣铃） | 纸白 #F2F5F9 高透明派生 | 同上 | ui |
+| `exw-emblem-cross` | 圣辉轮刃徽记（旧名圣辉十字） | 亮焰金（#FFC93C 提亮焰心） | 同上 | ui |
 | `exw-emblem-axe` | 葬仪巨斧徽记 | 暗血红 #7E1E1E | 同上 | ui |
 | `exw-emblem-horn` | 月啸号角徽记 | 青绿 #43D17C 低饱和派生 | 同上 | ui |
 

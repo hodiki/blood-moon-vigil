@@ -11,9 +11,10 @@
 |---|---|---|
 | 确认 GPU 机通不通 | [`lan-smoke/`](lan-smoke/README.md) | 已过 |
 | 新角色：从一张过关全身图派生卡 / 剪影 / 色键 | [`a-derive-single-source/`](a-derive-single-source/README.md) | 已过（Vf1） |
-| 新角色：立绘 → 带眼印戳 → 近邻 128 idle | [`b-stamp-nearest-128/`](b-stamp-nearest-128/README.md) | 已过（守誓 idle · Vf1 B-lo，作者当时是 Krea i2i）。**新印戳扩散作者 = Qwen-Image-2.1**（条未晋升） |
+| 新角色：立绘 → 带眼印戳 → 近邻 128 idle | [`b-stamp-nearest-128/`](b-stamp-nearest-128/README.md) | 已过（守誓 idle · Vf1 B-lo，作者当时是 Krea i2i）。**新印戳扩散作者 = Qwen-Image-2.1** → 见下一行 |
+| **立绘 → t2i 印戳 → 入盒 128（目前最好）** | [`b-stamp-t2i-128/`](b-stamp-t2i-128/README.md) | **已过**（卡珊德拉 128 十帧 · 2026-10-21 主理人定为当前最佳）。⚠ 仍要吃提示词优化 + 抽卡 |
 | 已有 idle 印戳 → 技能 / 静态姿 | [`c-pose-krea2-identity-edit/`](c-pose-krea2-identity-edit/README.md) | 大部分过（E1，留档）。**新图片编辑 = Qwen-Image-2.1** |
-| 已有 idle 印戳 → 走循环六帧 128 | [`c-walk-wan-animate2/`](c-walk-wan-animate2/README.md) | 已过（E2：守誓 walk 现网）。权重不在盘，新走先确认 |
+| 已有 idle 印戳 → 走循环六帧 128 | [`c-walk-wan-animate2/`](c-walk-wan-animate2/README.md) | 已过（E2：守誓 walk）。**2026-10-22 卡珊德拉实机再确认取帧：** `extract-walk.py`，失败则主理人人工挑；游戏 **6.5fps**。见 `design/art-bible/walk-six-extract-pass-v1.md` |
 | 已设计角色 → 复杂场景少枪融景 | [`scene-closed-source-few-shot/`](scene-closed-source-few-shot/README.md) | 已过（E5：tombstone / pew；Krea 路 A/B 退对照） |
 | 过关竖首帧 → 视频段 + 段间 | [`video-h3-firstframe-chain/`](video-h3-firstframe-chain/README.md) | 部分过（E6：本机日常 I2V 0.4MP ~5s）。效果不好或需求复杂：反馈主理人调线上满血 H3 |
 | 二次元立绘风格帧（WAI i2i） | [`portrait-wai-h23-style-frame/`](portrait-wai-h23-style-frame/README.md) | 已过（H23）留档。**二次元新图作者 = Krea 2**；WAI 备用或风格化 |
@@ -23,7 +24,9 @@
 ```
 图1（过关全身）─ A ─▶ 卡 / 剪影 / 色键 / 零件表
       │
-      └─ B ─▶ 带眼印戳（Krea i2i 低 denoise）─▶ 近邻 128 idle ──▶ 主理人过
+      └─ B ─▶ 带眼印戳 ─▶ 128 idle ──▶ 主理人过
+              · 现行最好：t2i 768×1344 → flood-key → 入盒（b-stamp-t2i-128）
+              · 旧条：Krea i2i 低 denoise → 近邻 128（b-stamp-nearest-128）
                         │
                         ├─ C 静姿 ─▶ Identity Edit（满降噪 · 画面向指令）─▶ 印戳 ─▶ 近邻 128
                         └─ C 走   ─▶ Wan Animate 2（参考 = 印戳 · 姿 = 驱动视频）─▶ 挑六帧 ─▶ 去底 ─▶ 近邻 128
@@ -31,7 +34,10 @@
                                                             TA：process / pack / 门禁 ◀──┘（主理人过后才写 frames/）
 ```
 
-上图是已过条的做法。**2026-09-23 起，新印戳和新图片编辑的扩散作者改为 Qwen-Image-2.1；新二次元改为 Krea 2。** 图里的 Krea i2i / Identity Edit / Wan 不删，新枪不默认再走。Wan 权重不在盘。
+上图是已过条的做法。**2026-09-23 起，新印戳和新图片编辑的扩散作者改为 Qwen-Image-2.1；新二次元改为 Krea 2。** 图里的 Krea i2i / Identity Edit / Wan 不删，新枪不默认再走。
+
+**2026-10-21 起**：印戳的现行最佳条是 [`b-stamp-t2i-128/`](b-stamp-t2i-128/README.md)（Qwen-Image-2.1 纯 t2i + 入盒），`b-stamp-nearest-128` 的 Krea i2i 留档对照。  
+**2026-10-22**：卡珊德拉走循环六帧实机确认。取帧见 `design/art-bible/walk-six-extract-pass-v1.md`（`extract-walk.py`，失败则主理人人工挑；游戏 6.5fps）。
 
 每个目录固定结构：
 

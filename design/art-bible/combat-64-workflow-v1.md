@@ -24,7 +24,7 @@
 | `hero-violet-fallen` / `-v`（魔化 idle） | 有（128 B-lo） | **已过** | 契约族与守誓分。剪影 F-3 + 色键 E1。锁稿 `characters/violet-fallen/combat/idle/hero-violet-fallen-idle-128-v1.png`。禁止再压回 64。引擎选人仍显示守誓，直到形变接线 |
 | `hero-violet-fallen-skill-a/b` | 无 | **待技能设计** | 玩法侧无单独魔化技能 GDD（裁决⑧）。2026-09-18 主理人：美术暂停。过目留 `review/20260918-skill-128/`，不写 `frames/`。守誓 skill 不得当参考 |
 | `hero-violet-fallen-walk-*` | 无 | **未开** | 须确认 GPU 机 Wan Animate 2 权重在盘 |
-| `hero-galvan` 全套 | 有（旧帧） | **未过** | 旧 64 不切。主理人 2026-09-18：魔化技能暂停，先开加尔文 **128 idle**（B 轨印戳） |
+| `hero-galvan` / `-v` | 有（128 · 方案 A r1） | **已过** | 2026-10-16。红滚边缩小丢失收下。走 / 技能仍是旧 64，未过 |
 | `summon-oathkeeper` | 有（跪姿旧帧） | **未过** | 画布 **192**（她 128 的 1.5×，必须比她高）；跟她第一波，不进专武 |
 
 **现网有文件 ≠ 已过。** 助理不得自行宣布锁稿。只有主理人说「过」才能改状态、才能当下一帧的底板。

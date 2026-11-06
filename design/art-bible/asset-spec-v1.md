@@ -159,10 +159,10 @@
 |---|---|---|---|---|---|---|---|
 | 1 | 守夜人·艾德蒙（hero_edmund / HALLOWED） | ✅ `player` / `player-v` / 🔵 `player-skill-a` / `player-skill-b` | 64×64 | PNG | 2 帧 + 技能 2 帧 | characters | K1（换色板） |
 | 2 | 血猎手·卡珊德拉（hero_cassandra / SILVER） | 🔵 `hero-cassandra` / `-v` / `-skill-a` / `-skill-b` | 64×64 | PNG | 2 帧 + 技能 2 帧 | characters | K1 / K2 |
-| 3 | 夜祷修女·薇奥莱（hero_violet / HALLOWED） | 🔵 `hero-violet` / `-v` / `-skill-a` / `-skill-b` | idle / `-v` **128×128 已过**；走 / 技能仍 64（旧修女，未过） | PNG | 2 帧 + 技能 2 帧 | characters | K1 / K2 |
+| 3 | 夜祷修女·薇奥莱（hero_violet / HALLOWED） | 🔵 `hero-violet` / `-v` / `-walk-s` / `-walk-a`…`f` / `-skill-a` / `-skill-b` | **128×128 已换上（2026-11-04），待实测**。`-skill-a` 誓约回响、`-skill-b` 圣辉审判，各钉一帧 | PNG | idle 2 + 离站 1 + 走 6 + 技能 2 | characters | K1 / K2 |
 | 4 | 狼裔·加尔文（hero_galvan / BEAST） | 🔵 `hero-galvan` / `-v` / `-skill-a` / `-skill-b` | 现网 64×64；**评 C 新帧 128×128**（双线薇奥莱之后） | PNG | 2 帧 + 技能 2 帧 | characters | K1 / K2 |
 
-> 动画说明：俯视 2D，方向用 flipX 镜像（不另出方向帧）。`-v` = pose 变体（idle 1.4fps / move 9fps，引擎 anims 驱动）。技能帧：`-skill-a` 前摇 0.3s、`-skill-b` 施放 0.15s；收招复用 pose0。
+> 动画说明：俯视 2D，方向用 flipX 镜像（不另出方向帧）。`-v` = pose 变体（idle 1.4fps / move 走循环，引擎 anims 驱动）。技能帧：`-skill-a` = 专武1 的衍生技；`-skill-b` = 专武2 的衍生技。站姿就是 idle。详见 `character-animation-contract-v2.md`。
 > **剪影色系**：守夜人=月银白+冷青提灯（锥顶宽檐帽）；血猎手=月银白+冷青（银弩）；修女=月银白+冷青烛光（圣辉=净化月光，C1 一致性）；狼裔=**玩家侧剪影（人形直立 32px + 冷青 2px 描边常亮），暗红只作披风/兽纹 accent，不占主体色**（§6 R-A 已裁定：玩家身份识别优先于力量体系色）。〔**v1.4 标失效**（本段「月银白主体 / 冷青 2px 描边常亮」部分） · 见 §0.5.1 / §0.5.2；**身份改靠剪影 + 「整体明显亮于普通敌」，色以战斗色键为准**（`character-art-bible-v1.md:176`）；造型与帧名不变〕
 > **狂化态约束（R-A 补充裁定）**：血月狂化 8s 内主体**保持月银白 + 冷青描边**，仅做体型 +10%、暗红兽纹发光变亮、兽影残影（复用 ghost）——**不把主体翻成暗红**，防狂化态被误读为精英/敌人。〔**v1.4 标失效**（「保持月银白 + 冷青描边」部分） · 见 §0.5.1 / §0.5.2；**「狂化不翻红」的结论不变**（改按「整体明显亮于普通敌」判据）〕
 > **玩家身份铁律（v1.2+ 主理人 2026-08-23 修订）**：四角色统一**月银白主体**；**外部 AI 轨不画冷青 2px 身份描边**（青边观感差）。身份靠剪影（帽/弩/烛/耳）+ 月银白填充 + 提灯/武器上的冷青锚点。程序剪影兜底仍可保留冷青边。任意角色不与敌人共用形状与主色系。〔**v1.4 标失效**（「四角色统一月银白主体」部分） · 见 §0.5.1；**「不画冷青身份描边」一条与方案 B 一致、继续有效**；身份改靠剪影 + 「整体明显亮于普通敌」〕
@@ -345,7 +345,7 @@
 **模板**：`<类目前缀>-<slug>[-<后缀>]`
 - 类目前缀：`player`｜`hero`｜`enemy`｜`boss`｜`proj`｜`orb`｜`ring`｜`aura`｜`beam`｜`summon`｜`super`｜`marker`｜`gem`｜`heal`｜`chest`｜`tile`｜`obst`｜`decor`｜`decal`｜`upg`｜`wslot`｜`skill`｜`hud`｜`codex`｜`p`（粒子）｜`amb`
 - slug：content-design-outline §1.3 内容 ID 的连字符化（`enemy_g1_4 → wraith`；`hero_cassandra → cassandra`）；已冻结
-- 后缀：`-v`（pose 变体）｜`-skill-a/-skill-b/-skill-c`（前摇/施放/收招）｜`-entrance`（Boss 出场霸体）
+- 后缀：`-v`（pose 变体）｜`-skill-a/-skill-b`（专武1 / 专武2 的衍生技）｜`-entrance`（Boss 出场霸体）
 
 **Demo 保留帧名（不可改名，无痛替换基准）**：
 
@@ -373,7 +373,7 @@
 | 帧类 | 设计尺寸 | 备注 |
 |---|---|---|
 | 玩家/角色（已过 C/E） | 64×64 | 现网契约。碰撞仍用 PLAYER.RADIUS=14（脱钩） |
-| 玩家/角色（评 C 新帧） | **128×128** | 守誓 idle / `-v` 已过。头约 16–20px。走 / 技能过了再切。见 `ta-combat-128-handoff-v1.md` |
+| 玩家/角色（评 C 新帧） | **128×128** | 守誓 idle / `-v` 已过。薇奥莱全套 128 已换上、待实测。头约 16–20px。其余角色走 / 技能过了再切。见 `ta-combat-128-handoff-v1.md` |
 | 普通敌人 | 40~68 | 内容 ≤ 帧 90%；碰撞半径保持原值 |
 | 精英敌人 | 96×96 | 内容 ≤ 帧 90%；身份靠体型+双角，无管线描边 |
 | Boss | 240~256 | 内容 ≤ 帧 90%；屏占比 ≤1/4（256/1080≈24%） |
@@ -521,7 +521,7 @@
 
 ### 3.3 施放前摇（windup，0.3s）
 
-> 玩法无蓄力：伤害/状态在按下瞬间结算；本表前摇仅表现层叠（`skill-a` 300ms → `skill-b` 150ms），不打断移动（gdd-active-skill §3.1）。
+> 玩法无蓄力：伤害/状态在按下瞬间结算，不打断移动（gdd-active-skill §3.1）。卡珊德拉、薇奥莱 `-skill-a` 与 `-skill-b` 分属两把专武，各钉一帧，不连播。艾德蒙提灯钉 `-skill-a`。加尔文仍是 `skill-a` 300ms → `skill-b` 150ms。
 
 | 项 | 规格 | 预算 |
 |---|---|---|

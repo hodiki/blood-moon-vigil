@@ -1,0 +1,108 @@
+{
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_8b_w4a8.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_2.1_vae_bf16.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "QwenImage21Cache",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "device": "auto",
+      "dtype": "default"
+    }
+  },
+  "6": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "prompt": "Full body character reference sheet of one pale vampire-hunter woman, standing, body three-quarter toward the viewer's right, but her head turned slightly toward the viewer so one eye and the face are clearly visible. Very long silver-white hair tied in a high ponytail that sweeps up and back like a blade, clearly longer than her head. High-collared long wine-red leather coat, fitted at the waist, the hem splitting into two long triangular points below the knee. Black high collar under the coat, one small white cross on the chest, several black leather belts with silver buckles. Black bodysuit, and sheer charcoal stockings over pale skin so the legs read as dark warm grey, not pure black, matte black pointed high-heeled ankle boots. Silver clasps. Hands empty, a small empty bolt quiver at the hip. Realistic proportions, head about one eighth of the total height, small head, long legs. Sharp pale face with one visible red eye, silver-white hair falling beside the cheek. Flat cel-shaded illustration, hard edges, no outline stroke, plain near-black empty background, no floor, no scenery, no props.",
+      "negative_prompt": "big head, chibi, oversized head, short legs, hood, hooded cloak, brown leather, twin blades, longbow, two people, extra limbs, background scenery, floor, text, watermark, huge anime eyes, smiling, pure black legs, opaque black leggings, jet black tights, glossy latex legs",
+      "resolution": 1024
+    }
+  },
+  "7": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "6",
+        1
+      ],
+      "latent_image": [
+        "7",
+        0
+      ],
+      "seed": 2026102109,
+      "steps": 40,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "9",
+        0
+      ],
+      "filename_prefix": "cass_stamp_t2i_2026102109"
+    }
+  }
+}

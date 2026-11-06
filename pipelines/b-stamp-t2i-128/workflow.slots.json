@@ -1,0 +1,50 @@
+{
+  "schema": "comfy-lan-workflow-slots/v1",
+  "verified": "2026-10-21",
+  "engine": "ComfyUI 0.37.0 · PyTorch 2.14.0+cu130 · RTX 4070 Laptop 8GB",
+  "nodes": {
+    "2": {
+      "role": "扩散模型",
+      "file": "qwen_image_2.1_int8_convrot.safetensors",
+      "note": "INT8 conv-rot"
+    },
+    "3": {
+      "role": "文本编码",
+      "file": "qwen3vl_8b_w4a8.safetensors",
+      "note": "type=qwen_image；device=default 可用 CPU 时显存更宽"
+    },
+    "4": {
+      "role": "VAE",
+      "file": "qwen_image_2.1_vae_bf16.safetensors"
+    },
+    "5": {
+      "role": "缓存",
+      "node": "QwenImage21Cache",
+      "note": "device=auto, dtype=default"
+    },
+    "6": {
+      "role": "提示词编码 + 空 latent 源",
+      "node": "TextEncodeQwenImage21",
+      "note": "t2i 时 images.* 全部留空；resolution 只作用于参考图，本次无参考图故不生效"
+    },
+    "7": {
+      "role": "画布",
+      "node": "EmptyLatentImage",
+      "note": "768x1344，成品尺寸由此决定"
+    },
+    "8": {
+      "role": "采样",
+      "node": "KSampler",
+      "note": "euler / simple / 40 步 / cfg 1 / denoise 1"
+    },
+    "9": {
+      "role": "解码",
+      "node": "VAEDecode"
+    },
+    "10": {
+      "role": "落盘",
+      "node": "SaveImage",
+      "note": "进 _park 或过目夹，不写 assets/frames"
+    }
+  }
+}

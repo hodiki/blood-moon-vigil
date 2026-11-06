@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1320" height="460" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1320" height="460" fill="#141820"/>
+  <text x="24" y="36" fill="#f2efe6" font-size="20" font-family="Microsoft YaHei, SimHei, sans-serif">六拍尺子 · 朝右走。浅色是第一条腿，蓝色是另一条腿。前脚都在画面右侧，换的是哪一条腿伸到前面。</text>
+  <g transform="translate(24,56)" font-family="Microsoft YaHei, SimHei, sans-serif">
+    <text x="8" y="28" fill="#f2efe6" font-size="16">a 接触</text>
+    <line x1="16" y1="250" x2="184" y2="250" stroke="#3a4250" stroke-width="2"/>
+    <line x1="100" y1="150" x2="108" y2="92" stroke="#c8c2b6" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="132" y2="198" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="132" y1="198" x2="164" y2="248" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="70" y2="198" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="70" y1="198" x2="40" y2="248" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="112" cy="78" r="16" fill="#c8c2b6"/><text x="150" y="272" fill="#f0d7a2" font-size="14">前</text>
+    <text x="8" y="308" fill="#9a958c" font-size="14">步幅最大</text>
+  </g>
+<g transform="translate(236,56)" font-family="Microsoft YaHei, SimHei, sans-serif">
+    <text x="8" y="28" fill="#f2efe6" font-size="16">e 落下</text>
+    <line x1="16" y1="258" x2="184" y2="258" stroke="#3a4250" stroke-width="2"/>
+    <line x1="100" y1="162" x2="106" y2="104" stroke="#c8c2b6" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="162" x2="118" y2="208" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="118" y1="208" x2="128" y2="256" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="162" x2="82" y2="206" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="82" y1="206" x2="68" y2="256" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="110" cy="90" r="16" fill="#c8c2b6"/>
+    <text x="8" y="308" fill="#9a958c" font-size="14">体重在浅色腿，步幅变小</text>
+  </g>
+<g transform="translate(448,56)" font-family="Microsoft YaHei, SimHei, sans-serif">
+    <text x="8" y="28" fill="#f2efe6" font-size="16">b 经过</text>
+    <line x1="16" y1="250" x2="184" y2="250" stroke="#3a4250" stroke-width="2"/>
+    <line x1="100" y1="150" x2="108" y2="92" stroke="#c8c2b6" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="96" y2="200" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="96" y1="200" x2="92" y2="248" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="118" y2="196" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="118" y1="196" x2="124" y2="248" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="112" cy="78" r="16" fill="#c8c2b6"/>
+    <text x="8" y="308" fill="#9a958c" font-size="14">两腿收到身下</text>
+  </g>
+<g transform="translate(660,56)" font-family="Microsoft YaHei, SimHei, sans-serif">
+    <text x="8" y="28" fill="#e7b4b4" font-size="16">c 对侧接触</text>
+    <line x1="16" y1="250" x2="184" y2="250" stroke="#3a4250" stroke-width="2"/>
+    <line x1="100" y1="150" x2="108" y2="92" stroke="#c8c2b6" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="132" y2="198" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="132" y1="198" x2="164" y2="248" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="70" y2="198" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="70" y1="198" x2="40" y2="248" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="112" cy="78" r="16" fill="#c8c2b6"/><text x="150" y="272" fill="#8ec8e8" font-size="14">前</text>
+    <text x="8" y="308" fill="#9a958c" font-size="14">蓝色腿到前面</text>
+  </g>
+<g transform="translate(872,56)" font-family="Microsoft YaHei, SimHei, sans-serif">
+    <text x="8" y="28" fill="#f2efe6" font-size="16">f 落下</text>
+    <line x1="16" y1="258" x2="184" y2="258" stroke="#3a4250" stroke-width="2"/>
+    <line x1="100" y1="162" x2="106" y2="104" stroke="#c8c2b6" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="162" x2="118" y2="208" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="118" y1="208" x2="128" y2="256" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="162" x2="82" y2="206" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="82" y1="206" x2="68" y2="256" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="110" cy="90" r="16" fill="#c8c2b6"/>
+    <text x="8" y="308" fill="#9a958c" font-size="14">体重在蓝色腿</text>
+  </g>
+<g transform="translate(1084,56)" font-family="Microsoft YaHei, SimHei, sans-serif">
+    <text x="8" y="28" fill="#f2efe6" font-size="16">d 经过</text>
+    <line x1="16" y1="250" x2="184" y2="250" stroke="#3a4250" stroke-width="2"/>
+    <line x1="100" y1="150" x2="108" y2="92" stroke="#c8c2b6" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="112" y2="198" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="112" y1="198" x2="116" y2="248" stroke="#8ec8e8" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="150" x2="88" y2="196" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/><line x1="88" y1="196" x2="84" y2="248" stroke="#f0d7a2" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="112" cy="78" r="16" fill="#c8c2b6"/>
+    <text x="8" y="308" fill="#9a958c" font-size="14">浅色腿从身下摆过</text>
+  </g>
+  <text x="24" y="420" fill="#b7b1a6" font-size="16" font-family="Microsoft YaHei, SimHei, sans-serif">c 若仍是浅色腿在前，就和 a 是同一步。f、d 必须跟着这张蓝色在前的接触，不能跟着 a。</text>
+  <text x="24" y="446" fill="#9a958c" font-size="14" font-family="Microsoft YaHei, SimHei, sans-serif">示意，不是角色成图。书中的原图不复制。8 帧再在 e 与 b 之间、f 与 d 之间各加一拍「高点」。</text>
+</svg>
