@@ -1,6 +1,6 @@
 # 开工卡 · 加尔文 idle 128
 
-> 2026-09-18 · 流程 v1.24 · **进行中（B 轨印戳）**  
+> 2026-09-18 · 流程 v1.25 · **idle 128 已过（方案 A r1）**  
 > 条：`pipelines/b-stamp-nearest-128/`  
 > 身份：`characters/galvan/identity/source/char-bible-portrait-galvan-bulk-a.png`（已锁）  
 > 剪影：G-披 `identity/silhouette/char-bible-galvan-lock-v2.png`  
@@ -44,9 +44,10 @@
 |---|---|
 | B-lo denoise **0.48** · seed 2026091803 | **废**（没锁住脸）。park `_park/2026-09-17T17-14-37-799Z/` |
 | 预案 A denoise **0.32** · 同 seed | **仍换脸，停。** park `_park/2026-09-17T17-26-46-112Z/`。B-mid 作废。两枪满 |
-| Qwen 编辑 · seed **2026092301** · 40 步 · CFG 1 · resolution 0 | **人物锁住，待过目 128。** 近邻入盒 `02-qwen-128.png`（高 112，脚贴底，红像素 92）。park `_park/2026-09-23T06-44-01-940Z/`。过目 `review/20260923-qwen-edit/` |
+| Qwen 编辑 · seed **2026092301** · 40 步 · CFG 1 · resolution 0 | **人物锁住。** 近邻入盒 `review/20260923-qwen-edit/02-qwen-128.png`。方案 A 之前的试枪 |
+| 方案 A 第 1 枪 · seed **2026101601** | **已过。** 2026-10-16。红滚边在 128 上变少，收下为缩小丢细节。现网 `assets/frames/hero-galvan.png` 与 `-v` |
 
-过目：`review/20260918-idle-128/04-drift-face.md`（Krea 两枪废）。Qwen 第一枪见 `review/20260923-qwen-edit/00-shot.md`。未过，不写 `frames/`。不准第三枪 Krea i2i。不准在主理人看过这一枪之前再 Queue。
+过目：`review/20261016-scheme-a-idle/`。未过，不写 `frames/`。不准第三枪 Krea i2i。方案 A 第 2 轮只许改种子。
 
 ## 不做
 

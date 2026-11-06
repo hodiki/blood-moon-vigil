@@ -1,0 +1,56 @@
+{
+  "1": { "class_type": "LoadImage", "inputs": { "image": "galvan-id-stamp.png" } },
+  "2": { "class_type": "LoadImage", "inputs": { "image": "galvan-walk-f73.png" } },
+  "3": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "4": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_8b_w4a8.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "5": { "class_type": "VAELoader", "inputs": { "vae_name": "qwen_image_2.1_vae_bf16.safetensors" } },
+  "6": {
+    "class_type": "QwenImage21Cache",
+    "inputs": { "model": ["3", 0], "device": "auto", "dtype": "default" }
+  },
+  "7": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "clip": ["4", 0],
+      "vae": ["5", 0],
+      "prompt": "Keep the wolf-headed man from <image1>: same head, short cloak, olive cloth, amber eye. Put him in the walking pose of <image2>, but turn the body so the chest does not face the viewer and the snout points to the right side of the picture. A side-view walk step, not a wide stance facing the camera. Dark background. Hard flat color shapes. No outline.",
+      "negative_prompt": "facing the viewer, chest toward camera, wide frontal split, both feet planted square, human face, extra legs, text",
+      "resolution": 0,
+      "images.image_1": ["1", 0],
+      "images.image_2": ["2", 0]
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["6", 0],
+      "positive": ["7", 0],
+      "negative": ["7", 1],
+      "latent_image": ["7", 2],
+      "seed": 2026101606,
+      "steps": 40,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    }
+  },
+  "9": { "class_type": "VAEDecode", "inputs": { "samples": ["8", 0], "vae": ["5", 0] } },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": { "images": ["9", 0], "filename_prefix": "comfy_lan_galvan_walk_first_b" }
+  }
+}

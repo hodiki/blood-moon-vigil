@@ -17,7 +17,7 @@
 | `edmund` | `player*` | 剪影 lock-ce 右 · 立绘 GPT · 战斗 64 全套 | idle v9 · walk V4 · skill v1 **已过** | [edmund/README.md](edmund/README.md) |
 | `violet-oath` | `hero-violet*` | O-3 + D2 已过 | idle 128 from-a · walk 128 E2 S3c-b · **skill 128 A1/B2 已过** | [violet-oath/README.md](violet-oath/README.md) |
 | `violet-fallen` | `hero-violet-fallen*` | F-3 + E1 已过 | idle **128 B-lo 已过**；**skill 待技能设计**；走未开 | [violet-fallen/README.md](violet-fallen/README.md) |
-| `galvan` | `hero-galvan*` | G-披 + bulk-a 身份锁 | 旧帧 **未过**；idle 128 开工 | [galvan/README.md](galvan/README.md) |
+| `galvan` | `hero-galvan*` | G-披 + bulk-a 身份锁 | idle **128 方案 A r1 已过**；走 / 技能未过 | [galvan/README.md](galvan/README.md) |
 | `oathkeeper` | `summon-oathkeeper*` | 双人成片骑士单裁 | 192 **未过**（甲件漂） | [oathkeeper/README.md](oathkeeper/README.md) |
 
 跨角色锁件：[_shared/](_shared/README.md)（排队 v4、色键 v2、战斗圣经样张、C+E 整图）。

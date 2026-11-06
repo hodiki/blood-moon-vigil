@@ -1,0 +1,5 @@
+{
+  "1": { "class_type": "LoadVideo", "inputs": { "file": "01-walk-r1.mp4" } },
+  "2": { "class_type": "GetVideoComponents", "inputs": { "video": ["1", 0] } },
+  "3": { "class_type": "SaveImage", "inputs": { "images": ["2", 0], "filename_prefix": "galvan_h3_walk_f" } }
+}

@@ -1,0 +1,66 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": { "image": "01-stamp.png" }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_8b_w4a8.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": { "vae_name": "qwen_image_2.1_vae_bf16.safetensors" }
+  },
+  "5": {
+    "class_type": "QwenImage21Cache",
+    "inputs": { "model": ["2", 0], "device": "auto", "dtype": "default" }
+  },
+  "6": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "clip": ["3", 0],
+      "vae": ["4", 0],
+      "prompt": "The wolf-headed man in <image1> takes one step toward the right side of the picture. His front foot is forward and flat on the ground, his back heel is lifted. Short cloak, same clothes, dark background, hard flat color shapes. No outline.",
+      "negative_prompt": "both feet together, standing still, human face, extra legs, text, watermark",
+      "resolution": 0,
+      "images.image_1": ["1", 0]
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["5", 0],
+      "positive": ["6", 0],
+      "negative": ["6", 1],
+      "latent_image": ["6", 2],
+      "seed": 2026101604,
+      "steps": 40,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["7", 0], "vae": ["4", 0] }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["8", 0],
+      "filename_prefix": "comfy_lan_galvan_walk_first"
+    }
+  }
+}
