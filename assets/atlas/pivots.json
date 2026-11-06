@@ -203,19 +203,19 @@
     },
     "hero-galvan-skill-a": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-galvan-skill-b": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-galvan-v": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-galvan": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-violet-skill-a": {
       "x": 0.5,
@@ -1103,11 +1103,11 @@
     },
     "hero-galvan-walk-a": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-galvan-walk-b": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-walk-c": {
       "x": 0.5,

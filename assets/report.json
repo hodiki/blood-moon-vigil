@@ -450,6 +450,7 @@
         "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1"
       ],
       "method": null,
@@ -544,6 +545,7 @@
       },
       "issues": [
         "剪影 L* 13.7 未高于敌潮且高亮 1.2% < 3%",
+        "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1",
@@ -4252,7 +4254,7 @@
     },
     "hero-galvan-skill-a": {
       "frameName": "hero-galvan-skill-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -4287,18 +4289,26 @@
           "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
         },
         "temporal": {
-          "hypot": 5.54,
-          "dCx": 2.17,
-          "dCy": 5.1,
-          "dFoot": 0,
-          "dAreaPct": 2.5,
-          "ok": true,
-          "issues": []
+          "hypot": 45.21,
+          "dCx": 30.79,
+          "dCy": 33.1,
+          "dFoot": 68,
+          "dAreaPct": 64,
+          "ok": false,
+          "issues": [
+            "重心 hypot 45.2px > 12",
+            "脚底 ΔY 68px > 1",
+            "面积 Δ 64.0% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs hero-galvan: 重心 hypot 45.2px > 12",
+        "时间轴 vs hero-galvan: 脚底 ΔY 68px > 1",
+        "时间轴 vs hero-galvan: 面积 Δ 64.0% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-skill-a.png",
       "layout": {
         "family": "hero-galvan",
@@ -4335,13 +4345,13 @@
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
       "updatedAt": "2026-08-31T10:47:59.170Z"
     },
     "hero-galvan-skill-b": {
       "frameName": "hero-galvan-skill-b",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -4376,18 +4386,26 @@
           "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
         },
         "temporal": {
-          "hypot": 5.83,
-          "dCx": 2.36,
-          "dCy": 5.33,
-          "dFoot": 0,
-          "dAreaPct": 10.5,
-          "ok": true,
-          "issues": []
+          "hypot": 44.91,
+          "dCx": 30.6,
+          "dCy": 32.87,
+          "dFoot": 68,
+          "dAreaPct": 61.2,
+          "ok": false,
+          "issues": [
+            "重心 hypot 44.9px > 12",
+            "脚底 ΔY 68px > 1",
+            "面积 Δ 61.2% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs hero-galvan: 重心 hypot 44.9px > 12",
+        "时间轴 vs hero-galvan: 脚底 ΔY 68px > 1",
+        "时间轴 vs hero-galvan: 面积 Δ 61.2% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-skill-b.png",
       "layout": {
         "family": "hero-galvan",
@@ -4424,7 +4442,7 @@
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
       "updatedAt": "2026-08-31T10:47:59.172Z"
     },
@@ -4432,23 +4450,23 @@
       "frameName": "hero-galvan-v",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 832
+          "opaque": 2371
         },
         "margin": {
           "ok": true,
-          "bw": 27,
-          "bh": 54,
-          "w": 64,
-          "h": 64,
+          "bw": 39,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4459,10 +4477,10 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "29.7",
-          "brightRatio": "3.1%",
+          "avg": "34.1",
+          "brightRatio": "4.1%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 0,
@@ -4499,45 +4517,45 @@
         }
       },
       "metrics": {
-        "minX": 18,
-        "minY": 6,
-        "maxX": 44,
-        "maxY": 59,
-        "bw": 27,
-        "bh": 54,
-        "cx": 30.94,
-        "cy": 31.1,
-        "footY": 59,
-        "topY": 6,
-        "n": 832
+        "minX": 45,
+        "minY": 16,
+        "maxX": 83,
+        "maxY": 127,
+        "bw": 39,
+        "bh": 112,
+        "cx": 63.9,
+        "cy": 69.3,
+        "footY": 127,
+        "topY": 16,
+        "n": 2371
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.174Z"
+      "updatedAt": "2026-10-16T08:35:07.996Z"
     },
     "hero-galvan": {
       "frameName": "hero-galvan",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 832
+          "opaque": 2371
         },
         "margin": {
           "ok": true,
-          "bw": 27,
-          "bh": 54,
-          "w": 64,
-          "h": 64,
+          "bw": 39,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4548,10 +4566,10 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "29.7",
-          "brightRatio": "3.1%",
+          "avg": "34.1",
+          "brightRatio": "4.1%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [],
@@ -4579,23 +4597,23 @@
         }
       },
       "metrics": {
-        "minX": 18,
-        "minY": 6,
-        "maxX": 44,
-        "maxY": 59,
-        "bw": 27,
-        "bh": 54,
-        "cx": 30.94,
-        "cy": 31.1,
-        "footY": 59,
-        "topY": 6,
-        "n": 832
+        "minX": 45,
+        "minY": 16,
+        "maxX": 83,
+        "maxY": 127,
+        "bw": 39,
+        "bh": 112,
+        "cx": 63.9,
+        "cy": 69.3,
+        "footY": 127,
+        "topY": 16,
+        "n": 2371
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.181Z"
+      "updatedAt": "2026-10-16T08:35:07.990Z"
     },
     "hero-violet-skill-a": {
       "frameName": "hero-violet-skill-a",
@@ -19597,6 +19615,7 @@
         "时间轴 vs player: 重心 hypot 3.1px > 3",
         "时间轴 vs player: 重心 hypot 3.1px > 3",
         "时间轴 vs player: 重心 hypot 3.1px > 3",
+        "时间轴 vs player: 重心 hypot 3.1px > 3",
         "时间轴 vs player: 重心 hypot 3.1px > 3"
       ],
       "method": null,
@@ -19691,6 +19710,7 @@
       },
       "issues": [
         "剪影 L* 16.3 未高于敌潮且高亮 1.6% < 3%",
+        "时间轴 vs player: 面积 Δ 41.4% > 25%",
         "时间轴 vs player: 面积 Δ 41.4% > 25%",
         "时间轴 vs player: 面积 Δ 41.4% > 25%",
         "时间轴 vs player: 面积 Δ 41.4% > 25%",
@@ -20058,6 +20078,7 @@
       },
       "issues": [
         "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%",
+        "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%",
         "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%"
       ],
       "method": null,
@@ -20104,7 +20125,7 @@
     },
     "hero-galvan-walk-a": {
       "frameName": "hero-galvan-walk-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -20139,18 +20160,26 @@
           "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
         },
         "temporal": {
-          "hypot": 1.23,
-          "dCx": 1.23,
-          "dCy": 0,
-          "dFoot": 0,
-          "dAreaPct": 1.2,
-          "ok": true,
-          "issues": []
+          "hypot": 49.66,
+          "dCx": 31.73,
+          "dCy": 38.2,
+          "dFoot": 68,
+          "dAreaPct": 64.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 49.7px > 6",
+            "脚底 ΔY 68px > 0",
+            "面积 Δ 64.5% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs hero-galvan: 重心 hypot 49.7px > 6",
+        "时间轴 vs hero-galvan: 脚底 ΔY 68px > 0",
+        "时间轴 vs hero-galvan: 面积 Δ 64.5% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-walk-a.png",
       "layout": {
         "family": "hero-galvan",
@@ -20187,13 +20216,13 @@
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
       "updatedAt": "2026-08-31T14:02:10.675Z"
     },
     "hero-galvan-walk-b": {
       "frameName": "hero-galvan-walk-b",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "64x64",
       "checks": {
@@ -20228,18 +20257,26 @@
           "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
         },
         "temporal": {
-          "hypot": 0.21,
-          "dCx": 0.05,
-          "dCy": 0.2,
-          "dFoot": 0,
-          "dAreaPct": 1.7,
-          "ok": true,
-          "issues": []
+          "hypot": 50.64,
+          "dCx": 33.01,
+          "dCy": 38.4,
+          "dFoot": 68,
+          "dAreaPct": 65.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 50.6px > 6",
+            "脚底 ΔY 68px > 0",
+            "面积 Δ 65.5% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs hero-galvan: 重心 hypot 50.6px > 6",
+        "时间轴 vs hero-galvan: 脚底 ΔY 68px > 0",
+        "时间轴 vs hero-galvan: 面积 Δ 65.5% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-galvan-walk-b.png",
       "layout": {
         "family": "hero-galvan",
@@ -20276,7 +20313,7 @@
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
       "updatedAt": "2026-08-31T14:02:10.677Z"
     },
@@ -20700,6 +20737,8 @@
         "时间轴 vs player: 重心 hypot 3.5px > 3",
         "时间轴 vs player: 面积 Δ 34.8% > 25%",
         "时间轴 vs player: 重心 hypot 3.5px > 3",
+        "时间轴 vs player: 面积 Δ 34.8% > 25%",
+        "时间轴 vs player: 重心 hypot 3.5px > 3",
         "时间轴 vs player: 面积 Δ 34.8% > 25%"
       ],
       "method": null,
@@ -20773,6 +20812,7 @@
       },
       "issues": [
         "剪影 L* 16.3 未高于敌潮且高亮 2.0% < 3%",
+        "时间轴 vs player: 面积 Δ 26.5% > 25%",
         "时间轴 vs player: 面积 Δ 26.5% > 25%",
         "时间轴 vs player: 面积 Δ 26.5% > 25%",
         "时间轴 vs player: 面积 Δ 26.5% > 25%",
@@ -20928,6 +20968,7 @@
         "时间轴 vs player: 面积 Δ 40.3% > 25%",
         "时间轴 vs player: 面积 Δ 40.3% > 25%",
         "时间轴 vs player: 面积 Δ 40.3% > 25%",
+        "时间轴 vs player: 面积 Δ 40.3% > 25%",
         "时间轴 vs player: 面积 Δ 40.3% > 25%"
       ],
       "method": null,
@@ -21000,6 +21041,7 @@
         }
       },
       "issues": [
+        "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%",
         "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%",
         "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%"
       ],
@@ -21210,6 +21252,7 @@
       },
       "issues": [
         "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%",
+        "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%",
         "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%"
       ],
       "method": null,
@@ -21361,7 +21404,7 @@
       "updatedAt": "2026-09-17T16:22:12.953Z"
     }
   },
-  "updatedAt": "2026-09-17T16:22:12.990Z",
+  "updatedAt": "2026-10-16T08:35:08.012Z",
   "families": {
     "enemy-gravekeeper": {
       "base": "enemy-gravekeeper",
@@ -22315,36 +22358,44 @@
       "pairs": {
         "hero-galvan-skill-a": {
           "vs": "hero-galvan",
-          "hypot": 5.54,
-          "dCx": 2.17,
-          "dCy": 5.1,
-          "dFoot": 0,
-          "dAreaPct": 2.5,
-          "ok": true,
-          "issues": [],
+          "hypot": 45.21,
+          "dCx": 30.79,
+          "dCy": 33.1,
+          "dFoot": 68,
+          "dAreaPct": 64,
+          "ok": false,
+          "issues": [
+            "重心 hypot 45.2px > 12",
+            "脚底 ΔY 68px > 1",
+            "面积 Δ 64.0% > 25%"
+          ],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
             "kind": "skill",
-            "band": 64
+            "band": 128
           }
         },
         "hero-galvan-skill-b": {
           "vs": "hero-galvan",
-          "hypot": 5.83,
-          "dCx": 2.36,
-          "dCy": 5.33,
-          "dFoot": 0,
-          "dAreaPct": 10.5,
-          "ok": true,
-          "issues": [],
+          "hypot": 44.91,
+          "dCx": 30.6,
+          "dCy": 32.87,
+          "dFoot": 68,
+          "dAreaPct": 61.2,
+          "ok": false,
+          "issues": [
+            "重心 hypot 44.9px > 12",
+            "脚底 ΔY 68px > 1",
+            "面积 Δ 61.2% > 25%"
+          ],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
             "kind": "skill",
-            "band": 64
+            "band": 128
           }
         },
         "hero-galvan-v": {
@@ -22357,45 +22408,53 @@
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 2,
+            "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
             "kind": "idle",
-            "band": 64
+            "band": 128
           }
         },
         "hero-galvan-walk-a": {
           "vs": "hero-galvan",
-          "hypot": 1.23,
-          "dCx": 1.23,
-          "dCy": 0,
-          "dFoot": 0,
-          "dAreaPct": 1.2,
-          "ok": true,
-          "issues": [],
+          "hypot": 49.66,
+          "dCx": 31.73,
+          "dCy": 38.2,
+          "dFoot": 68,
+          "dAreaPct": 64.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 49.7px > 6",
+            "脚底 ΔY 68px > 0",
+            "面积 Δ 64.5% > 25%"
+          ],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         },
         "hero-galvan-walk-b": {
           "vs": "hero-galvan",
-          "hypot": 0.21,
-          "dCx": 0.05,
-          "dCy": 0.2,
-          "dFoot": 0,
-          "dAreaPct": 1.7,
-          "ok": true,
-          "issues": [],
+          "hypot": 50.64,
+          "dCx": 33.01,
+          "dCy": 38.4,
+          "dFoot": 68,
+          "dAreaPct": 65.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 50.6px > 6",
+            "脚底 ΔY 68px > 0",
+            "面积 Δ 65.5% > 25%"
+          ],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         }
       }
