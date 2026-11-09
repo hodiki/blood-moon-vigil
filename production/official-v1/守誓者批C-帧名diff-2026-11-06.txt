@@ -1,0 +1,14 @@
+107c107,109
+< summon-oathkeeper	48x48
+---
+> summon-oathkeeper	192x192
+> summon-oathkeeper-attack-a	192x192
+> summon-oathkeeper-attack-b	192x192
+109c111,115
+< summon-oathkeeper-v	48x48
+---
+> summon-oathkeeper-v	192x192
+> summon-oathkeeper-walk-a	192x192
+> summon-oathkeeper-walk-b	192x192
+> summon-oathkeeper-walk-c	192x192
+> summon-oathkeeper-walk-d	192x192
