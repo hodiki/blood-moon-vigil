@@ -67,6 +67,10 @@ xw_bell: ['summon-oathkeeper', 'summon-oathkeeper-v', 'summon-oathkeeper-tombsto
 
 > **330ms 是必须的**：四帧只覆盖两个半步，用角色的 ~155ms 播会像抽搐（实测）。
 
+> ⚠ **2026-11-09 实测（主理人裁决①，连线批 E）**：`summon-oathkeeper.png` 与 `summon-oathkeeper-v`
+> **像素完全相同**（`md5` 一致，逐像素零差异），1px 呼吸位移在 192 画布上 ≈ 体高 0.6%，**物理上不可见**
+> → **本版不做呼吸，`idle` 只用基帧**（上表 idle 行的 `↔ -v` 暂不启用）。待美术补**真** `-v` 帧后再启用。
+
 ### 3.4 注册表补键
 
 `src/config/frame-registry.ts:60` 的 `xw_bell` 数组追加：

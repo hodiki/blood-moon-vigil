@@ -37,6 +37,7 @@ import { Boss } from '@/enemies/boss';
 import { EnemyAiDirector } from '@/enemies/enemy-ai-runtime';
 import { EliteSkillDirector, type EliteEnemyLike } from '@/enemies/elite-skill-runtime';
 import { OathkeeperRuntime } from '@/weapons/companion/oathkeeper-runtime';
+import { OathkeeperViewSprite } from '@/weapons/companion/oathkeeper-view-sprite';
 import { TelegraphLayer } from '@/fx/telegraph-layer';
 import { BossSkillConsumer } from '@/scenes/run/boss-skill-consumer';
 import { corruptHealMultFor } from '@/config/balance';
@@ -152,6 +153,8 @@ export class PlayScene extends Phaser.Scene {
   private treasure: { x: number; y: number; age: number } | null = null;
   /** W-4 守誓者运行时（FQ-2：薇奥莱+圣铃开局自带；索敌切换/承伤转移/撕咬/墓碑） */
   private oathkeeper!: OathkeeperRuntime;
+  /** NV-ENG-EXEC-25 批 E 守誓者可视化壳（唯一持有其精灵；决策器 `oathkeeper-view.ts` 的消费端） */
+  private oathkeeperView!: OathkeeperViewSprite;
   /** W-4 血渍减速区（忏悔者弹着点；60px/2s/减速 15%，工程锚） */
   private bloodstains: Array<{ x: number; y: number; until: number }> = [];
   /** W-3 MN-12：血月化身本局已触发（5% 判定 once；常规 Boss 优先口径 §⑥-5） */
@@ -488,6 +491,11 @@ export class PlayScene extends Phaser.Scene {
     if (this.treeApplier.tombHealBonus > 0) {
       this.oathkeeper.state.machine['tombHealFlatBonus'] = this.treeApplier.tombHealBonus;
     }
+    // NV-ENG-EXEC-25 批 E：守誓者可视化壳（「有数据没画面」的收口点）。
+    // - 只读轮询 rt.state（不订阅事件）：相位是状态不是事件，单消费者用总线是纯开销（方案 §3.3）；
+    // - depth 由决策器给（常量 30，裁决②）：> 敌人默认 0（不被敌群淹没）、< 玩家 100（不遮挡玩家）；
+    // - scene.restart 由 create 重建本实例（旧精灵随场景销毁），onShutdown 里显式 destroy 兜底。
+    this.oathkeeperView = new OathkeeperViewSprite(this, this.oathkeeper, this.player);
     // P0-7c 圣铃治疗同源落点：每 8s 铃响治疗「自身 **与** 守誓者」8 HP（旧实现只写玩家 HP）。
     // 挂在行为层 onHeal 上（与 healSink 同量同源）；未启用守誓者时 healCompanion 内部短路。
     this.exw('xw_bell').onHeal = (amount: number) => {
@@ -805,6 +813,10 @@ export class PlayScene extends Phaser.Scene {
     this.relicFields.stepFields(dt, now);
     // W-4 守誓者步进（跟随/墓碑/重召唤/撕咬）+ 血渍区/幻影到期
     this.stepCompanion(dt, now);
+    // NV-ENG-EXEC-25 批 E：可视化壳步进。**必须紧跟 stepCompanion**——
+    // 本帧的跟随位移与本帧撕咬信号（notifyBite）都要在同一帧落到精灵上；放到 aiDirector 之前会晚 1 帧，
+    // attack 帧读到的是上一帧的 sinceBiteMs（= 撕咬永远慢一帧出画）。
+    this.oathkeeperView.update(dt);
     // W-16 精英技能运行时（五精英 + MN-20 打断 + P0-5 180s 技能门；技能伤走 player.hurt 独立结算）
     this.stepEliteSkills(dt, now);
     this.enemyPool.eachActive((e) => {
@@ -1016,7 +1028,7 @@ export class PlayScene extends Phaser.Scene {
     this.enemyPool.eachActive((e) => {
       if (e.enemyId && !e.noXp) biteTargets.push(e); // 召唤物不咬（noXp 实体非合法撕咬目标语义）
     });
-    this.oathkeeper.update(dt, now, this.player, biteTargets, (amount) => {
+    const dealt = this.oathkeeper.update(dt, now, this.player, biteTargets, (amount) => {
       const healed = Math.min(amount, this.player.stats.maxHp - this.player.stats.hp);
       if (healed > 0) {
         this.player.stats.hp += healed;
@@ -1024,6 +1036,11 @@ export class PlayScene extends Phaser.Scene {
       }
       return healed;
     });
+    // NV-ENG-EXEC-25 批 E 撕咬信号接线（**关键修复**）：
+    // `tickBite()` 返回 dealt、`OathkeeperRuntime.update()` 原样返回，但此前此处**丢弃了返回值**
+    // → 决策器永远收不到撕咬 → attack 帧从不出现。这里接住并喂给壳的 sinceBiteMs（`dealt > 0` 记 0）。
+    // 不引入事件总线：单消费者 + 同帧同帧序（stepCompanion → oathkeeperView.update）。
+    if (dealt > 0) this.oathkeeperView.notifyBite();
     // 血渍减速区（60px/2s/减速 15%；玩家 externalSlowMult 乘区消费）
     this.bloodstains = this.bloodstains.filter((b) => now < b.until);
     const inBlood = this.bloodstains.some((b) => Math.hypot(b.x - this.player.x, b.y - this.player.y) <= 60);
@@ -1284,6 +1301,7 @@ export class PlayScene extends Phaser.Scene {
     this.requiemRingTimer = null;
     this.markers?.destroy();
     this.floatTexts?.destroy(); // P2-7②
+    this.oathkeeperView?.destroy(); // NV-ENG-EXEC-25：守誓者精灵（scene 重建时防泄漏）
     resetGameEvents(); // 防泄漏（ARCH §3.4 约定）
     this.inputSource.destroy();
     this.overlay.destroy();

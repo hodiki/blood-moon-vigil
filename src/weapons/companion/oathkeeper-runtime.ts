@@ -3,7 +3,7 @@
  *
  * B2-W5 状态机（oathkeeper.ts 纯函数）的运行时消费端（无 Phaser 依赖）：
  * - FQ-2：修女（hero_violet）+ 誓约圣铃（xw_bell）→ 开局自带（setEnabled 启用）
- * - 跟随：companion 相位下距玩家 > 60px → 以 180px/s 移向玩家（x/y 数据点，无实体渲染=B6）
+ * - 跟随：companion 相位下距玩家 > 60px → 以 120px/s 移向玩家（x/y 数据点；渲染 = `oathkeeper-view-sprite.ts`）
  * - 索敌切换：friendlyTarget() 供 targeting.pickTarget 消费（150px 替身圈强制索敌，
  *   EnemyAiDirector 每帧消费 → 敌移动目标切守誓者——R-2/B2 遗留「updateMovement 接线」本批收口）
  * - 承伤转移路由：routePlayerHurt = 玩家在替身圈内受伤 → transferDamage（50%，
@@ -30,8 +30,22 @@ import {
 export const OATHKEEPER_LEASH = 150;
 /** 跟随锚距（玩家身后维持距离；工程锚） */
 export const FOLLOW_DISTANCE = 60;
-/** 跟随速度 px/s（低于玩家移速，不掉队也不抢位） */
-export const FOLLOW_SPEED = 180;
+/**
+ * 跟随速度 px/s（低于玩家移速，不掉队也不抢位）。
+ *
+ * ── R6 滑步修正（2026-11-09，NV-ENG-EXEC-25 批 E，主理人裁决④）：**180 → 120** ──
+ * 推导：walk 4 帧 × 330ms = **1.32s/圈**，一圈覆盖 2 个半步，美术踏步 ≈ **32px/步**；
+ *  - 180px/s × 1.32s = 每步 **119px** ≈ 美术步幅的 3.7 倍 → 肉眼可见"脚不动却在地上滑"；
+ *  - 120px/s × 1.32s = 每步 **79px** ≈ 2.5 倍（滑步幅度同比 −33%）。
+ * 取区间上界 120 而非 90 的理由：玩家 `MOVE_SPEED = 235px/s`（`config/balance/player.ts:12`），
+ * 本跟随是纯"追到 60px 以内"的无提速直线逼近 → **跟随速度越低，玩家持续跑动时稳态掉队越远**
+ * （120 时差速 115px/s，90 时 145px/s），而 150px 替身圈（承伤转移/强制索敌，`OATHKEEPER_LEASH`）
+ * 要求他别掉太远。故在"美术滑步"与"玩法掉队"之间取 120。
+ *
+ * **批 F 实测再微调**：若录屏仍见滑步 → 降到 90；若见掉队（>150px 失去承伤转移）→
+ * 需在 `update()` 内加"距离 > 200px 时追赶提速"（本批**不做**，另立 ticket，避免与滑步修正混批）。
+ */
+export const FOLLOW_SPEED = 120;
 /** 撕咬射程（聚拢玩家附近最近敌；工程锚） */
 export const BITE_RANGE = 120;
 
