@@ -87,7 +87,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.750Z"
+      "updatedAt": "2026-11-07T15:52:54.690Z"
     },
     "enemy-gravekeeper": {
       "frameName": "enemy-gravekeeper",
@@ -167,7 +167,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.753Z"
+      "updatedAt": "2026-11-07T15:52:54.697Z"
     },
     "player-v": {
       "frameName": "player-v",
@@ -258,7 +258,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.817Z"
+      "updatedAt": "2026-11-07T15:52:55.361Z"
     },
     "player": {
       "frameName": "player",
@@ -340,7 +340,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-09T17:08:43.435Z"
+      "updatedAt": "2026-11-07T15:52:55.391Z"
     },
     "tile-grave-soil": {
       "frameName": "tile-grave-soil",
@@ -392,7 +392,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.515Z"
+      "updatedAt": "2026-11-07T15:52:55.638Z"
     },
     "player-skill-a": {
       "frameName": "player-skill-a",
@@ -444,13 +444,6 @@
       },
       "issues": [
         "剪影 L* 13.4 未高于敌潮且高亮 1.1% < 3%",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1"
       ],
       "method": null,
@@ -493,7 +486,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.838Z"
+      "updatedAt": "2026-11-07T15:52:55.352Z"
     },
     "player-skill-b": {
       "frameName": "player-skill-b",
@@ -545,13 +538,6 @@
       },
       "issues": [
         "剪影 L* 13.7 未高于敌潮且高亮 1.2% < 3%",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
-        "时间轴 vs player: 脚底 ΔY 2px > 1",
         "时间轴 vs player: 脚底 ΔY 2px > 1"
       ],
       "method": null,
@@ -594,7 +580,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.845Z"
+      "updatedAt": "2026-11-07T15:52:55.356Z"
     },
     "boss-cardinal-entrance": {
       "frameName": "boss-cardinal-entrance",
@@ -683,7 +669,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.525Z"
+      "updatedAt": "2026-11-07T15:52:54.426Z"
     },
     "boss-cardinal-v": {
       "frameName": "boss-cardinal-v",
@@ -772,7 +758,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.537Z"
+      "updatedAt": "2026-11-07T15:52:54.444Z"
     },
     "boss-cardinal": {
       "frameName": "boss-cardinal",
@@ -852,7 +838,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.550Z"
+      "updatedAt": "2026-11-07T15:52:54.463Z"
     },
     "boss-fenrir-entrance": {
       "frameName": "boss-fenrir-entrance",
@@ -941,7 +927,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.560Z"
+      "updatedAt": "2026-11-07T15:52:54.479Z"
     },
     "boss-fenrir-v": {
       "frameName": "boss-fenrir-v",
@@ -1030,7 +1016,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.570Z"
+      "updatedAt": "2026-11-07T15:52:54.493Z"
     },
     "boss-fenrir": {
       "frameName": "boss-fenrir",
@@ -1110,7 +1096,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.580Z"
+      "updatedAt": "2026-11-07T15:52:54.508Z"
     },
     "boss-moonavatar-entrance": {
       "frameName": "boss-moonavatar-entrance",
@@ -1199,7 +1185,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.587Z"
+      "updatedAt": "2026-11-07T15:52:54.518Z"
     },
     "boss-moonavatar-v": {
       "frameName": "boss-moonavatar-v",
@@ -1288,7 +1274,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.594Z"
+      "updatedAt": "2026-11-07T15:52:54.528Z"
     },
     "boss-moonavatar": {
       "frameName": "boss-moonavatar",
@@ -1368,7 +1354,7 @@
         "x": 0.5,
         "y": 0.9473
       },
-      "updatedAt": "2026-08-31T10:47:58.600Z"
+      "updatedAt": "2026-11-07T15:52:54.537Z"
     },
     "enemy-acolyte-v": {
       "frameName": "enemy-acolyte-v",
@@ -1457,7 +1443,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.696Z"
+      "updatedAt": "2026-11-07T15:52:54.600Z"
     },
     "enemy-acolyte": {
       "frameName": "enemy-acolyte",
@@ -1537,7 +1523,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.698Z"
+      "updatedAt": "2026-11-07T15:52:54.604Z"
     },
     "enemy-bat-v": {
       "frameName": "enemy-bat-v",
@@ -1626,7 +1612,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.700Z"
+      "updatedAt": "2026-11-07T15:52:54.608Z"
     },
     "enemy-bat": {
       "frameName": "enemy-bat",
@@ -1706,7 +1692,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.701Z"
+      "updatedAt": "2026-11-07T15:52:54.611Z"
     },
     "enemy-beetle-v": {
       "frameName": "enemy-beetle-v",
@@ -1795,7 +1781,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.703Z"
+      "updatedAt": "2026-11-07T15:52:54.615Z"
     },
     "enemy-beetle": {
       "frameName": "enemy-beetle",
@@ -1875,7 +1861,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.704Z"
+      "updatedAt": "2026-11-07T15:52:54.618Z"
     },
     "enemy-boss-v": {
       "frameName": "enemy-boss-v",
@@ -1964,7 +1950,7 @@
         "x": 0.5,
         "y": 0.9479
       },
-      "updatedAt": "2026-08-31T10:47:58.721Z"
+      "updatedAt": "2026-11-07T15:52:54.644Z"
     },
     "enemy-boss": {
       "frameName": "enemy-boss",
@@ -2044,7 +2030,7 @@
         "x": 0.5,
         "y": 0.9479
       },
-      "updatedAt": "2026-08-31T10:47:58.732Z"
+      "updatedAt": "2026-11-07T15:52:54.656Z"
     },
     "enemy-cupbearer-v": {
       "frameName": "enemy-cupbearer-v",
@@ -2133,7 +2119,7 @@
         "x": 0.5,
         "y": 0.9141
       },
-      "updatedAt": "2026-08-31T10:47:58.734Z"
+      "updatedAt": "2026-11-07T15:52:54.660Z"
     },
     "enemy-cupbearer": {
       "frameName": "enemy-cupbearer",
@@ -2213,7 +2199,7 @@
         "x": 0.5,
         "y": 0.9141
       },
-      "updatedAt": "2026-08-31T10:47:58.736Z"
+      "updatedAt": "2026-11-07T15:52:54.663Z"
     },
     "enemy-fleshmass-v": {
       "frameName": "enemy-fleshmass-v",
@@ -2302,7 +2288,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.744Z"
+      "updatedAt": "2026-11-07T15:52:54.677Z"
     },
     "enemy-fleshmass": {
       "frameName": "enemy-fleshmass",
@@ -2382,7 +2368,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.747Z"
+      "updatedAt": "2026-11-07T15:52:54.684Z"
     },
     "enemy-greywolf-v": {
       "frameName": "enemy-greywolf-v",
@@ -2471,7 +2457,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.754Z"
+      "updatedAt": "2026-11-07T15:52:54.700Z"
     },
     "enemy-greywolf": {
       "frameName": "enemy-greywolf",
@@ -2551,7 +2537,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.756Z"
+      "updatedAt": "2026-11-07T15:52:54.702Z"
     },
     "enemy-hound-v": {
       "frameName": "enemy-hound-v",
@@ -2640,7 +2626,7 @@
         "x": 0.5,
         "y": 0.9271
       },
-      "updatedAt": "2026-08-31T10:47:58.758Z"
+      "updatedAt": "2026-11-07T15:52:54.705Z"
     },
     "enemy-hound": {
       "frameName": "enemy-hound",
@@ -2720,7 +2706,7 @@
         "x": 0.5,
         "y": 0.9271
       },
-      "updatedAt": "2026-08-31T10:47:58.759Z"
+      "updatedAt": "2026-11-07T15:52:54.707Z"
     },
     "enemy-necro-v": {
       "frameName": "enemy-necro-v",
@@ -2809,7 +2795,7 @@
         "x": 0.5,
         "y": 0.9338
       },
-      "updatedAt": "2026-08-31T10:47:58.761Z"
+      "updatedAt": "2026-11-07T15:52:54.711Z"
     },
     "enemy-necro": {
       "frameName": "enemy-necro",
@@ -2889,7 +2875,7 @@
         "x": 0.5,
         "y": 0.9338
       },
-      "updatedAt": "2026-08-31T10:47:58.763Z"
+      "updatedAt": "2026-11-07T15:52:54.713Z"
     },
     "enemy-penitent-v": {
       "frameName": "enemy-penitent-v",
@@ -2978,7 +2964,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.766Z"
+      "updatedAt": "2026-11-07T15:52:54.717Z"
     },
     "enemy-penitent": {
       "frameName": "enemy-penitent",
@@ -3058,7 +3044,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.768Z"
+      "updatedAt": "2026-11-07T15:52:54.720Z"
     },
     "enemy-shadowwolf-v": {
       "frameName": "enemy-shadowwolf-v",
@@ -3147,7 +3133,7 @@
         "x": 0.5,
         "y": 0.9271
       },
-      "updatedAt": "2026-08-31T10:47:58.770Z"
+      "updatedAt": "2026-11-07T15:52:54.724Z"
     },
     "enemy-shadowwolf": {
       "frameName": "enemy-shadowwolf",
@@ -3227,7 +3213,7 @@
         "x": 0.5,
         "y": 0.9271
       },
-      "updatedAt": "2026-08-31T10:47:58.771Z"
+      "updatedAt": "2026-11-07T15:52:54.726Z"
     },
     "enemy-stonewolf-v": {
       "frameName": "enemy-stonewolf-v",
@@ -3316,7 +3302,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.780Z"
+      "updatedAt": "2026-11-07T15:52:54.739Z"
     },
     "enemy-stonewolf": {
       "frameName": "enemy-stonewolf",
@@ -3396,7 +3382,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.783Z"
+      "updatedAt": "2026-11-07T15:52:54.745Z"
     },
     "enemy-wolfhunter-v": {
       "frameName": "enemy-wolfhunter-v",
@@ -3485,7 +3471,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.785Z"
+      "updatedAt": "2026-11-07T15:52:54.749Z"
     },
     "enemy-wolfhunter": {
       "frameName": "enemy-wolfhunter",
@@ -3565,7 +3551,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.786Z"
+      "updatedAt": "2026-11-07T15:52:54.754Z"
     },
     "enemy-wraith-v": {
       "frameName": "enemy-wraith-v",
@@ -3654,7 +3640,7 @@
         "x": 0.5,
         "y": 0.9196
       },
-      "updatedAt": "2026-08-31T10:47:58.788Z"
+      "updatedAt": "2026-11-07T15:52:54.756Z"
     },
     "enemy-wraith": {
       "frameName": "enemy-wraith",
@@ -3734,7 +3720,7 @@
         "x": 0.5,
         "y": 0.9196
       },
-      "updatedAt": "2026-08-31T10:47:58.790Z"
+      "updatedAt": "2026-11-07T15:52:54.760Z"
     },
     "enemy-zombie-v": {
       "frameName": "enemy-zombie-v",
@@ -3823,7 +3809,7 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.792Z"
+      "updatedAt": "2026-11-07T15:52:54.762Z"
     },
     "enemy-zombie": {
       "frameName": "enemy-zombie",
@@ -3903,29 +3889,29 @@
         "x": 0.5,
         "y": 0.9375
       },
-      "updatedAt": "2026-08-31T10:47:58.794Z"
+      "updatedAt": "2026-11-07T15:52:54.764Z"
     },
     "hero-cassandra-skill-a": {
       "frameName": "hero-cassandra-skill-a",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 718
+          "opaque": 2542
         },
         "margin": {
           "ok": true,
-          "bw": 29,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 72,
+          "bh": 111,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -3936,23 +3922,23 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "21.6",
-          "brightRatio": "4.9%",
+          "avg": "32.5",
+          "brightRatio": "22.6%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.21,
-          "dCx": 0.64,
-          "dCy": 1.03,
+          "hypot": 5.82,
+          "dCx": 5.67,
+          "dCy": 1.31,
           "dFoot": 0,
-          "dAreaPct": 24.2,
+          "dAreaPct": 18.2,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": "edge-flood",
+      "method": null,
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-skill-a.png",
       "layout": {
@@ -3976,45 +3962,45 @@
         }
       },
       "metrics": {
-        "minX": 17,
-        "minY": 4,
-        "maxX": 45,
-        "maxY": 59,
-        "bw": 29,
-        "bh": 56,
-        "cx": 30.54,
-        "cy": 29.96,
-        "footY": 59,
-        "topY": 4,
-        "n": 718
+        "minX": 28,
+        "minY": 17,
+        "maxX": 99,
+        "maxY": 127,
+        "bw": 72,
+        "bh": 111,
+        "cx": 67.78,
+        "cy": 69.5,
+        "footY": 127,
+        "topY": 17,
+        "n": 2542
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.150Z"
     },
     "hero-cassandra-skill-b": {
       "frameName": "hero-cassandra-skill-b",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 640
+          "opaque": 2678
         },
         "margin": {
           "ok": true,
-          "bw": 32,
-          "bh": 53,
-          "w": 64,
-          "h": 64,
+          "bw": 52,
+          "bh": 111,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4025,23 +4011,23 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "22.9",
-          "brightRatio": "4.2%",
+          "avg": "15.9",
+          "brightRatio": "5.6%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.04,
-          "dCx": 1.04,
-          "dCy": 0.04,
+          "hypot": 5.51,
+          "dCx": 2.52,
+          "dCy": 4.9,
           "dFoot": 0,
-          "dAreaPct": 10.7,
+          "dAreaPct": 24.5,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": "edge-flood",
+      "method": null,
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-skill-b.png",
       "layout": {
@@ -4065,45 +4051,45 @@
         }
       },
       "metrics": {
-        "minX": 16,
-        "minY": 7,
-        "maxX": 47,
-        "maxY": 59,
-        "bw": 32,
-        "bh": 53,
-        "cx": 30.94,
-        "cy": 28.97,
-        "footY": 59,
-        "topY": 7,
-        "n": 640
+        "minX": 37,
+        "minY": 17,
+        "maxX": 88,
+        "maxY": 127,
+        "bw": 52,
+        "bh": 111,
+        "cx": 59.59,
+        "cy": 63.29,
+        "footY": 127,
+        "topY": 17,
+        "n": 2678
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.158Z"
     },
     "hero-cassandra-v": {
       "frameName": "hero-cassandra-v",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 578
+          "opaque": 2151
         },
         "margin": {
           "ok": true,
-          "bw": 21,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 36,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4114,8 +4100,8 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "30.8",
-          "brightRatio": "10.7%",
+          "avg": "21.2",
+          "brightRatio": "8.3%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
@@ -4130,7 +4116,7 @@
         }
       },
       "issues": [],
-      "method": "edge-flood",
+      "method": null,
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-v.png",
       "layout": {
@@ -4154,45 +4140,45 @@
         }
       },
       "metrics": {
-        "minX": 21,
-        "minY": 4,
-        "maxX": 41,
-        "maxY": 59,
-        "bw": 21,
-        "bh": 56,
-        "cx": 29.9,
-        "cy": 28.93,
-        "footY": 59,
-        "topY": 4,
-        "n": 578
+        "minX": 46,
+        "minY": 16,
+        "maxX": 81,
+        "maxY": 127,
+        "bw": 36,
+        "bh": 112,
+        "cx": 62.11,
+        "cy": 68.19,
+        "footY": 127,
+        "topY": 16,
+        "n": 2151
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.166Z"
     },
     "hero-cassandra": {
       "frameName": "hero-cassandra",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 578
+          "opaque": 2151
         },
         "margin": {
           "ok": true,
-          "bw": 21,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 36,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -4203,8 +4189,8 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "30.8",
-          "brightRatio": "10.7%",
+          "avg": "21.2",
+          "brightRatio": "8.3%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
@@ -4234,23 +4220,23 @@
         }
       },
       "metrics": {
-        "minX": 21,
-        "minY": 4,
-        "maxX": 41,
-        "maxY": 59,
-        "bw": 21,
-        "bh": 56,
-        "cx": 29.9,
-        "cy": 28.93,
-        "footY": 59,
-        "topY": 4,
-        "n": 578
+        "minX": 46,
+        "minY": 16,
+        "maxX": 81,
+        "maxY": 127,
+        "bw": 36,
+        "bh": 112,
+        "cx": 62.11,
+        "cy": 68.19,
+        "footY": 127,
+        "topY": 16,
+        "n": 2151
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-09T17:08:43.446Z"
+      "updatedAt": "2026-11-07T15:52:55.208Z"
     },
     "hero-galvan-skill-a": {
       "frameName": "hero-galvan-skill-a",
@@ -4286,7 +4272,7 @@
           "avg": "30.4",
           "brightRatio": "5.6%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 45.21,
@@ -4347,7 +4333,7 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.170Z"
+      "updatedAt": "2026-11-07T15:52:55.211Z"
     },
     "hero-galvan-skill-b": {
       "frameName": "hero-galvan-skill-b",
@@ -4383,7 +4369,7 @@
           "avg": "29.1",
           "brightRatio": "5.4%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 44.91,
@@ -4444,7 +4430,7 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-08-31T10:47:59.172Z"
+      "updatedAt": "2026-11-07T15:52:55.215Z"
     },
     "hero-galvan-v": {
       "frameName": "hero-galvan-v",
@@ -4533,7 +4519,7 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-10-16T08:35:07.996Z"
+      "updatedAt": "2026-11-07T15:52:55.220Z"
     },
     "hero-galvan": {
       "frameName": "hero-galvan",
@@ -4613,7 +4599,7 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-10-16T08:35:07.990Z"
+      "updatedAt": "2026-11-07T15:52:55.231Z"
     },
     "hero-violet-skill-a": {
       "frameName": "hero-violet-skill-a",
@@ -4628,16 +4614,16 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3546
+          "opaque": 2941
         },
         "margin": {
-          "ok": false,
-          "bw": 57,
-          "bh": 128,
+          "ok": true,
+          "bw": 68,
+          "bh": 112,
           "w": 128,
           "h": 128,
           "marginOkW": true,
-          "marginOkH": false,
+          "marginOkH": true,
           "outlineW": 0
         },
         "outline": {
@@ -4646,23 +4632,25 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "34.2",
-          "brightRatio": "14.9%",
+          "avg": "41.2",
+          "brightRatio": "37.3%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 6.11,
-          "dCx": 0.51,
-          "dCy": 6.09,
+          "hypot": 9.74,
+          "dCx": 1.5,
+          "dCy": 9.62,
           "dFoot": 0,
-          "dAreaPct": 13.7,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 50.4,
+          "ok": false,
+          "issues": [
+            "面积 Δ 50.4% > 25%"
+          ]
         }
       },
       "issues": [
-        "填充 57x128 超出帧 90%（128x128，不含描边）"
+        "时间轴 vs hero-violet: 面积 Δ 50.4% > 25%"
       ],
       "method": null,
       "passed": "FAIL",
@@ -4688,23 +4676,23 @@
         }
       },
       "metrics": {
-        "minX": 35,
-        "minY": 0,
-        "maxX": 91,
+        "minX": 30,
+        "minY": 16,
+        "maxX": 97,
         "maxY": 127,
-        "bw": 57,
-        "bh": 128,
-        "cx": 70.27,
-        "cy": 76.09,
+        "bw": 68,
+        "bh": 112,
+        "cx": 67.34,
+        "cy": 72.85,
         "footY": 127,
-        "topY": 0,
-        "n": 3546
+        "topY": 16,
+        "n": 2941
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.200Z"
+      "updatedAt": "2026-11-07T15:52:55.246Z"
     },
     "hero-violet-skill-b": {
       "frameName": "hero-violet-skill-b",
@@ -4719,12 +4707,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3666
+          "opaque": 1659
         },
         "margin": {
           "ok": true,
-          "bw": 67,
-          "bh": 114,
+          "bw": 55,
+          "bh": 112,
           "w": 128,
           "h": 128,
           "marginOkW": true,
@@ -4737,17 +4725,17 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "30.5",
-          "brightRatio": "9.7%",
+          "avg": "54.5",
+          "brightRatio": "56.2%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 4.3,
-          "dCx": 3.46,
-          "dCy": 2.55,
+          "hypot": 3.46,
+          "dCx": 0.77,
+          "dCy": 3.37,
           "dFoot": 0,
-          "dAreaPct": 17.5,
+          "dAreaPct": 15.1,
           "ok": true,
           "issues": []
         }
@@ -4777,23 +4765,23 @@
         }
       },
       "metrics": {
-        "minX": 30,
-        "minY": 14,
-        "maxX": 96,
+        "minX": 36,
+        "minY": 16,
+        "maxX": 90,
         "maxY": 127,
-        "bw": 67,
-        "bh": 114,
-        "cx": 67.32,
-        "cy": 79.63,
+        "bw": 55,
+        "bh": 112,
+        "cx": 65.07,
+        "cy": 66.6,
         "footY": 127,
-        "topY": 14,
-        "n": 3666
+        "topY": 16,
+        "n": 1659
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.207Z"
+      "updatedAt": "2026-11-07T15:52:55.250Z"
     },
     "hero-violet-v": {
       "frameName": "hero-violet-v",
@@ -4808,11 +4796,11 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3119
+          "opaque": 1955
         },
         "margin": {
           "ok": true,
-          "bw": 56,
+          "bw": 41,
           "bh": 112,
           "w": 128,
           "h": 128,
@@ -4826,8 +4814,8 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "32.5",
-          "brightRatio": "9.3%",
+          "avg": "55.6",
+          "brightRatio": "58.8%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
@@ -4866,23 +4854,23 @@
         }
       },
       "metrics": {
-        "minX": 36,
+        "minX": 43,
         "minY": 16,
-        "maxX": 91,
+        "maxX": 83,
         "maxY": 127,
-        "bw": 56,
+        "bw": 41,
         "bh": 112,
-        "cx": 70.78,
-        "cy": 82.18,
+        "cx": 65.84,
+        "cy": 63.23,
         "footY": 127,
         "topY": 16,
-        "n": 3119
+        "n": 1955
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.194Z"
+      "updatedAt": "2026-11-07T15:52:55.253Z"
     },
     "hero-violet": {
       "frameName": "hero-violet",
@@ -4897,11 +4885,11 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3119
+          "opaque": 1955
         },
         "margin": {
           "ok": true,
-          "bw": 56,
+          "bw": 41,
           "bh": 112,
           "w": 128,
           "h": 128,
@@ -4915,8 +4903,8 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "32.5",
-          "brightRatio": "9.3%",
+          "avg": "55.6",
+          "brightRatio": "58.8%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
@@ -4946,23 +4934,23 @@
         }
       },
       "metrics": {
-        "minX": 36,
+        "minX": 43,
         "minY": 16,
-        "maxX": 91,
+        "maxX": 83,
         "maxY": 127,
-        "bw": 56,
+        "bw": 41,
         "bh": 112,
-        "cx": 70.78,
-        "cy": 82.18,
+        "cx": 65.84,
+        "cy": 63.23,
         "footY": 127,
         "topY": 16,
-        "n": 3119
+        "n": 1955
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.183Z"
+      "updatedAt": "2026-11-07T15:52:55.295Z"
     },
     "marker-aura": {
       "frameName": "marker-aura",
@@ -5042,7 +5030,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.205Z"
+      "updatedAt": "2026-11-07T15:52:55.307Z"
     },
     "marker-rune": {
       "frameName": "marker-rune",
@@ -5122,7 +5110,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.218Z"
+      "updatedAt": "2026-11-07T15:52:55.311Z"
     },
     "marker-warningline": {
       "frameName": "marker-warningline",
@@ -5174,7 +5162,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.238Z"
+      "updatedAt": "2026-11-07T15:52:55.316Z"
     },
     "marker-stun": {
       "frameName": "marker-stun",
@@ -5254,7 +5242,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.231Z"
+      "updatedAt": "2026-11-07T15:52:55.314Z"
     },
     "marker-slow": {
       "frameName": "marker-slow",
@@ -5334,7 +5322,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.224Z"
+      "updatedAt": "2026-11-07T15:52:55.312Z"
     },
     "marker-mark": {
       "frameName": "marker-mark",
@@ -5414,7 +5402,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.211Z"
+      "updatedAt": "2026-11-07T15:52:55.309Z"
     },
     "skill-ring-edmund": {
       "frameName": "skill-ring-edmund",
@@ -5494,7 +5482,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.433Z"
+      "updatedAt": "2026-11-07T15:52:55.488Z"
     },
     "skill-ring-cassandra": {
       "frameName": "skill-ring-cassandra",
@@ -5574,7 +5562,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.424Z"
+      "updatedAt": "2026-11-07T15:52:55.483Z"
     },
     "skill-ring-violet": {
       "frameName": "skill-ring-violet",
@@ -5654,7 +5642,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.449Z"
+      "updatedAt": "2026-11-07T15:52:55.495Z"
     },
     "skill-ring-galvan": {
       "frameName": "skill-ring-galvan",
@@ -5734,7 +5722,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.441Z"
+      "updatedAt": "2026-11-07T15:52:55.490Z"
     },
     "missile": {
       "frameName": "missile",
@@ -5814,7 +5802,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.239Z"
+      "updatedAt": "2026-11-07T15:52:55.319Z"
     },
     "orb": {
       "frameName": "orb",
@@ -5894,7 +5882,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.293Z"
+      "updatedAt": "2026-11-07T15:52:55.348Z"
     },
     "shockwave": {
       "frameName": "shockwave",
@@ -5974,7 +5962,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.412Z"
+      "updatedAt": "2026-11-07T15:52:55.473Z"
     },
     "proj-crossbow": {
       "frameName": "proj-crossbow",
@@ -6054,7 +6042,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.308Z"
+      "updatedAt": "2026-11-07T15:52:55.398Z"
     },
     "proj-blunderbuss": {
       "frameName": "proj-blunderbuss",
@@ -6134,7 +6122,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.305Z"
+      "updatedAt": "2026-11-07T15:52:55.393Z"
     },
     "proj-boomerang": {
       "frameName": "proj-boomerang",
@@ -6214,7 +6202,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.306Z"
+      "updatedAt": "2026-11-07T15:52:55.396Z"
     },
     "proj-javelin": {
       "frameName": "proj-javelin",
@@ -6294,7 +6282,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.309Z"
+      "updatedAt": "2026-11-07T15:52:55.401Z"
     },
     "orb-thorn": {
       "frameName": "orb-thorn",
@@ -6374,7 +6362,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.292Z"
+      "updatedAt": "2026-11-07T15:52:55.345Z"
     },
     "aura-barrier": {
       "frameName": "aura-barrier",
@@ -6454,7 +6442,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.501Z"
+      "updatedAt": "2026-11-07T15:52:54.381Z"
     },
     "ring-bloodpool": {
       "frameName": "ring-bloodpool",
@@ -6534,7 +6522,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.402Z"
+      "updatedAt": "2026-11-07T15:52:55.455Z"
     },
     "decal-bloodpool": {
       "frameName": "decal-bloodpool",
@@ -6586,7 +6574,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.631Z"
+      "updatedAt": "2026-11-07T15:52:54.562Z"
     },
     "ring-holyfire": {
       "frameName": "ring-holyfire",
@@ -6666,7 +6654,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.404Z"
+      "updatedAt": "2026-11-07T15:52:55.459Z"
     },
     "summon-bat": {
       "frameName": "summon-bat",
@@ -6702,7 +6690,7 @@
           "avg": "91.6",
           "brightRatio": "100.0%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [],
@@ -6746,7 +6734,7 @@
         "x": 0.5,
         "y": 0.9063
       },
-      "updatedAt": "2026-08-31T10:47:59.455Z"
+      "updatedAt": "2026-11-07T15:52:55.508Z"
     },
     "summon-hound": {
       "frameName": "summon-hound",
@@ -6782,7 +6770,7 @@
           "avg": "89.6",
           "brightRatio": "99.6%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [],
@@ -6826,7 +6814,7 @@
         "x": 0.5,
         "y": 0.9219
       },
-      "updatedAt": "2026-08-31T10:47:59.456Z"
+      "updatedAt": "2026-11-07T15:52:55.511Z"
     },
     "beam-chain": {
       "frameName": "beam-chain",
@@ -6906,7 +6894,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.510Z"
+      "updatedAt": "2026-11-07T15:52:54.401Z"
     },
     "super-moonwrath": {
       "frameName": "super-moonwrath",
@@ -6986,7 +6974,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.472Z"
+      "updatedAt": "2026-11-07T15:52:55.611Z"
     },
     "super-silverblast": {
       "frameName": "super-silverblast",
@@ -7066,7 +7054,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.476Z"
+      "updatedAt": "2026-11-07T15:52:55.620Z"
     },
     "super-seraphring": {
       "frameName": "super-seraphring",
@@ -7146,7 +7134,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.475Z"
+      "updatedAt": "2026-11-07T15:52:55.617Z"
     },
     "super-totaleclipse": {
       "frameName": "super-totaleclipse",
@@ -7226,7 +7214,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.478Z"
+      "updatedAt": "2026-11-07T15:52:55.622Z"
     },
     "super-bloodsea": {
       "frameName": "super-bloodsea",
@@ -7306,7 +7294,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.471Z"
+      "updatedAt": "2026-11-07T15:52:55.609Z"
     },
     "super-batstorm": {
       "frameName": "super-batstorm",
@@ -7386,7 +7374,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.468Z"
+      "updatedAt": "2026-11-07T15:52:55.604Z"
     },
     "super-packleader": {
       "frameName": "super-packleader",
@@ -7466,7 +7454,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.474Z"
+      "updatedAt": "2026-11-07T15:52:55.614Z"
     },
     "tile-ground": {
       "frameName": "tile-ground",
@@ -7518,7 +7506,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.522Z"
+      "updatedAt": "2026-11-07T15:52:55.640Z"
     },
     "tile-grass": {
       "frameName": "tile-grass",
@@ -7570,7 +7558,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.508Z"
+      "updatedAt": "2026-11-07T15:52:55.635Z"
     },
     "tile-church-stone": {
       "frameName": "tile-church-stone",
@@ -7622,7 +7610,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.493Z"
+      "updatedAt": "2026-11-07T15:52:55.627Z"
     },
     "tile-church-carpet": {
       "frameName": "tile-church-carpet",
@@ -7674,7 +7662,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.485Z"
+      "updatedAt": "2026-11-07T15:52:55.625Z"
     },
     "tile-den-earth": {
       "frameName": "tile-den-earth",
@@ -7726,7 +7714,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.500Z"
+      "updatedAt": "2026-11-07T15:52:55.629Z"
     },
     "tile-den-grass": {
       "frameName": "tile-den-grass",
@@ -7778,7 +7766,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.506Z"
+      "updatedAt": "2026-11-07T15:52:55.633Z"
     },
     "tile-obstacle": {
       "frameName": "tile-obstacle",
@@ -7830,7 +7818,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.530Z"
+      "updatedAt": "2026-11-07T15:52:55.643Z"
     },
     "tile-trap": {
       "frameName": "tile-trap",
@@ -7882,7 +7870,7 @@
         "x": 0.5,
         "y": 0.9922
       },
-      "updatedAt": "2026-08-31T10:47:59.536Z"
+      "updatedAt": "2026-11-07T15:52:55.646Z"
     },
     "obst-grave-tomb": {
       "frameName": "obst-grave-tomb",
@@ -7962,7 +7950,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.291Z"
+      "updatedAt": "2026-11-07T15:52:55.343Z"
     },
     "obst-grave-fence": {
       "frameName": "obst-grave-fence",
@@ -8042,7 +8030,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.284Z"
+      "updatedAt": "2026-11-07T15:52:55.339Z"
     },
     "obst-church-pillar": {
       "frameName": "obst-church-pillar",
@@ -8122,7 +8110,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.262Z"
+      "updatedAt": "2026-11-07T15:52:55.330Z"
     },
     "obst-church-bench": {
       "frameName": "obst-church-bench",
@@ -8202,7 +8190,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.255Z"
+      "updatedAt": "2026-11-07T15:52:55.326Z"
     },
     "obst-church-altar": {
       "frameName": "obst-church-altar",
@@ -8282,7 +8270,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.247Z"
+      "updatedAt": "2026-11-07T15:52:55.323Z"
     },
     "obst-den-rock": {
       "frameName": "obst-den-rock",
@@ -8362,7 +8350,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.276Z"
+      "updatedAt": "2026-11-07T15:52:55.337Z"
     },
     "obst-den-log": {
       "frameName": "obst-den-log",
@@ -8442,7 +8430,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:59.269Z"
+      "updatedAt": "2026-11-07T15:52:55.333Z"
     },
     "decor-grave-tree": {
       "frameName": "decor-grave-tree",
@@ -8522,7 +8510,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.694Z"
+      "updatedAt": "2026-11-07T15:52:54.596Z"
     },
     "decor-grave-candle": {
       "frameName": "decor-grave-candle",
@@ -8602,7 +8590,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.686Z"
+      "updatedAt": "2026-11-07T15:52:54.592Z"
     },
     "decor-grave-bone": {
       "frameName": "decor-grave-bone",
@@ -8682,7 +8670,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.679Z"
+      "updatedAt": "2026-11-07T15:52:54.587Z"
     },
     "decor-church-glasslight": {
       "frameName": "decor-church-glasslight",
@@ -8762,7 +8750,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.653Z"
+      "updatedAt": "2026-11-07T15:52:54.572Z"
     },
     "decor-den-bone": {
       "frameName": "decor-den-bone",
@@ -8842,7 +8830,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.660Z"
+      "updatedAt": "2026-11-07T15:52:54.575Z"
     },
     "decor-den-fire": {
       "frameName": "decor-den-fire",
@@ -8922,7 +8910,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.669Z"
+      "updatedAt": "2026-11-07T15:52:54.580Z"
     },
     "decor-den-spike": {
       "frameName": "decor-den-spike",
@@ -9002,7 +8990,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-08-31T10:47:58.676Z"
+      "updatedAt": "2026-11-07T15:52:54.584Z"
     },
     "decal-rock": {
       "frameName": "decal-rock",
@@ -9082,7 +9070,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.646Z"
+      "updatedAt": "2026-11-07T15:52:54.568Z"
     },
     "decal-grass": {
       "frameName": "decal-grass",
@@ -9162,7 +9150,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.638Z"
+      "updatedAt": "2026-11-07T15:52:54.565Z"
     },
     "decal-blood": {
       "frameName": "decal-blood",
@@ -9242,7 +9230,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.624Z"
+      "updatedAt": "2026-11-07T15:52:54.560Z"
     },
     "gem": {
       "frameName": "gem",
@@ -9322,7 +9310,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.147Z"
+      "updatedAt": "2026-11-07T15:52:55.135Z"
     },
     "heal": {
       "frameName": "heal",
@@ -9402,7 +9390,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.154Z"
+      "updatedAt": "2026-11-07T15:52:55.137Z"
     },
     "wslot-missile": {
       "frameName": "wslot-missile",
@@ -9454,7 +9442,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.772Z"
+      "updatedAt": "2026-11-07T15:52:55.840Z"
     },
     "wslot-orb": {
       "frameName": "wslot-orb",
@@ -9506,7 +9494,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.775Z"
+      "updatedAt": "2026-11-07T15:52:55.845Z"
     },
     "wslot-shockwave": {
       "frameName": "wslot-shockwave",
@@ -9558,7 +9546,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.784Z"
+      "updatedAt": "2026-11-07T15:52:55.861Z"
     },
     "skill-edmund": {
       "frameName": "skill-edmund",
@@ -9610,7 +9598,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.415Z"
+      "updatedAt": "2026-11-07T15:52:55.477Z"
     },
     "skill-cassandra": {
       "frameName": "skill-cassandra",
@@ -9662,7 +9650,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.414Z"
+      "updatedAt": "2026-11-07T15:52:55.476Z"
     },
     "skill-violet": {
       "frameName": "skill-violet",
@@ -9714,7 +9702,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.450Z"
+      "updatedAt": "2026-11-07T15:52:55.497Z"
     },
     "skill-galvan": {
       "frameName": "skill-galvan",
@@ -9766,7 +9754,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.417Z"
+      "updatedAt": "2026-11-07T15:52:55.481Z"
     },
     "hud-skillbtn": {
       "frameName": "hud-skillbtn",
@@ -9818,7 +9806,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.198Z"
+      "updatedAt": "2026-11-07T15:52:55.304Z"
     },
     "codex-event-1": {
       "frameName": "codex-event-1",
@@ -9870,7 +9858,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.609Z"
+      "updatedAt": "2026-11-07T15:52:54.543Z"
     },
     "codex-event-2": {
       "frameName": "codex-event-2",
@@ -9922,7 +9910,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.611Z"
+      "updatedAt": "2026-11-07T15:52:54.546Z"
     },
     "codex-event-3": {
       "frameName": "codex-event-3",
@@ -9974,7 +9962,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.612Z"
+      "updatedAt": "2026-11-07T15:52:54.549Z"
     },
     "codex-event-4": {
       "frameName": "codex-event-4",
@@ -10026,7 +10014,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.613Z"
+      "updatedAt": "2026-11-07T15:52:54.551Z"
     },
     "codex-event-5": {
       "frameName": "codex-event-5",
@@ -10078,7 +10066,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.615Z"
+      "updatedAt": "2026-11-07T15:52:54.555Z"
     },
     "codex-event-6": {
       "frameName": "codex-event-6",
@@ -10130,7 +10118,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.616Z"
+      "updatedAt": "2026-11-07T15:52:54.556Z"
     },
     "chest": {
       "frameName": "chest",
@@ -10210,7 +10198,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.608Z"
+      "updatedAt": "2026-11-07T15:52:54.541Z"
     },
     "enemy-bonethrower": {
       "frameName": "enemy-bonethrower",
@@ -10290,7 +10278,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.710Z"
+      "updatedAt": "2026-11-07T15:52:54.629Z"
     },
     "enemy-bonethrower-v": {
       "frameName": "enemy-bonethrower-v",
@@ -10379,7 +10367,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.708Z"
+      "updatedAt": "2026-11-07T15:52:54.623Z"
     },
     "enemy-decayedknight": {
       "frameName": "enemy-decayedknight",
@@ -10459,7 +10447,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.740Z"
+      "updatedAt": "2026-11-07T15:52:54.671Z"
     },
     "enemy-decayedknight-v": {
       "frameName": "enemy-decayedknight-v",
@@ -10548,7 +10536,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.738Z"
+      "updatedAt": "2026-11-07T15:52:54.667Z"
     },
     "exw-card-lantern": {
       "frameName": "exw-card-lantern",
@@ -10628,7 +10616,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.983Z"
+      "updatedAt": "2026-11-07T15:52:54.989Z"
     },
     "exw-card-revolver": {
       "frameName": "exw-card-revolver",
@@ -10708,7 +10696,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.045Z"
+      "updatedAt": "2026-11-07T15:52:55.064Z"
     },
     "exw-card-twinblade": {
       "frameName": "exw-card-twinblade",
@@ -10788,7 +10776,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.079Z"
+      "updatedAt": "2026-11-07T15:52:55.105Z"
     },
     "exw-card-longbow": {
       "frameName": "exw-card-longbow",
@@ -10868,7 +10856,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.004Z"
+      "updatedAt": "2026-11-07T15:52:55.016Z"
     },
     "exw-card-bell": {
       "frameName": "exw-card-bell",
@@ -10948,7 +10936,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.871Z"
+      "updatedAt": "2026-11-07T15:52:54.841Z"
     },
     "exw-card-cross": {
       "frameName": "exw-card-cross",
@@ -11028,7 +11016,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.902Z"
+      "updatedAt": "2026-11-07T15:52:54.882Z"
     },
     "exw-card-axe": {
       "frameName": "exw-card-axe",
@@ -11108,7 +11096,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.832Z"
+      "updatedAt": "2026-11-07T15:52:54.804Z"
     },
     "exw-card-horn": {
       "frameName": "exw-card-horn",
@@ -11188,7 +11176,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.944Z"
+      "updatedAt": "2026-11-07T15:52:54.942Z"
     },
     "relic-reliquary": {
       "frameName": "relic-reliquary",
@@ -11268,7 +11256,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.374Z"
+      "updatedAt": "2026-11-07T15:52:55.436Z"
     },
     "relic-mooneclipse": {
       "frameName": "relic-mooneclipse",
@@ -11348,7 +11336,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.366Z"
+      "updatedAt": "2026-11-07T15:52:55.434Z"
     },
     "relic-bloodtide": {
       "frameName": "relic-bloodtide",
@@ -11428,7 +11416,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.319Z"
+      "updatedAt": "2026-11-07T15:52:55.413Z"
     },
     "relic-twelvelamps": {
       "frameName": "relic-twelvelamps",
@@ -11508,7 +11496,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.389Z"
+      "updatedAt": "2026-11-07T15:52:55.441Z"
     },
     "relic-silvertide": {
       "frameName": "relic-silvertide",
@@ -11588,7 +11576,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.381Z"
+      "updatedAt": "2026-11-07T15:52:55.439Z"
     },
     "relic-wolfspirit": {
       "frameName": "relic-wolfspirit",
@@ -11668,31 +11656,31 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.395Z"
+      "updatedAt": "2026-11-07T15:52:55.445Z"
     },
     "summon-oathkeeper": {
       "frameName": "summon-oathkeeper",
-      "ok": false,
+      "ok": true,
       "atlas": "characters",
-      "spec": "48x48",
+      "spec": "192x192",
       "checks": {
         "size": {
           "ok": true,
-          "got": "48x48",
-          "want": "48x48"
+          "got": "192x192",
+          "want": "192x192"
         },
         "alpha": {
           "ok": true,
-          "opaque": 820
+          "opaque": 5555
         },
         "margin": {
-          "ok": false,
-          "bw": 31,
-          "bh": 44,
-          "w": 48,
-          "h": 48,
+          "ok": true,
+          "bw": 64,
+          "bh": 167,
+          "w": 192,
+          "h": 192,
           "marginOkW": true,
-          "marginOkH": false,
+          "marginOkH": true,
           "outlineW": 0
         },
         "outline": {
@@ -11701,17 +11689,15 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "53.8",
-          "brightRatio": "46.6%",
+          "avg": "30.1",
+          "brightRatio": "9.3%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
-      "issues": [
-        "填充 31x44 超出帧 90%（48x48，不含描边）"
-      ],
+      "issues": [],
       "method": null,
-      "passed": "FAIL",
+      "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\summon-oathkeeper.png",
       "layout": {
         "family": "summon-oathkeeper",
@@ -11734,27 +11720,27 @@
         }
       },
       "metrics": {
-        "minX": 8,
-        "minY": 2,
-        "maxX": 38,
-        "maxY": 45,
-        "bw": 31,
-        "bh": 44,
-        "cx": 25.46,
-        "cy": 27.58,
-        "footY": 45,
-        "topY": 2,
-        "n": 820
+        "minX": 70,
+        "minY": 25,
+        "maxX": 133,
+        "maxY": 191,
+        "bw": 64,
+        "bh": 167,
+        "cx": 99.69,
+        "cy": 107.28,
+        "footY": 191,
+        "topY": 25,
+        "n": 5555
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9479
+        "y": 0.9974
       },
-      "updatedAt": "2026-09-09T17:08:43.454Z"
+      "updatedAt": "2026-11-07T15:52:55.602Z"
     },
     "summon-oathkeeper-tombstone": {
       "frameName": "summon-oathkeeper-tombstone",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "48x48",
       "checks": {
@@ -11786,21 +11772,29 @@
           "avg": "53.8",
           "brightRatio": "42.9%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 2.63,
-          "dCx": 2.4,
-          "dCy": 1.07,
-          "dFoot": 0,
-          "dAreaPct": 20.5,
-          "ok": true,
-          "issues": []
+          "hypot": 109.79,
+          "dCx": 76.63,
+          "dCy": 78.63,
+          "dFoot": 146,
+          "dAreaPct": 88.3,
+          "ok": false,
+          "issues": [
+            "重心 hypot 109.8px > 12",
+            "脚底 ΔY 146px > 1",
+            "面积 Δ 88.3% > 25%"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs summon-oathkeeper: 重心 hypot 109.8px > 12",
+        "时间轴 vs summon-oathkeeper: 脚底 ΔY 146px > 1",
+        "时间轴 vs summon-oathkeeper: 面积 Δ 88.3% > 25%"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\summon-oathkeeper-tombstone.png",
       "layout": {
         "family": "summon-oathkeeper",
@@ -11839,31 +11833,31 @@
         "x": 0.5,
         "y": 0.9479
       },
-      "updatedAt": "2026-08-31T10:47:59.462Z"
+      "updatedAt": "2026-11-07T15:52:55.545Z"
     },
     "summon-oathkeeper-v": {
       "frameName": "summon-oathkeeper-v",
-      "ok": false,
+      "ok": true,
       "atlas": "characters",
-      "spec": "48x48",
+      "spec": "192x192",
       "checks": {
         "size": {
           "ok": true,
-          "got": "48x48",
-          "want": "48x48"
+          "got": "192x192",
+          "want": "192x192"
         },
         "alpha": {
           "ok": true,
-          "opaque": 820
+          "opaque": 5555
         },
         "margin": {
-          "ok": false,
-          "bw": 31,
-          "bh": 44,
-          "w": 48,
-          "h": 48,
+          "ok": true,
+          "bw": 64,
+          "bh": 167,
+          "w": 192,
+          "h": 192,
           "marginOkW": true,
-          "marginOkH": false,
+          "marginOkH": true,
           "outlineW": 0
         },
         "outline": {
@@ -11872,10 +11866,10 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "53.8",
-          "brightRatio": "46.6%",
+          "avg": "30.1",
+          "brightRatio": "9.3%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 0,
@@ -11887,11 +11881,9 @@
           "issues": []
         }
       },
-      "issues": [
-        "填充 31x44 超出帧 90%（48x48，不含描边）"
-      ],
+      "issues": [],
       "method": null,
-      "passed": "FAIL",
+      "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\summon-oathkeeper-v.png",
       "layout": {
         "family": "summon-oathkeeper",
@@ -11914,23 +11906,23 @@
         }
       },
       "metrics": {
-        "minX": 8,
-        "minY": 2,
-        "maxX": 38,
-        "maxY": 45,
-        "bw": 31,
-        "bh": 44,
-        "cx": 25.46,
-        "cy": 27.58,
-        "footY": 45,
-        "topY": 2,
-        "n": 820
+        "minX": 70,
+        "minY": 25,
+        "maxX": 133,
+        "maxY": 191,
+        "bw": 64,
+        "bh": 167,
+        "cx": 99.69,
+        "cy": 107.28,
+        "footY": 191,
+        "topY": 25,
+        "n": 5555
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9479
+        "y": 0.9974
       },
-      "updatedAt": "2026-08-31T10:47:59.465Z"
+      "updatedAt": "2026-11-07T15:52:55.558Z"
     },
     "summon-moonwolf": {
       "frameName": "summon-moonwolf",
@@ -11966,7 +11958,7 @@
           "avg": "71.3",
           "brightRatio": "75.4%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         }
       },
       "issues": [],
@@ -12010,7 +12002,7 @@
         "x": 0.5,
         "y": 0.9479
       },
-      "updatedAt": "2026-08-31T10:47:59.460Z"
+      "updatedAt": "2026-11-07T15:52:55.516Z"
     },
     "summon-moonwolf-v": {
       "frameName": "summon-moonwolf-v",
@@ -12046,7 +12038,7 @@
           "avg": "71.3",
           "brightRatio": "75.4%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 0,
@@ -12099,7 +12091,7 @@
         "x": 0.5,
         "y": 0.9479
       },
-      "updatedAt": "2026-08-31T10:47:59.458Z"
+      "updatedAt": "2026-11-07T15:52:55.513Z"
     },
     "proj-revolver": {
       "frameName": "proj-revolver",
@@ -12179,7 +12171,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.311Z"
+      "updatedAt": "2026-11-07T15:52:55.407Z"
     },
     "proj-longbow": {
       "frameName": "proj-longbow",
@@ -12259,7 +12251,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.310Z"
+      "updatedAt": "2026-11-07T15:52:55.404Z"
     },
     "proj-twinblade": {
       "frameName": "proj-twinblade",
@@ -12339,7 +12331,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.312Z"
+      "updatedAt": "2026-11-07T15:52:55.410Z"
     },
     "hud-revive": {
       "frameName": "hud-revive",
@@ -12391,7 +12383,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.196Z"
+      "updatedAt": "2026-11-07T15:52:55.301Z"
     },
     "hud-merit-glow": {
       "frameName": "hud-merit-glow",
@@ -12443,7 +12435,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.195Z"
+      "updatedAt": "2026-11-07T15:52:55.299Z"
     },
     "reso-ready": {
       "frameName": "reso-ready",
@@ -12523,7 +12515,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.399Z"
+      "updatedAt": "2026-11-07T15:52:55.452Z"
     },
     "reso-awaiting": {
       "frameName": "reso-awaiting",
@@ -12603,7 +12595,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.397Z"
+      "updatedAt": "2026-11-07T15:52:55.449Z"
     },
     "reso-achieved": {
       "frameName": "reso-achieved",
@@ -12683,7 +12675,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.396Z"
+      "updatedAt": "2026-11-07T15:52:55.447Z"
     },
     "sticon-hard": {
       "frameName": "sticon-hard",
@@ -12763,7 +12755,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.451Z"
+      "updatedAt": "2026-11-07T15:52:55.500Z"
     },
     "sticon-soft": {
       "frameName": "sticon-soft",
@@ -12843,7 +12835,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.452Z"
+      "updatedAt": "2026-11-07T15:52:55.503Z"
     },
     "sticon-vuln": {
       "frameName": "sticon-vuln",
@@ -12923,7 +12915,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.454Z"
+      "updatedAt": "2026-11-07T15:52:55.506Z"
     },
     "seat-p1": {
       "frameName": "seat-p1",
@@ -13003,7 +12995,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.405Z"
+      "updatedAt": "2026-11-07T15:52:55.461Z"
     },
     "seat-p2": {
       "frameName": "seat-p2",
@@ -13083,7 +13075,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.407Z"
+      "updatedAt": "2026-11-07T15:52:55.464Z"
     },
     "seat-p3": {
       "frameName": "seat-p3",
@@ -13163,7 +13155,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.408Z"
+      "updatedAt": "2026-11-07T15:52:55.465Z"
     },
     "seat-p4": {
       "frameName": "seat-p4",
@@ -13243,7 +13235,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.409Z"
+      "updatedAt": "2026-11-07T15:52:55.468Z"
     },
     "seat-p5": {
       "frameName": "seat-p5",
@@ -13323,7 +13315,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.411Z"
+      "updatedAt": "2026-11-07T15:52:55.470Z"
     },
     "badge-mech": {
       "frameName": "badge-mech",
@@ -13403,7 +13395,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.506Z"
+      "updatedAt": "2026-11-07T15:52:54.392Z"
     },
     "badge-num": {
       "frameName": "badge-num",
@@ -13483,7 +13475,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.508Z"
+      "updatedAt": "2026-11-07T15:52:54.396Z"
     },
     "badge-evo": {
       "frameName": "badge-evo",
@@ -13563,7 +13555,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:58.504Z"
+      "updatedAt": "2026-11-07T15:52:54.387Z"
     },
     "tree-q-a": {
       "frameName": "tree-q-a",
@@ -13643,7 +13635,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.631Z"
+      "updatedAt": "2026-11-07T15:52:55.682Z"
     },
     "tree-q-b": {
       "frameName": "tree-q-b",
@@ -13723,7 +13715,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.638Z"
+      "updatedAt": "2026-11-07T15:52:55.685Z"
     },
     "tree-q-c": {
       "frameName": "tree-q-c",
@@ -13803,7 +13795,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.645Z"
+      "updatedAt": "2026-11-07T15:52:55.688Z"
     },
     "tree-q-d": {
       "frameName": "tree-q-d",
@@ -13883,7 +13875,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.653Z"
+      "updatedAt": "2026-11-07T15:52:55.691Z"
     },
     "tree-q-e": {
       "frameName": "tree-q-e",
@@ -13963,7 +13955,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.659Z"
+      "updatedAt": "2026-11-07T15:52:55.695Z"
     },
     "tree-q-f1": {
       "frameName": "tree-q-f1",
@@ -14043,7 +14035,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.667Z"
+      "updatedAt": "2026-11-07T15:52:55.698Z"
     },
     "tree-q-f2": {
       "frameName": "tree-q-f2",
@@ -14123,7 +14115,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.676Z"
+      "updatedAt": "2026-11-07T15:52:55.702Z"
     },
     "tree-q-f3": {
       "frameName": "tree-q-f3",
@@ -14203,7 +14195,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.684Z"
+      "updatedAt": "2026-11-07T15:52:55.707Z"
     },
     "tree-q-s1": {
       "frameName": "tree-q-s1",
@@ -14283,7 +14275,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.691Z"
+      "updatedAt": "2026-11-07T15:52:55.712Z"
     },
     "tree-q-s3": {
       "frameName": "tree-q-s3",
@@ -14363,7 +14355,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.699Z"
+      "updatedAt": "2026-11-07T15:52:55.715Z"
     },
     "tree-q-s4": {
       "frameName": "tree-q-s4",
@@ -14443,7 +14435,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.707Z"
+      "updatedAt": "2026-11-07T15:52:55.719Z"
     },
     "tree-a-atk": {
       "frameName": "tree-a-atk",
@@ -14523,7 +14515,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.552Z"
+      "updatedAt": "2026-11-07T15:52:55.652Z"
     },
     "tree-a-dmg": {
       "frameName": "tree-a-dmg",
@@ -14603,7 +14595,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.567Z"
+      "updatedAt": "2026-11-07T15:52:55.658Z"
     },
     "tree-a-aspd": {
       "frameName": "tree-a-aspd",
@@ -14683,7 +14675,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.544Z"
+      "updatedAt": "2026-11-07T15:52:55.649Z"
     },
     "tree-a-cdr": {
       "frameName": "tree-a-cdr",
@@ -14763,7 +14755,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.559Z"
+      "updatedAt": "2026-11-07T15:52:55.656Z"
     },
     "tree-a-exp": {
       "frameName": "tree-a-exp",
@@ -14843,7 +14835,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.575Z"
+      "updatedAt": "2026-11-07T15:52:55.661Z"
     },
     "tree-a-magnet": {
       "frameName": "tree-a-magnet",
@@ -14923,7 +14915,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.600Z"
+      "updatedAt": "2026-11-07T15:52:55.670Z"
     },
     "tree-a-hp": {
       "frameName": "tree-a-hp",
@@ -15003,7 +14995,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.593Z"
+      "updatedAt": "2026-11-07T15:52:55.667Z"
     },
     "tree-a-spd": {
       "frameName": "tree-a-spd",
@@ -15083,7 +15075,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.615Z"
+      "updatedAt": "2026-11-07T15:52:55.676Z"
     },
     "tree-a-heal": {
       "frameName": "tree-a-heal",
@@ -15163,7 +15155,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.582Z"
+      "updatedAt": "2026-11-07T15:52:55.664Z"
     },
     "tree-a-pickup": {
       "frameName": "tree-a-pickup",
@@ -15243,7 +15235,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.607Z"
+      "updatedAt": "2026-11-07T15:52:55.672Z"
     },
     "tree-peak": {
       "frameName": "tree-peak",
@@ -15323,7 +15315,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.622Z"
+      "updatedAt": "2026-11-07T15:52:55.679Z"
     },
     "relic-icon-mooneclipse": {
       "frameName": "relic-icon-mooneclipse",
@@ -15403,7 +15395,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.336Z"
+      "updatedAt": "2026-11-07T15:52:55.421Z"
     },
     "relic-icon-bloodtide": {
       "frameName": "relic-icon-bloodtide",
@@ -15483,7 +15475,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.328Z"
+      "updatedAt": "2026-11-07T15:52:55.416Z"
     },
     "relic-icon-twelvelamps": {
       "frameName": "relic-icon-twelvelamps",
@@ -15563,7 +15555,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.349Z"
+      "updatedAt": "2026-11-07T15:52:55.427Z"
     },
     "relic-icon-silvertide": {
       "frameName": "relic-icon-silvertide",
@@ -15643,7 +15635,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.343Z"
+      "updatedAt": "2026-11-07T15:52:55.424Z"
     },
     "relic-icon-wolfspirit": {
       "frameName": "relic-icon-wolfspirit",
@@ -15723,7 +15715,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.358Z"
+      "updatedAt": "2026-11-07T15:52:55.430Z"
     },
     "exw-emblem-lantern": {
       "frameName": "exw-emblem-lantern",
@@ -15803,7 +15795,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.119Z"
+      "updatedAt": "2026-11-07T15:52:55.121Z"
     },
     "exw-emblem-revolver": {
       "frameName": "exw-emblem-revolver",
@@ -15883,7 +15875,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.132Z"
+      "updatedAt": "2026-11-07T15:52:55.129Z"
     },
     "exw-emblem-twinblade": {
       "frameName": "exw-emblem-twinblade",
@@ -15963,7 +15955,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.141Z"
+      "updatedAt": "2026-11-07T15:52:55.132Z"
     },
     "exw-emblem-longbow": {
       "frameName": "exw-emblem-longbow",
@@ -16043,7 +16035,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.126Z"
+      "updatedAt": "2026-11-07T15:52:55.125Z"
     },
     "exw-emblem-bell": {
       "frameName": "exw-emblem-bell",
@@ -16123,7 +16115,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.095Z"
+      "updatedAt": "2026-11-07T15:52:55.112Z"
     },
     "exw-emblem-cross": {
       "frameName": "exw-emblem-cross",
@@ -16203,7 +16195,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.104Z"
+      "updatedAt": "2026-11-07T15:52:55.114Z"
     },
     "exw-emblem-axe": {
       "frameName": "exw-emblem-axe",
@@ -16283,7 +16275,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.088Z"
+      "updatedAt": "2026-11-07T15:52:55.108Z"
     },
     "exw-emblem-horn": {
       "frameName": "exw-emblem-horn",
@@ -16363,7 +16355,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T10:47:59.111Z"
+      "updatedAt": "2026-11-07T15:52:55.118Z"
     },
     "enemy-stonewolf-broken": {
       "frameName": "enemy-stonewolf-broken",
@@ -16452,7 +16444,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.777Z"
+      "updatedAt": "2026-11-07T15:52:54.734Z"
     },
     "enemy-stonewolf-broken-v": {
       "frameName": "enemy-stonewolf-broken-v",
@@ -16541,7 +16533,7 @@
         "x": 0.5,
         "y": 0.9427
       },
-      "updatedAt": "2026-08-31T10:47:58.774Z"
+      "updatedAt": "2026-11-07T15:52:54.730Z"
     },
     "wslot-proj-crossbow": {
       "frameName": "wslot-proj-crossbow",
@@ -16593,7 +16585,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.633Z"
+      "updatedAt": "2026-11-07T15:52:55.852Z"
     },
     "wslot-proj-blunderbuss": {
       "frameName": "wslot-proj-blunderbuss",
@@ -16645,7 +16637,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.634Z"
+      "updatedAt": "2026-11-07T15:52:55.846Z"
     },
     "wslot-proj-boomerang": {
       "frameName": "wslot-proj-boomerang",
@@ -16697,7 +16689,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.636Z"
+      "updatedAt": "2026-11-07T15:52:55.849Z"
     },
     "wslot-proj-javelin": {
       "frameName": "wslot-proj-javelin",
@@ -16749,7 +16741,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.637Z"
+      "updatedAt": "2026-11-07T15:52:55.853Z"
     },
     "wslot-orb-thorn": {
       "frameName": "wslot-orb-thorn",
@@ -16801,7 +16793,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.639Z"
+      "updatedAt": "2026-11-07T15:52:55.842Z"
     },
     "wslot-aura-barrier": {
       "frameName": "wslot-aura-barrier",
@@ -16853,7 +16845,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.640Z"
+      "updatedAt": "2026-11-07T15:52:55.834Z"
     },
     "wslot-ring-bloodpool": {
       "frameName": "wslot-ring-bloodpool",
@@ -16905,7 +16897,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.641Z"
+      "updatedAt": "2026-11-07T15:52:55.857Z"
     },
     "wslot-ring-holyfire": {
       "frameName": "wslot-ring-holyfire",
@@ -16957,7 +16949,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.642Z"
+      "updatedAt": "2026-11-07T15:52:55.858Z"
     },
     "wslot-summon-bat": {
       "frameName": "wslot-summon-bat",
@@ -17009,7 +17001,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.644Z"
+      "updatedAt": "2026-11-07T15:52:55.864Z"
     },
     "wslot-summon-hound": {
       "frameName": "wslot-summon-hound",
@@ -17061,7 +17053,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.645Z"
+      "updatedAt": "2026-11-07T15:52:55.865Z"
     },
     "wslot-beam-chain": {
       "frameName": "wslot-beam-chain",
@@ -17113,7 +17105,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.646Z"
+      "updatedAt": "2026-11-07T15:52:55.838Z"
     },
     "wslot-super-moonwrath": {
       "frameName": "wslot-super-moonwrath",
@@ -17165,7 +17157,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.648Z"
+      "updatedAt": "2026-11-07T15:52:55.872Z"
     },
     "wslot-super-silverblast": {
       "frameName": "wslot-super-silverblast",
@@ -17217,7 +17209,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.649Z"
+      "updatedAt": "2026-11-07T15:52:55.880Z"
     },
     "wslot-super-seraphring": {
       "frameName": "wslot-super-seraphring",
@@ -17269,7 +17261,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.650Z"
+      "updatedAt": "2026-11-07T15:52:55.877Z"
     },
     "wslot-super-totaleclipse": {
       "frameName": "wslot-super-totaleclipse",
@@ -17321,7 +17313,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.652Z"
+      "updatedAt": "2026-11-07T15:52:55.882Z"
     },
     "wslot-super-bloodsea": {
       "frameName": "wslot-super-bloodsea",
@@ -17373,7 +17365,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.653Z"
+      "updatedAt": "2026-11-07T15:52:55.870Z"
     },
     "wslot-super-batstorm": {
       "frameName": "wslot-super-batstorm",
@@ -17425,7 +17417,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.654Z"
+      "updatedAt": "2026-11-07T15:52:55.868Z"
     },
     "wslot-super-packleader": {
       "frameName": "wslot-super-packleader",
@@ -17477,7 +17469,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.656Z"
+      "updatedAt": "2026-11-07T15:52:55.875Z"
     },
     "upg-g-1": {
       "frameName": "upg-g-1",
@@ -17529,7 +17521,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.555Z"
+      "updatedAt": "2026-11-07T15:52:55.760Z"
     },
     "upg-g-2": {
       "frameName": "upg-g-2",
@@ -17581,7 +17573,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.558Z"
+      "updatedAt": "2026-11-07T15:52:55.762Z"
     },
     "upg-g-3": {
       "frameName": "upg-g-3",
@@ -17633,7 +17625,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.561Z"
+      "updatedAt": "2026-11-07T15:52:55.765Z"
     },
     "upg-g-4": {
       "frameName": "upg-g-4",
@@ -17685,7 +17677,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.563Z"
+      "updatedAt": "2026-11-07T15:52:55.767Z"
     },
     "upg-g-5": {
       "frameName": "upg-g-5",
@@ -17737,7 +17729,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.565Z"
+      "updatedAt": "2026-11-07T15:52:55.770Z"
     },
     "upg-g-6": {
       "frameName": "upg-g-6",
@@ -17789,7 +17781,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.568Z"
+      "updatedAt": "2026-11-07T15:52:55.773Z"
     },
     "upg-g-7": {
       "frameName": "upg-g-7",
@@ -17841,7 +17833,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.570Z"
+      "updatedAt": "2026-11-07T15:52:55.775Z"
     },
     "upg-g-8": {
       "frameName": "upg-g-8",
@@ -17893,7 +17885,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.573Z"
+      "updatedAt": "2026-11-07T15:52:55.778Z"
     },
     "upg-g-9": {
       "frameName": "upg-g-9",
@@ -17945,7 +17937,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.576Z"
+      "updatedAt": "2026-11-07T15:52:55.780Z"
     },
     "upg-w-a1": {
       "frameName": "upg-w-a1",
@@ -17997,7 +17989,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.579Z"
+      "updatedAt": "2026-11-07T15:52:55.803Z"
     },
     "upg-w-a2": {
       "frameName": "upg-w-a2",
@@ -18049,7 +18041,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.581Z"
+      "updatedAt": "2026-11-07T15:52:55.806Z"
     },
     "upg-w-a3": {
       "frameName": "upg-w-a3",
@@ -18101,7 +18093,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.583Z"
+      "updatedAt": "2026-11-07T15:52:55.809Z"
     },
     "upg-w-b1": {
       "frameName": "upg-w-b1",
@@ -18153,7 +18145,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.586Z"
+      "updatedAt": "2026-11-07T15:52:55.811Z"
     },
     "upg-w-b2": {
       "frameName": "upg-w-b2",
@@ -18205,7 +18197,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.588Z"
+      "updatedAt": "2026-11-07T15:52:55.814Z"
     },
     "upg-w-b3": {
       "frameName": "upg-w-b3",
@@ -18257,7 +18249,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.590Z"
+      "updatedAt": "2026-11-07T15:52:55.816Z"
     },
     "upg-w-c1": {
       "frameName": "upg-w-c1",
@@ -18309,7 +18301,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.592Z"
+      "updatedAt": "2026-11-07T15:52:55.819Z"
     },
     "upg-w-c2": {
       "frameName": "upg-w-c2",
@@ -18361,7 +18353,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.594Z"
+      "updatedAt": "2026-11-07T15:52:55.822Z"
     },
     "upg-w-c3": {
       "frameName": "upg-w-c3",
@@ -18413,7 +18405,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.596Z"
+      "updatedAt": "2026-11-07T15:52:55.824Z"
     },
     "upg-w-d1": {
       "frameName": "upg-w-d1",
@@ -18465,7 +18457,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.598Z"
+      "updatedAt": "2026-11-07T15:52:55.827Z"
     },
     "upg-w-d2": {
       "frameName": "upg-w-d2",
@@ -18517,7 +18509,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.600Z"
+      "updatedAt": "2026-11-07T15:52:55.829Z"
     },
     "upg-w-d3": {
       "frameName": "upg-w-d3",
@@ -18569,7 +18561,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.601Z"
+      "updatedAt": "2026-11-07T15:52:55.832Z"
     },
     "upg-key-scope": {
       "frameName": "upg-key-scope",
@@ -18621,7 +18613,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.603Z"
+      "updatedAt": "2026-11-07T15:52:55.793Z"
     },
     "upg-key-holy": {
       "frameName": "upg-key-holy",
@@ -18673,7 +18665,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.604Z"
+      "updatedAt": "2026-11-07T15:52:55.788Z"
     },
     "upg-key-tome": {
       "frameName": "upg-key-tome",
@@ -18725,7 +18717,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.606Z"
+      "updatedAt": "2026-11-07T15:52:55.798Z"
     },
     "upg-key-silver": {
       "frameName": "upg-key-silver",
@@ -18777,7 +18769,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.607Z"
+      "updatedAt": "2026-11-07T15:52:55.796Z"
     },
     "upg-key-pact": {
       "frameName": "upg-key-pact",
@@ -18829,7 +18821,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.609Z"
+      "updatedAt": "2026-11-07T15:52:55.791Z"
     },
     "upg-key-bone": {
       "frameName": "upg-key-bone",
@@ -18881,7 +18873,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.610Z"
+      "updatedAt": "2026-11-07T15:52:55.783Z"
     },
     "upg-key-grail": {
       "frameName": "upg-key-grail",
@@ -18933,7 +18925,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.612Z"
+      "updatedAt": "2026-11-07T15:52:55.786Z"
     },
     "upg-a-cd-edmund": {
       "frameName": "upg-a-cd-edmund",
@@ -18985,7 +18977,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.614Z"
+      "updatedAt": "2026-11-07T15:52:55.728Z"
     },
     "upg-a-charge-edmund": {
       "frameName": "upg-a-charge-edmund",
@@ -19037,7 +19029,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.615Z"
+      "updatedAt": "2026-11-07T15:52:55.739Z"
     },
     "upg-a-effect-edmund": {
       "frameName": "upg-a-effect-edmund",
@@ -19089,7 +19081,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.617Z"
+      "updatedAt": "2026-11-07T15:52:55.750Z"
     },
     "upg-a-cd-cassandra": {
       "frameName": "upg-a-cd-cassandra",
@@ -19141,7 +19133,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.618Z"
+      "updatedAt": "2026-11-07T15:52:55.725Z"
     },
     "upg-a-charge-cassandra": {
       "frameName": "upg-a-charge-cassandra",
@@ -19193,7 +19185,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.620Z"
+      "updatedAt": "2026-11-07T15:52:55.736Z"
     },
     "upg-a-effect-cassandra": {
       "frameName": "upg-a-effect-cassandra",
@@ -19245,7 +19237,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.621Z"
+      "updatedAt": "2026-11-07T15:52:55.748Z"
     },
     "upg-a-cd-violet": {
       "frameName": "upg-a-cd-violet",
@@ -19297,7 +19289,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.623Z"
+      "updatedAt": "2026-11-07T15:52:55.732Z"
     },
     "upg-a-charge-violet": {
       "frameName": "upg-a-charge-violet",
@@ -19349,7 +19341,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.625Z"
+      "updatedAt": "2026-11-07T15:52:55.745Z"
     },
     "upg-a-effect-violet": {
       "frameName": "upg-a-effect-violet",
@@ -19401,7 +19393,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.627Z"
+      "updatedAt": "2026-11-07T15:52:55.756Z"
     },
     "upg-a-cd-galvan": {
       "frameName": "upg-a-cd-galvan",
@@ -19453,7 +19445,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.629Z"
+      "updatedAt": "2026-11-07T15:52:55.730Z"
     },
     "upg-a-charge-galvan": {
       "frameName": "upg-a-charge-galvan",
@@ -19505,7 +19497,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.630Z"
+      "updatedAt": "2026-11-07T15:52:55.743Z"
     },
     "upg-a-effect-galvan": {
       "frameName": "upg-a-effect-galvan",
@@ -19557,7 +19549,7 @@
         "x": 0.5,
         "y": 0.5
       },
-      "updatedAt": "2026-08-31T14:02:10.632Z"
+      "updatedAt": "2026-11-07T15:52:55.754Z"
     },
     "player-walk-a": {
       "frameName": "player-walk-a",
@@ -19609,13 +19601,6 @@
       },
       "issues": [
         "剪影 L* 16.0 未高于敌潮且高亮 1.6% < 3%",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
-        "时间轴 vs player: 重心 hypot 3.1px > 3",
         "时间轴 vs player: 重心 hypot 3.1px > 3"
       ],
       "method": null,
@@ -19658,7 +19643,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.821Z"
+      "updatedAt": "2026-11-07T15:52:55.364Z"
     },
     "player-walk-b": {
       "frameName": "player-walk-b",
@@ -19710,13 +19695,6 @@
       },
       "issues": [
         "剪影 L* 16.3 未高于敌潮且高亮 1.6% < 3%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
-        "时间轴 vs player: 面积 Δ 41.4% > 25%",
         "时间轴 vs player: 面积 Δ 41.4% > 25%"
       ],
       "method": null,
@@ -19759,29 +19737,29 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.827Z"
+      "updatedAt": "2026-11-07T15:52:55.368Z"
     },
     "hero-cassandra-walk-a": {
       "frameName": "hero-cassandra-walk-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 503
+          "opaque": 2289
         },
         "margin": {
           "ok": true,
-          "bw": 24,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 44,
+          "bh": 110,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -19792,24 +19770,28 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "28.9",
-          "brightRatio": "8.7%",
+          "avg": "30.1",
+          "brightRatio": "17.1%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.85,
-          "dCx": 0.82,
-          "dCy": 0.21,
+          "hypot": 6.52,
+          "dCx": 0.74,
+          "dCy": 6.48,
           "dFoot": 0,
-          "dAreaPct": 13,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 6.4,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.5px > 6"
+          ]
         }
       },
-      "issues": [],
-      "method": "edge-flood",
-      "passed": "PASS",
+      "issues": [
+        "时间轴 vs hero-cassandra: 重心 hypot 6.5px > 6"
+      ],
+      "method": null,
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-a.png",
       "layout": {
         "family": "hero-cassandra",
@@ -19832,45 +19814,45 @@
         }
       },
       "metrics": {
-        "minX": 20,
-        "minY": 4,
-        "maxX": 43,
-        "maxY": 59,
-        "bw": 24,
-        "bh": 56,
-        "cx": 30.72,
-        "cy": 29.14,
-        "footY": 59,
-        "topY": 4,
-        "n": 503
+        "minX": 42,
+        "minY": 18,
+        "maxX": 85,
+        "maxY": 127,
+        "bw": 44,
+        "bh": 110,
+        "cx": 62.85,
+        "cy": 74.67,
+        "footY": 127,
+        "topY": 18,
+        "n": 2289
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.172Z"
     },
     "hero-cassandra-walk-b": {
       "frameName": "hero-cassandra-walk-b",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 493
+          "opaque": 2365
         },
         "margin": {
           "ok": true,
-          "bw": 16,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 54,
+          "bh": 109,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -19881,23 +19863,23 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "28.9",
-          "brightRatio": "8.3%",
+          "avg": "30.3",
+          "brightRatio": "16.4%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.12,
-          "dCx": 1.01,
-          "dCy": 0.48,
+          "hypot": 5.5,
+          "dCx": 0.73,
+          "dCy": 5.45,
           "dFoot": 0,
-          "dAreaPct": 14.7,
+          "dAreaPct": 9.9,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": "edge-flood",
+      "method": null,
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-b.png",
       "layout": {
@@ -19921,27 +19903,27 @@
         }
       },
       "metrics": {
-        "minX": 24,
-        "minY": 4,
-        "maxX": 39,
-        "maxY": 59,
-        "bw": 16,
-        "bh": 56,
-        "cx": 30.91,
-        "cy": 28.45,
-        "footY": 59,
-        "topY": 4,
-        "n": 493
+        "minX": 36,
+        "minY": 19,
+        "maxX": 89,
+        "maxY": 127,
+        "bw": 54,
+        "bh": 109,
+        "cx": 62.84,
+        "cy": 73.64,
+        "footY": 127,
+        "topY": 19,
+        "n": 2365
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.177Z"
     },
     "hero-violet-walk-a": {
       "frameName": "hero-violet-walk-a",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
       "spec": "128x128",
       "checks": {
@@ -19952,12 +19934,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3658
+          "opaque": 1836
         },
         "margin": {
           "ok": true,
-          "bw": 63,
-          "bh": 111,
+          "bw": 42,
+          "bh": 112,
           "w": 128,
           "h": 128,
           "marginOkW": true,
@@ -19970,24 +19952,28 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "34.7",
-          "brightRatio": "18.4%",
+          "avg": "68.0",
+          "brightRatio": "72.4%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 4.73,
-          "dCx": 3.62,
-          "dCy": 3.05,
+          "hypot": 9.28,
+          "dCx": 6.23,
+          "dCy": 6.88,
           "dFoot": 0,
-          "dAreaPct": 17.3,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 6.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 9.3px > 6"
+          ]
         }
       },
-      "issues": [],
+      "issues": [
+        "时间轴 vs hero-violet: 重心 hypot 9.3px > 6"
+      ],
       "method": null,
-      "passed": "PASS",
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-violet-walk-a.png",
       "layout": {
         "family": "hero-violet",
@@ -20010,23 +19996,23 @@
         }
       },
       "metrics": {
-        "minX": 32,
-        "minY": 17,
-        "maxX": 94,
+        "minX": 43,
+        "minY": 16,
+        "maxX": 84,
         "maxY": 127,
-        "bw": 63,
-        "bh": 111,
-        "cx": 67.16,
-        "cy": 85.23,
+        "bw": 42,
+        "bh": 112,
+        "cx": 59.61,
+        "cy": 70.11,
         "footY": 127,
-        "topY": 17,
-        "n": 3658
+        "topY": 16,
+        "n": 1836
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.212Z"
+      "updatedAt": "2026-11-07T15:52:55.259Z"
     },
     "hero-violet-walk-b": {
       "frameName": "hero-violet-walk-b",
@@ -20041,12 +20027,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 4038
+          "opaque": 1852
         },
         "margin": {
           "ok": true,
-          "bw": 71,
-          "bh": 111,
+          "bw": 49,
+          "bh": 112,
           "w": 128,
           "h": 128,
           "marginOkW": true,
@@ -20059,27 +20045,25 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "35.2",
-          "brightRatio": "17.1%",
+          "avg": "69.4",
+          "brightRatio": "74.5%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 5.79,
-          "dCx": 4.95,
-          "dCy": 3,
+          "hypot": 6.69,
+          "dCx": 0.87,
+          "dCy": 6.63,
           "dFoot": 0,
-          "dAreaPct": 29.5,
+          "dAreaPct": 5.3,
           "ok": false,
           "issues": [
-            "面积 Δ 29.5% > 25%"
+            "重心 hypot 6.7px > 6"
           ]
         }
       },
       "issues": [
-        "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%",
-        "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%",
-        "时间轴 vs hero-violet: 面积 Δ 29.5% > 25%"
+        "时间轴 vs hero-violet: 重心 hypot 6.7px > 6"
       ],
       "method": null,
       "passed": "FAIL",
@@ -20105,23 +20089,23 @@
         }
       },
       "metrics": {
-        "minX": 28,
-        "minY": 17,
-        "maxX": 98,
+        "minX": 39,
+        "minY": 16,
+        "maxX": 87,
         "maxY": 127,
-        "bw": 71,
-        "bh": 111,
-        "cx": 65.83,
-        "cy": 85.18,
+        "bw": 49,
+        "bh": 112,
+        "cx": 64.97,
+        "cy": 69.86,
         "footY": 127,
-        "topY": 17,
-        "n": 4038
+        "topY": 16,
+        "n": 1852
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.241Z"
+      "updatedAt": "2026-11-07T15:52:55.264Z"
     },
     "hero-galvan-walk-a": {
       "frameName": "hero-galvan-walk-a",
@@ -20157,7 +20141,7 @@
           "avg": "29.2",
           "brightRatio": "3.1%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 49.66,
@@ -20218,7 +20202,7 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-08-31T14:02:10.675Z"
+      "updatedAt": "2026-11-07T15:52:55.223Z"
     },
     "hero-galvan-walk-b": {
       "frameName": "hero-galvan-walk-b",
@@ -20254,7 +20238,7 @@
           "avg": "29.3",
           "brightRatio": "3.2%",
           "outlineExempt": false,
-          "note": "玩家/召唤物须银主体（L*≥45 或高亮≥3%），描边不能豁免"
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
           "hypot": 50.64,
@@ -20315,29 +20299,29 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-08-31T14:02:10.677Z"
+      "updatedAt": "2026-11-07T15:52:55.226Z"
     },
     "hero-cassandra-walk-c": {
       "frameName": "hero-cassandra-walk-c",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 497
+          "opaque": 2306
         },
         "margin": {
           "ok": true,
-          "bw": 25,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 45,
+          "bh": 111,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -20348,23 +20332,23 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "30.0",
-          "brightRatio": "8.9%",
+          "avg": "31.2",
+          "brightRatio": "17.2%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 0.73,
-          "dCx": 0.52,
-          "dCy": 0.51,
+          "hypot": 4.35,
+          "dCx": 0.65,
+          "dCy": 4.3,
           "dFoot": 0,
-          "dAreaPct": 14,
+          "dAreaPct": 7.2,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": "edge-flood",
+      "method": null,
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-c.png",
       "layout": {
@@ -20388,45 +20372,45 @@
         }
       },
       "metrics": {
-        "minX": 19,
-        "minY": 4,
-        "maxX": 43,
-        "maxY": 59,
-        "bw": 25,
-        "bh": 56,
-        "cx": 30.42,
-        "cy": 29.44,
-        "footY": 59,
-        "topY": 4,
-        "n": 497
+        "minX": 35,
+        "minY": 17,
+        "maxX": 79,
+        "maxY": 127,
+        "bw": 45,
+        "bh": 111,
+        "cx": 62.76,
+        "cy": 72.49,
+        "footY": 127,
+        "topY": 17,
+        "n": 2306
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.183Z"
     },
     "hero-cassandra-walk-d": {
       "frameName": "hero-cassandra-walk-d",
       "ok": true,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 483
+          "opaque": 2073
         },
         "margin": {
           "ok": true,
-          "bw": 16,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 43,
+          "bh": 108,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -20437,23 +20421,23 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "31.7",
-          "brightRatio": "10.1%",
+          "avg": "32.5",
+          "brightRatio": "19.0%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.33,
-          "dCx": 0.96,
-          "dCy": 0.92,
+          "hypot": 2.66,
+          "dCx": 1.81,
+          "dCy": 1.95,
           "dFoot": 0,
-          "dAreaPct": 16.4,
+          "dAreaPct": 3.6,
           "ok": true,
           "issues": []
         }
       },
       "issues": [],
-      "method": "edge-flood",
+      "method": null,
       "passed": "PASS",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-d.png",
       "layout": {
@@ -20477,45 +20461,45 @@
         }
       },
       "metrics": {
-        "minX": 24,
-        "minY": 4,
-        "maxX": 39,
-        "maxY": 59,
-        "bw": 16,
-        "bh": 56,
-        "cx": 30.86,
-        "cy": 28.01,
-        "footY": 59,
-        "topY": 4,
-        "n": 483
+        "minX": 36,
+        "minY": 20,
+        "maxX": 78,
+        "maxY": 127,
+        "bw": 43,
+        "bh": 108,
+        "cx": 60.3,
+        "cy": 70.14,
+        "footY": 127,
+        "topY": 20,
+        "n": 2073
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.189Z"
     },
     "hero-cassandra-walk-e": {
       "frameName": "hero-cassandra-walk-e",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 505
+          "opaque": 2440
         },
         "margin": {
           "ok": true,
-          "bw": 23,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 56,
+          "bh": 109,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -20526,24 +20510,28 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "29.7",
-          "brightRatio": "8.7%",
+          "avg": "28.9",
+          "brightRatio": "16.3%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.04,
-          "dCx": 0.54,
-          "dCy": 0.89,
+          "hypot": 6.7,
+          "dCx": 1.74,
+          "dCy": 6.47,
           "dFoot": 0,
-          "dAreaPct": 12.6,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 13.4,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.7px > 6"
+          ]
         }
       },
-      "issues": [],
-      "method": "edge-flood",
-      "passed": "PASS",
+      "issues": [
+        "时间轴 vs hero-cassandra: 重心 hypot 6.7px > 6"
+      ],
+      "method": null,
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-e.png",
       "layout": {
         "family": "hero-cassandra",
@@ -20566,45 +20554,45 @@
         }
       },
       "metrics": {
-        "minX": 20,
-        "minY": 4,
-        "maxX": 42,
-        "maxY": 59,
-        "bw": 23,
-        "bh": 56,
-        "cx": 29.36,
-        "cy": 28.04,
-        "footY": 59,
-        "topY": 4,
-        "n": 505
+        "minX": 40,
+        "minY": 19,
+        "maxX": 95,
+        "maxY": 127,
+        "bw": 56,
+        "bh": 109,
+        "cx": 63.85,
+        "cy": 74.66,
+        "footY": 127,
+        "topY": 19,
+        "n": 2440
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.196Z"
     },
     "hero-cassandra-walk-f": {
       "frameName": "hero-cassandra-walk-f",
-      "ok": true,
+      "ok": false,
       "atlas": "characters",
-      "spec": "64x64",
+      "spec": "128x128",
       "checks": {
         "size": {
           "ok": true,
-          "got": "64x64",
-          "want": "64x64"
+          "got": "128x128",
+          "want": "128x128"
         },
         "alpha": {
           "ok": true,
-          "opaque": 476
+          "opaque": 2636
         },
         "margin": {
           "ok": true,
-          "bw": 24,
-          "bh": 56,
-          "w": 64,
-          "h": 64,
+          "bw": 51,
+          "bh": 110,
+          "w": 128,
+          "h": 128,
           "marginOkW": true,
           "marginOkH": true,
           "outlineW": 0
@@ -20615,24 +20603,28 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "30.8",
-          "brightRatio": "9.2%",
+          "avg": "27.6",
+          "brightRatio": "15.0%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 1.12,
-          "dCx": 0.23,
-          "dCy": 1.1,
+          "hypot": 8.29,
+          "dCx": 0.74,
+          "dCy": 8.26,
           "dFoot": 0,
-          "dAreaPct": 17.6,
-          "ok": true,
-          "issues": []
+          "dAreaPct": 22.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 8.3px > 6"
+          ]
         }
       },
-      "issues": [],
-      "method": "edge-flood",
-      "passed": "PASS",
+      "issues": [
+        "时间轴 vs hero-cassandra: 重心 hypot 8.3px > 6"
+      ],
+      "method": null,
+      "passed": "FAIL",
       "raw": "D:\\code\\vampire-survivors-like\\assets\\raw\\hero-cassandra-walk-f.png",
       "layout": {
         "family": "hero-cassandra",
@@ -20655,23 +20647,23 @@
         }
       },
       "metrics": {
-        "minX": 20,
-        "minY": 4,
-        "maxX": 43,
-        "maxY": 59,
-        "bw": 24,
-        "bh": 56,
-        "cx": 30.13,
-        "cy": 27.83,
-        "footY": 59,
-        "topY": 4,
-        "n": 476
+        "minX": 35,
+        "minY": 18,
+        "maxX": 85,
+        "maxY": 127,
+        "bw": 51,
+        "bh": 110,
+        "cx": 62.85,
+        "cy": 76.45,
+        "footY": 127,
+        "topY": 18,
+        "n": 2636
       },
       "pivot": {
         "x": 0.5,
-        "y": 0.9297
+        "y": 0.9961
       },
-      "updatedAt": "2026-09-05T10:32:31.293Z"
+      "updatedAt": "2026-11-07T15:52:55.202Z"
     },
     "player-walk-e": {
       "frameName": "player-walk-e",
@@ -20725,20 +20717,6 @@
       "issues": [
         "剪影 L* 15.9 未高于敌潮且高亮 1.8% < 3%",
         "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
-        "时间轴 vs player: 面积 Δ 34.8% > 25%",
-        "时间轴 vs player: 重心 hypot 3.5px > 3",
         "时间轴 vs player: 面积 Δ 34.8% > 25%"
       ],
       "method": null,
@@ -20760,7 +20738,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.824Z"
+      "updatedAt": "2026-11-07T15:52:55.378Z"
     },
     "player-walk-c": {
       "frameName": "player-walk-c",
@@ -20812,13 +20790,6 @@
       },
       "issues": [
         "剪影 L* 16.3 未高于敌潮且高亮 2.0% < 3%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
-        "时间轴 vs player: 面积 Δ 26.5% > 25%",
         "时间轴 vs player: 面积 Δ 26.5% > 25%"
       ],
       "method": null,
@@ -20840,7 +20811,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.829Z"
+      "updatedAt": "2026-11-07T15:52:55.372Z"
     },
     "player-walk-f": {
       "frameName": "player-walk-f",
@@ -20910,7 +20881,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.832Z"
+      "updatedAt": "2026-11-07T15:52:55.382Z"
     },
     "player-walk-d": {
       "frameName": "player-walk-d",
@@ -20962,13 +20933,6 @@
       },
       "issues": [
         "剪影 L* 15.9 未高于敌潮且高亮 1.5% < 3%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
-        "时间轴 vs player: 面积 Δ 40.3% > 25%",
         "时间轴 vs player: 面积 Δ 40.3% > 25%"
       ],
       "method": null,
@@ -20990,7 +20954,7 @@
         "x": 0.5,
         "y": 0.9297
       },
-      "updatedAt": "2026-09-06T08:10:18.834Z"
+      "updatedAt": "2026-11-07T15:52:55.374Z"
     },
     "hero-violet-walk-e": {
       "frameName": "hero-violet-walk-e",
@@ -21005,11 +20969,11 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3985
+          "opaque": 1898
         },
         "margin": {
           "ok": true,
-          "bw": 69,
+          "bw": 50,
           "bh": 112,
           "w": 128,
           "h": 128,
@@ -21023,48 +20987,46 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "35.9",
-          "brightRatio": "17.5%",
+          "avg": "68.8",
+          "brightRatio": "73.9%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 4.88,
-          "dCx": 4.51,
-          "dCy": 1.86,
+          "hypot": 8.63,
+          "dCx": 5.86,
+          "dCy": 6.34,
           "dFoot": 0,
-          "dAreaPct": 27.8,
+          "dAreaPct": 2.9,
           "ok": false,
           "issues": [
-            "面积 Δ 27.8% > 25%"
+            "重心 hypot 8.6px > 6"
           ]
         }
       },
       "issues": [
-        "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%",
-        "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%",
-        "时间轴 vs hero-violet: 面积 Δ 27.8% > 25%"
+        "时间轴 vs hero-violet: 重心 hypot 8.6px > 6"
       ],
       "method": null,
       "passed": "FAIL",
       "metrics": {
-        "minX": 29,
+        "minX": 39,
         "minY": 16,
-        "maxX": 97,
+        "maxX": 88,
         "maxY": 127,
-        "bw": 69,
+        "bw": 50,
         "bh": 112,
-        "cx": 66.27,
-        "cy": 84.04,
+        "cx": 59.98,
+        "cy": 69.57,
         "footY": 127,
         "topY": 16,
-        "n": 3985
+        "n": 1898
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.226Z"
+      "updatedAt": "2026-11-07T15:52:55.279Z"
     },
     "hero-violet-walk-c": {
       "frameName": "hero-violet-walk-c",
@@ -21079,11 +21041,11 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 3821
+          "opaque": 1579
         },
         "margin": {
           "ok": true,
-          "bw": 71,
+          "bw": 37,
           "bh": 112,
           "w": 128,
           "h": 128,
@@ -21097,17 +21059,17 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "34.6",
-          "brightRatio": "16.9%",
+          "avg": "68.7",
+          "brightRatio": "74.5%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 5.8,
-          "dCx": 4.42,
-          "dCy": 3.76,
+          "hypot": 5.85,
+          "dCx": 1.69,
+          "dCy": 5.6,
           "dFoot": 0,
-          "dAreaPct": 22.5,
+          "dAreaPct": 19.2,
           "ok": true,
           "issues": []
         }
@@ -21116,94 +21078,26 @@
       "method": null,
       "passed": "PASS",
       "metrics": {
-        "minX": 28,
+        "minX": 45,
         "minY": 16,
-        "maxX": 98,
+        "maxX": 81,
         "maxY": 127,
-        "bw": 71,
+        "bw": 37,
         "bh": 112,
-        "cx": 66.36,
-        "cy": 85.94,
+        "cx": 67.53,
+        "cy": 68.83,
         "footY": 127,
         "topY": 16,
-        "n": 3821
+        "n": 1579
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.257Z"
+      "updatedAt": "2026-11-07T15:52:55.268Z"
     },
     "hero-violet-walk-f": {
       "frameName": "hero-violet-walk-f",
-      "ok": true,
-      "atlas": "characters",
-      "spec": "128x128",
-      "checks": {
-        "size": {
-          "ok": true,
-          "got": "128x128",
-          "want": "128x128"
-        },
-        "alpha": {
-          "ok": true,
-          "opaque": 3873
-        },
-        "margin": {
-          "ok": true,
-          "bw": 70,
-          "bh": 114,
-          "w": 128,
-          "h": 128,
-          "marginOkW": true,
-          "marginOkH": true,
-          "outlineW": 0
-        },
-        "outline": {
-          "ok": true,
-          "note": "普通单位无描边要求"
-        },
-        "luminance": {
-          "ok": true,
-          "avg": "34.5",
-          "brightRatio": "13.3%",
-          "outlineExempt": false,
-          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
-        },
-        "temporal": {
-          "hypot": 5.28,
-          "dCx": 3.81,
-          "dCy": 3.66,
-          "dFoot": 0,
-          "dAreaPct": 24.2,
-          "ok": true,
-          "issues": []
-        }
-      },
-      "issues": [],
-      "method": null,
-      "passed": "PASS",
-      "metrics": {
-        "minX": 29,
-        "minY": 14,
-        "maxX": 98,
-        "maxY": 127,
-        "bw": 70,
-        "bh": 114,
-        "cx": 66.97,
-        "cy": 85.84,
-        "footY": 127,
-        "topY": 14,
-        "n": 3873
-      },
-      "pivot": {
-        "x": 0.5,
-        "y": 0.9961
-      },
-      "updatedAt": "2026-09-17T16:00:22.274Z"
-    },
-    "hero-violet-walk-d": {
-      "frameName": "hero-violet-walk-d",
       "ok": false,
       "atlas": "characters",
       "spec": "128x128",
@@ -21215,12 +21109,12 @@
         },
         "alpha": {
           "ok": true,
-          "opaque": 4077
+          "opaque": 1718
         },
         "margin": {
           "ok": true,
-          "bw": 71,
-          "bh": 113,
+          "bw": 27,
+          "bh": 112,
           "w": 128,
           "h": 128,
           "marginOkW": true,
@@ -21233,48 +21127,114 @@
         },
         "luminance": {
           "ok": true,
-          "avg": "33.4",
-          "brightRatio": "9.9%",
+          "avg": "69.4",
+          "brightRatio": "73.1%",
           "outlineExempt": false,
           "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
         },
         "temporal": {
-          "hypot": 5.17,
-          "dCx": 3.36,
-          "dCy": 3.93,
+          "hypot": 6.08,
+          "dCx": 2.58,
+          "dCy": 5.5,
           "dFoot": 0,
-          "dAreaPct": 30.7,
+          "dAreaPct": 12.1,
           "ok": false,
           "issues": [
-            "面积 Δ 30.7% > 25%"
+            "重心 hypot 6.1px > 6"
           ]
         }
       },
       "issues": [
-        "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%",
-        "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%",
-        "时间轴 vs hero-violet: 面积 Δ 30.7% > 25%"
+        "时间轴 vs hero-violet: 重心 hypot 6.1px > 6"
       ],
       "method": null,
       "passed": "FAIL",
       "metrics": {
-        "minX": 28,
-        "minY": 15,
-        "maxX": 98,
+        "minX": 50,
+        "minY": 16,
+        "maxX": 76,
         "maxY": 127,
-        "bw": 71,
-        "bh": 113,
-        "cx": 67.42,
-        "cy": 86.11,
+        "bw": 27,
+        "bh": 112,
+        "cx": 63.26,
+        "cy": 68.73,
         "footY": 127,
-        "topY": 15,
-        "n": 4077
+        "topY": 16,
+        "n": 1718
       },
       "pivot": {
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:00:22.286Z"
+      "updatedAt": "2026-11-07T15:52:55.285Z"
+    },
+    "hero-violet-walk-d": {
+      "frameName": "hero-violet-walk-d",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 1636
+        },
+        "margin": {
+          "ok": true,
+          "bw": 26,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "68.5",
+          "brightRatio": "73.0%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 1.62,
+          "dCx": 1.1,
+          "dCy": 1.19,
+          "dFoot": 0,
+          "dAreaPct": 16.3,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 51,
+        "minY": 16,
+        "maxX": 76,
+        "maxY": 127,
+        "bw": 26,
+        "bh": 112,
+        "cx": 64.74,
+        "cy": 64.42,
+        "footY": 127,
+        "topY": 16,
+        "n": 1636
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-11-07T15:52:55.272Z"
     },
     "hero-violet-fallen": {
       "frameName": "hero-violet-fallen",
@@ -21333,7 +21293,7 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:22:12.937Z"
+      "updatedAt": "2026-11-07T15:52:55.240Z"
     },
     "hero-violet-fallen-v": {
       "frameName": "hero-violet-fallen-v",
@@ -21401,10 +21361,550 @@
         "x": 0.5,
         "y": 0.9961
       },
-      "updatedAt": "2026-09-17T16:22:12.953Z"
+      "updatedAt": "2026-11-07T15:52:55.235Z"
+    },
+    "summon-oathkeeper-walk-a": {
+      "frameName": "summon-oathkeeper-walk-a",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "192x192",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "192x192",
+          "want": "192x192"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 5265
+        },
+        "margin": {
+          "ok": true,
+          "bw": 74,
+          "bh": 160,
+          "w": 192,
+          "h": 192,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "38.2",
+          "brightRatio": "21.1%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 0.83,
+          "dCx": 0.72,
+          "dCy": 0.42,
+          "dFoot": 0,
+          "dAreaPct": 5.2,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 66,
+        "minY": 32,
+        "maxX": 139,
+        "maxY": 191,
+        "bw": 74,
+        "bh": 160,
+        "cx": 98.97,
+        "cy": 106.86,
+        "footY": 191,
+        "topY": 32,
+        "n": 5265
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "updatedAt": "2026-11-07T15:52:55.569Z"
+    },
+    "summon-oathkeeper-walk-b": {
+      "frameName": "summon-oathkeeper-walk-b",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "192x192",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "192x192",
+          "want": "192x192"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 5923
+        },
+        "margin": {
+          "ok": true,
+          "bw": 84,
+          "bh": 162,
+          "w": 192,
+          "h": 192,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "33.6",
+          "brightRatio": "12.3%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 8.29,
+          "dCx": 1,
+          "dCy": 8.23,
+          "dFoot": 0,
+          "dAreaPct": 6.6,
+          "ok": false,
+          "issues": [
+            "重心 hypot 8.3px > 6"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs summon-oathkeeper: 重心 hypot 8.3px > 6"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 60,
+        "minY": 30,
+        "maxX": 143,
+        "maxY": 191,
+        "bw": 84,
+        "bh": 162,
+        "cx": 100.69,
+        "cy": 115.51,
+        "footY": 191,
+        "topY": 30,
+        "n": 5923
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "updatedAt": "2026-11-07T15:52:55.578Z"
+    },
+    "summon-oathkeeper-walk-c": {
+      "frameName": "summon-oathkeeper-walk-c",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "192x192",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "192x192",
+          "want": "192x192"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 5994
+        },
+        "margin": {
+          "ok": true,
+          "bw": 78,
+          "bh": 162,
+          "w": 192,
+          "h": 192,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "36.7",
+          "brightRatio": "20.9%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 3.15,
+          "dCx": 0.7,
+          "dCy": 3.07,
+          "dFoot": 0,
+          "dAreaPct": 7.9,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 66,
+        "minY": 30,
+        "maxX": 143,
+        "maxY": 191,
+        "bw": 78,
+        "bh": 162,
+        "cx": 100.39,
+        "cy": 110.35,
+        "footY": 191,
+        "topY": 30,
+        "n": 5994
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "updatedAt": "2026-11-07T15:52:55.586Z"
+    },
+    "summon-oathkeeper-walk-d": {
+      "frameName": "summon-oathkeeper-walk-d",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "192x192",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "192x192",
+          "want": "192x192"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 5677
+        },
+        "margin": {
+          "ok": true,
+          "bw": 83,
+          "bh": 164,
+          "w": 192,
+          "h": 192,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "35.3",
+          "brightRatio": "14.4%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 7.78,
+          "dCx": 0.05,
+          "dCy": 7.78,
+          "dFoot": 0,
+          "dAreaPct": 2.2,
+          "ok": false,
+          "issues": [
+            "重心 hypot 7.8px > 6"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs summon-oathkeeper: 重心 hypot 7.8px > 6"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 57,
+        "minY": 28,
+        "maxX": 139,
+        "maxY": 191,
+        "bw": 83,
+        "bh": 164,
+        "cx": 99.74,
+        "cy": 115.06,
+        "footY": 191,
+        "topY": 28,
+        "n": 5677
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "updatedAt": "2026-11-07T15:52:55.595Z"
+    },
+    "summon-oathkeeper-attack-a": {
+      "frameName": "summon-oathkeeper-attack-a",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "192x192",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "192x192",
+          "want": "192x192"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 6634
+        },
+        "margin": {
+          "ok": true,
+          "bw": 101,
+          "bh": 162,
+          "w": 192,
+          "h": 192,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "39.7",
+          "brightRatio": "23.9%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 52,
+        "minY": 30,
+        "maxX": 152,
+        "maxY": 191,
+        "bw": 101,
+        "bh": 162,
+        "cx": 98.61,
+        "cy": 113.03,
+        "footY": 191,
+        "topY": 30,
+        "n": 6634
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "updatedAt": "2026-11-07T15:52:55.527Z"
+    },
+    "hero-violet-walk-s": {
+      "frameName": "hero-violet-walk-s",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "128x128",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "128x128",
+          "want": "128x128"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 1642
+        },
+        "margin": {
+          "ok": true,
+          "bw": 25,
+          "bh": 112,
+          "w": 128,
+          "h": 128,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "63.7",
+          "brightRatio": "69.0%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 4.77,
+          "dCx": 2.71,
+          "dCy": 3.93,
+          "dFoot": 0,
+          "dAreaPct": 16,
+          "ok": true,
+          "issues": []
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 51,
+        "minY": 16,
+        "maxX": 75,
+        "maxY": 127,
+        "bw": 25,
+        "bh": 112,
+        "cx": 63.13,
+        "cy": 67.16,
+        "footY": 127,
+        "topY": 16,
+        "n": 1642
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "updatedAt": "2026-11-07T15:52:55.290Z"
+    },
+    "player-walk-s": {
+      "frameName": "player-walk-s",
+      "ok": false,
+      "atlas": "characters",
+      "spec": "64x64",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "64x64",
+          "want": "64x64"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 713
+        },
+        "margin": {
+          "ok": true,
+          "bw": 36,
+          "bh": 56,
+          "w": 64,
+          "h": 64,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "20.2",
+          "brightRatio": "0.3%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        },
+        "temporal": {
+          "hypot": 4.74,
+          "dCx": 3.01,
+          "dCy": 3.66,
+          "dFoot": 0,
+          "dAreaPct": 34.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 4.7px > 3",
+            "面积 Δ 34.1% > 25%"
+          ]
+        }
+      },
+      "issues": [
+        "时间轴 vs player: 重心 hypot 4.7px > 3",
+        "时间轴 vs player: 面积 Δ 34.1% > 25%"
+      ],
+      "method": null,
+      "passed": "FAIL",
+      "metrics": {
+        "minX": 13,
+        "minY": 4,
+        "maxX": 48,
+        "maxY": 59,
+        "bw": 36,
+        "bh": 56,
+        "cx": 32.84,
+        "cy": 31.14,
+        "footY": 59,
+        "topY": 4,
+        "n": 713
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "updatedAt": "2026-11-07T15:52:55.386Z"
+    },
+    "summon-oathkeeper-attack-b": {
+      "frameName": "summon-oathkeeper-attack-b",
+      "ok": true,
+      "atlas": "characters",
+      "spec": "192x192",
+      "checks": {
+        "size": {
+          "ok": true,
+          "got": "192x192",
+          "want": "192x192"
+        },
+        "alpha": {
+          "ok": true,
+          "opaque": 5978
+        },
+        "margin": {
+          "ok": true,
+          "bw": 114,
+          "bh": 147,
+          "w": 192,
+          "h": 192,
+          "marginOkW": true,
+          "marginOkH": true,
+          "outlineW": 0
+        },
+        "outline": {
+          "ok": true,
+          "note": "普通单位无描边要求"
+        },
+        "luminance": {
+          "ok": true,
+          "avg": "29.0",
+          "brightRatio": "10.5%",
+          "outlineExempt": false,
+          "note": "玩家/召唤物须明显亮于普通敌（高亮≥3% 或均 L*>敌潮基线）；银发/金属可当高亮"
+        }
+      },
+      "issues": [],
+      "method": null,
+      "passed": "PASS",
+      "metrics": {
+        "minX": 39,
+        "minY": 45,
+        "maxX": 152,
+        "maxY": 191,
+        "bw": 114,
+        "bh": 147,
+        "cx": 93.96,
+        "cy": 124.16,
+        "footY": 191,
+        "topY": 45,
+        "n": 5978
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "updatedAt": "2026-11-07T15:52:55.541Z"
     }
   },
-  "updatedAt": "2026-10-16T08:35:08.012Z",
+  "updatedAt": "2026-11-07T15:52:55.944Z",
   "families": {
     "enemy-gravekeeper": {
       "base": "enemy-gravekeeper",
@@ -21444,7 +21944,8 @@
         "player-walk-c",
         "player-walk-d",
         "player-walk-e",
-        "player-walk-f"
+        "player-walk-f",
+        "player-walk-s"
       ],
       "pairs": {
         "player-skill-a": {
@@ -21607,6 +22108,26 @@
           "dAreaPct": 21.3,
           "ok": true,
           "issues": [],
+          "limits": {
+            "hypotMax": 3,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 64
+          }
+        },
+        "player-walk-s": {
+          "vs": "player",
+          "hypot": 4.74,
+          "dCx": 3.01,
+          "dCy": 3.66,
+          "dFoot": 0,
+          "dAreaPct": 34.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 4.7px > 3",
+            "面积 Δ 34.1% > 25%"
+          ],
           "limits": {
             "hypotMax": 3,
             "footMax": 0,
@@ -22192,36 +22713,36 @@
       "pairs": {
         "hero-cassandra-skill-a": {
           "vs": "hero-cassandra",
-          "hypot": 1.21,
-          "dCx": 0.64,
-          "dCy": 1.03,
+          "hypot": 5.82,
+          "dCx": 5.67,
+          "dCy": 1.31,
           "dFoot": 0,
-          "dAreaPct": 24.2,
+          "dAreaPct": 18.2,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
             "kind": "skill",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-skill-b": {
           "vs": "hero-cassandra",
-          "hypot": 1.04,
-          "dCx": 1.04,
-          "dCy": 0.04,
+          "hypot": 5.51,
+          "dCx": 2.52,
+          "dCy": 4.9,
           "dFoot": 0,
-          "dAreaPct": 10.7,
+          "dAreaPct": 24.5,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
             "kind": "skill",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-v": {
@@ -22234,113 +22755,119 @@
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 2,
+            "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
             "kind": "idle",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-walk-a": {
           "vs": "hero-cassandra",
-          "hypot": 0.85,
-          "dCx": 0.82,
-          "dCy": 0.21,
+          "hypot": 6.52,
+          "dCx": 0.74,
+          "dCy": 6.48,
           "dFoot": 0,
-          "dAreaPct": 13,
-          "ok": true,
-          "issues": [],
+          "dAreaPct": 6.4,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.5px > 6"
+          ],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-walk-b": {
           "vs": "hero-cassandra",
-          "hypot": 1.12,
-          "dCx": 1.01,
-          "dCy": 0.48,
+          "hypot": 5.5,
+          "dCx": 0.73,
+          "dCy": 5.45,
           "dFoot": 0,
-          "dAreaPct": 14.7,
+          "dAreaPct": 9.9,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-walk-c": {
           "vs": "hero-cassandra",
-          "hypot": 0.73,
-          "dCx": 0.52,
-          "dCy": 0.51,
+          "hypot": 4.35,
+          "dCx": 0.65,
+          "dCy": 4.3,
           "dFoot": 0,
-          "dAreaPct": 14,
+          "dAreaPct": 7.2,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-walk-d": {
           "vs": "hero-cassandra",
-          "hypot": 1.33,
-          "dCx": 0.96,
-          "dCy": 0.92,
+          "hypot": 2.66,
+          "dCx": 1.81,
+          "dCy": 1.95,
           "dFoot": 0,
-          "dAreaPct": 16.4,
+          "dAreaPct": 3.6,
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-walk-e": {
           "vs": "hero-cassandra",
-          "hypot": 1.04,
-          "dCx": 0.54,
-          "dCy": 0.89,
+          "hypot": 6.7,
+          "dCx": 1.74,
+          "dCy": 6.47,
           "dFoot": 0,
-          "dAreaPct": 12.6,
-          "ok": true,
-          "issues": [],
+          "dAreaPct": 13.4,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.7px > 6"
+          ],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         },
         "hero-cassandra-walk-f": {
           "vs": "hero-cassandra",
-          "hypot": 1.12,
-          "dCx": 0.23,
-          "dCy": 1.1,
+          "hypot": 8.29,
+          "dCx": 0.74,
+          "dCy": 8.26,
           "dFoot": 0,
-          "dAreaPct": 17.6,
-          "ok": true,
-          "issues": [],
+          "dAreaPct": 22.5,
+          "ok": false,
+          "issues": [
+            "重心 hypot 8.3px > 6"
+          ],
           "limits": {
-            "hypotMax": 3,
+            "hypotMax": 6,
             "footMax": 0,
             "areaMax": 0.25,
             "kind": "walk",
-            "band": 64
+            "band": 128
           }
         }
       }
@@ -22471,18 +22998,21 @@
         "hero-violet-walk-c",
         "hero-violet-walk-d",
         "hero-violet-walk-e",
-        "hero-violet-walk-f"
+        "hero-violet-walk-f",
+        "hero-violet-walk-s"
       ],
       "pairs": {
         "hero-violet-skill-a": {
           "vs": "hero-violet",
-          "hypot": 6.11,
-          "dCx": 0.51,
-          "dCy": 6.09,
+          "hypot": 9.74,
+          "dCx": 1.5,
+          "dCy": 9.62,
           "dFoot": 0,
-          "dAreaPct": 13.7,
-          "ok": true,
-          "issues": [],
+          "dAreaPct": 50.4,
+          "ok": false,
+          "issues": [
+            "面积 Δ 50.4% > 25%"
+          ],
           "limits": {
             "hypotMax": 12,
             "footMax": 1,
@@ -22493,11 +23023,11 @@
         },
         "hero-violet-skill-b": {
           "vs": "hero-violet",
-          "hypot": 4.3,
-          "dCx": 3.46,
-          "dCy": 2.55,
+          "hypot": 3.46,
+          "dCx": 0.77,
+          "dCy": 3.37,
           "dFoot": 0,
-          "dAreaPct": 17.5,
+          "dAreaPct": 15.1,
           "ok": true,
           "issues": [],
           "limits": {
@@ -22527,13 +23057,15 @@
         },
         "hero-violet-walk-a": {
           "vs": "hero-violet",
-          "hypot": 4.73,
-          "dCx": 3.62,
-          "dCy": 3.05,
+          "hypot": 9.28,
+          "dCx": 6.23,
+          "dCy": 6.88,
           "dFoot": 0,
-          "dAreaPct": 17.3,
-          "ok": true,
-          "issues": [],
+          "dAreaPct": 6.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 9.3px > 6"
+          ],
           "limits": {
             "hypotMax": 6,
             "footMax": 0,
@@ -22544,14 +23076,14 @@
         },
         "hero-violet-walk-b": {
           "vs": "hero-violet",
-          "hypot": 5.79,
-          "dCx": 4.95,
-          "dCy": 3,
+          "hypot": 6.69,
+          "dCx": 0.87,
+          "dCy": 6.63,
           "dFoot": 0,
-          "dAreaPct": 29.5,
+          "dAreaPct": 5.3,
           "ok": false,
           "issues": [
-            "面积 Δ 29.5% > 25%"
+            "重心 hypot 6.7px > 6"
           ],
           "limits": {
             "hypotMax": 6,
@@ -22563,11 +23095,11 @@
         },
         "hero-violet-walk-c": {
           "vs": "hero-violet",
-          "hypot": 5.8,
-          "dCx": 4.42,
-          "dCy": 3.76,
+          "hypot": 5.85,
+          "dCx": 1.69,
+          "dCy": 5.6,
           "dFoot": 0,
-          "dAreaPct": 22.5,
+          "dAreaPct": 19.2,
           "ok": true,
           "issues": [],
           "limits": {
@@ -22580,15 +23112,13 @@
         },
         "hero-violet-walk-d": {
           "vs": "hero-violet",
-          "hypot": 5.17,
-          "dCx": 3.36,
-          "dCy": 3.93,
+          "hypot": 1.62,
+          "dCx": 1.1,
+          "dCy": 1.19,
           "dFoot": 0,
-          "dAreaPct": 30.7,
-          "ok": false,
-          "issues": [
-            "面积 Δ 30.7% > 25%"
-          ],
+          "dAreaPct": 16.3,
+          "ok": true,
+          "issues": [],
           "limits": {
             "hypotMax": 6,
             "footMax": 0,
@@ -22599,14 +23129,14 @@
         },
         "hero-violet-walk-e": {
           "vs": "hero-violet",
-          "hypot": 4.88,
-          "dCx": 4.51,
-          "dCy": 1.86,
+          "hypot": 8.63,
+          "dCx": 5.86,
+          "dCy": 6.34,
           "dFoot": 0,
-          "dAreaPct": 27.8,
+          "dAreaPct": 2.9,
           "ok": false,
           "issues": [
-            "面积 Δ 27.8% > 25%"
+            "重心 hypot 8.6px > 6"
           ],
           "limits": {
             "hypotMax": 6,
@@ -22618,11 +23148,30 @@
         },
         "hero-violet-walk-f": {
           "vs": "hero-violet",
-          "hypot": 5.28,
-          "dCx": 3.81,
-          "dCy": 3.66,
+          "hypot": 6.08,
+          "dCx": 2.58,
+          "dCy": 5.5,
           "dFoot": 0,
-          "dAreaPct": 24.2,
+          "dAreaPct": 12.1,
+          "ok": false,
+          "issues": [
+            "重心 hypot 6.1px > 6"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "hero-violet-walk-s": {
+          "vs": "hero-violet",
+          "hypot": 4.77,
+          "dCx": 2.71,
+          "dCy": 3.93,
+          "dFoot": 0,
+          "dAreaPct": 16,
           "ok": true,
           "issues": [],
           "limits": {
@@ -23140,24 +23689,32 @@
       "members": [
         "summon-oathkeeper",
         "summon-oathkeeper-tombstone",
-        "summon-oathkeeper-v"
+        "summon-oathkeeper-v",
+        "summon-oathkeeper-walk-a",
+        "summon-oathkeeper-walk-b",
+        "summon-oathkeeper-walk-c",
+        "summon-oathkeeper-walk-d"
       ],
       "pairs": {
         "summon-oathkeeper-tombstone": {
           "vs": "summon-oathkeeper",
-          "hypot": 2.63,
-          "dCx": 2.4,
-          "dCy": 1.07,
-          "dFoot": 0,
-          "dAreaPct": 20.5,
-          "ok": true,
-          "issues": [],
+          "hypot": 109.79,
+          "dCx": 76.63,
+          "dCy": 78.63,
+          "dFoot": 146,
+          "dAreaPct": 88.3,
+          "ok": false,
+          "issues": [
+            "重心 hypot 109.8px > 12",
+            "脚底 ΔY 146px > 1",
+            "面积 Δ 88.3% > 25%"
+          ],
           "limits": {
-            "hypotMax": 6,
+            "hypotMax": 12,
             "footMax": 1,
             "areaMax": 0.25,
             "kind": "tombstone",
-            "band": 64
+            "band": 128
           }
         },
         "summon-oathkeeper-v": {
@@ -23170,11 +23727,83 @@
           "ok": true,
           "issues": [],
           "limits": {
-            "hypotMax": 2,
+            "hypotMax": 4,
             "footMax": 0,
             "areaMax": 0.15,
             "kind": "idle",
-            "band": 64
+            "band": 128
+          }
+        },
+        "summon-oathkeeper-walk-a": {
+          "vs": "summon-oathkeeper",
+          "hypot": 0.83,
+          "dCx": 0.72,
+          "dCy": 0.42,
+          "dFoot": 0,
+          "dAreaPct": 5.2,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "summon-oathkeeper-walk-b": {
+          "vs": "summon-oathkeeper",
+          "hypot": 8.29,
+          "dCx": 1,
+          "dCy": 8.23,
+          "dFoot": 0,
+          "dAreaPct": 6.6,
+          "ok": false,
+          "issues": [
+            "重心 hypot 8.3px > 6"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "summon-oathkeeper-walk-c": {
+          "vs": "summon-oathkeeper",
+          "hypot": 3.15,
+          "dCx": 0.7,
+          "dCy": 3.07,
+          "dFoot": 0,
+          "dAreaPct": 7.9,
+          "ok": true,
+          "issues": [],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
+          }
+        },
+        "summon-oathkeeper-walk-d": {
+          "vs": "summon-oathkeeper",
+          "hypot": 7.78,
+          "dCx": 0.05,
+          "dCy": 7.78,
+          "dFoot": 0,
+          "dAreaPct": 2.2,
+          "ok": false,
+          "issues": [
+            "重心 hypot 7.8px > 6"
+          ],
+          "limits": {
+            "hypotMax": 6,
+            "footMax": 0,
+            "areaMax": 0.25,
+            "kind": "walk",
+            "band": 128
           }
         }
       }
@@ -23594,6 +24223,20 @@
           }
         }
       }
+    },
+    "summon-oathkeeper-attack-a": {
+      "base": "summon-oathkeeper-attack-a",
+      "members": [
+        "summon-oathkeeper-attack-a"
+      ],
+      "pairs": {}
+    },
+    "summon-oathkeeper-attack-b": {
+      "base": "summon-oathkeeper-attack-b",
+      "members": [
+        "summon-oathkeeper-attack-b"
+      ],
+      "pairs": {}
     }
   }
 }

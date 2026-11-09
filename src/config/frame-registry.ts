@@ -57,7 +57,12 @@ export const FRAME_BY_CONTENT_ID: Readonly<Record<string, readonly string[]>> = 
   xw_revolver: ['proj-revolver'],
   xw_longbow: ['proj-longbow'],
   xw_twinblades: ['proj-twinblade'],
-  xw_bell: ['summon-oathkeeper', 'summon-oathkeeper-v', 'summon-oathkeeper-tombstone'],
+  xw_bell: [
+    'summon-oathkeeper', 'summon-oathkeeper-v', 'summon-oathkeeper-tombstone',
+    'summon-oathkeeper-walk-a', 'summon-oathkeeper-walk-b',
+    'summon-oathkeeper-walk-c', 'summon-oathkeeper-walk-d',
+    'summon-oathkeeper-attack-a', 'summon-oathkeeper-attack-b',
+  ],
   xw_horn: ['summon-moonwolf', 'summon-moonwolf-v'],
   // ---- §3 敌人（17）+ Boss（4）----
   enemy_g1_1: ['enemy-zombie', 'enemy-zombie-v'],

@@ -5,7 +5,7 @@
 
 import { familyKey, isAnimationVariant } from './layout.mjs';
 
-/** 已过 C/E 仍 64。守誓 idle/-v/walk/skill 已过 128。魔化 idle/-v 已过 128（B-lo）。加尔文 idle/-v 已过 128（方案 A r1）；走/技能仍 64。 */
+/** 已过 C/E 仍 64。守誓 idle/-v/walk/attack 已过 192（仅墓碑留 48）。魔化 idle/-v 已过 128（B-lo）。加尔文 idle/-v 已过 128（方案 A r1）；走/技能仍 64。卡珊德拉 10 帧已定稿 128（2026-11-07 裁决）。 */
 export const COMBAT_CANVAS = {
   passedHero: 64,
   newHero: 128,
@@ -18,6 +18,10 @@ export const COMBAT_128_LOCK_PLAN = {
   'hero-violet': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-violet-fallen': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-galvan': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  // 卡珊德拉 128 定稿（2026-11-07 裁决）。键是 **族基名**：specAfterCombat128Lock 走
+  // `familyKey(frameName)` 查表，`-v / -skill-a / -skill-b / -walk-a..f` 都剥到 `hero-cassandra`，
+  // 故不逐条列变体 —— 与 hero-violet 先例一致（violet 的变体也从未进过本表）。
+  'hero-cassandra': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'summon-oathkeeper': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
 };
 
@@ -56,10 +60,15 @@ const EXPLICIT = {
   'player-v': { w: 64, h: 64, atlas: 'characters' },
   'player-skill-a': { w: 64, h: 64, atlas: 'characters' },
   'player-skill-b': { w: 64, h: 64, atlas: 'characters' },
-  'hero-cassandra': { w: 64, h: 64, atlas: 'characters' },
-  'hero-cassandra-v': { w: 64, h: 64, atlas: 'characters' },
-  'hero-cassandra-skill-a': { w: 64, h: 64, atlas: 'characters' },
-  'hero-cassandra-skill-b': { w: 64, h: 64, atlas: 'characters' },
+  // 卡珊德拉已定稿 128（主理人裁决 2026-11-07：「最新已经是 128，不用 64」）。
+  // 磁盘 10 帧实测全 128×128（assets/frames/hero-cassandra*.png，2026-10-29 落盘）；
+  // 此前 spec 仍写 64 ⇒ 全量 --check 恒报「尺寸 128 ≠ 契约 64」（非真缺陷，是契约滞后）。
+  // 口径照 hero-violet：base / -v / -skill-a / -skill-b 逐条显式写 128 nearest，
+  // walk-a..f 走 familyKey 回退到 base（不逐条重复，与 violet 写法一致）。
+  'hero-cassandra': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-cassandra-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-cassandra-skill-a': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-cassandra-skill-b': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-violet': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-violet-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   // 技能已过 128（A1 举烛 / B2 张臂留烛，主理人 2026-09-17）。旧修女 64 退对照。
@@ -148,8 +157,27 @@ const EXPLICIT = {
   'ring-holyfire': { w: 64, h: 64, atlas: 'characters' },
   'summon-bat': { w: 16, h: 16, atlas: 'characters' },
   'summon-hound': { w: 32, h: 32, atlas: 'characters' },
-  'summon-oathkeeper': { w: 48, h: 48, atlas: 'characters' },
-  'summon-oathkeeper-v': { w: 48, h: 48, atlas: 'characters' },
+  // 守誓者 192 高清帧（NV-ENG-EXEC-20 批A：契约 48→192；资产落盘见批B）。
+  // 7 张源图（sets/ 6 + x192v2/attack-b）均同基准入盒 192×192、脚底 y=191，
+  // 与 COMBAT_128_LOCK_PLAN['summon-oathkeeper'] 的 192 声明对齐（该表早写 192，此前未落地）。
+  // 注意：本表只有 w/h/atlas/kernel，「脚底 y=191」是资产属性、不写在规格里 ——
+  // 保脚底靠的是「批B 直接把源图拷进 assets/frames/、绝不跑 process.mjs」（process 会重抠+按 5% 边距重摆）。
+  'summon-oathkeeper': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  'summon-oathkeeper-v': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  'summon-oathkeeper-walk-a': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  'summon-oathkeeper-walk-b': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  'summon-oathkeeper-walk-c': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  'summon-oathkeeper-walk-d': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  // attack-a 必须逐条显式列出：layout.mjs 的 VARIANT_RE 不含 `-attack-[ab]`，
+  // familyKey 不会回退到 `summon-oathkeeper` ⇒ 漏写即 resolveFrameSpec 返 null ⇒ pack.mjs:94 静默跳过。
+  'summon-oathkeeper-attack-a': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  // attack-b 同理必须显式列出（VARIANT_RE 不含 `-attack-[ab]`，familyKey 不剥后缀）。
+  // 源图：characters/oathkeeper/review/20261104-oath/sets/ 只有 attack-a，
+  // 故 attack-b 取 x192v2/（批 B 已确认与 sets/ 6 张同基准：192×192、脚底 y=191，本批实测复核）。
+  'summon-oathkeeper-attack-b': { w: 192, h: 192, atlas: 'characters', kernel: 'nearest' },
+  // 墓碑本批**有意保留 48**（方案 §B①③）：192 墓碑图尚未出，硬改 192 会让
+  // `process.mjs --check summon-oathkeeper-tombstone` 变红，并诱导下一个人拿旧 raw 放大"修"。
+  // 48/192 同族混档是已知口径，别当 bug 修；192 墓碑另案（方案 §3.5 选 A）。
   'summon-oathkeeper-tombstone': { w: 48, h: 48, atlas: 'characters' },
   'summon-moonwolf': { w: 48, h: 48, atlas: 'characters' },
   'summon-moonwolf-v': { w: 48, h: 48, atlas: 'characters' },

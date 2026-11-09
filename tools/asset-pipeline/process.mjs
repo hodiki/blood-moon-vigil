@@ -16,7 +16,7 @@
 // 目录约定（相对项目根）：
 //   assets/raw/<帧名>.png        ← AI 生成原图（放这）
 //   assets/frames/<帧名>.png     → 处理后的契约帧（自动建目录）
-//   assets/report.json           → 本轮验收报告（累加）
+//   assets/report.json           → 本轮验收报告（帧条目累加；**单帧 issues 的本轮结论整体替换**，时间轴条目亦不累加）
 //
 // 抠图：优先用原图 alpha；无 alpha 时从画布边洪水填充，只清「连到边」的底色。
 //       禁止按背景色全局抹掉——袍子暗褶会和黑底同色，全局阈值会把剪影抠穿。
@@ -44,6 +44,9 @@ const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const RAW_DIR = path.join(PROJECT_ROOT, 'assets', 'raw');
 const FRAMES_DIR = path.join(PROJECT_ROOT, 'assets', 'frames');
 const REPORT_PATH = path.join(PROJECT_ROOT, 'assets', 'report.json');
+
+// 时间轴门禁 issues 的固定前缀。写/读都用它，保证「本轮替换而非累加」时能准确剔除旧条目。
+const TEMPORAL_PREFIX = '时间轴 vs ';
 
 // ---------- 工具 ----------
 function log(prefix, msg) { console.log(`[${prefix}] ${msg}`); }
@@ -503,15 +506,26 @@ function applyTemporalGates(report) {
       pairs[name] = { vs: baseName, ...cmp, limits };
       variant.checks = variant.checks || {};
       variant.checks.temporal = cmp;
-      if (!cmp.ok) {
-        variant.issues = [...(variant.issues || []), ...cmp.issues.map((i) => `时间轴 vs ${baseName}: ${i}`)];
-        variant.ok = false;
-        variant.passed = 'FAIL';
-      }
+      // 时间轴 issues 语义 = **本轮结果替换**旧条目，不是累加。
+      // 旧缺陷（C0 修）：`[...(variant.issues||[]), ...]` 会在上一轮 report.json 的旧数组上再 append，
+      // 而 `--check <子集>` 只刷新子集帧的 issues，全库其它帧每跑一次就叠一层 ⇒ 重复累积（实测 HEAD 已有 9 份）。
+      // 现：剔除旧的「时间轴 vs 」前缀条目，只挂本轮结果；判定通过则该帧不再残留时间轴 FAIL 文字。
+      const temporalIssues = cmp.ok
+        ? []
+        : [...new Set(cmp.issues.map((i) => `${TEMPORAL_PREFIX}${baseName}: ${i}`))];
+      const others = (variant.issues || []).filter((s) => !String(s).startsWith(TEMPORAL_PREFIX));
+      variant.issues = [...others, ...temporalIssues];
+      const failing = variant.issues.length > 0 || !cmp.ok;
+      variant.ok = !failing;
+      variant.passed = failing ? 'FAIL' : 'PASS';
     }
     report.families[family] = { base: baseName, members: names, pairs };
     const basePivot = base.pivot;
     if (basePivot) {
+      // ⚠ 已知缺陷（未修，待主理人决策 · 见 C0 报告「待审批项 A」）：这里**无差别**把 base 的脚底 pivot
+      // 刷给全族，跨 spec 尺寸的族（`summon-oathkeeper` = 192x192 base + `-tombstone` = 48x48）会被污染：
+      // 墓碑自测 pivot 0.9479 被覆盖成 base 的 0.9974 ⇒ 经 pack.mjs 写进 atlas/pivots.json。
+      // 修法（另案，批 B 曾建议）：按 spec 尺寸分桶，同尺寸才共享 base pivot。
       for (const name of names) {
         if (report.frames[name]) report.frames[name].pivot = { ...basePivot };
       }

@@ -187,19 +187,19 @@
     },
     "hero-cassandra-skill-a": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-skill-b": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-v": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-galvan-skill-a": {
       "x": 0.5,
@@ -603,7 +603,7 @@
     },
     "summon-oathkeeper": {
       "x": 0.5,
-      "y": 0.9479
+      "y": 0.9974
     },
     "summon-oathkeeper-tombstone": {
       "x": 0.5,
@@ -611,7 +611,7 @@
     },
     "summon-oathkeeper-v": {
       "x": 0.5,
-      "y": 0.9479
+      "y": 0.9974
     },
     "summon-moonwolf": {
       "x": 0.5,
@@ -1087,11 +1087,11 @@
     },
     "hero-cassandra-walk-a": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-walk-b": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-violet-walk-a": {
       "x": 0.5,
@@ -1111,19 +1111,19 @@
     },
     "hero-cassandra-walk-c": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-walk-d": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-walk-e": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "hero-cassandra-walk-f": {
       "x": 0.5,
-      "y": 0.9297
+      "y": 0.9961
     },
     "player-walk-e": {
       "x": 0.5,
@@ -1164,6 +1164,38 @@
     "hero-violet-fallen-v": {
       "x": 0.5,
       "y": 0.9961
+    },
+    "summon-oathkeeper-walk-a": {
+      "x": 0.5,
+      "y": 0.9974
+    },
+    "summon-oathkeeper-walk-b": {
+      "x": 0.5,
+      "y": 0.9974
+    },
+    "summon-oathkeeper-walk-c": {
+      "x": 0.5,
+      "y": 0.9974
+    },
+    "summon-oathkeeper-walk-d": {
+      "x": 0.5,
+      "y": 0.9974
+    },
+    "summon-oathkeeper-attack-a": {
+      "x": 0.5,
+      "y": 0.9974
+    },
+    "hero-violet-walk-s": {
+      "x": 0.5,
+      "y": 0.9961
+    },
+    "player-walk-s": {
+      "x": 0.5,
+      "y": 0.9297
+    },
+    "summon-oathkeeper-attack-b": {
+      "x": 0.5,
+      "y": 0.9974
     }
   }
 }

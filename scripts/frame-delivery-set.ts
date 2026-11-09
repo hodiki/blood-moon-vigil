@@ -38,6 +38,9 @@ export const FRAME_DELIVERY_SET: readonly string[] = [
   // §2 专武弹体 / 召唤（gdd-exclusive-weapons；卡片见 §5）
   'proj-revolver', 'proj-longbow', 'proj-twinblade',
   'summon-oathkeeper', 'summon-oathkeeper-v', 'summon-oathkeeper-tombstone',
+  'summon-oathkeeper-walk-a', 'summon-oathkeeper-walk-b',
+  'summon-oathkeeper-walk-c', 'summon-oathkeeper-walk-d',
+  'summon-oathkeeper-attack-a', 'summon-oathkeeper-attack-b',
   'summon-moonwolf', 'summon-moonwolf-v',
   // §3 Boss（4）
   'enemy-boss', 'enemy-boss-v',
