@@ -22,9 +22,16 @@ import { OathkeeperRuntime } from '@/weapons/companion/oathkeeper-runtime';
  * → Node 环境（vitest `environment: 'node'`）用 FakeSprite 即可全量驱动，无需 jsdom/canvas。
  *
  * 纪律（同批 D）：
- * 1. **期望值写字面量**（330 / 75 / 400 / −32 / 37÷6 / 8÷3），不用被测常量自证；
- * 2. 边界双向测（329 vs 330、74 vs 75、400 vs 400.5）；
+ * 1. **期望值写字面量**（180 / 75 / 400 / −32 / 37÷6 / 8÷3），不用被测常量自证；
+ * 2. 边界双向测（179 vs 180、74 vs 75、400 vs 400.5）；
  * 3. 每条用例注释写依据（裁决编号 / 交付单小节 / 批 D 报告 §7）。
+ *
+ * ⚠ **walk 帧长改过一次（330 → 180）**，故本文件的"推进节奏"全部按 **180ms/帧** 重算：
+ * - 依据：NV-ENG-EXEC-27 A/B（`production/official-v1/守誓者批F-AB对比报告-2026-11-09.md`）。
+ *   滑步比 3.18 FAIL → 1.74 CONCERNS；每姿势位移 ÷ 内容宽 0.51 → 0.28；一圈 1320ms → 720ms。
+ * - 取法：凡"推进 dt 若干帧后应到某帧"的用例，**dt 取 60ms**（3 帧 = 180ms = 恰好一个帧长）——
+ *   保留"整周期边界"这一被断言的语义，而不是把期望帧名改成一个凑出来的名字。
+ * - 帧长的**唯一权威**仍是 `WALK_FRAME_MS` 常量本身；本文件只有 §9 那一条 `toBe(180)` 钉它。
  */
 
 // 帧宽 → 显示缩放（`combatDisplayScale`：>=128 → 1，否则 128/宽）
@@ -192,59 +199,83 @@ describe('idle：只用基帧，不切 -v（裁决①）', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. move：330ms/帧，a→b→c→d
+// 3. move：180ms/帧，a→b→c→d
 // ─────────────────────────────────────────────────────────────────────────────
-describe('move：4 帧 330ms 步进（交付单 §3.3 硬性值）', () => {
-  it('起步第一帧 = walk-a；移动态帧序 a→b→c→d→a', () => {
+describe('move：4 帧 180ms 步进（NV-ENG-EXEC-27 A/B 裁定值；取代交付单 §3.3 的 330）', () => {
+  it('起步第一帧 = walk-a；移动态帧序 a→b→c→d→a（每 180ms 进一档）', () => {
     const h = make();
-    // 每帧 6px / 0.11s ≈ 54.5px/s（> 5px/s 阈值）
-    pump(h, 1, 0.11, 6);
+    // 每帧 6px / 0.06s = 100px/s（> 5px/s 阈值）；**3 帧 = 180ms = 恰好一个帧长**
+    // （dt 必须整除帧长，否则"3 帧后应是下一帧"就不再成立 —— 这是本用例的时序前提）
+    pump(h, 1, 0.06, 6);
     expect(h.view.viewState).toBe('move');
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-a');
 
-    pump(h, 3, 0.11, 6); // 累计 3 帧 = 330ms（首帧重置为 0，故第 4 帧才进 b）
+    // 首帧不累加（进入 move 的边沿把累加器归零），故计时从第 2 帧起算
+    pump(h, 3, 0.06, 6); // 180ms → 恰好 1 个帧长 → 进 b
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-b');
 
-    pump(h, 3, 0.11, 6); // 660ms
+    pump(h, 3, 0.06, 6); // 360ms → 2 个帧长 → c
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-c');
 
-    pump(h, 3, 0.11, 6); // 990ms
+    pump(h, 3, 0.06, 6); // 540ms → 3 个帧长 → d
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-d');
 
-    pump(h, 3, 0.11, 6); // 1320ms = 一整圈 → 回到 a
+    pump(h, 3, 0.06, 6); // 720ms = 4 × 180 = 一整圈 → 回到 a
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-a');
   });
 
-  it('330ms 边界双向：329ms 仍是 a，330ms 进 b', () => {
+  // 帧长一旦再调（180 → 别的值），上面那条"3 帧 = 一个帧长"的用例会整体失效；
+  // 本条不依赖帧长具体数值，只要求 **dt < 帧长**，把"帧序"这一语义单独钉住：
+  // 单调前进（不回头）、单帧最多推进一档（不跳帧）、且 4 档循环回 a。
+  it('帧序语义（帧长无关）：连续 update 期间 a→b→c→d 单调前进，不回头、不跳档', () => {
+    const h = make();
+    const index = (name: string): number => OATHKEEPER_WALK_FRAMES.indexOf(name as never);
+    const seen: number[] = [];
+    for (let i = 0; i < 24; i += 1) {
+      pump(h, 1, 0.11, 6); // 110ms < 180ms 帧长 → 单帧最多推进一档
+      expect(h.view.viewState).toBe('move');
+      seen.push(index(h.sprite.frame.name));
+    }
+    expect(seen.every((v) => v >= 0)).toBe(true); // 全程都在 walk 四帧内（没掉回 idle）
+    for (let i = 1; i < seen.length; i += 1) {
+      const step = (seen[i]! - seen[i - 1]! + OATHKEEPER_WALK_FRAMES.length) % OATHKEEPER_WALK_FRAMES.length;
+      expect(step === 0 || step === 1).toBe(true); // 0 = 本帧未换帧（正常），1 = 前进一档；2/3 = 跳档/倒退
+    }
+    // 24 帧 × 110ms = 2640ms ≥ 720ms 一圈 → 必须完整走过 4 档
+    expect(new Set(seen).size).toBe(OATHKEEPER_WALK_FRAMES.length);
+  });
+
+  it('180ms 边界双向：179ms 仍是 a，180ms 进 b', () => {
     const h = make();
     pump(h, 1, 0.01, 1); // 首帧：归零 + 定 a
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-a');
 
-    pump(h, 1, 0.329, 6); // 329ms（6px/0.329s ≈ 18px/s，仍是 move）
+    pump(h, 1, 0.179, 6); // 179ms（6px/0.179s ≈ 34px/s，仍是 move）
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-a');
 
-    pump(h, 1, 0.001, 1); // 330ms
+    pump(h, 1, 0.001, 1); // 180ms（恰好一个帧长 → 进下一档）
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-b');
   });
 
   it('停下再加帧算器归零：再起步必从 a 帧（防"崴脚"，方案 §3.2）', () => {
     const h = make();
-    pump(h, 7, 0.11, 6); // 走到 c
+    // setup（非被测行为）：先把累加器推到循环中段 —— 60ms/帧 × 7 = 360ms = 第 3 档
+    pump(h, 7, 0.06, 6); // 走到 c
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-c');
 
-    pump(h, 1, 0.11, 0); // 原地 → idle
+    pump(h, 1, 0.06, 0); // 原地 → idle
     expect(h.view.viewState).toBe('idle');
     expect(h.sprite.frame.name).toBe('summon-oathkeeper');
 
-    pump(h, 1, 0.11, 6); // 再起步
+    pump(h, 1, 0.06, 6); // 再起步：必须回到 a（若累加器残留，这里会从 c/d 起步 = 崴脚）
     expect(h.sprite.frame.name).toBe('summon-oathkeeper-walk-a');
   });
 
   it('每帧只 setTexture 一次（换帧才重设，不每帧刷）', () => {
     const h = make();
-    pump(h, 3, 0.11, 6); // a × 4 帧，帧不变
+    pump(h, 3, 0.06, 6); // 3 × 60ms = 120ms < 180ms → 同一个 a 帧，未换过帧
     expect(h.sprite.textureSets).toBe(1); // 仅 首帧 idle→walk-a
-    pump(h, 1, 0.11, 6); // 进 b
+    pump(h, 1, 0.06, 6); // 累计 180ms → 换到 b
     expect(h.sprite.textureSets).toBe(2);
   });
 });
@@ -294,7 +325,7 @@ describe('attack：a→b 双帧 75/75（决策器 ATTACK_HOLD_MS=150 均分）',
 
   it('attack 结束后回 move 仍是 a 帧起（累加器在 attack 期间归零）', () => {
     const h = make();
-    pump(h, 7, 0.11, 6); // 走到 c
+    pump(h, 7, 0.11, 6); // 先走进 move 循环中段（7 × 110ms = 660ms，已在第 4 档 d 附近）
     h.view.notifyBite();
     pump(h, 1, 0.11, 6); // attack a
     pump(h, 2, 0.11, 6); // attack b → 窗口关闭 → 回 move
@@ -335,7 +366,7 @@ describe('瞬移护栏：单帧位移 > 400px 不作 move（批 D 报告 §7 / �
 
   it('瞬移帧不推进 walk 帧（复位后从 a 起）', () => {
     const h = make();
-    pump(h, 7, 0.11, 6); // 走到 c
+    pump(h, 7, 0.11, 6); // 先走进 move 循环中段（7 × 110ms = 660ms）
     h.rt.state.x += 900; // 瞬移
     h.view.update(0.11);
     expect(h.view.viewState).toBe('idle');
@@ -475,8 +506,14 @@ describe('销毁与常量', () => {
     expect(() => h.view.destroy()).not.toThrow();
   });
 
-  it('常量钉死：330ms/帧、attack a=75ms（=150/2）、纹理 key = characters', () => {
-    expect(WALK_FRAME_MS).toBe(330);
+  it('常量钉死：180ms/帧、attack a=75ms（=150/2）、纹理 key = characters', () => {
+    // 180 是**裁定值**，不是实验值（NV-ENG-EXEC-27 A/B，取证见
+    // `production/official-v1/守誓者批F-AB对比报告-2026-11-09.md` §0/§2）：
+    // - 滑步比 = 120px/s × 帧长 ÷ 美术每帧位移 12.44px → 330ms = 3.18（>1.8 FAIL）／180ms = 1.74（CONCERNS 上界内）；
+    // - 每姿势位移 ÷ 内容宽 78px：0.51（330ms）→ 0.28（180ms）；
+    // - 一圈 1320ms → 720ms，对成人步行循环 0.8~1.0s 由"偏慢"变为"偏快 10~28%"。
+    // 本条是 walk 帧长的**唯一钉死点**（其余用例只断言帧序/边界，不依赖具体数值）。
+    expect(WALK_FRAME_MS).toBe(180);
     expect(ATTACK_FRAME_A_MS).toBe(75);
     expect(OATHKEEPER_TEXTURE_KEY).toBe('characters');
     expect([...OATHKEEPER_WALK_FRAMES]).toEqual([
