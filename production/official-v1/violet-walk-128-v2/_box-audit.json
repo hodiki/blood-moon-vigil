@@ -1,0 +1,323 @@
+{
+  "name": "hero-violet-walk",
+  "footY": 127,
+  "contentH": 112,
+  "kernel": "lanczos3",
+  "minMargin": 1,
+  "box": 128,
+  "frames": [
+    {
+      "slot": "a",
+      "srcFrame": 3,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00003_.png",
+      "srcBox": {
+        "w": 231,
+        "h": 616
+      },
+      "srcEdges": {
+        "top": 21,
+        "bottom": 35,
+        "left": 66,
+        "right": 87
+      },
+      "scale": 0.1818,
+      "widthClamped": false,
+      "placed": {
+        "w": 42,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 43,
+          "right": 43
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 62,
+              "x": [
+                69,
+                84
+              ]
+            },
+            {
+              "area": 56,
+              "x": [
+                43,
+                57
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "e",
+      "srcFrame": 7,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00007_.png",
+      "srcBox": {
+        "w": 269,
+        "h": 612
+      },
+      "srcEdges": {
+        "top": 26,
+        "bottom": 34,
+        "left": 68,
+        "right": 47
+      },
+      "scale": 0.183,
+      "widthClamped": false,
+      "placed": {
+        "w": 49,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 39,
+          "right": 40
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 62,
+              "x": [
+                72,
+                87
+              ]
+            },
+            {
+              "area": 54,
+              "x": [
+                39,
+                52
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "b",
+      "srcFrame": 11,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00011_.png",
+      "srcBox": {
+        "w": 266,
+        "h": 614
+      },
+      "srcEdges": {
+        "top": 24,
+        "bottom": 34,
+        "left": 69,
+        "right": 49
+      },
+      "scale": 0.1824,
+      "widthClamped": false,
+      "placed": {
+        "w": 49,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 39,
+          "right": 40
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 63,
+              "x": [
+                72,
+                87
+              ]
+            },
+            {
+              "area": 53,
+              "x": [
+                39,
+                52
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "c",
+      "srcFrame": 15,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00015_.png",
+      "srcBox": {
+        "w": 203,
+        "h": 618
+      },
+      "srcEdges": {
+        "top": 21,
+        "bottom": 33,
+        "left": 132,
+        "right": 49
+      },
+      "scale": 0.1812,
+      "widthClamped": false,
+      "placed": {
+        "w": 37,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 45,
+          "right": 46
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 61,
+              "x": [
+                45,
+                56
+              ]
+            },
+            {
+              "area": 61,
+              "x": [
+                66,
+                81
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "f",
+      "srcFrame": 17,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00017_.png",
+      "srcBox": {
+        "w": 171,
+        "h": 619
+      },
+      "srcEdges": {
+        "top": 20,
+        "bottom": 33,
+        "left": 170,
+        "right": 43
+      },
+      "scale": 0.1809,
+      "widthClamped": false,
+      "placed": {
+        "w": 31,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 48,
+          "right": 49
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 61,
+              "x": [
+                62,
+                77
+              ]
+            },
+            {
+              "area": 60,
+              "x": [
+                48,
+                60
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "d",
+      "srcFrame": 18,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00018_.png",
+      "srcBox": {
+        "w": 146,
+        "h": 621
+      },
+      "srcEdges": {
+        "top": 20,
+        "bottom": 31,
+        "left": 206,
+        "right": 32
+      },
+      "scale": 0.1804,
+      "widthClamped": false,
+      "placed": {
+        "w": 26,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 51,
+          "right": 51
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [
+          "鞋块只有 1 个（面积 100）—— 确认是否两鞋相邻合并，还是缺脚"
+        ],
+        "shoes": {
+          "count": 1,
+          "blobs": [
+            {
+              "area": 100,
+              "x": [
+                51,
+                73
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

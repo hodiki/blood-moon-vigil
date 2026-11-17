@@ -1,0 +1,328 @@
+{
+  "name": "hero-violet-walk",
+  "footY": 127,
+  "contentH": 112,
+  "kernel": "lanczos3",
+  "minMargin": 1,
+  "box": 128,
+  "frames": [
+    {
+      "slot": "a",
+      "srcFrame": 2,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00002_.png",
+      "srcBox": {
+        "w": 211,
+        "h": 617
+      },
+      "srcEdges": {
+        "top": 20,
+        "bottom": 35,
+        "left": 66,
+        "right": 107
+      },
+      "scale": 0.1815,
+      "widthClamped": false,
+      "placed": {
+        "w": 38,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 45,
+          "right": 45
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 59,
+              "x": [
+                67,
+                82
+              ]
+            },
+            {
+              "area": 55,
+              "x": [
+                45,
+                58
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "e",
+      "srcFrame": 5,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00005_.png",
+      "srcBox": {
+        "w": 258,
+        "h": 614
+      },
+      "srcEdges": {
+        "top": 23,
+        "bottom": 35,
+        "left": 67,
+        "right": 59
+      },
+      "scale": 0.1824,
+      "widthClamped": false,
+      "placed": {
+        "w": 47,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 40,
+          "right": 41
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 63,
+              "x": [
+                71,
+                86
+              ]
+            },
+            {
+              "area": 57,
+              "x": [
+                40,
+                53
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "b",
+      "srcFrame": 8,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00008_.png",
+      "srcBox": {
+        "w": 268,
+        "h": 613
+      },
+      "srcEdges": {
+        "top": 26,
+        "bottom": 33,
+        "left": 68,
+        "right": 48
+      },
+      "scale": 0.1827,
+      "widthClamped": false,
+      "placed": {
+        "w": 49,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 39,
+          "right": 40
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 64,
+              "x": [
+                72,
+                87
+              ]
+            },
+            {
+              "area": 52,
+              "x": [
+                39,
+                52
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "c",
+      "srcFrame": 11,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00011_.png",
+      "srcBox": {
+        "w": 266,
+        "h": 614
+      },
+      "srcEdges": {
+        "top": 24,
+        "bottom": 34,
+        "left": 69,
+        "right": 49
+      },
+      "scale": 0.1824,
+      "widthClamped": false,
+      "placed": {
+        "w": 49,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 39,
+          "right": 40
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 63,
+              "x": [
+                72,
+                87
+              ]
+            },
+            {
+              "area": 53,
+              "x": [
+                39,
+                52
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "f",
+      "srcFrame": 14,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00014_.png",
+      "srcBox": {
+        "w": 238,
+        "h": 617
+      },
+      "srcEdges": {
+        "top": 21,
+        "bottom": 34,
+        "left": 97,
+        "right": 49
+      },
+      "scale": 0.1815,
+      "widthClamped": false,
+      "placed": {
+        "w": 43,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 42,
+          "right": 43
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 59,
+              "x": [
+                69,
+                84
+              ]
+            },
+            {
+              "area": 56,
+              "x": [
+                42,
+                53
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "slot": "d",
+      "srcFrame": 17,
+      "src": "..\\..\\characters\\violet\\review\\20261103-s1\\walk\\raw3\\violet-walk3_00017_.png",
+      "srcBox": {
+        "w": 171,
+        "h": 619
+      },
+      "srcEdges": {
+        "top": 20,
+        "bottom": 33,
+        "left": 170,
+        "right": 43
+      },
+      "scale": 0.1809,
+      "widthClamped": false,
+      "placed": {
+        "w": 31,
+        "h": 112
+      },
+      "audit": {
+        "ok": true,
+        "margins": {
+          "top": 16,
+          "bottom": 0,
+          "left": 48,
+          "right": 49
+        },
+        "footY": 127,
+        "dangling": [],
+        "violations": [],
+        "warnings": [],
+        "shoes": {
+          "count": 2,
+          "blobs": [
+            {
+              "area": 61,
+              "x": [
+                62,
+                77
+              ]
+            },
+            {
+              "area": 60,
+              "x": [
+                48,
+                60
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
