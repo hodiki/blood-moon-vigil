@@ -191,7 +191,15 @@ function holdFrame(sprite: Phaser.GameObjects.Sprite, frame: string): void {
   if (sprite.frame?.name !== frame) sprite.setTexture('characters', frame);
 }
 
-function playVisual(sprite: Phaser.GameObjects.Sprite, base: string, moving: boolean, boss = false): void {
+/**
+ * NV-ENG-EXEC-30 回归修复（玩家走循环永不播放 / `-walk-s` 自复燃死循环）：
+ *
+ * 原守卫 `cur === idle || !sprite.anims.isPlaying` 里第二项是致命的——`start` 是**单帧 + repeat:0**，
+ * 167ms 后必然结束使 `isPlaying === false`，于是下一帧又命中该条件重播 `start`，`move` 一次都播不到。
+ * 现语义：`start` 只在**从 idle 起步那一刻**播一次；播完（isPlaying=false 但 cur 仍是 start）**不得复燃**，
+ * 直接落到 `move`；`move` 自身 repeat:-1 稳定循环。
+ */
+export function playVisual(sprite: Phaser.GameObjects.Sprite, base: string, moving: boolean, boss = false): void {
   const idle = idleAnimKey(base);
   const move = moveAnimKey(base);
   const scene = sprite.scene;
@@ -199,11 +207,13 @@ function playVisual(sprite: Phaser.GameObjects.Sprite, base: string, moving: boo
     const start = walkStartAnimKey(base);
     const cur = sprite.anims.currentAnim?.key;
     if (moving) {
-      if (scene.anims.exists(start) && (cur === idle || !sprite.anims.isPlaying)) {
+      // start 正在播 → 等它播完（不打断、不重播）
+      if (cur === start && sprite.anims.isPlaying) return;
+      // 仅「从 idle 起步」播一次 start；播完后 cur 仍是 start → 不命中此分支，自然落到 move
+      if (scene.anims.exists(start) && cur === idle) {
         playEntity(sprite, start);
         return;
       }
-      if (cur === start && sprite.anims.isPlaying) return;
       playEntity(sprite, move);
       return;
     }
