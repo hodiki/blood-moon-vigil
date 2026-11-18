@@ -1,0 +1,3067 @@
+{
+  "frames": [
+    {
+      "filename": "boss-cardinal-entrance",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-cardinal-v",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-cardinal",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-fenrir-entrance",
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-fenrir-v",
+      "frame": {
+        "x": 1024,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-fenrir",
+      "frame": {
+        "x": 1280,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-moonavatar-entrance",
+      "frame": {
+        "x": 1536,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-moonavatar-v",
+      "frame": {
+        "x": 1792,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "boss-moonavatar",
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "sourceSize": {
+        "w": 256,
+        "h": 256
+      }
+    },
+    {
+      "filename": "enemy-boss-v",
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 240,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 240,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 240,
+        "h": 240
+      }
+    },
+    {
+      "filename": "enemy-boss",
+      "frame": {
+        "x": 496,
+        "y": 256,
+        "w": 240,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 240,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 240,
+        "h": 240
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-attack-a",
+      "frame": {
+        "x": 736,
+        "y": 256,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-attack-b",
+      "frame": {
+        "x": 928,
+        "y": 256,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-v",
+      "frame": {
+        "x": 1120,
+        "y": 256,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-walk-a",
+      "frame": {
+        "x": 1312,
+        "y": 256,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-walk-b",
+      "frame": {
+        "x": 1504,
+        "y": 256,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-walk-c",
+      "frame": {
+        "x": 1696,
+        "y": 256,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-walk-d",
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "summon-oathkeeper",
+      "frame": {
+        "x": 192,
+        "y": 512,
+        "w": 192,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 192,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 192
+      }
+    },
+    {
+      "filename": "hero-cassandra-skill-a",
+      "frame": {
+        "x": 1888,
+        "y": 256,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-skill-b",
+      "frame": {
+        "x": 384,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-v",
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-walk-a",
+      "frame": {
+        "x": 640,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-walk-b",
+      "frame": {
+        "x": 768,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-walk-c",
+      "frame": {
+        "x": 896,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-walk-d",
+      "frame": {
+        "x": 1024,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-walk-e",
+      "frame": {
+        "x": 1152,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra-walk-f",
+      "frame": {
+        "x": 1280,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-cassandra",
+      "frame": {
+        "x": 1408,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-galvan-v",
+      "frame": {
+        "x": 1536,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-galvan",
+      "frame": {
+        "x": 1664,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-fallen-v",
+      "frame": {
+        "x": 1792,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-fallen",
+      "frame": {
+        "x": 1920,
+        "y": 512,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-skill-a",
+      "frame": {
+        "x": 0,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-skill-b",
+      "frame": {
+        "x": 128,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-v",
+      "frame": {
+        "x": 256,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-a",
+      "frame": {
+        "x": 384,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-b",
+      "frame": {
+        "x": 512,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-c",
+      "frame": {
+        "x": 640,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-d",
+      "frame": {
+        "x": 768,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-e",
+      "frame": {
+        "x": 896,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-f",
+      "frame": {
+        "x": 1024,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet-walk-s",
+      "frame": {
+        "x": 1152,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "hero-violet",
+      "frame": {
+        "x": 1280,
+        "y": 704,
+        "w": 128,
+        "h": 128
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 128,
+        "h": 128
+      },
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    {
+      "filename": "enemy-bonethrower-v",
+      "frame": {
+        "x": 1408,
+        "y": 704,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-bonethrower",
+      "frame": {
+        "x": 1504,
+        "y": 704,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-decayedknight-v",
+      "frame": {
+        "x": 1600,
+        "y": 704,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-decayedknight",
+      "frame": {
+        "x": 1696,
+        "y": 704,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-fleshmass-v",
+      "frame": {
+        "x": 1792,
+        "y": 704,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-fleshmass",
+      "frame": {
+        "x": 1888,
+        "y": 704,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-gravekeeper-v",
+      "frame": {
+        "x": 0,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-gravekeeper",
+      "frame": {
+        "x": 96,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-penitent-v",
+      "frame": {
+        "x": 192,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-penitent",
+      "frame": {
+        "x": 288,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-stonewolf-broken-v",
+      "frame": {
+        "x": 384,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-stonewolf-broken",
+      "frame": {
+        "x": 480,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-stonewolf-v",
+      "frame": {
+        "x": 576,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-stonewolf",
+      "frame": {
+        "x": 672,
+        "y": 832,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      }
+    },
+    {
+      "filename": "enemy-necro-v",
+      "frame": {
+        "x": 768,
+        "y": 832,
+        "w": 68,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 68,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 68,
+        "h": 68
+      }
+    },
+    {
+      "filename": "enemy-necro",
+      "frame": {
+        "x": 836,
+        "y": 832,
+        "w": 68,
+        "h": 68
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 68,
+        "h": 68
+      },
+      "sourceSize": {
+        "w": 68,
+        "h": 68
+      }
+    },
+    {
+      "filename": "aura-barrier",
+      "frame": {
+        "x": 1984,
+        "y": 704,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-cupbearer-v",
+      "frame": {
+        "x": 904,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-cupbearer",
+      "frame": {
+        "x": 968,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-wolfhunter-v",
+      "frame": {
+        "x": 1032,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-wolfhunter",
+      "frame": {
+        "x": 1096,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-skill-a",
+      "frame": {
+        "x": 1160,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-skill-b",
+      "frame": {
+        "x": 1224,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-walk-a",
+      "frame": {
+        "x": 1288,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "hero-galvan-walk-b",
+      "frame": {
+        "x": 1352,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-skill-a",
+      "frame": {
+        "x": 1416,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-skill-b",
+      "frame": {
+        "x": 1480,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-v",
+      "frame": {
+        "x": 1544,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-a",
+      "frame": {
+        "x": 1608,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-b",
+      "frame": {
+        "x": 1672,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-c",
+      "frame": {
+        "x": 1736,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-d",
+      "frame": {
+        "x": 1800,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-e",
+      "frame": {
+        "x": 1864,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-f",
+      "frame": {
+        "x": 1928,
+        "y": 832,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player-walk-s",
+      "frame": {
+        "x": 0,
+        "y": 928,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "player",
+      "frame": {
+        "x": 64,
+        "y": 928,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "ring-bloodpool",
+      "frame": {
+        "x": 128,
+        "y": 928,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "ring-holyfire",
+      "frame": {
+        "x": 192,
+        "y": 928,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "super-bloodsea",
+      "frame": {
+        "x": 256,
+        "y": 928,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-acolyte-v",
+      "frame": {
+        "x": 1992,
+        "y": 832,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-acolyte",
+      "frame": {
+        "x": 320,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-greywolf-v",
+      "frame": {
+        "x": 376,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-greywolf",
+      "frame": {
+        "x": 432,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-wraith-v",
+      "frame": {
+        "x": 488,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-wraith",
+      "frame": {
+        "x": 544,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-zombie-v",
+      "frame": {
+        "x": 600,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-zombie",
+      "frame": {
+        "x": 656,
+        "y": 928,
+        "w": 56,
+        "h": 56
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 56,
+        "h": 56
+      },
+      "sourceSize": {
+        "w": 56,
+        "h": 56
+      }
+    },
+    {
+      "filename": "enemy-hound-v",
+      "frame": {
+        "x": 712,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-hound",
+      "frame": {
+        "x": 760,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-shadowwolf-v",
+      "frame": {
+        "x": 808,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "enemy-shadowwolf",
+      "frame": {
+        "x": 856,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "summon-moonwolf-v",
+      "frame": {
+        "x": 904,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "summon-moonwolf",
+      "frame": {
+        "x": 952,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "summon-oathkeeper-tombstone",
+      "frame": {
+        "x": 1000,
+        "y": 928,
+        "w": 48,
+        "h": 48
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "sourceSize": {
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "filename": "beam-chain",
+      "frame": {
+        "x": 2016,
+        "y": 256,
+        "w": 32,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 64
+      }
+    },
+    {
+      "filename": "enemy-bat-v",
+      "frame": {
+        "x": 1048,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "enemy-bat",
+      "frame": {
+        "x": 1088,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "enemy-beetle-v",
+      "frame": {
+        "x": 1128,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "enemy-beetle",
+      "frame": {
+        "x": 1168,
+        "y": 928,
+        "w": 40,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 40,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    {
+      "filename": "shockwave",
+      "frame": {
+        "x": 1208,
+        "y": 928,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "summon-hound",
+      "frame": {
+        "x": 1240,
+        "y": 928,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "super-packleader",
+      "frame": {
+        "x": 1272,
+        "y": 928,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "super-totaleclipse",
+      "frame": {
+        "x": 1304,
+        "y": 928,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    {
+      "filename": "orb-thorn",
+      "frame": {
+        "x": 1336,
+        "y": 928,
+        "w": 20,
+        "h": 20
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 20,
+        "h": 20
+      },
+      "sourceSize": {
+        "w": 20,
+        "h": 20
+      }
+    },
+    {
+      "filename": "orb",
+      "frame": {
+        "x": 1356,
+        "y": 928,
+        "w": 20,
+        "h": 20
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 20,
+        "h": 20
+      },
+      "sourceSize": {
+        "w": 20,
+        "h": 20
+      }
+    },
+    {
+      "filename": "super-seraphring",
+      "frame": {
+        "x": 1376,
+        "y": 928,
+        "w": 20,
+        "h": 20
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 20,
+        "h": 20
+      },
+      "sourceSize": {
+        "w": 20,
+        "h": 20
+      }
+    },
+    {
+      "filename": "proj-blunderbuss",
+      "frame": {
+        "x": 1396,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "proj-boomerang",
+      "frame": {
+        "x": 1412,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "proj-crossbow",
+      "frame": {
+        "x": 1428,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "proj-javelin",
+      "frame": {
+        "x": 1444,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "proj-longbow",
+      "frame": {
+        "x": 1460,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "proj-revolver",
+      "frame": {
+        "x": 1476,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "proj-twinblade",
+      "frame": {
+        "x": 1492,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "summon-bat",
+      "frame": {
+        "x": 1508,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "super-batstorm",
+      "frame": {
+        "x": 1524,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "super-moonwrath",
+      "frame": {
+        "x": 1540,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "super-silverblast",
+      "frame": {
+        "x": 1556,
+        "y": 928,
+        "w": 16,
+        "h": 16
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "filename": "missile",
+      "frame": {
+        "x": 1572,
+        "y": 928,
+        "w": 16,
+        "h": 12
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 12
+      },
+      "sourceSize": {
+        "w": 16,
+        "h": 12
+      }
+    }
+  ],
+  "meta": {
+    "app": "bmv-asset-pipeline",
+    "version": "1.1",
+    "image": "characters.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    },
+    "scale": 1,
+    "framePivots": {
+      "boss-cardinal-entrance": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-cardinal-v": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-cardinal": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-fenrir-entrance": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-fenrir-v": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-fenrir": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-moonavatar-entrance": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-moonavatar-v": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "boss-moonavatar": {
+        "x": 0.5,
+        "y": 0.9473
+      },
+      "enemy-boss-v": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "enemy-boss": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "summon-oathkeeper-attack-a": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper-attack-b": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper-v": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper-walk-a": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper-walk-b": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper-walk-c": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper-walk-d": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "summon-oathkeeper": {
+        "x": 0.5,
+        "y": 0.9974
+      },
+      "hero-cassandra-skill-a": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-skill-b": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-v": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-walk-a": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-walk-b": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-walk-c": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-walk-d": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-walk-e": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra-walk-f": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-cassandra": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-galvan-v": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-galvan": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-fallen-v": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-fallen": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-skill-a": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-skill-b": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-v": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-a": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-b": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-c": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-d": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-e": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-f": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet-walk-s": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-violet": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "enemy-bonethrower-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-bonethrower": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-decayedknight-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-decayedknight": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-fleshmass-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-fleshmass": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-gravekeeper-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-gravekeeper": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-penitent-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-penitent": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-stonewolf-broken-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-stonewolf-broken": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-stonewolf-v": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-stonewolf": {
+        "x": 0.5,
+        "y": 0.9427
+      },
+      "enemy-necro-v": {
+        "x": 0.5,
+        "y": 0.9338
+      },
+      "enemy-necro": {
+        "x": 0.5,
+        "y": 0.9338
+      },
+      "aura-barrier": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "enemy-cupbearer-v": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "enemy-cupbearer": {
+        "x": 0.5,
+        "y": 0.9141
+      },
+      "enemy-wolfhunter-v": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "enemy-wolfhunter": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "hero-galvan-skill-a": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-galvan-skill-b": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-galvan-walk-a": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "hero-galvan-walk-b": {
+        "x": 0.5,
+        "y": 0.9961
+      },
+      "player-skill-a": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-skill-b": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-v": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-a": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-b": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-c": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-d": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-e": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-f": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player-walk-s": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "player": {
+        "x": 0.5,
+        "y": 0.9297
+      },
+      "ring-bloodpool": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "ring-holyfire": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "super-bloodsea": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "enemy-acolyte-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-acolyte": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-greywolf-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-greywolf": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-wraith-v": {
+        "x": 0.5,
+        "y": 0.9196
+      },
+      "enemy-wraith": {
+        "x": 0.5,
+        "y": 0.9196
+      },
+      "enemy-zombie-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-zombie": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-hound-v": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-hound": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-shadowwolf-v": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "enemy-shadowwolf": {
+        "x": 0.5,
+        "y": 0.9271
+      },
+      "summon-moonwolf-v": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "summon-moonwolf": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "summon-oathkeeper-tombstone": {
+        "x": 0.5,
+        "y": 0.9479
+      },
+      "beam-chain": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "enemy-bat-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-bat": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-beetle-v": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "enemy-beetle": {
+        "x": 0.5,
+        "y": 0.9375
+      },
+      "shockwave": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "summon-hound": {
+        "x": 0.5,
+        "y": 0.9219
+      },
+      "super-packleader": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "super-totaleclipse": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "orb-thorn": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "orb": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "super-seraphring": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-blunderbuss": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-boomerang": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-crossbow": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-javelin": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-longbow": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-revolver": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "proj-twinblade": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "summon-bat": {
+        "x": 0.5,
+        "y": 0.9063
+      },
+      "super-batstorm": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "super-moonwrath": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "super-silverblast": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "missile": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  }
+}

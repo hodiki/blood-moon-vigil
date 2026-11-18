@@ -1,0 +1,380 @@
+[
+  {
+    "t": 2972.2,
+    "animKey": "hero-galvan-idle",
+    "frameName": "hero-galvan",
+    "vx": 0
+  },
+  {
+    "t": 3043.2,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3113,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3181.6,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3252.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3324.7,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3392.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3464.7,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3532.9,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3593.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3648.9,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 215
+  },
+  {
+    "t": 3704.7,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 3775.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 3846.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 3915.2,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 3989.9,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 4062.9,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 4133.2,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 4201.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 4272.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-e",
+    "vx": 215
+  },
+  {
+    "t": 4346.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4407,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4476.4,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4545.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4617.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4689.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4763.6,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 215
+  },
+  {
+    "t": 4818.6,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 152
+  },
+  {
+    "t": 4893,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-b",
+    "vx": 152
+  },
+  {
+    "t": 4960.6,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5027.3,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5097.9,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5165.3,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5235.4,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5303.3,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5375,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5447,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5511.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-c",
+    "vx": 0
+  },
+  {
+    "t": 5577.1,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 5640.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 5708.3,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 5774.7,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 5840.7,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 5904.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 5971.2,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 6034.6,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 6101,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 6167,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-f",
+    "vx": 0
+  },
+  {
+    "t": 6232,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6298.3,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6372.8,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6441.6,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6505,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6570.7,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6634.5,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6697.9,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6763.3,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-d",
+    "vx": 0
+  },
+  {
+    "t": 6827.4,
+    "animKey": "hero-galvan-move",
+    "frameName": "hero-galvan-walk-a",
+    "vx": 0
+  },
+  {
+    "t": 6892.3,
+    "animKey": "hero-galvan-idle",
+    "frameName": "hero-galvan",
+    "vx": 0
+  },
+  {
+    "t": 6958.2,
+    "animKey": "hero-galvan-idle",
+    "frameName": "hero-galvan",
+    "vx": 0
+  },
+  {
+    "t": 7022.4,
+    "animKey": "hero-galvan-idle",
+    "frameName": "hero-galvan",
+    "vx": 0
+  },
+  {
+    "t": 7083.4,
+    "animKey": "hero-galvan-idle",
+    "frameName": "hero-galvan",
+    "vx": 0
+  },
+  {
+    "t": 7148.3,
+    "animKey": "hero-galvan-idle",
+    "frameName": "hero-galvan",
+    "vx": 0
+  }
+]

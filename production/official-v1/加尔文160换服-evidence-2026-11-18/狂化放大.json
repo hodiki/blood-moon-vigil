@@ -1,0 +1,20 @@
+[
+  {
+    "mult": 1,
+    "galvanFoot": 603,
+    "violetFoot": 603,
+    "diff": 0,
+    "galvanH": 139,
+    "violetH": 112,
+    "expectWithAnchor": 603.5
+  },
+  {
+    "mult": 1.4,
+    "galvanFoot": 629,
+    "violetFoot": 628,
+    "diff": 1,
+    "galvanH": 195,
+    "violetH": 157,
+    "expectWithAnchor": 628.9
+  }
+]

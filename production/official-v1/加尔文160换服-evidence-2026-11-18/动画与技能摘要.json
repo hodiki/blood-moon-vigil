@@ -1,0 +1,51 @@
+{
+  "animDef": {
+    "hasMove": true,
+    "moveFrames": [
+      "hero-galvan-walk-a",
+      "hero-galvan-walk-e",
+      "hero-galvan-walk-b",
+      "hero-galvan-walk-c",
+      "hero-galvan-walk-f",
+      "hero-galvan-walk-d"
+    ],
+    "moveFrameRate": 6.5,
+    "idleFrames": [
+      "hero-galvan",
+      "hero-galvan-v"
+    ]
+  },
+  "seq": [
+    "a",
+    "e",
+    "b",
+    "c",
+    "f",
+    "d",
+    "a"
+  ],
+  "walkSampleCount": 63,
+  "moveSamples": 57,
+  "skillA": {
+    "label": "skill-a",
+    "frameName": "hero-galvan-skill-a",
+    "shot": "tmp\\exec35\\out\\v6-skill-a.png",
+    "contentH": 140
+  },
+  "skillB": {
+    "label": "skill-b",
+    "frameName": "hero-galvan-skill-b",
+    "shot": "tmp\\exec35\\out\\v6-skill-b.png",
+    "contentH": 138
+  },
+  "ratio": {
+    "galvanH": 139,
+    "violetH": 112,
+    "ratio": 1.241,
+    "footDiff": 0
+  },
+  "violetOrigin": {
+    "refOriginY": 0.5,
+    "refDisplayOriginY": 64
+  }
+}
