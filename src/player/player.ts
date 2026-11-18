@@ -13,7 +13,12 @@ import Phaser from 'phaser';
 import { PLAYER, DEATH_SHIELD, type HeroConfig, type MapId } from '@/config/balance';
 import { MAP_CONFIGS } from '@/config/balance';
 import { visualFrameForContent } from '@/config/frame-registry';
-import { applyCombatDisplayScale } from '@/fx/combat-display-scale';
+import {
+  applyCombatDisplayScale,
+  groundAnchorBodyOffset,
+  groundAnchorOriginY,
+  GROUND_CENTER_ORIGIN,
+} from '@/fx/combat-display-scale';
 import { resolveCharacterFrame } from '@/fx/external-atlas';
 import { PlayerStats } from '@/player/player-stats';
 import { isInvulnerable, applyDamage, extendInvulnerabilityUntil } from '@/combat/damage';
@@ -51,6 +56,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     body.setCollideWorldBounds(false);
     this.setDepth(100);
     applyCombatDisplayScale(this, this.combatRageMult);
+    // NV-ENG-EXEC-35：160 画布（加尔文）的脚底不能沉进地面 —— 抬 originY 让脚底仍落在地线
+    // y + PLAYER_FOOT_OFFSET（= 128 画布英雄的脚位），并把 Arcade Body 补回 128 画布时代的位置，
+    // 使换图是**纯视觉**改动（碰撞/接触判定与其它英雄逐像素一致）。128 画布及以下不改（anchor=0.5 → no-op）。
+    const anchorY = groundAnchorOriginY(this.frame.height);
+    if (anchorY !== GROUND_CENTER_ORIGIN) {
+      this.setOrigin(0.5, anchorY);
+      const off = groundAnchorBodyOffset(this.frame.width, this.displayOriginY);
+      body.setOffset(off.x, off.y);
+    }
     const map = MAP_CONFIGS[mapId];
     this.worldW = map.width;
     this.worldH = map.height;

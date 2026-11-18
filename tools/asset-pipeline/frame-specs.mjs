@@ -5,7 +5,7 @@
 
 import { familyKey, isAnimationVariant } from './layout.mjs';
 
-/** 已过 C/E 仍 64。守誓 idle/-v/walk/attack 已过 192（仅墓碑留 48）。魔化 idle/-v 已过 128（B-lo）。加尔文 idle/-v 已过 128（方案 A r1）；走/技能仍 64。卡珊德拉 10 帧已定稿 128（2026-11-07 裁决）。 */
+/** 已过 C/E 仍 64。守誓 idle/-v/walk/attack 已过 192（仅墓碑留 48）。魔化 idle/-v 已过 128（B-lo）。加尔文整族已过 160（NV-ENG-EXEC-35）。卡珊德拉 10 帧已定稿 128（2026-11-07 裁决）。 */
 export const COMBAT_CANVAS = {
   passedHero: 64,
   newHero: 128,
@@ -17,7 +17,7 @@ export const COMBAT_CANVAS = {
 export const COMBAT_128_LOCK_PLAN = {
   'hero-violet': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-violet-fallen': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
-  'hero-galvan': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
   // 卡珊德拉 128 定稿（2026-11-07 裁决）。键是 **族基名**：specAfterCombat128Lock 走
   // `familyKey(frameName)` 查表，`-v / -skill-a / -skill-b / -walk-a..f` 都剥到 `hero-cassandra`，
   // 故不逐条列变体 —— 与 hero-violet 先例一致（violet 的变体也从未进过本表）。
@@ -83,13 +83,16 @@ const EXPLICIT = {
   // 魔化 idle 已过 128（B-lo）。skill / walk 跟族 128 nearest，未过不写 frames。
   'hero-violet-fallen': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
   'hero-violet-fallen-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
-  'hero-galvan': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
-  'hero-galvan-v': { w: 128, h: 128, atlas: 'characters', kernel: 'nearest' },
-  // 走 / 技能未过，仍是旧 64。不跟 idle 升 128。
-  'hero-galvan-walk-a': { w: 64, h: 64, atlas: 'characters' },
-  'hero-galvan-walk-b': { w: 64, h: 64, atlas: 'characters' },
-  'hero-galvan-skill-a': { w: 64, h: 64, atlas: 'characters' },
-  'hero-galvan-skill-b': { w: 64, h: 64, atlas: 'characters' },
+  // NV-ENG-EXEC-35（2026-11-18）：加尔文整族升 **160**（idle/-v/walk-a..f/skill-a/-b 共 10 帧，
+  // 磁盘实测全 160×160、脚底 y=159、内容高 139/140）。旧档 idle 128 / 走·技能 64 已作废
+  // （64 档是"浮在半空"的坏帧：内容高 54/46、脚底卡 y=59）。
+  // walk-c..f 不逐条写：familyKey 回退到基帧（与 violet/cassandra 同写法）。
+  'hero-galvan': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan-v': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan-walk-a': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan-walk-b': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan-skill-a': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
+  'hero-galvan-skill-b': { w: 160, h: 160, atlas: 'characters', kernel: 'nearest' },
 
   // 敌人（g1 墓地）
   'enemy-zombie': { w: 56, h: 56, atlas: 'characters' },
