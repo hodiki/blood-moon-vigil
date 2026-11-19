@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   KEYBIND_ROWS,
+  KEYBIND_ROWS_MOBILE,
   KEYBINDS_TITLE,
+  KEYBINDS_FOOTER_MOBILE,
   KEYBINDS_SEEN_STORAGE_KEY,
   loadKeybindsShown,
   markKeybindsShown,
@@ -26,6 +28,12 @@ describe('NV-PLAYER-UI W-B4 键位卡（守夜人的第一课）', () => {
     expect(KEYBINDS_TITLE).toBe('守夜人的第一课');
     expect(KEYBIND_ROWS.map((r) => r.keys)).toEqual(['W A S D', '空格', 'Q', 'Esc']);
     expect(KEYBIND_ROWS.map((r) => r.label)).toEqual(['移动', '专属技能', '圣物', '暂停']);
+  });
+
+  it('触控端键位卡改讲摇杆和屏幕按钮，不再教 WASD', () => {
+    expect(KEYBIND_ROWS_MOBILE.map((r) => r.keys)).toEqual(['虚拟摇杆', '技能键', '圣物键', '暂停键']);
+    expect(KEYBIND_ROWS_MOBILE.map((r) => r.label)).toEqual(['移动', '专属技能', '圣物', '暂停']);
+    expect(KEYBINDS_FOOTER_MOBILE).toBe('点击任意处，走进夜色');
   });
 
   it('首次标记：缺 key = 未展示过（应弹卡）；markKeybindsShown 写入后不再弹', () => {

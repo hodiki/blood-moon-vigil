@@ -4,7 +4,7 @@
  * 规则（control-manifest §3 / ux-spec §3 防误触四件套）：
  * - 三卡全屏居中：桌面 320×180 / 移动 200×112（CSS 媒体查询，热区远超 44px 下限）
  * - 桌面鼠标点卡或数字键 1/2/3 直选（CM U6）；移动点按卡片
- * - 选中反馈：冷青 2px 描边 #54E6C9 + 缩放 1.03（0.1s，CSS transition）
+ * - 选中反馈：余辉金 2px 描边 #FFC93C + 缩放 1.03（0.1s，CSS transition；art-bible §6）
  * - 防误触：非卡片区点击/拖拽/长按无响应（遮罩拦截 + 点按时长/位移判定）
  * - 30s 超时自动选第 1 张（upgrade-pool §6.1 / CM U3）
  * - 单向数据流（ARCH §2 / ADR-004）：本层只读选项数据、只 emit upgrade:chosen，
@@ -14,6 +14,7 @@
 import { GameEvents, GameEvent } from '@/core/events';
 import type { UpgradeV2Option } from '@/upgrade/upgrade-pool-v2';
 import { preferFrameImg } from '@/ui/frame-img';
+import { claimOverlay, registerOverlayMutex } from '@/ui/overlay-mutex';
 
 /** B6-W3 卡类徽记（gdd-talent-tree §⑧ / upgrade-pool-v3 §3.1）：按 id 前缀映射卡类名 */
 export function cardCategoryBadge(upgradeId: string | undefined): string {
@@ -72,6 +73,7 @@ export class LevelUpOverlay {
   /** 本次展示时间戳（纠结埋点 dwell 计算，E4-S1） */
   private shownAt = 0;
   private readonly timeoutSeconds: number;
+  private unregisterMutex: (() => void) | null = null;
 
   constructor(host: HTMLElement, opts: LevelUpOverlayOptions = {}) {
     this.timeoutSeconds = opts.timeoutSeconds ?? DEFAULT_TIMEOUT_SECONDS;
@@ -97,6 +99,7 @@ export class LevelUpOverlay {
     }
 
     window.addEventListener('keydown', this.onKeyDown);
+    this.unregisterMutex = registerOverlayMutex('levelup', () => this.hide());
   }
 
   /** 显示三张升级卡（进 LEVEL_UP 时由 PlayScene 调用；v3 池内容 ID + 席位角标/卡类徽记） */
@@ -115,6 +118,7 @@ export class LevelUpOverlay {
    */
   private showRoot(): void {
     this.clearChooseTimer();
+    claimOverlay('levelup');
     this.root.style.opacity = '1';
     this.root.style.display = 'flex';
   }
@@ -127,6 +131,8 @@ export class LevelUpOverlay {
   }
 
   destroy(): void {
+    this.unregisterMutex?.();
+    this.unregisterMutex = null;
     window.removeEventListener('keydown', this.onKeyDown);
     this.cards.forEach((card, i) => {
       const h = this.cardHandlers[i];
@@ -162,11 +168,13 @@ export class LevelUpOverlay {
         ? `<div class="bmv-reso-badge bmv-reso-${option.resonanceBadge}"><span class="bmv-reso-badge-text">${resoBadge.label}</span></div>`
         : '';
       card.innerHTML = `
-        ${seatBadge}${catBadge}${resoBadgeEl}
+        <div class="bmv-upgrade-badges">${seatBadge}${catBadge}${resoBadgeEl}</div>
         ${iconInner}
-        <div class="bmv-upgrade-title">${escapeHtml(option.name)}</div>
-        <div class="bmv-upgrade-desc">${escapeHtml(option.desc)}</div>
-        <div class="bmv-upgrade-effect">${escapeHtml(option.effectText)}</div>
+        <div class="bmv-upgrade-copy">
+          <div class="bmv-upgrade-title">${escapeHtml(option.name)}</div>
+          <div class="bmv-upgrade-desc">${escapeHtml(option.desc)}</div>
+          <div class="bmv-upgrade-effect">${escapeHtml(option.effectText)}</div>
+        </div>
       `;
       if (resoBadge) {
         const badgeHost = card.querySelector('.bmv-reso-badge');
@@ -213,7 +221,7 @@ export class LevelUpOverlay {
     else if (e.key === '3') this.select(2);
   };
 
-  /** 选中反馈（冷青描边 + 缩放 1.03，0.1s）后 emit upgrade:chosen */
+  /** 选中反馈（余辉金描边 + 缩放 1.03，0.1s）后 emit upgrade:chosen */
   private select(index: number): void {
     if (this.root.style.display === 'none') return; // 未展示不响应（QA-BUG-1 键盘/连点保底）
     if (this.chooseTimerId !== null) return; // 已有待确认选中：忽略本次（连点 / 键盘重复不再叠加 choose）
@@ -291,27 +299,24 @@ export class LevelUpOverlay {
         max-width: calc((100dvw - 80px - 48px) / 3);
         flex: 0 1 auto;
         min-width: 0;
-        height: 180px;
+        height: auto;
+        min-height: 200px;
         box-sizing: border-box;
         background: #131722;
         border: 2px solid #2A3346;
         border-radius: 8px;
-        padding: 12px;
+        padding: 10px 12px 12px;
         display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
+        align-items: center; justify-content: flex-start;
         cursor: pointer;
         transition: transform 0.1s ease-out, border-color 0.1s ease-out;
         user-select: none;
         -webkit-user-select: none;
       }
-      .bmv-upgrade-card.bmv-selected {
-        transform: scale(1.03);
-        border-color: #54E6C9;
-        box-shadow: 0 0 0 2px #54E6C9;
-      }
       .bmv-upgrade-icon {
-        width: 128px; height: 128px;
-        margin-bottom: 8px;
+        width: 96px; height: 96px;
+        margin-bottom: 6px;
+        flex: 0 0 auto;
       }
       /* TASK-33：内联矢量图标（icons.ts），SVG 自带底色分型（机制蓝紫/数值金），铺满容器缩放 */
       .bmv-upgrade-icon svg {
@@ -322,6 +327,11 @@ export class LevelUpOverlay {
       .bmv-mechanic-card { background: #131722; border-color: #4FC3F7; }
       .bmv-numeric-card { background: #2A2A1C; border-color: #FFC93C; }
       .bmv-evo-card { background: #241A33; border-color: #B06AF0; }
+      .bmv-upgrade-card.bmv-selected {
+        transform: scale(1.03);
+        border-color: #FFC93C;
+        box-shadow: 0 0 0 2px #FFC93C;
+      }
       .bmv-v2-icon {
         display: flex; align-items: center; justify-content: center;
         font-size: 20px; font-weight: 700; color: #F2F5F9;
@@ -340,23 +350,35 @@ export class LevelUpOverlay {
         background: #0B0E14; border: 3px solid #54E6C9; border-radius: 10px;
         text-shadow: 0 0 8px rgba(176,106,240,0.8);
       }
+      .bmv-upgrade-badges {
+        position: relative;
+        display: flex; flex-wrap: wrap; gap: 6px;
+        justify-content: space-between; align-items: center;
+        width: 100%;
+        margin-bottom: 8px;
+        pointer-events: none; z-index: 1;
+      }
+      .bmv-upgrade-copy { display: flex; flex-direction: column; align-items: center; width: 100%; }
+      .bmv-v2-icon-text { text-align: center; padding: 0 6px; word-break: keep-all; }
       /* B6-W3：席位角标（余辉金）+ 卡类徽记（冷青）——gdd-talent-tree §⑧ */
       .bmv-seat-badge {
-        position: absolute; top: -10px; left: -10px;
+        position: static;
         font-size: 14px; font-weight: 700; color: #131722;
         background: #FFC93C; border-radius: 6px;
         padding: 2px 8px;
         box-shadow: 0 0 6px rgba(255,201,60,0.8);
+        white-space: nowrap;
       }
       .bmv-cat-badge {
-        position: absolute; top: -10px; right: -10px;
+        position: static;
         font-size: 13px; font-weight: 600; color: #54E6C9;
         background: #0B0E14; border: 1px solid #54E6C9; border-radius: 6px;
         padding: 1px 6px;
+        white-space: nowrap;
       }
       /* P2-3（NV-P2-ZERO）：共鸣预告徽记四态（hud.bmv-hud-reso 视觉惯例镜像：帧图 + 状态色） */
       .bmv-reso-badge {
-        position: absolute; bottom: -10px; left: -10px;
+        position: relative;
         width: 34px; height: 34px;
         display: flex; align-items: center; justify-content: center;
         background: #0B0E14; border-radius: 6px;
@@ -383,6 +405,7 @@ export class LevelUpOverlay {
         font-size: 22px; font-weight: 700;
         color: #F2F5F9;
         text-align: center;
+        word-break: keep-all;
       }
       .bmv-upgrade-desc {
         font-size: 16px;
@@ -397,19 +420,46 @@ export class LevelUpOverlay {
       }
       @keyframes bmv-fade-in { from { opacity: 0; } to { opacity: 1; } }
       @keyframes bmv-rise { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-      /* 移动端（ux-spec §3：200×112、间距 16、图标 72、字号物理 ≥14px；TASK-21 Bug2 视口收缩） */
+      /* 移动端竖屏改为通栏竖向堆叠，避免三卡挤爆；横屏仍三卡横排但徽记不再出框碰撞 */
       @media (max-width: 900px) {
         .bmv-levelup-cards { gap: 16px; max-width: calc(100vw - 24px); max-width: calc(100dvw - 24px); }
         .bmv-upgrade-card {
           width: 200px;
           max-width: calc((100vw - 24px - 32px) / 3);
           max-width: calc((100dvw - 24px - 32px) / 3);
-          height: 112px; padding: 8px;
+          height: auto; min-height: 112px; padding: 16px 8px 10px;
         }
-        .bmv-upgrade-icon { width: 72px; height: 72px; margin-bottom: 4px; }
+        .bmv-upgrade-icon { width: 64px; height: 64px; margin-bottom: 4px; flex: 0 0 auto; }
         .bmv-upgrade-title { font-size: 16px; }
-        .bmv-upgrade-desc { font-size: 12px; }
+        .bmv-upgrade-desc { font-size: 13px; word-break: keep-all; }
         .bmv-upgrade-effect { font-size: 13px; margin-top: 4px; }
+        .bmv-upgrade-badges { position: relative; top: 0; left: 0; right: 0; width: 100%; margin-bottom: 6px; }
+      }
+      @media (max-width: 900px) and (orientation: portrait) {
+        .bmv-levelup-cards {
+          flex-direction: column;
+          gap: 12px;
+          max-width: min(520px, calc(100vw - 32px));
+          max-width: min(520px, calc(100dvw - 32px));
+          max-height: calc(100dvh - 32px);
+          overflow-y: auto;
+        }
+        .bmv-upgrade-card {
+          width: 100%;
+          max-width: 100%;
+          min-height: 96px;
+          height: auto;
+          padding: 14px 14px 12px;
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          align-items: center;
+          gap: 10px;
+        }
+        .bmv-upgrade-badges { order: -1; margin-bottom: 0; }
+        .bmv-upgrade-icon { width: 72px; height: 72px; margin-bottom: 0; }
+        .bmv-upgrade-copy { flex: 1 1 0; min-width: 0; align-items: flex-start; text-align: left; }
+        .bmv-upgrade-title, .bmv-upgrade-desc, .bmv-upgrade-effect { text-align: left; }
       }
     `;
     host.appendChild(style);

@@ -35,15 +35,18 @@ describe('三选一卡片响应式布局（TASK-21 Bug2）', () => {
     expect(computeLevelUpCardLayout(844, 390).cardHeight).toBeGreaterThanOrEqual(MIN_HOT_ZONE_PX);
   });
 
-  it('竖屏 390：卡片收缩到 (390−24−32)/3 ≈ 111px，整行 ≤390 不再溢出', () => {
+  it('竖屏 390：通栏竖向堆叠，单卡宽 = 390−32，整列不溢出', () => {
     const layout = computeLevelUpCardLayout(390, 844);
-    expect(layout.cardWidth).toBeCloseTo((390 - 24 - 32) / 3, 6);
-    expect(layout.cardWidth).toBeLessThan(200); // 原固定 200px 溢出 → 已收缩
+    expect(layout.stacked).toBe(true);
+    expect(layout.cardWidth).toBe(390 - 32);
+    expect(layout.rowWidth).toBe(layout.cardWidth);
     expect(layout.rowWidth).toBeLessThanOrEqual(390);
+    expect(layout.cardHeight * 3 + layout.gap * 2).toBeLessThanOrEqual(844);
   });
 
-  it('横屏 844×390：卡片保持基准 200px（够宽），高度 112 ≤390 不溢出', () => {
+  it('横屏 844×390：保持三卡横排，卡片 200×112，不溢出', () => {
     const layout = computeLevelUpCardLayout(844, 390);
+    expect(layout.stacked).toBe(false);
     expect(layout.cardWidth).toBe(200); // 宽度充足不收缩
     expect(layout.cardHeight).toBe(112);
     expect(layout.rowWidth).toBeLessThanOrEqual(844);
@@ -54,6 +57,7 @@ describe('三选一卡片响应式布局（TASK-21 Bug2）', () => {
     expect(layout.cardWidth).toBe(320);
     expect(layout.cardHeight).toBe(180);
     expect(layout.gap).toBe(24);
+    expect(layout.stacked).toBe(false);
     expect(layout.fits).toBe(true);
   });
 

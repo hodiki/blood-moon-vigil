@@ -15,6 +15,7 @@
 
 import { EXCLUSIVE_WEAPONS, HERO_EXCLUSIVE_PAIRS, type ExclusiveWeaponId, type HeroId } from '@/config/balance';
 import { preferFrameImg } from '@/ui/frame-img';
+import { claimOverlay, registerOverlayMutex } from '@/ui/overlay-mutex';
 
 /** 专武 id → 卡面立绘帧名（frame-registry xw_cards；twinblades/longbow 帧名单数截断） */
 const EXW_CARD_FRAMES: Record<ExclusiveWeaponId, string> = {
@@ -35,12 +36,28 @@ export interface ExclusiveSelectOverlayOptions {
   onChoose: (chosen: ExclusiveWeaponId) => void;
 }
 
+/** 力量词根给玩家看的短名，避免把 MOON / SILVER 这类内部编号露出去 */
+const POWER_TAG_LABEL: Record<string, string> = {
+  MOON: '月',
+  SILVER: '银',
+  BLOOD: '血',
+  HALLOWED: '圣',
+  BEAST: '兽',
+};
+
+function exclusiveTagLine(powerTag: string, feel: string): string {
+  const tag = POWER_TAG_LABEL[powerTag] ?? '';
+  const feelText = feel.replace(/^[A-D]\s+/, '');
+  return tag ? `${tag} · ${feelText}` : feelText;
+}
+
 export class ExclusiveSelectOverlay {
   private readonly root: HTMLElement;
   private readonly cards: HTMLElement[] = [];
   private readonly cardHandlers: Array<{ down: (e: PointerEvent) => void; up: (e: PointerEvent) => void }> = [];
   private pair: readonly ExclusiveWeaponId[] = [];
   private readonly onChoose: (chosen: ExclusiveWeaponId) => void;
+  private unregisterMutex: (() => void) | null = null;
 
   constructor(host: HTMLElement, opts: ExclusiveSelectOverlayOptions) {
     this.onChoose = opts.onChoose;
@@ -58,6 +75,7 @@ export class ExclusiveSelectOverlay {
     `;
     host.appendChild(this.root);
     this.root.style.display = 'none';
+    this.unregisterMutex = registerOverlayMutex('exclusive', () => this.hide());
 
     const cardsRow = this.root.querySelector('.bmv-exclusive-cards') as HTMLElement;
     for (let i = 0; i < 2; i += 1) {
@@ -82,6 +100,7 @@ export class ExclusiveSelectOverlay {
     if (!pair) return;
     this.pair = pair;
     this.render();
+    claimOverlay('exclusive');
     this.root.style.display = 'flex';
   }
 
@@ -90,6 +109,8 @@ export class ExclusiveSelectOverlay {
   }
 
   destroy(): void {
+    this.unregisterMutex?.();
+    this.unregisterMutex = null;
     window.removeEventListener('keydown', this.onKeyDown);
     this.cards.forEach((card, i) => {
       const h = this.cardHandlers[i];
@@ -111,7 +132,7 @@ export class ExclusiveSelectOverlay {
       card.innerHTML = `
         <div class="bmv-exclusive-art">${cfg.name}</div>
         <div class="bmv-exclusive-name">${cfg.name}</div>
-        <div class="bmv-exclusive-tag">${cfg.powerTag} · ${cfg.feel}</div>
+        <div class="bmv-exclusive-tag">${exclusiveTagLine(cfg.powerTag, cfg.feel)}</div>
         <div class="bmv-exclusive-desc">${cfg.effect}</div>
         <div class="bmv-exclusive-key">${i === 0 ? '按 1 或点击' : '按 2 或点击'}</div>
       `;
@@ -191,11 +212,11 @@ export class ExclusiveSelectOverlay {
         transition: transform 0.1s ease-out, border-color 0.1s ease-out;
         user-select: none; -webkit-user-select: none;
       }
-      .bmv-exclusive-card:hover { border-color: #54E6C9; }
+      .bmv-exclusive-card:hover { border-color: #FFC93C; }
       .bmv-exclusive-card.bmv-selected {
         transform: scale(1.03);
-        border-color: #54E6C9;
-        box-shadow: 0 0 0 2px #54E6C9;
+        border-color: #FFC93C;
+        box-shadow: 0 0 0 2px #FFC93C;
       }
       .bmv-exclusive-art {
         width: 200px; height: 200px;
@@ -206,11 +227,16 @@ export class ExclusiveSelectOverlay {
       }
       .bmv-exclusive-art img.bmv-frame-img { display: block; width: 100%; height: 100%; object-fit: cover; }
       .bmv-exclusive-name { font-size: 22px; font-weight: 700; color: #F2F5F9; margin-top: 10px; }
-      .bmv-exclusive-tag { font-size: 13px; color: #54E6C9; margin-top: 2px; }
+      .bmv-exclusive-tag { font-size: 13px; color: #FFC93C; margin-top: 2px; word-break: keep-all; }
       .bmv-exclusive-desc {
         font-size: 13px; color: #A9B4C4; line-height: 1.5;
         margin-top: 8px; text-align: center;
         overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        word-break: keep-all;
+        overflow-wrap: break-word;
       }
       .bmv-exclusive-key { font-size: 12px; color: #6A7280; margin-top: auto; }
       @keyframes bmv-exclusive-rise { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

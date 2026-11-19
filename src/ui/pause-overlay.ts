@@ -13,6 +13,8 @@
 
 import { getOverlayHost } from '@/ui/overlay-host';
 import { KeybindsOverlay } from '@/ui/keybinds-overlay';
+import { claimOverlay, registerOverlayMutex } from '@/ui/overlay-mutex';
+import { detectIsMobile } from '@/utils/device';
 
 export interface PauseState {
   muted: boolean;
@@ -35,6 +37,7 @@ export class PauseOverlay {
   private readonly hapticsWrap: HTMLElement;
   private readonly hapticsInput: HTMLInputElement;
   private readonly destroyFns: Array<() => void> = [];
+  private unregisterMutex: (() => void) | null = null;
 
   constructor(host: HTMLElement, opts: PauseOverlayOptions) {
     this.ensureStyles(host);
@@ -88,6 +91,7 @@ export class PauseOverlay {
       if (tutorialOverlay) return;
       tutorialOverlay = new KeybindsOverlay(getOverlayHost(), {
         markSeen: false,
+        isMobile: detectIsMobile(),
         onClose: () => {
           tutorialOverlay = null;
         },
@@ -95,10 +99,12 @@ export class PauseOverlay {
     });
 
     this.root.style.display = 'none';
+    this.unregisterMutex = registerOverlayMutex('pause', () => this.hide());
   }
 
   /** 展示暂停菜单（PlayScene 状态转 PAUSED 时调用；可重复调用于开关状态刷新） */
   show(state: PauseState): void {
+    claimOverlay('pause');
     this.muteInput.checked = state.muted;
     this.reduceInput.checked = state.reduceFlash;
     this.hapticsInput.checked = state.haptics;
@@ -112,6 +118,8 @@ export class PauseOverlay {
   }
 
   destroy(): void {
+    this.unregisterMutex?.();
+    this.unregisterMutex = null;
     for (const off of this.destroyFns) off();
     this.root.remove();
   }
@@ -134,7 +142,7 @@ export class PauseOverlay {
       }
       .bmv-pause-mask {
         position: absolute; inset: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.8);
       }
       .bmv-pause-panel {
         position: relative;
@@ -182,14 +190,15 @@ export class PauseOverlay {
         border: 1px solid #2A3346; border-radius: 8px;
         cursor: pointer;
       }
-      .bmv-pause-tutorial:hover { color: #F2F5F9; border-color: #54E6C9; }
+      .bmv-pause-tutorial:hover { color: #F2F5F9; border-color: #C9B48A; }
       .bmv-pause-resume {
         width: 100%; height: 56px;
         margin-top: 8px;
         font-size: 20px; font-weight: 700;
-        color: #F2F5F9;
-        background: #131722;
-        border: 2px solid #54E6C9; border-radius: 8px;
+        color: #FFC93C;
+        background: rgba(19,23,34,0.72);
+        border: 2px solid #FFC93C; border-radius: 8px;
+        box-shadow: 0 0 18px rgba(255,201,60,0.18), inset 0 0 16px rgba(255,201,60,0.06);
         cursor: pointer;
       }
       .bmv-pause-resume:hover { transform: scale(1.03); }

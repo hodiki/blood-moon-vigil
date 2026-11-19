@@ -13,6 +13,7 @@
 
 import { GameEvents, GameEvent } from '@/core/events';
 import { getOverlayHost } from '@/ui/overlay-host';
+import { claimOverlay, registerOverlayMutex } from '@/ui/overlay-mutex';
 import { incrementRestartCount } from '@/stats/session-stats';
 import type { RunResult } from '@/stats/run-stats';
 import { NARRATIVES, entryByKey } from '@/narratives/narratives';
@@ -94,6 +95,7 @@ export class ResultsOverlay {
   private readonly rewardProgressTextEl: HTMLElement;
   private readonly handlers: Array<{ event: string; fn: (...args: unknown[]) => void }> = [];
   private rollRaf = 0;
+  private unregisterMutex: (() => void) | null = null;
 
   constructor(host: HTMLElement) {
     this.ensureStyles(host);
@@ -194,10 +196,12 @@ export class ResultsOverlay {
     };
     GameEvents.on(GameEvent.GameOver, onGameOver);
     this.handlers.push({ event: GameEvent.GameOver, fn: onGameOver });
+    this.unregisterMutex = registerOverlayMutex('results', () => this.hide());
   }
 
   /** 展示结算（game:over 自动触发；也可由 PlayScene 直接调用；extras 供 M3 奖励条） */
   show(stats: RunResult, extras?: GameOverPayload): void {
+    claimOverlay('results');
     this.root.style.display = 'flex';
     // C-5：标题文案来源 narratives.ts（封印稳固·守夜完成 / 守夜失败。）
     this.titleEl.textContent = resultTitle(stats.victory);
@@ -284,7 +288,13 @@ export class ResultsOverlay {
       : `${Math.round(stats.bossFightSeconds * 10) / 10}s`;
   }
 
+  hide(): void {
+    this.root.style.display = 'none';
+  }
+
   destroy(): void {
+    this.unregisterMutex?.();
+    this.unregisterMutex = null;
     cancelAnimationFrame(this.rollRaf);
     for (const h of this.handlers) GameEvents.off(h.event, h.fn);
     this.root.remove();
@@ -493,9 +503,10 @@ export class ResultsOverlay {
       .bmv-results-restart {
         width: 320px; height: 56px;
         font-size: 22px; font-weight: 700;
-        color: #F2F5F9;
-        background: #131722;
-        border: 2px solid #54E6C9; border-radius: 8px;
+        color: #FFC93C;
+        background: rgba(19,23,34,0.72);
+        border: 2px solid #FFC93C; border-radius: 8px;
+        box-shadow: 0 0 18px rgba(255,201,60,0.18), inset 0 0 16px rgba(255,201,60,0.06);
         cursor: pointer;
       }
       .bmv-results-restart:hover { transform: scale(1.03); }

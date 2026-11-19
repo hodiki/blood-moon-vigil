@@ -25,8 +25,17 @@ export const KEYBIND_ROWS: readonly KeybindRow[] = [
   { keys: 'Esc', label: '暂停' },
 ];
 
+/** 触控端内容（虚拟摇杆 / 技能键 / 圣物键 / 暂停键） */
+export const KEYBIND_ROWS_MOBILE: readonly KeybindRow[] = [
+  { keys: '虚拟摇杆', label: '移动' },
+  { keys: '技能键', label: '专属技能' },
+  { keys: '圣物键', label: '圣物' },
+  { keys: '暂停键', label: '暂停' },
+];
+
 export const KEYBINDS_TITLE = '守夜人的第一课';
 export const KEYBINDS_FOOTER = '按任意键，走进夜色';
+export const KEYBINDS_FOOTER_MOBILE = '点击任意处，走进夜色';
 export const KEYBINDS_TUTORIAL_LABEL = '新手教程 · 键位';
 
 /** localStorage 标记键（首次弹卡口径；独立键，避免触碰 src/stats/save.ts 游戏侧禁区） */
@@ -57,6 +66,8 @@ export interface KeybindsOverlayOptions {
   storage?: Pick<Storage, 'getItem' | 'setItem'>;
   /** 是否写标记（首次流 true；教程重看可 false 保持语义纯净，缺省 true 幂等无害） */
   markSeen?: boolean;
+  /** 触控端使用摇杆/按钮说明，桌面使用键位说明 */
+  isMobile?: boolean;
 }
 
 export class KeybindsOverlay {
@@ -72,11 +83,15 @@ export class KeybindsOverlay {
     this.markSeen = opts.markSeen ?? true;
     this.ensureStyles(host);
 
+    const isMobile = opts.isMobile ?? false;
+    const rowsSrc = isMobile ? KEYBIND_ROWS_MOBILE : KEYBIND_ROWS;
+    const footer = isMobile ? KEYBINDS_FOOTER_MOBILE : KEYBINDS_FOOTER;
+
     this.root = document.createElement('div');
     this.root.className = 'bmv-keybinds';
     this.root.setAttribute('role', 'dialog');
     this.root.setAttribute('aria-label', KEYBINDS_TITLE);
-    const rows = KEYBIND_ROWS.map(
+    const rows = rowsSrc.map(
       (r) => `<div class="bmv-keybinds-row"><span class="bmv-keybinds-keys">${r.keys}</span><span class="bmv-keybinds-label">${r.label}</span></div>`,
     ).join('');
     this.root.innerHTML = `
@@ -86,7 +101,7 @@ export class KeybindsOverlay {
         <div class="bmv-keybinds-title">${KEYBINDS_TITLE}</div>
         <div class="bmv-keybinds-sub">血月之夜，记住这几件事</div>
         <div class="bmv-keybinds-rows">${rows}</div>
-        <div class="bmv-keybinds-footer">${KEYBINDS_FOOTER}</div>
+        <div class="bmv-keybinds-footer">${footer}</div>
       </div>
     `;
     this.root.addEventListener('pointerdown', () => this.close());

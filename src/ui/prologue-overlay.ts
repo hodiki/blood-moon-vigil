@@ -18,6 +18,7 @@
 import type { NarrativeText } from '@/narratives/narratives';
 import { splitPrologueLines } from '@/narratives/narratives';
 import { getOverlayHost } from '@/ui/overlay-host';
+import { claimOverlay, registerOverlayMutex } from '@/ui/overlay-mutex';
 
 /** 序章固定 3s（spec §1.2：序章/开局固定 3s，可点击跳过） */
 export const PROLOGUE_DEFAULT_DURATION_MS = 3000;
@@ -67,6 +68,7 @@ export class PrologueOverlay {
   private onComplete: (() => void) | null = null;
   private readonly clickHandler: () => void;
   private readonly keyHandler: (e: KeyboardEvent) => void;
+  private unregisterMutex: (() => void) | null = null;
 
   constructor(host: HTMLElement, opts: PrologueOverlayOptions = {}) {
     this.durationMs = opts.durationMs ?? PROLOGUE_DEFAULT_DURATION_MS;
@@ -102,6 +104,7 @@ export class PrologueOverlay {
       }
     };
     if (typeof window !== 'undefined') window.addEventListener('keydown', this.keyHandler);
+    this.unregisterMutex = registerOverlayMutex('prologue', () => this.hide());
   }
 
   /**
@@ -116,6 +119,7 @@ export class PrologueOverlay {
       this.finish();
       return;
     }
+    claimOverlay('prologue');
     this.root.style.display = 'flex';
     this.renderScreen(0);
     this.armTimer();
@@ -128,6 +132,8 @@ export class PrologueOverlay {
   }
 
   destroy(): void {
+    this.unregisterMutex?.();
+    this.unregisterMutex = null;
     this.clearTimer();
     this.onComplete = null;
     this.root.removeEventListener('click', this.clickHandler);

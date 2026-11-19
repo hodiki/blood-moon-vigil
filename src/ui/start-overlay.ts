@@ -433,8 +433,12 @@ export function createStartOverlay(
 
   let keybindsOverlay: KeybindsOverlay | null = null;
   const beginRun = (): void => {
+    // 先收起启动页，避免键位教学叠在还没收起的选图界面上
+    root.style.display = 'none';
+    root.setAttribute('aria-hidden', 'true');
     if (opts.save && !loadKeybindsShown(window.localStorage) && !keybindsOverlay) {
       keybindsOverlay = new KeybindsOverlay(getOverlayHost(), {
+        isMobile,
         onClose: () => {
           keybindsOverlay = null;
           onStart();
@@ -788,7 +792,10 @@ function ensureStyles(host: HTMLElement): void {
     .bmv-start.is-mobile .bmv-start-tagline { font-size: 13px; letter-spacing: 0.12em; }
     .bmv-start.is-mobile .bmv-cta { width: 100%; min-width: 0; letter-spacing: 0.12em; }
     .bmv-start.is-mobile .bmv-feature-row { width: 100%; }
-    .bmv-start.is-mobile .bmv-feature-btn { width: 0; flex: 1 1 0; }
+    .bmv-start.is-mobile .bmv-feature-btn {
+      width: auto; flex: 1 1 0; min-width: min-content;
+      white-space: nowrap; padding: 0 10px; letter-spacing: 0.08em;
+    }
     .bmv-start.is-mobile .bmv-stage-title { font-size: 24px; margin-bottom: 16px; }
     .bmv-start.is-mobile .bmv-hero-row {
       display: grid;

@@ -416,11 +416,14 @@ export class CodexOverlay {
       .bmv-codex-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
       .bmv-codex-tab {
         display: inline-flex; align-items: center; gap: 8px;
+        flex: 0 0 auto;
         min-height: 44px; padding: 0 16px;
         font-size: 16px; color: #A9B4C4;
         background: #0B0E14; border: 1px solid #2A3346; border-radius: 999px;
         cursor: pointer;
+        white-space: nowrap;
       }
+      .bmv-codex-tab-label { white-space: nowrap; word-break: keep-all; }
       .bmv-codex-tab.active { color: #F2F5F9; border-color: #54E6C9; box-shadow: 0 0 0 2px #54E6C9; }
       .bmv-codex-tab-count { font-size: 13px; color: #54E6C9; font-variant-numeric: tabular-nums; }
       .bmv-codex-grid {
