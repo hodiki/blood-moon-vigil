@@ -242,13 +242,13 @@ export class ExclusiveSelectOverlay {
       @keyframes bmv-exclusive-rise { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       @media (max-width: 900px) {
         .bmv-exclusive-title { font-size: 22px; }
-        .bmv-exclusive-sub { font-size: 12px; margin: 4px 0 12px; }
-        .bmv-exclusive-cards { gap: 16px; }
-        .bmv-exclusive-card { width: 150px; height: 220px; padding: 8px; }
-        .bmv-exclusive-art { width: 110px; height: 110px; font-size: 15px; }
-        .bmv-exclusive-name { font-size: 15px; margin-top: 6px; }
-        .bmv-exclusive-tag { font-size: 11px; }
-        .bmv-exclusive-desc { font-size: 11px; }
+        .bmv-exclusive-sub { font-size: 13px; margin: 6px 0 14px; }
+        .bmv-exclusive-cards { gap: 14px; }
+        .bmv-exclusive-card { width: 164px; height: 252px; padding: 10px 10px 12px; }
+        .bmv-exclusive-art { width: 116px; height: 116px; font-size: 15px; }
+        .bmv-exclusive-name { font-size: 16px; margin-top: 8px; }
+        .bmv-exclusive-tag { font-size: 13px; }
+        .bmv-exclusive-desc { font-size: 13px; line-height: 1.6; margin-top: 8px; }
         .bmv-exclusive-key { display: none; }
       }
     `;

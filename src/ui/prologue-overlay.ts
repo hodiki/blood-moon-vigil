@@ -241,8 +241,8 @@ export class PrologueOverlay {
         white-space: nowrap; /* 桌面单行；移动端折行由媒体查询覆盖 */
       }
       .bmv-prologue-hint {
-        font-size: 14px;
-        color: #6A7280;
+        font-size: 16px;
+        color: #D8C4A0; /* 烛铜，相对面板 #131722 对比 ≥4.5:1 */
         letter-spacing: 2px;
       }
       @keyframes bmv-prologue-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -256,7 +256,7 @@ export class PrologueOverlay {
           min-height: 44px;
           display: flex; align-items: center;
         }
-        .bmv-prologue-hint { min-height: 44px; display: flex; align-items: center; }
+        .bmv-prologue-hint { min-height: 44px; display: flex; align-items: center; font-size: max(16px, calc(16px / var(--bmv-overlay-scale, 1))); }
       }
     `;
     host.appendChild(style);

@@ -89,11 +89,13 @@ export class PauseOverlay {
     let tutorialOverlay: KeybindsOverlay | null = null;
     bind(tutorialBtn, 'click', () => {
       if (tutorialOverlay) return;
+      this.root.classList.add('is-keybinds-open');
       tutorialOverlay = new KeybindsOverlay(getOverlayHost(), {
         markSeen: false,
         isMobile: detectIsMobile(),
         onClose: () => {
           tutorialOverlay = null;
+          this.root.classList.remove('is-keybinds-open');
         },
       });
     });
@@ -144,6 +146,9 @@ export class PauseOverlay {
         position: absolute; inset: 0;
         background: rgba(0, 0, 0, 0.8);
       }
+      /* 从暂停打开键位说明时收起暂停面板，关闭后恢复 */
+      .bmv-pause.is-keybinds-open .bmv-pause-panel,
+      .bmv-pause.is-keybinds-open .bmv-pause-mask { visibility: hidden; }
       .bmv-pause-panel {
         position: relative;
         width: 360px;

@@ -102,7 +102,7 @@ const GLYPH_COLORS: Record<CodexCategory, string> = {
   hero: '#E8F0FA', // 月银白（玩家侧）
   enemy: '#8C2F2F', // 暗红（亡者剪影）
   boss: '#FF3B3B', // 猩红金
-  weapon: '#54E6C9', // 冷青
+  weapon: '#C9B48A', // 烛铜（局外不用冷青）
   resonance: '#8FB8FF', // 月幽蓝（共鸣形态占位；词根色编码见 gdd-resonance §⑧）
   evo: '#FFC93C', // 金（稀有/超武；已退役区）
   event: '#A9B4C4', // 灰蓝（档案）
@@ -173,7 +173,11 @@ export class CodexOverlay {
           <div class="bmv-codex-title">守夜日志</div>
           <button class="bmv-codex-close" type="button" aria-label="返回">返回</button>
         </div>
-        <div class="bmv-codex-tabs"></div>
+        <div class="bmv-codex-tabs-wrap">
+          <div class="bmv-codex-tabs"></div>
+          <div class="bmv-codex-tabs-fade" aria-hidden="true"></div>
+          <div class="bmv-codex-tabs-hint">左右滑动查看更多</div>
+        </div>
         <div class="bmv-codex-grid"></div>
         <div class="bmv-codex-footer"></div>
       </div>
@@ -412,8 +416,10 @@ export class CodexOverlay {
         background: transparent; border: 1px solid #2A3346; border-radius: 8px;
         cursor: pointer;
       }
-      .bmv-codex-close:hover, .bmv-codex-drawer-close:hover { color: #F2F5F9; border-color: #54E6C9; }
-      .bmv-codex-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+      .bmv-codex-close:hover, .bmv-codex-drawer-close:hover { color: #F2F5F9; border-color: #FFC93C; }
+      .bmv-codex-tabs-wrap { position: relative; margin-bottom: 16px; }
+      .bmv-codex-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+      .bmv-codex-tabs-fade, .bmv-codex-tabs-hint { display: none; }
       .bmv-codex-tab {
         display: inline-flex; align-items: center; gap: 8px;
         flex: 0 0 auto;
@@ -424,8 +430,8 @@ export class CodexOverlay {
         white-space: nowrap;
       }
       .bmv-codex-tab-label { white-space: nowrap; word-break: keep-all; }
-      .bmv-codex-tab.active { color: #F2F5F9; border-color: #54E6C9; box-shadow: 0 0 0 2px #54E6C9; }
-      .bmv-codex-tab-count { font-size: 13px; color: #54E6C9; font-variant-numeric: tabular-nums; }
+      .bmv-codex-tab.active { color: #FFC93C; border-color: #FFC93C; box-shadow: 0 0 0 2px #FFC93C; }
+      .bmv-codex-tab-count { font-size: 13px; color: #FFC93C; font-variant-numeric: tabular-nums; }
       .bmv-codex-grid {
         flex: 1; min-height: 0;
         display: grid;
@@ -471,7 +477,7 @@ export class CodexOverlay {
         margin-top: 6px; font-size: 14px; font-weight: 600;
         max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
-      .bmv-codex-card-tag { margin-top: 2px; font-size: 11px; color: #54E6C9; }
+      .bmv-codex-card-tag { margin-top: 2px; font-size: 11px; color: #C9B48A; }
       /* P2-4 退役区（NW-5）：evo 分组头 + 共鸣徽记角标 */
       .bmv-codex-retired-note {
         grid-column: 1 / -1;
@@ -523,13 +529,29 @@ export class CodexOverlay {
       }
       .bmv-codex-drawer-title { font-size: 24px; font-weight: 700; color: #F2F5F9; }
       .bmv-codex-detail-row { margin-bottom: 12px; }
-      .bmv-codex-detail-label { font-size: 13px; color: #54E6C9; margin-bottom: 2px; font-weight: 700; }
+      .bmv-codex-detail-label { font-size: 13px; color: #C9B48A; margin-bottom: 2px; font-weight: 700; }
       .bmv-codex-detail-value { font-size: 15px; color: #F2F5F9; line-height: 1.55; white-space: pre-wrap; }
       /* 移动端（spec §8）：4 列 96×96、底部抽屉 60% 高、页签横向滚动、热区 ≥44、字号 ≥16px 物理 */
       @media (max-width: 900px) {
         .bmv-codex-panel { inset: 12px; padding: 16px; }
         .bmv-codex-title { font-size: 24px; }
-        .bmv-codex-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+        .bmv-codex-tabs-wrap { margin-bottom: 12px; }
+        .bmv-codex-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .bmv-codex-tabs::-webkit-scrollbar { display: none; }
+        .bmv-codex-tabs-fade {
+          display: block;
+          position: absolute; top: 0; right: 0; bottom: 0;
+          width: 40px;
+          pointer-events: none;
+          background: linear-gradient(to right, rgba(19,23,34,0), #131722 85%);
+        }
+        .bmv-codex-tabs-hint {
+          display: block;
+          margin-top: 6px;
+          font-size: max(14px, calc(14px / var(--bmv-overlay-scale, 1)));
+          color: #C9B48A;
+          letter-spacing: 0.08em;
+        }
         .bmv-codex-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .bmv-codex-card { min-height: 96px; }
         .bmv-codex-card-glyph, .bmv-codex-card-glyph svg, .bmv-codex-card-glyph img.bmv-frame-img { width: 48px; height: 48px; }

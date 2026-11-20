@@ -5,6 +5,11 @@ import {
   codexLogRewardText,
   resultsMeritProgressText,
   resultsMeritProgressRatio,
+  RESULTS_BUILD_TITLE,
+  RESULTS_MENU_LABEL,
+  RESULTS_RELATED_LABEL,
+  RESULTS_BOSS_LABEL,
+  RESULTS_DERIV_LABEL,
   type GameOverPayload,
 } from '@/ui/results-overlay';
 
@@ -81,5 +86,18 @@ describe('结算页奖励条（merit-ui-spec §7 / codex-ui-spec §6）', () => 
   it('结算标题（narratives-spec §8.1 / C-5）：胜利 = 封印稳固·守夜完成，失败 = 守夜失败。', () => {
     expect(resultTitle(true)).toBe('封印稳固·守夜完成');
     expect(resultTitle(false)).toBe('守夜失败。');
+  });
+});
+
+describe('结算文案（2026-11-20 第二批）', () => {
+  it('本局配置 / 返回标题，并去掉结算内残余英文标签', () => {
+    expect(RESULTS_BUILD_TITLE).toBe('本局配置');
+    expect(RESULTS_MENU_LABEL).toBe('返回标题');
+    expect(RESULTS_RELATED_LABEL).toBe('本局配置相关卡占比');
+    expect(RESULTS_BOSS_LABEL).toBe('首领战时长');
+    expect(RESULTS_DERIV_LABEL).toBe('衍生技伤害占比');
+    for (const label of [RESULTS_BUILD_TITLE, RESULTS_MENU_LABEL, RESULTS_RELATED_LABEL, RESULTS_BOSS_LABEL, RESULTS_DERIV_LABEL]) {
+      expect(label).not.toMatch(/Build|DPS|Boss|启动/i);
+    }
   });
 });

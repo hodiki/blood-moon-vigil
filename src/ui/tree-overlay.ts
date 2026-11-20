@@ -186,12 +186,20 @@ export class TreeOverlay {
         const bought = this.ledger.purchases[n.id] ?? 0;
         const state = this.nodeState(n, bought, codex);
         const stateClass = state === 'lit' ? 'lit' : state === 'available' ? 'available' : 'locked';
-        const levelText = n.maxPurchases > 1 ? `${bought}/${n.maxPurchases}` : bought >= 1 ? '已点亮' : '';
+        const maxed = bought >= n.maxPurchases;
+        let statusText = '';
+        if (maxed) {
+          statusText = n.maxPurchases > 1 ? `${bought}/${n.maxPurchases} · 已满级` : '已点亮';
+        } else if (n.maxPurchases > 1) {
+          statusText = state === 'available' ? `${n.cost} 点 · ${bought}/${n.maxPurchases}` : `${bought}/${n.maxPurchases}`;
+        } else {
+          statusText = state === 'available' ? `${n.cost} 点 · 可点亮` : `${n.cost} 点`;
+        }
         html += `
           <button class="bmv-tree-node ${stateClass}" type="button" data-node="${n.id}" ${state === 'available' ? '' : 'disabled'}>
             <span class="bmv-tree-node-name">${n.name}</span>
             <span class="bmv-tree-node-desc">${n.desc}</span>
-            <span class="bmv-tree-node-cost">${bought >= n.maxPurchases ? levelText : `${n.cost} 点 ${levelText ? `· ${levelText}` : ''}`}</span>
+            <span class="bmv-tree-node-cost">${statusText}</span>
           </button>`;
       }
     }
@@ -292,15 +300,20 @@ export class TreeOverlay {
       }
       .bmv-tree-pure { font-size: 12px; color: #6A7280; margin: 8px 0; }
       .bmv-tree-list { flex: 1; min-height: 0; overflow-y: auto; margin-top: 8px; }
-      .bmv-tree-group-title { font-size: 15px; font-weight: 700; color: #54E6C9; margin: 12px 0 6px; }
+      .bmv-tree-group-title { font-size: 15px; font-weight: 700; color: #FFC93C; margin: 12px 0 6px; }
       .bmv-tree-node {
         display: flex; align-items: center; gap: 10px;
         width: 100%; min-height: 52px; box-sizing: border-box; /* ≥44px 触区 */
         background: #0B0E14; border: 1px solid #2A3346; border-radius: 8px;
         padding: 8px 10px; margin-bottom: 6px; text-align: left; cursor: pointer; color: #F2F5F9;
       }
-      .bmv-tree-node.available { border-color: #54E6C9; }
-      .bmv-tree-node.lit { border-color: #FFC93C; opacity: 0.9; }
+      .bmv-tree-node.available { border-color: #C9B48A; }
+      .bmv-tree-node.lit {
+        border-color: #FFC93C;
+        background: rgba(255,201,60,0.10);
+        box-shadow: inset 0 0 12px rgba(255,201,60,0.08);
+        opacity: 1;
+      }
       .bmv-tree-node.locked { opacity: 0.5; cursor: default; }
       .bmv-tree-node:disabled { cursor: default; }
       .bmv-tree-node-name { font-size: 15px; font-weight: 700; min-width: 96px; }

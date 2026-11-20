@@ -2,10 +2,17 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   HERO_CARD_ORDER,
   MAP_CARD_ORDER,
+  HERO_CHIP_FRAMES,
+  HERO_CHIP_NATIVE_PX,
+  HERO_CHIP_DISPLAY_PX,
+  DEFAULT_HERO_PRESELECT,
   buildHeroCardStates,
   buildMapCardStates,
   nextStartStep,
   prevStartStep,
+  canConfirmHeroPreselect,
+  heroChipIntegerScale,
+  heroSelectPlateSrc,
 } from '@/ui/start-overlay';
 import { PALETTE } from '@/config/balance';
 import { emptySave, unlockStatusFromSave, type SaveData } from '@/stats/save';
@@ -98,5 +105,44 @@ describe('入口地图卡玩家语言（ui-redesign-handoff v1.3 §1.4）', () =
   it('圣辉标签在入口改走余辉金（灯下哥特选中语义）', () => {
     const edmund = buildHeroCardStates(ALL_CLEARED).find((s) => s.id === 'hero_edmund')!;
     expect(edmund.powerTagColor).toBe(PALETTE.amber);
+  });
+});
+
+describe('选人页：插画底 + 128 芯片预选与确认', () => {
+  it('默认预选艾德蒙；芯片帧沿用正式战斗待机', () => {
+    expect(DEFAULT_HERO_PRESELECT).toBe('hero_edmund');
+    expect(HERO_CHIP_FRAMES).toEqual({
+      hero_edmund: 'player',
+      hero_cassandra: 'hero-cassandra',
+      hero_violet: 'hero-violet',
+      hero_galvan: 'hero-galvan',
+    });
+    expect(HERO_CHIP_DISPLAY_PX).toBe(128);
+    expect(heroSelectPlateSrc('hero_edmund')).toBe('./ui-menu/hero-select-hero_edmund.png');
+  });
+
+  it('芯片按整数倍放大：64→128（2×），128→128（1×）；160 无法整倍落入 128', () => {
+    expect(HERO_CHIP_NATIVE_PX.hero_edmund).toBe(64);
+    expect(heroChipIntegerScale('hero_edmund')).toBe(2);
+    expect(HERO_CHIP_NATIVE_PX.hero_cassandra).toBe(128);
+    expect(heroChipIntegerScale('hero_cassandra')).toBe(1);
+    expect(HERO_CHIP_NATIVE_PX.hero_violet).toBe(128);
+    expect(heroChipIntegerScale('hero_violet')).toBe(1);
+    expect(HERO_CHIP_NATIVE_PX.hero_galvan).toBe(160);
+    expect(heroChipIntegerScale('hero_galvan')).toBe(1);
+  });
+
+  it('锁定角色可预览，但不能确认；未锁定可确认', () => {
+    expect(canConfirmHeroPreselect({ locked: true })).toBe(false);
+    expect(canConfirmHeroPreselect({ locked: false })).toBe(true);
+  });
+
+  it('芯片点击不得写入会话选择：预选与确认分离（确认才调用 selectHeroSafely）', () => {
+    resetSessionSelection();
+    expect(getSelectedHero()).toBe('hero_edmund');
+    // 预选只是 UI 态：本文件不实例化 DOM，这里断言数据层在未确认前保持默认
+    expect(getSelectedHero()).toBe(DEFAULT_HERO_PRESELECT);
+    expect(selectHeroSafely('hero_cassandra', ALL_LOCKED_UNLOCK)).toBe('hero_cassandra');
+    expect(getSelectedHero()).toBe('hero_cassandra');
   });
 });

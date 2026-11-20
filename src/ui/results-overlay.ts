@@ -4,9 +4,9 @@
  * 进入：GameState 转 GAMEOVER 后 PlayScene emit game:over { stats } → 本层订阅渲染。
  * 内容（ux-spec §4 / CM R3）：
  * - 标题「守夜失败」或「封印稳固·守夜完成」（narratives-spec §8.1，来源 narratives.ts）；统计行：存活时间 / 击杀数 / 等级
- * - Build 回顾：所选升级清单（RunResult.build，滚动区，超 12 项滚动）
+ * - 本局配置：所选升级清单（RunResult.build，滚动区，超 12 项滚动）
  * - 「再来一局」→ emit game:restart（PlayScene → scene.restart()，CM R1/R2）
- *   「返回启动」→ emit game:to-menu（PlayScene → scene.start('Boot')）
+ *   「返回标题」→ emit game:to-menu（PlayScene → scene.start('Boot')）
  * - 数字滚动 0→目标 0.8s 缓出递增（ux-spec §6 微交互）
  * 单向数据流（ARCH §2 / ADR-004）：本层只读 stats、只发事件；遮罩拦截非面板区点击（CM R4）。
  */
@@ -37,6 +37,12 @@ export function resultTitle(victory: boolean): string {
   const entry = entryByKey(NARRATIVES, victory ? 'n_result_victory' : 'n_result_defeat');
   return entry?.text ?? (victory ? '封印稳固·守夜完成' : '守夜失败。');
 }
+
+export const RESULTS_BUILD_TITLE = '本局配置';
+export const RESULTS_MENU_LABEL = '返回标题';
+export const RESULTS_RELATED_LABEL = '本局配置相关卡占比';
+export const RESULTS_BOSS_LABEL = '首领战时长';
+export const RESULTS_DERIV_LABEL = '衍生技伤害占比';
 
 // —— 结算奖励条纯函数（merit-ui-spec §7 / codex-ui-spec §6；可脱离 DOM 单测） ——
 
@@ -133,10 +139,10 @@ export class ResultsOverlay {
           <div class="bmv-results-trow"><span class="bmv-results-label">三选一轮数</span><span class="bmv-results-value" data-tel="offers">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">本局经验</span><span class="bmv-results-value" data-tel="xp">0</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">进化完成</span><span class="bmv-results-value" data-tel="evolution">0</span></div>
-          <div class="bmv-results-trow"><span class="bmv-results-label">build 相关卡占比</span><span class="bmv-results-value" data-tel="related">–</span></div>
-          <div class="bmv-results-trow"><span class="bmv-results-label">Boss 战时长</span><span class="bmv-results-value" data-tel="boss">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">${RESULTS_RELATED_LABEL}</span><span class="bmv-results-value" data-tel="related">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">${RESULTS_BOSS_LABEL}</span><span class="bmv-results-value" data-tel="boss">–</span></div>
           <div class="bmv-results-telemetry-title">进阶统计</div>
-          <div class="bmv-results-trow"><span class="bmv-results-label">衍生技 DPS 占比</span><span class="bmv-results-value" data-tel="deriv">–</span></div>
+          <div class="bmv-results-trow"><span class="bmv-results-label">${RESULTS_DERIV_LABEL}</span><span class="bmv-results-value" data-tel="deriv">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">质变卡时点</span><span class="bmv-results-value" data-tel="mutbeat">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">共鸣达成</span><span class="bmv-results-value" data-tel="reson">–</span></div>
           <div class="bmv-results-trow"><span class="bmv-results-label">复活触发</span><span class="bmv-results-value" data-tel="revive">0</span></div>
@@ -145,12 +151,12 @@ export class ResultsOverlay {
           </div>
         </details>
         <div class="bmv-results-build">
-          <div class="bmv-results-build-title">Build 回顾</div>
+          <div class="bmv-results-build-title">${RESULTS_BUILD_TITLE}</div>
           <div class="bmv-results-build-list"></div>
         </div>
         <div class="bmv-results-actions">
           <button class="bmv-results-restart" type="button">再来一局</button>
-          <button class="bmv-results-menu" type="button">返回启动</button>
+          <button class="bmv-results-menu" type="button">${RESULTS_MENU_LABEL}</button>
         </div>
       </div>
     `;
